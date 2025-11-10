@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentCache.ai - Save 90% on AI API Costs</title>
+    <meta name="description" content="Edge caching for AI responses. Reduce LLM costs by 90% and improve latency by 10x. Works with OpenAI, Anthropic, and all major providers.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .gradient-text { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm fixed w-full top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <span class="text-3xl">⚡</span>
+                    <span class="text-xl font-bold gradient-text">AgentCache.ai</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#features" class="text-gray-700 hover:text-purple-600">Features</a>
+                    <a href="#pricing" class="text-gray-700 hover:text-purple-600">Pricing</a>
+                    <a href="#docs" class="text-gray-700 hover:text-purple-600">Docs</a>
+                    <a href="#contact" class="text-gray-700 hover:text-purple-600">Contact</a>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="#login" class="text-gray-700 hover:text-purple-600 font-medium">Login</a>
+                    <a href="#signup" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 font-medium">Sign Up Free</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="gradient-bg text-white pt-32 pb-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-5xl md:text-6xl font-bold mb-6">
+                Save 90% on AI API Costs
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 text-purple-100 max-w-3xl mx-auto">
+                Edge caching for AI responses. Cache LLM calls and reduce costs instantly. Works with OpenAI, Anthropic, Moonshot, and all major providers.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+                <a href="#signup" class="bg-white text-purple-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 shadow-xl">
+                    Get Started Free
+                </a>
+                <a href="#demo" class="border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white hover:text-purple-600">
+                    View Demo
+                </a>
+            </div>
+            <div class="flex justify-center space-x-8 text-sm">
+                <div><span class="font-bold text-2xl">90%</span><br/>Cost Savings</div>
+                <div><span class="font-bold text-2xl">10x</span><br/>Faster</div>
+                <div><span class="font-bold text-2xl">&lt;50ms</span><br/>Latency</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ROI Calculator -->
+    <section class="py-16 bg-white">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-8 shadow-lg">
+                <h2 class="text-3xl font-bold text-center mb-8 text-gray-900">💰 ROI Calculator</h2>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                        <h3 class="font-semibold text-lg">Without AgentCache.ai</h3>
+                        <div class="bg-white p-4 rounded-lg">
+                            <p class="text-gray-600">100K GPT-4 calls/month</p>
+                            <p class="text-gray-600">$0.03 per call</p>
+                            <p class="text-2xl font-bold text-red-600 mt-2">$3,000/month</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <h3 class="font-semibold text-lg">With AgentCache.ai (85% hit rate)</h3>
+                        <div class="bg-white p-4 rounded-lg">
+                            <p class="text-gray-600">15K uncached: $450</p>
+                            <p class="text-gray-600">85K cached: $0</p>
+                            <p class="text-gray-600">AgentCache Pro: $29</p>
+                            <p class="text-2xl font-bold text-green-600 mt-2">$479/month</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-8">
+                    <p class="text-3xl font-bold gradient-text">Save $2,521 per month! 💸</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl font-bold text-center mb-16 text-gray-900">Why AgentCache.ai?</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white p-8 rounded-xl shadow-lg card-hover">
+                    <div class="text-4xl mb-4">💰</div>
+                    <h3 class="text-xl font-bold mb-3">90% Cost Reduction</h3>
+                    <p class="text-gray-600">Cache identical prompts and reuse responses. Dramatically cut your LLM API bills.</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg card-hover">
+                    <div class="text-4xl mb-4">⚡</div>
+                    <h3 class="text-xl font-bold mb-3">10x Faster</h3>
+                    <p class="text-gray-600">&lt;50ms cache hit latency vs 2-5s API calls. Lightning-fast user experience.</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg card-hover">
+                    <div class="text-4xl mb-4">🔌</div>
+                    <h3 class="text-xl font-bold mb-3">Drop-in Integration</h3>
+                    <p class="text-gray-600">5 lines of code. Works with OpenAI, Anthropic, Moonshot, Cohere, and more.</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg card-hover">
+                    <div class="text-4xl mb-4">📊</div>
+                    <h3 class="text-xl font-bold mb-3">Usage Analytics</h3>
+                    <p class="text-gray-600">Track cache hit rates, cost savings, and performance in real-time.</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg card-hover">
+                    <div class="text-4xl mb-4">🌐</div>
+                    <h3 class="text-xl font-bold mb-3">Edge Distributed</h3>
+                    <p class="text-gray-600">Global edge network powered by Upstash Redis for minimal latency.</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg card-hover">
+                    <div class="text-4xl mb-4">🔒</div>
+                    <h3 class="text-xl font-bold mb-3">Secure & Private</h3>
+                    <p class="text-gray-600">End-to-end encryption. Your data never leaves your control.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Code Example -->
+    <section class="py-20 bg-white">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl font-bold text-center mb-12 text-gray-900">Simple Integration</h2>
+            <div class="bg-gray-900 rounded-xl p-8 text-white overflow-x-auto">
+                <pre class="text-sm"><code>import OpenAI from 'openai';
+import { AgentCache } from 'agentcache-client';
+
+const cache = new AgentCache('ac_live_YOUR_KEY');
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+async function chat(messages) {
+  // Try cache first
+  const cached = await cache.get({ provider: 'openai', model: 'gpt-4', messages });
+  if (cached) return cached.response; // <span class="text-green-400">💚 90% cost saved!</span>
+  
+  // Cache miss - call OpenAI
+  const response = await openai.chat.completions.create({ model: 'gpt-4', messages });
+  const text = response.choices[0].message.content;
+  
+  // Store in cache
+  await cache.set({ provider: 'openai', model: 'gpt-4', messages, response: text });
+  return text;
+}</code></pre>
+            </div>
+            <p class="text-center mt-6 text-gray-600">That's it! 5 lines to save thousands per month.</p>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl font-bold text-center mb-16 text-gray-900">Simple, Transparent Pricing</h2>
+            <div class="grid md:grid-cols-4 gap-6">
+                <!-- Free -->
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-bold mb-4">Free</h3>
+                    <p class="text-4xl font-bold mb-6">$0<span class="text-lg text-gray-500">/mo</span></p>
+                    <ul class="space-y-3 mb-8 text-gray-600">
+                        <li>✓ 1,000 requests/month</li>
+                        <li>✓ 7-day cache TTL</li>
+                        <li>✓ Basic analytics</li>
+                        <li>✓ Community support</li>
+                    </ul>
+                    <a href="#signup" class="block text-center border-2 border-purple-600 text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-purple-50">Get Started</a>
+                </div>
+                <!-- Starter -->
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-bold mb-4">Starter</h3>
+                    <p class="text-4xl font-bold mb-6">$19<span class="text-lg text-gray-500">/mo</span></p>
+                    <ul class="space-y-3 mb-8 text-gray-600">
+                        <li>✓ 25,000 requests/month</li>
+                        <li>✓ 30-day cache TTL</li>
+                        <li>✓ Advanced analytics</li>
+                        <li>✓ Email support</li>
+                    </ul>
+                    <a href="#signup" class="block text-center bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700">Start Free Trial</a>
+                </div>
+                <!-- Pro (Popular) -->
+                <div class="bg-gradient-to-br from-purple-600 to-indigo-600 p-8 rounded-xl shadow-2xl text-white transform scale-105">
+                    <div class="bg-yellow-400 text-purple-900 text-xs font-bold px-3 py-1 rounded-full inline-block mb-2">MOST POPULAR</div>
+                    <h3 class="text-2xl font-bold mb-4">Pro</h3>
+                    <p class="text-4xl font-bold mb-6">$49<span class="text-lg">/mo</span></p>
+                    <ul class="space-y-3 mb-8">
+                        <li>✓ 150,000 requests/month</li>
+                        <li>✓ 90-day cache TTL</li>
+                        <li>✓ Real-time dashboard</li>
+                        <li>✓ Priority support</li>
+                        <li>✓ Custom cache rules</li>
+                    </ul>
+                    <a href="#signup" class="block text-center bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100">Start Free Trial</a>
+                </div>
+                <!-- Enterprise -->
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-bold mb-4">Business</h3>
+                    <p class="text-4xl font-bold mb-6">$149<span class="text-lg text-gray-500">/mo</span></p>
+                    <ul class="space-y-3 mb-8 text-gray-600">
+                        <li>✓ Unlimited requests</li>
+                        <li>✓ Custom TTL</li>
+                        <li>✓ Dedicated Redis</li>
+                        <li>✓ White-label option</li>
+                        <li>✓ SLA guarantee</li>
+                        <li>✓ Slack support</li>
+                    </ul>
+                    <a href="#contact" class="block text-center bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700">Contact Sales</a>
+                </div>
+            </div>
+            <p class="text-center mt-8 text-gray-600">All plans include 14-day free trial. No credit card required.</p>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="gradient-bg text-white py-20">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-4xl font-bold mb-6">Ready to Save Thousands?</h2>
+            <p class="text-xl mb-8 text-purple-100">Join thousands of developers reducing AI costs with AgentCache.ai</p>
+            <a href="#signup" class="bg-white text-purple-600 px-10 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 shadow-xl inline-block">
+                Start Free Trial →
+            </a>
+            <p class="mt-6 text-purple-200">No credit card required • 14-day free trial • Cancel anytime</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <span class="text-2xl">⚡</span>
+                        <span class="text-lg font-bold text-white">AgentCache.ai</span>
+                    </div>
+                    <p class="text-sm">Edge caching for AI responses. Built by <a href="https://jettythunder.app" class="text-purple-400 hover:text-purple-300">JettyThunder Labs</a></p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-white mb-4">Product</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#features" class="hover:text-white">Features</a></li>
+                        <li><a href="#pricing" class="hover:text-white">Pricing</a></li>
+                        <li><a href="#docs" class="hover:text-white">Documentation</a></li>
+                        <li><a href="/api" class="hover:text-white">API Reference</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-white mb-4">Company</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#about" class="hover:text-white">About</a></li>
+                        <li><a href="#contact" class="hover:text-white">Contact</a></li>
+                        <li><a href="#blog" class="hover:text-white">Blog</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-white mb-4">Connect</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="mailto:support@agentcache.ai" class="hover:text-white">support@agentcache.ai</a></li>
+                        <li><a href="https://discord.gg/agentcache" class="hover:text-white">Discord</a></li>
+                        <li><a href="https://twitter.com/agentcache" class="hover:text-white">Twitter</a></li>
+                        <li><a href="https://github.com/jettythunder/agentcache-ai" class="hover:text-white">GitHub</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
+                <p>&copy; 2025 AgentCache.ai by JettyThunder Labs. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
