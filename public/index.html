@@ -175,7 +175,7 @@
 
               <!-- Code panes -->
               <div class="p-4">
-                <pre id="pane-js" class="peer-checked/tab-js:block hidden text-sm leading-6 overflow-x-auto rounded-lg bg-black/60 ring-1 ring-white/10 p-4"><code class="text-neutral-200">
+                <pre id="pane-js" class="tab-pane block text-sm leading-6 overflow-x-auto rounded-lg bg-black/60 ring-1 ring-white/10 p-4"><code class="text-neutral-200">
 // 1) Install
 // npm install agentcache-client
 import { AgentCache } from 'agentcache-client';
@@ -207,7 +207,7 @@ await cache.set({
 });
                 </code></pre>
 
-                <pre id="pane-py" class="peer-checked/tab-py:block hidden text-sm leading-6 overflow-x-auto rounded-lg bg-black/60 ring-1 ring-white/10 p-4"><code class="text-neutral-200">
+                <pre id="pane-py" class="tab-pane hidden text-sm leading-6 overflow-x-auto rounded-lg bg-black/60 ring-1 ring-white/10 p-4"><code class="text-neutral-200">
 # Python SDK coming soon! For now, use REST API:
 import requests
 
@@ -243,7 +243,7 @@ requests.post('https://agentcache.ai/api/cache/set',
 )
                 </code></pre>
 
-                <pre id="pane-edge" class="peer-checked/tab-edge:block hidden text-sm leading-6 overflow-x-auto rounded-lg bg-black/60 ring-1 ring-white/10 p-4"><code class="text-neutral-200">
+                <pre id="pane-edge" class="tab-pane hidden text-sm leading-6 overflow-x-auto rounded-lg bg-black/60 ring-1 ring-white/10 p-4"><code class="text-neutral-200">
 # cURL - test immediately
 curl -X POST https://agentcache.ai/api/cache/get \
   -H "X-API-Key: ac_demo_test123" \
@@ -998,6 +998,17 @@ curl -X POST https://agentcache.ai/api/moonshot \
             if (window.lucide) window.lucide.createIcons({ attrs: { "stroke-width": 1.5 } });
           }
         });
+        // Tab switching
+        const tabRadios = document.querySelectorAll('input[name="code-tab"]');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+        tabRadios.forEach(radio => {
+          radio.addEventListener('change', (e) => {
+            const tabId = e.target.id.replace('tab-', 'pane-');
+            tabPanes.forEach(pane => pane.classList.add('hidden'));
+            document.getElementById(tabId)?.classList.remove('hidden');
+          });
+        });
+        
         // Year
         const y = document.getElementById("year");
         if (y) y.textContent = new Date().getFullYear();
