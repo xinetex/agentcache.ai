@@ -53,20 +53,20 @@
               Edge caching for AI APIs
             </div>
             <h1 class="mt-5 text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-white">
-              Cache AI prompts at the edge.
+              Edge caching for AI APIs.
               <span class="text-neutral-300">10x faster, 90% cheaper.</span>
             </h1>
             <p class="mt-5 text-base sm:text-lg text-neutral-300 leading-relaxed">
-              Drop in 5 lines of code and instantly reduce your OpenAI, Anthropic, or Claude costs by up to 90% while making responses up to 10x faster. Cache identical prompts, reuse responses, and save thousands per month.
+              REST API for caching AI responses. Works with OpenAI, Anthropic, Claude, and Moonshot AI. Cache identical prompts at the edge, reuse responses instantly, and save thousands per month. No SDK required—just HTTP.
             </p>
             <div class="mt-8 flex flex-col sm:flex-row gap-3">
               <a href="#signup" class="inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold tracking-tight bg-white text-neutral-900 hover:bg-neutral-200 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors">
                 <i data-lucide="rocket" class="h-4 w-4"></i>
-                Start free
+                Get API key
               </a>
               <a href="#code" class="inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm text-neutral-200 ring-1 ring-white/10 hover:bg-white/5 hover:ring-white/20 transition-colors">
                 <i data-lucide="code" class="h-4 w-4"></i>
-                See the 5-line drop-in
+                Try with cURL
               </a>
             </div>
             <div class="mt-6 flex items-center gap-4 text-xs text-neutral-400">
@@ -109,78 +109,106 @@
                   <label for="tab-py" class="cursor-pointer select-none rounded-md px-3 py-1.5 text-xs text-neutral-300 hover:text-white hover:bg-white/5 peer-checked/tab-py:bg-white/10 peer-checked/tab-py:text-white">Python</label>
 
                   <input id="tab-edge" name="code-tab" type="radio" class="peer/tab-edge hidden" />
-                  <label for="tab-edge" class="cursor-pointer select-none rounded-md px-3 py-1.5 text-xs text-neutral-300 hover:text-white hover:bg-white/5 peer-checked/tab-edge:bg-white/10 peer-checked/tab-edge:text-white">Edge</label>
+                  <label for="tab-edge" class="cursor-pointer select-none rounded-md px-3 py-1.5 text-xs text-neutral-300 hover:text-white hover:bg-white/5 peer-checked/tab-edge:bg-white/10 peer-checked/tab-edge:text-white">cURL</label>
                 </div>
               </div>
 
               <!-- Code panes -->
               <div class="p-4">
                 <pre id="pane-js" class="peer-checked/tab-js:block hidden text-sm leading-6 overflow-x-auto rounded-lg bg-black/60 ring-1 ring-white/10 p-4"><code class="text-neutral-200">
-// 1) Install
-// npm i agentcache openai
-import AgentCache from "agentcache";
-import OpenAI from "openai";
+// REST API - works now, no installation needed
+const apiKey = 'ac_demo_test123'; // Get yours at agentcache.ai
 
-const cache = new AgentCache({ project: "my-app", defaultTtl: "7d" });
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-// 2) Wrap your call — identical prompts = instant cache hits
-const prompt = "Summarize: The quick brown fox jumps over the lazy dog";
-const res = await cache.fetch({
-  key: ["openai:gpt-4o-mini", prompt],
-  tags: ["summary", "gpt-4o-mini"],
-  fn: () => openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [{ role: "user", content: prompt }],
-  }),
+// 1) Check cache first
+const cached = await fetch('https://agentcache.ai/api/cache/get', {
+  method: 'POST',
+  headers: {
+    'X-API-Key': apiKey,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    provider: 'openai',
+    model: 'gpt-4',
+    messages: [{ role: 'user', content: 'Explain quantum computing' }]
+  })
 });
 
-console.log(res.choices[0].message.content);
+const data = await cached.json();
+if (data.hit) {
+  console.log('✅ Cache hit!', data.latency_ms + 'ms');
+  return data.response;
+}
+
+// 2) Cache miss - call OpenAI and store
+const response = await callYourLLM(); // Your existing code
+await fetch('https://agentcache.ai/api/cache/set', {
+  method: 'POST',
+  headers: { 'X-API-Key': apiKey, 'Content-Type': 'application/json' },
+  body: JSON.stringify({ provider: 'openai', model: 'gpt-4', messages: [...], response })
+});
                 </code></pre>
 
                 <pre id="pane-py" class="peer-checked/tab-py:block hidden text-sm leading-6 overflow-x-auto rounded-lg bg-black/60 ring-1 ring-white/10 p-4"><code class="text-neutral-200">
-# 1) pip install agentcache openai
-from agentcache import AgentCache
-from openai import OpenAI
+# Python - REST API using requests
+import requests
 
-cache = AgentCache(project="my-app", default_ttl="7d")
-client = OpenAI()
+API_KEY = 'ac_demo_test123'  # Get yours at agentcache.ai
+BASE_URL = 'https://agentcache.ai'
 
-prompt = "Explain vector databases in one sentence"
-res = cache.fetch(
-    key=["openai:gpt-4o-mini", prompt],
-    tags=["explain", "gpt-4o-mini"],
-    fn=lambda: client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role":"user","content":prompt}]
-    )
+# 1) Check cache
+response = requests.post(f'{BASE_URL}/api/cache/get', 
+    headers={'X-API-Key': API_KEY, 'Content-Type': 'application/json'},
+    json={
+        'provider': 'openai',
+        'model': 'gpt-4',
+        'messages': [{'role': 'user', 'content': 'What is Python?'}]
+    }
 )
 
-print(res.choices[0].message.content)
+data = response.json()
+if data.get('hit'):
+    print(f"✅ Cache hit! {data['latency_ms']}ms")
+    print(data['response'])
+else:
+    # Cache miss - call your LLM and store
+    llm_response = call_your_llm()  # Your existing code
+    requests.post(f'{BASE_URL}/api/cache/set',
+        headers={'X-API-Key': API_KEY, 'Content-Type': 'application/json'},
+        json={'provider': 'openai', 'model': 'gpt-4', 'messages': [...], 'response': llm_response}
+    )
                 </code></pre>
 
                 <pre id="pane-edge" class="peer-checked/tab-edge:block hidden text-sm leading-6 overflow-x-auto rounded-lg bg-black/60 ring-1 ring-white/10 p-4"><code class="text-neutral-200">
-/* Edge runtime (Workers/Functions) */
-import AgentCache from "agentcache/edge";
-import { Anthropic } from "@anthropic-ai/sdk";
+# cURL - test immediately
+curl -X POST https://agentcache.ai/api/cache/get \
+  -H "X-API-Key: ac_demo_test123" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider": "openai",
+    "model": "gpt-4",
+    "messages": [
+      {"role": "user", "content": "Explain caching"}
+    ]
+  }'
 
-export default async function handler(req) {
-  const cache = new AgentCache({ project: "my-app", kv: env.AGENTCACHE_KV });
-  const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+# Response on cache hit:
+# {
+#   "hit": true,
+#   "response": "Caching stores frequently...",
+#   "latency_ms": 23,
+#   "cached_at": "2025-01-11T10:30:00Z"
+# }
 
-  const user = "Write a haiku about edge caching";
-  const data = await cache.fetch({
-    key: ["anthropic:claude-3-haiku", user],
-    ttl: "3d",
-    fn: () => anthropic.messages.create({
-      model: "claude-3-haiku-20240307",
-      max_tokens: 128,
-      messages: [{ role: "user", content: user }]
-    })
-  });
-
-  return new Response(JSON.stringify(data), { headers: { "content-type": "application/json" } });
-}
+# Moonshot AI (Kimi K2) - with reasoning token caching:
+curl -X POST https://agentcache.ai/api/moonshot \
+  -H "X-API-Key: ac_demo_test123" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "moonshot-v1-128k",
+    "messages": [{"role": "user", "content": "Analyze this code"}],
+    "cache_reasoning": true
+  }'
+# 98% cost savings on reasoning-heavy queries!
                 </code></pre>
               </div>
 
@@ -206,15 +234,22 @@ export default async function handler(req) {
 
             <!-- Trust Bar -->
             <div class="mt-8">
-              <div class="text-xs text-neutral-400 mb-3">Trusted by fast-moving teams</div>
-              <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
-                <div class="h-10 rounded-md ring-1 ring-white/10 bg-white/5 grid place-content-center text-neutral-300 text-sm tracking-tight">NEBULA</div>
-                <div class="h-10 rounded-md ring-1 ring-white/10 bg-white/5 grid place-content-center text-neutral-300 text-sm tracking-tight">FRAME</div>
-                <div class="h-10 rounded-md ring-1 ring-white/10 bg-white/5 grid place-content-center text-neutral-300 text-sm tracking-tight">ORBIT</div>
-                <div class="h-10 rounded-md ring-1 ring-white/10 bg-white/5 grid place-content-center text-neutral-300 text-sm tracking-tight">VECTOR</div>
-                <div class="h-10 rounded-md ring-1 ring-white/10 bg-white/5 grid place-content-center text-neutral-300 text-sm tracking-tight">PRISM</div>
-                <div class="h-10 rounded-md ring-1 ring-white/10 bg-white/5 grid place-content-center text-neutral-300 text-sm tracking-tight">ALPHA</div>
+              <div class="rounded-xl ring-1 ring-indigo-500/30 bg-indigo-500/5 p-4">
+                <div class="flex items-center gap-3">
+                  <div class="inline-flex h-10 w-10 items-center justify-center rounded-md bg-indigo-500/20 ring-1 ring-indigo-500/30">
+                    <i data-lucide="sparkles" class="h-5 w-5 text-indigo-400"></i>
+                  </div>
+                  <div class="flex-1">
+                    <div class="text-sm font-semibold text-white">🚀 Now with Moonshot AI (Kimi K2) Integration</div>
+                    <div class="text-xs text-neutral-300 mt-1">Cache reasoning tokens separately • 98% cost savings • 200K+ context window</div>
+                  </div>
+                  <a href="#moonshot" class="hidden sm:inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs text-white ring-1 ring-white/10 hover:bg-white/5 transition">
+                    Learn more
+                    <i data-lucide="arrow-right" class="h-3 w-3"></i>
+                  </a>
+                </div>
               </div>
+              <div class="mt-4 text-xs text-neutral-400 text-center">Trusted by JettyThunder.app and growing • <a href="#signup" class="text-indigo-400 hover:text-indigo-300 underline underline-offset-2">Join early adopters</a></div>
             </div>
           </div>
         </div>
@@ -297,6 +332,80 @@ export default async function handler(req) {
               Privacy-first
             </div>
             <p class="mt-2 text-sm text-neutral-400">PII scrubbing and encryption at rest; enterprise controls for compliance.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Moonshot AI Feature -->
+    <section id="moonshot" class="mx-auto max-w-7xl px-6 py-12 sm:py-16">
+      <div class="rounded-2xl ring-1 ring-indigo-500/30 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 overflow-hidden">
+        <div class="grid lg:grid-cols-2 gap-8 p-6 sm:p-8">
+          <div>
+            <div class="inline-flex items-center gap-2 rounded-full bg-indigo-500/20 ring-1 ring-indigo-500/30 px-3 py-1 text-xs text-indigo-200">
+              <i data-lucide="sparkles" class="h-3.5 w-3.5"></i>
+              New feature
+            </div>
+            <h3 class="mt-4 text-2xl sm:text-3xl font-semibold tracking-tight text-white">Moonshot AI (Kimi K2) Integration</h3>
+            <p class="mt-3 text-neutral-300">First AI caching service with dedicated reasoning token caching. Perfect for complex analysis, code review, and deep reasoning tasks.</p>
+            
+            <div class="mt-6 space-y-3">
+              <div class="flex items-start gap-3">
+                <div class="inline-flex h-6 w-6 items-center justify-center rounded-md bg-indigo-500/20 ring-1 ring-indigo-500/30 flex-shrink-0">
+                  <i data-lucide="brain" class="h-3.5 w-3.5 text-indigo-400"></i>
+                </div>
+                <div>
+                  <div class="text-sm font-semibold text-white">Reasoning Token Caching</div>
+                  <div class="text-xs text-neutral-400 mt-0.5">Cache Kimi K2's "thinking" process separately - 98% savings on reasoning-heavy queries</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="inline-flex h-6 w-6 items-center justify-center rounded-md bg-indigo-500/20 ring-1 ring-indigo-500/30 flex-shrink-0">
+                  <i data-lucide="layers" class="h-3.5 w-3.5 text-indigo-400"></i>
+                </div>
+                <div>
+                  <div class="text-sm font-semibold text-white">200K+ Token Context</div>
+                  <div class="text-xs text-neutral-400 mt-0.5">Massive context windows for codebase analysis and document processing</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="inline-flex h-6 w-6 items-center justify-center rounded-md bg-indigo-500/20 ring-1 ring-indigo-500/30 flex-shrink-0">
+                  <i data-lucide="zap" class="h-3.5 w-3.5 text-indigo-400"></i>
+                </div>
+                <div>
+                  <div class="text-sm font-semibold text-white">Dual TTL Strategy</div>
+                  <div class="text-xs text-neutral-400 mt-0.5">Responses cached 7 days, reasoning cached 1 hour - optimal freshness</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6">
+              <a href="/docs.html#moonshot" class="inline-flex items-center gap-2 rounded-md px-3.5 py-2 text-sm font-semibold tracking-tight bg-indigo-500 text-white hover:bg-indigo-400 transition">
+                <i data-lucide="book-open" class="h-4 w-4"></i>
+                Moonshot API docs
+              </a>
+            </div>
+          </div>
+
+          <div class="rounded-xl ring-1 ring-white/10 bg-black/40 p-4">
+            <div class="text-xs text-neutral-400 mb-3">Example: 100K token codebase analysis</div>
+            <div class="space-y-3 text-sm">
+              <div class="rounded-lg bg-white/5 p-3">
+                <div class="text-xs text-neutral-400">Without AgentCache</div>
+                <div class="mt-1 text-lg font-semibold text-white">$405/month</div>
+                <div class="text-xs text-neutral-500">50 queries/day × ($0.12 response + $0.15 reasoning)</div>
+              </div>
+              <div class="rounded-lg bg-indigo-500/20 ring-1 ring-indigo-500/30 p-3">
+                <div class="text-xs text-indigo-200">With AgentCache + Reasoning Cache</div>
+                <div class="mt-1 text-lg font-semibold text-white">$8.10/month</div>
+                <div class="text-xs text-indigo-300">First call cached, 49 calls instant</div>
+              </div>
+              <div class="flex items-center justify-between pt-2 border-t border-white/10">
+                <span class="text-xs text-neutral-400">Monthly savings</span>
+                <span class="text-xl font-semibold text-emerald-400">$396.90</span>
+              </div>
+              <div class="text-xs text-neutral-500 text-center">98% cost reduction</div>
+            </div>
           </div>
         </div>
       </div>

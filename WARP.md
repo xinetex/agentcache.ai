@@ -2,6 +2,8 @@
 
 This file provides guidance to WARP (warp.dev) when working with code in this repository.
 
+**🚀 New Agent? Start here:** [AGENT_QUICKSTART.md](./AGENT_QUICKSTART.md) - 2-minute frictionless onboarding with executable commands.
+
 ## Project Overview
 
 AgentCache.ai is an edge caching service for AI API calls that reduces LLM costs by 90% and improves response times 10x. The service sits between applications and AI providers (OpenAI, Anthropic, etc.) to cache identical prompts automatically.
