@@ -129,17 +129,17 @@
                 Try with cURL
               </a>
             </div>
-            <div class="mt-6 flex items-center gap-4 text-xs text-neutral-400">
+            <div class="flex items-center gap-4 text-xs text-neutral-400">
               <div class="inline-flex items-center gap-2">
-                <i data-lucide="shield-check" class="h-4 w-4"></i>
-                <span>Deterministic keys</span>
+                <i data-lucide="shield-check" class="h-4 w-4 text-emerald-400"></i>
+                <span>SHA-256 keys</span>
               </div>
               <div class="inline-flex items-center gap-2">
-                <i data-lucide="webhook" class="h-4 w-4"></i>
-                <span>Streaming support</span>
+                <i data-lucide="webhook" class="h-4 w-4 text-emerald-400"></i>
+                <span>Webhooks</span>
               </div>
               <div class="inline-flex items-center gap-2">
-                <i data-lucide="globe" class="h-4 w-4"></i>
+                <i data-lucide="globe" class="h-4 w-4 text-emerald-400"></i>
                 <span>Global edge</span>
               </div>
             </div>
@@ -362,47 +362,53 @@ curl -X POST https://agentcache.ai/api/moonshot \
           </div>
         </div>
         <div class="lg:col-span-2 grid sm:grid-cols-2 gap-6">
-          <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+          <div class="rounded-xl ring-1 ring-emerald-500/30 bg-emerald-500/5 p-5">
             <div class="flex items-center gap-2 text-sm text-neutral-300">
               <i data-lucide="database" class="h-4 w-4"></i>
               Deterministic keys
+              <span class="ml-auto text-[10px] text-emerald-400 font-semibold">LIVE</span>
             </div>
-            <p class="mt-2 text-sm text-neutral-400">Stable hashing of prompts, model, tools, and params—no accidental misses.</p>
+            <p class="mt-2 text-sm text-neutral-400">SHA-256 hashing of prompts, model, and params—100% cache hit accuracy.</p>
           </div>
-          <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+          <div class="rounded-xl ring-1 ring-emerald-500/30 bg-emerald-500/5 p-5">
             <div class="flex items-center gap-2 text-sm text-neutral-300">
               <i data-lucide="satellite-dish" class="h-4 w-4"></i>
               Global edge
+              <span class="ml-auto text-[10px] text-emerald-400 font-semibold">LIVE</span>
             </div>
-            <p class="mt-2 text-sm text-neutral-400">Multi-region edge KV with automatic replication and near-user responses.</p>
+            <p class="mt-2 text-sm text-neutral-400">Upstash Redis with global replication and sub-50ms P95 latency.</p>
           </div>
-          <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+          <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5 opacity-60">
             <div class="flex items-center gap-2 text-sm text-neutral-300">
               <i data-lucide="waves" class="h-4 w-4"></i>
-              Streaming passthrough
+              Streaming support
+              <span class="ml-auto text-[10px] text-indigo-400 font-semibold">Q1 2025</span>
             </div>
-            <p class="mt-2 text-sm text-neutral-400">Cache headers and tokens while preserving SSE/streaming for cache hits and misses.</p>
+            <p class="mt-2 text-sm text-neutral-400">SSE/streaming passthrough for real-time responses (in development).</p>
           </div>
-          <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+          <div class="rounded-xl ring-1 ring-emerald-500/30 bg-emerald-500/5 p-5">
             <div class="flex items-center gap-2 text-sm text-neutral-300">
               <i data-lucide="clock-9" class="h-4 w-4"></i>
-              Adaptive TTL
+              Configurable TTL
+              <span class="ml-auto text-[10px] text-emerald-400 font-semibold">LIVE</span>
             </div>
-            <p class="mt-2 text-sm text-neutral-400">Auto-tunes TTLs based on traffic patterns and invalidates on provider changes.</p>
+            <p class="mt-2 text-sm text-neutral-400">Custom TTLs per request (default 7 days) with manual invalidation.</p>
           </div>
-          <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+          <div class="rounded-xl ring-1 ring-emerald-500/30 bg-emerald-500/5 p-5">
             <div class="flex items-center gap-2 text-sm text-neutral-300">
               <i data-lucide="file-search" class="h-4 w-4"></i>
-              Full observability
+              Real-time analytics
+              <span class="ml-auto text-[10px] text-emerald-400 font-semibold">LIVE</span>
             </div>
-            <p class="mt-2 text-sm text-neutral-400">Hit rate, latency, spend, and per-key analytics with export to your data stack.</p>
+            <p class="mt-2 text-sm text-neutral-400">Hit rate, cost savings, and per-user metrics via admin dashboard.</p>
           </div>
-          <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+          <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5 opacity-60">
             <div class="flex items-center gap-2 text-sm text-neutral-300">
               <i data-lucide="lock" class="h-4 w-4"></i>
-              Privacy-first
+              PII scrubbing
+              <span class="ml-auto text-[10px] text-indigo-400 font-semibold">Q2 2025</span>
             </div>
-            <p class="mt-2 text-sm text-neutral-400">PII scrubbing and encryption at rest; enterprise controls for compliance.</p>
+            <p class="mt-2 text-sm text-neutral-400">Automatic PII detection and redaction for sensitive workloads.</p>
           </div>
         </div>
       </div>
@@ -589,8 +595,8 @@ curl -X POST https://agentcache.ai/api/moonshot \
           <div class="text-xs text-neutral-400">per month + usage</div>
           <ul class="mt-4 space-y-2 text-sm text-neutral-300">
             <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> 5M cached tokens</li>
-            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> Custom domains</li>
-            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> Analytics & alerts</li>
+            <li class="flex gap-2"><i data-lucide="clock" class="h-4 w-4 text-indigo-400"></i> <span class="text-neutral-400">Custom domains (Q1)</span></li>
+            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> Analytics dashboard</li>
           </ul>
           <a href="#signup" class="mt-6 inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm bg-indigo-500 text-white hover:bg-indigo-400 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 transition">Start Pro</a>
         </div>
@@ -604,12 +610,74 @@ curl -X POST https://agentcache.ai/api/moonshot \
           <div class="mt-4 text-3xl font-semibold tracking-tight">Custom</div>
           <div class="text-xs text-neutral-400">annual</div>
           <ul class="mt-4 space-y-2 text-sm text-neutral-300">
-            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> Dedicated region & SLA</li>
-            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> SSO/SAML & SCIM</li>
-            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> VPC peering</li>
+            <li class="flex gap-2"><i data-lucide="clock" class="h-4 w-4 text-indigo-400"></i> <span class="text-neutral-400">Dedicated region & SLA (Q2)</span></li>
+            <li class="flex gap-2"><i data-lucide="clock" class="h-4 w-4 text-indigo-400"></i> <span class="text-neutral-400">SSO/SAML & SCIM (Q2)</span></li>
+            <li class="flex gap-2"><i data-lucide="clock" class="h-4 w-4 text-indigo-400"></i> <span class="text-neutral-400">VPC peering (Q2)</span></li>
           </ul>
           <a href="#contact" class="mt-6 inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm ring-1 ring-white/10 hover:bg-white/5 hover:ring-white/20 transition">Contact sales</a>
         </div>
+      </div>
+    </section>
+
+    <!-- Roadmap -->
+    <section class="mx-auto max-w-7xl px-6 py-12 sm:py-16">
+      <div class="text-center mb-8">
+        <h3 class="text-2xl sm:text-3xl font-semibold tracking-tight">Public Roadmap</h3>
+        <p class="mt-2 text-sm text-neutral-400">Transparent development - shipping based on user feedback</p>
+      </div>
+      
+      <div class="grid md:grid-cols-3 gap-6">
+        <!-- Live Now -->
+        <div class="rounded-xl ring-1 ring-emerald-500/30 bg-emerald-500/5 p-6">
+          <div class="inline-flex items-center gap-2 text-sm font-semibold text-emerald-400 mb-4">
+            <i data-lucide="check-circle" class="h-4 w-4"></i>
+            Live Now
+          </div>
+          <ul class="space-y-2 text-sm text-neutral-300">
+            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> NPM package published</li>
+            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> Moonshot AI integration</li>
+            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> Real-time analytics dashboard</li>
+            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> Namespace multi-tenancy</li>
+            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> Webhook notifications</li>
+            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> Rate limiting & quotas</li>
+          </ul>
+        </div>
+        
+        <!-- Q1 2025 -->
+        <div class="rounded-xl ring-1 ring-indigo-500/30 bg-indigo-500/5 p-6">
+          <div class="inline-flex items-center gap-2 text-sm font-semibold text-indigo-400 mb-4">
+            <i data-lucide="clock" class="h-4 w-4"></i>
+            Q1 2025
+          </div>
+          <ul class="space-y-2 text-sm text-neutral-300">
+            <li class="flex gap-2"><i data-lucide="zap" class="h-4 w-4 text-indigo-400"></i> Streaming support (SSE)</li>
+            <li class="flex gap-2"><i data-lucide="tag" class="h-4 w-4 text-indigo-400"></i> Tag-based cache purging</li>
+            <li class="flex gap-2"><i data-lucide="credit-card" class="h-4 w-4 text-indigo-400"></i> Stripe billing (at 50 users)</li>
+            <li class="flex gap-2"><i data-lucide="globe" class="h-4 w-4 text-indigo-400"></i> Custom domains</li>
+            <li class="flex gap-2="><i data-lucide="key" class="h-4 w-4 text-indigo-400"></i> User dashboard & API keys</li>
+            <li class="flex gap-2"><i data-lucide="file-code" class="h-4 w-4 text-indigo-400"></i> Python SDK</li>
+          </ul>
+        </div>
+        
+        <!-- Q2 2025 -->
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6">
+          <div class="inline-flex items-center gap-2 text-sm font-semibold text-neutral-400 mb-4">
+            <i data-lucide="calendar" class="h-4 w-4"></i>
+            Q2 2025
+          </div>
+          <ul class="space-y-2 text-sm text-neutral-300">
+            <li class="flex gap-2"><i data-lucide="shield" class="h-4 w-4 text-neutral-400"></i> PII scrubbing & redaction</li>
+            <li class="flex gap-2"><i data-lucide="server" class="h-4 w-4 text-neutral-400"></i> Self-hosted option</li>
+            <li class="flex gap-2"><i data-lucide="lock" class="h-4 w-4 text-neutral-400"></i> SSO/SAML authentication</li>
+            <li class="flex gap-2"><i data-lucide="download" class="h-4 w-4 text-neutral-400"></i> Data export & backup</li>
+            <li class="flex gap-2"><i data-lucide="activity" class="h-4 w-4 text-neutral-400"></i> Adaptive TTL & smart caching</li>
+            <li class="flex gap-2"><i data-lucide="terminal" class="h-4 w-4 text-neutral-400"></i> Go SDK</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="mt-6 text-center">
+        <p class="text-xs text-neutral-500">Want to influence the roadmap? <a href="#signup" class="text-indigo-400 hover:text-indigo-300 underline underline-offset-2">Join early access</a> and share your feedback.</p>
       </div>
     </section>
 
@@ -622,28 +690,28 @@ curl -X POST https://agentcache.ai/api/moonshot \
             <i data-lucide="help-circle" class="h-4 w-4"></i>
             How do you avoid stale cache entries?
           </div>
-          <p class="mt-2 text-sm text-neutral-400">We version keys with provider model IDs and parameters. TTLs can be set per-call, per-tag, or globally. You can also purge by tag or key via the API.</p>
+          <p class="mt-2 text-sm text-neutral-400">Keys include provider, model, and parameters in the hash. TTLs can be set per request (default 7 days). Tag-based purging coming Q1 2025.</p>
         </div>
         <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
           <div class="flex items-center gap-2 text-sm font-semibold">
             <i data-lucide="shield" class="h-4 w-4"></i>
             Is my data secure?
           </div>
-          <p class="mt-2 text-sm text-neutral-400">All entries are encrypted at rest with server-side keys, with optional customer-managed keys. PII scrubbing is available for sensitive workloads.</p>
+          <p class="mt-2 text-sm text-neutral-400">All entries are encrypted at rest by Upstash Redis (TLS in transit, AES-256 at rest). PII scrubbing and customer-managed keys coming Q2 2025.</p>
         </div>
         <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
           <div class="flex items-center gap-2 text-sm font-semibold">
             <i data-lucide="link" class="h-4 w-4"></i>
             Which providers do you support?
           </div>
-          <p class="mt-2 text-sm text-neutral-400">Any HTTP-based LLM API. First-class SDK helpers for OpenAI, Anthropic, and Claude models, with generic adapters for others.</p>
+          <p class="mt-2 text-sm text-neutral-400">Any LLM provider - OpenAI, Anthropic, Claude tested. Moonshot AI (Kimi K2) has dedicated reasoning caching. Bring your own API keys.</p>
         </div>
         <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
           <div class="flex items-center gap-2 text-sm font-semibold">
             <i data-lucide="construction" class="h-4 w-4"></i>
-            What about tools and function calls?
+            What about function calling and tools?
           </div>
-          <p class="mt-2 text-sm text-neutral-400">Tools/functions are part of the cache key. You can also attach custom key material for RAG inputs or retrieval ids.</p>
+          <p class="mt-2 text-sm text-neutral-400">Include tools/functions in your messages array - they'll be part of the cache key. Custom key material for RAG coming Q1 2025.</p>
         </div>
       </div>
     </section>
