@@ -122,8 +122,16 @@ export default async function handler(req) {
 
     if (req.method === 'POST' && req.url.endsWith('/set')) {
       if (typeof response !== 'string') return json({ error: 'response (string) is required' }, 400);
-      await upstash([["SETEX", cacheKey, ttl, response]]);
-      if (authn.kind === 'live') await upstash([["HINCRBY", `usage:${authn.hash}`, "misses", 1]]);
+      const today = new Date().toISOString().slice(0, 10);
+      const commands = [
+        ["SETEX", cacheKey, ttl, response],
+        ["INCR", `stats:global:misses:d:${today}`],
+        ["EXPIRE", `stats:global:misses:d:${today}`, 60*60*24*7]
+      ];
+      if (authn.kind === 'live') {
+        commands.push(["HINCRBY", `usage:${authn.hash}`, "misses", 1]);
+      }
+      await upstash(commands);
       return json({ success: true, key: cacheKey.slice(-16), ttl });
     }
 
@@ -134,7 +142,20 @@ export default async function handler(req) {
       });
       if (!res.ok) return json({ hit: false }, 404);
       const text = await res.text();
-      if (authn.kind === 'live') await upstash([["HINCRBY", `usage:${authn.hash}`, "hits", 1]]);
+      
+      // Track global stats and estimate tokens (rough: ~4 chars = 1 token)
+      const today = new Date().toISOString().slice(0, 10);
+      const estimatedTokens = Math.floor(text.length / 4);
+      const commands = [
+        ["INCR", `stats:global:hits:d:${today}`],
+        ["EXPIRE", `stats:global:hits:d:${today}`, 60*60*24*7],
+        ["INCRBY", `stats:global:tokens:d:${today}`, estimatedTokens],
+        ["EXPIRE", `stats:global:tokens:d:${today}`, 60*60*24*7]
+      ];
+      if (authn.kind === 'live') {
+        commands.push(["HINCRBY", `usage:${authn.hash}`, "hits", 1]);
+      }
+      await upstash(commands);
       return json({ hit: !!text, response: text });
     }
 

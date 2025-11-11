@@ -68,6 +68,7 @@ export default async function handler(req) {
     const suffix = plainKey.slice(-6);
 
     // Promote to active + store key metadata
+    const nowSec = Math.floor(Date.now()/1000);
     const pipeline = await fetch(url, {
       method: 'POST',
       headers: { Authorization: `Bearer ${auth}`, 'content-type': 'application/json' },
@@ -79,7 +80,11 @@ export default async function handler(req) {
           ['HSET', `subscriber:${email}`, 'status', 'active', 'verifiedAt', now, 'apiKeyHash', hash, 'apiKeySuffix', suffix, 'plan', 'free', 'monthlyQuota', '1000'],
           ['SADD', 'keys:active', hash],
           ['HSET', `key:${hash}`, 'email', email, 'createdAt', now],
-          ['HSET', `usage:${hash}`, 'plan', 'free', 'monthlyQuota', '1000']
+          ['HSET', `usage:${hash}`, 'plan', 'free', 'monthlyQuota', '1000'],
+          // schedule drips at 0,2,5 day marks
+          ['ZADD', 'drip:0', nowSec, email],
+          ['ZADD', 'drip:2', nowSec + 2*86400, email],
+          ['ZADD', 'drip:5', nowSec + 5*86400, email]
         ],
       }),
     });
