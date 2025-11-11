@@ -106,18 +106,18 @@
       <div class="mx-auto max-w-7xl px-6 pt-16 pb-8 sm:pt-24 sm:pb-12">
         <div class="grid lg:grid-cols-12 gap-12 items-center">
           <div class="lg:col-span-6 xl:col-span-5">
-            <div class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-neutral-300">
-              <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-indigo-500/20 ring-1 ring-white/10">
-                <i data-lucide="zap" class="h-3.5 w-3.5"></i>
+            <div class="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-xs text-emerald-300">
+              <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/20 ring-1 ring-emerald-500/30">
+                <i data-lucide="package" class="h-3.5 w-3.5"></i>
               </span>
-              Edge caching for AI APIs
+              ✅ NEW: npm install agentcache-client
             </div>
             <h1 class="mt-5 text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-white">
               Edge caching for AI APIs.
               <span class="text-neutral-300">10x faster, 90% cheaper.</span>
             </h1>
             <p class="mt-5 text-base sm:text-lg text-neutral-300 leading-relaxed">
-              REST API for caching AI responses. Works with OpenAI, Anthropic, Claude, and Moonshot AI. Cache identical prompts at the edge, reuse responses instantly, and save thousands per month. No SDK required—just HTTP.
+              NPM package and REST API for caching AI responses. Works with OpenAI, Anthropic, Claude, and Moonshot AI. Cache identical prompts at the edge, reuse responses instantly, and save thousands per month. Install in 30 seconds.
             </p>
             <div class="mt-8 flex flex-col sm:flex-row gap-3">
               <a href="#signup" class="inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold tracking-tight bg-white text-neutral-900 hover:bg-neutral-200 hover:scale-105 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-all">
@@ -176,47 +176,45 @@
               <!-- Code panes -->
               <div class="p-4">
                 <pre id="pane-js" class="peer-checked/tab-js:block hidden text-sm leading-6 overflow-x-auto rounded-lg bg-black/60 ring-1 ring-white/10 p-4"><code class="text-neutral-200">
-// REST API - works now, no installation needed
-const apiKey = 'ac_demo_test123'; // Get yours at agentcache.ai
+// 1) Install
+// npm install agentcache-client
+import { AgentCache } from 'agentcache-client';
 
-// 1) Check cache first
-const cached = await fetch('https://agentcache.ai/api/cache/get', {
-  method: 'POST',
-  headers: {
-    'X-API-Key': apiKey,
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    provider: 'openai',
-    model: 'gpt-4',
-    messages: [{ role: 'user', content: 'Explain quantum computing' }]
-  })
+const cache = new AgentCache('ac_demo_test123');
+
+// 2) Check cache before calling your LLM
+const result = await cache.get({
+  provider: 'openai',
+  model: 'gpt-4',
+  messages: [
+    { role: 'system', content: 'You are a helpful assistant' },
+    { role: 'user', content: 'Explain quantum computing' }
+  ]
 });
 
-const data = await cached.json();
-if (data.hit) {
-  console.log('✅ Cache hit!', data.latency_ms + 'ms');
-  return data.response;
+if (result.hit) {
+  console.log('✅ Cache hit!', result.latency_ms + 'ms');
+  return result.response; // Instant!
 }
 
-// 2) Cache miss - call OpenAI and store
-const response = await callYourLLM(); // Your existing code
-await fetch('https://agentcache.ai/api/cache/set', {
-  method: 'POST',
-  headers: { 'X-API-Key': apiKey, 'Content-Type': 'application/json' },
-  body: JSON.stringify({ provider: 'openai', model: 'gpt-4', messages: [...], response })
+// 3) Cache miss - call your LLM and store
+const llmResponse = await openai.chat.completions.create({...});
+await cache.set({
+  provider: 'openai',
+  model: 'gpt-4',
+  messages: [...],
+  response: llmResponse.choices[0].message.content
 });
                 </code></pre>
 
                 <pre id="pane-py" class="peer-checked/tab-py:block hidden text-sm leading-6 overflow-x-auto rounded-lg bg-black/60 ring-1 ring-white/10 p-4"><code class="text-neutral-200">
-# Python - REST API using requests
+# Python SDK coming soon! For now, use REST API:
 import requests
 
 API_KEY = 'ac_demo_test123'  # Get yours at agentcache.ai
-BASE_URL = 'https://agentcache.ai'
 
-# 1) Check cache
-response = requests.post(f'{BASE_URL}/api/cache/get', 
+# Check cache
+response = requests.post('https://agentcache.ai/api/cache/get',
     headers={'X-API-Key': API_KEY, 'Content-Type': 'application/json'},
     json={
         'provider': 'openai',
@@ -228,14 +226,21 @@ response = requests.post(f'{BASE_URL}/api/cache/get',
 data = response.json()
 if data.get('hit'):
     print(f"✅ Cache hit! {data['latency_ms']}ms")
-    print(data['response'])
-else:
-    # Cache miss - call your LLM and store
-    llm_response = call_your_llm()  # Your existing code
-    requests.post(f'{BASE_URL}/api/cache/set',
-        headers={'X-API-Key': API_KEY, 'Content-Type': 'application/json'},
-        json={'provider': 'openai', 'model': 'gpt-4', 'messages': [...], 'response': llm_response}
-    )
+    return data['response']
+
+# Cache miss - call your LLM
+from openai import OpenAI
+client = OpenAI()
+completion = client.chat.completions.create(
+    model='gpt-4',
+    messages=[{'role': 'user', 'content': 'What is Python?'}]
+)
+
+# Store in cache
+requests.post('https://agentcache.ai/api/cache/set',
+    headers={'X-API-Key': API_KEY, 'Content-Type': 'application/json'},
+    json={'provider': 'openai', 'model': 'gpt-4', 'messages': [...], 'response': completion.choices[0].message.content}
+)
                 </code></pre>
 
                 <pre id="pane-edge" class="peer-checked/tab-edge:block hidden text-sm leading-6 overflow-x-auto rounded-lg bg-black/60 ring-1 ring-white/10 p-4"><code class="text-neutral-200">
