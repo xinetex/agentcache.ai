@@ -3,59 +3,315 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>AgentCache.ai Docs</title>
+  <title>Documentation - AgentCache.ai</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+  </style>
 </head>
 <body class="bg-neutral-950 text-neutral-100 antialiased">
-  <main class="mx-auto max-w-3xl px-6 py-12">
-    <a href="/" class="text-sm text-neutral-400">← Back</a>
-    <h1 class="mt-3 text-4xl font-semibold tracking-tight">AgentCache.ai Documentation</h1>
-    <p class="mt-2 text-neutral-300">Save 90% on AI API costs in 5 lines.</p>
+  <!-- Header -->
+  <header class="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/70 bg-neutral-950/60 border-b border-white/10">
+    <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-8 w-8 grid place-content-center rounded-md bg-white/5 ring-1 ring-white/10">
+          <span class="text-sm font-semibold">AC</span>
+        </div>
+        <span class="text-sm font-semibold">AgentCache<span class="text-neutral-400">.ai</span></span>
+      </div>
+      <a href="/" class="text-sm text-neutral-400 hover:text-white">← Back to Home</a>
+    </div>
+  </header>
 
-    <section class="mt-8 space-y-6">
-      <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
-        <h2 class="text-xl font-semibold">Node Quickstart</h2>
-        <pre class="mt-3 rounded-md bg-black/60 p-4 ring-1 ring-white/10 text-sm overflow-x-auto"><code>POST /api/cache/get
-POST /api/cache/set
+  <div class="mx-auto max-w-7xl px-6 py-12">
+    <div class="grid lg:grid-cols-[240px_1fr] gap-12">
+      <!-- Sidebar Nav -->
+      <nav class="space-y-1 lg:sticky lg:top-24 lg:self-start">
+        <div class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Documentation</div>
+        <a href="#quickstart" class="block px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-md">Quick Start</a>
+        <a href="#npm" class="block px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-md">NPM Package</a>
+        <a href="#rest-api" class="block px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-md">REST API</a>
+        <a href="#moonshot" class="block px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-md">Moonshot AI</a>
+        <a href="#namespaces" class="block px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-md">Namespaces</a>
+        <a href="#webhooks" class="block px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-md">Webhooks</a>
+        <a href="#use-cases" class="block px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-md">Use Cases</a>
+        <a href="#auth" class="block px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-md">Authentication</a>
+      </nav>
 
-// Get (check cache)
-fetch('/api/cache/get', {
-  method: 'POST', headers: { 'content-type': 'application/json', 'X-API-Key': 'ac_demo_test123' },
-  body: JSON.stringify({
-    provider: 'openai',
-    model: 'gpt-4',
-    messages: [{ role: 'user', content: 'Explain Python' }]
-  })
+      <!-- Main Content -->
+      <main class="max-w-none space-y-12">
+        <div>
+          <h1 class="text-4xl font-semibold tracking-tight">Documentation</h1>
+          <p class="text-lg text-neutral-300 mt-3">Complete guide to integrating AgentCache.ai into your AI applications.</p>
+        </div>
+
+        <!-- Quick Start -->
+        <section id="quickstart">
+          <h2 class="text-2xl font-semibold tracking-tight flex items-center gap-2">
+            <i data-lucide="zap" class="h-6 w-6"></i>
+            Quick Start
+          </h2>
+          <p class="text-neutral-300 mt-3">Get started in 30 seconds with our NPM package or REST API.</p>
+          
+          <div class="mt-6 rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6">
+            <h3 class="text-lg font-semibold">Install</h3>
+            <pre class="mt-3 rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto"><code>npm install agentcache-client</code></pre>
+            
+            <h3 class="text-lg font-semibold mt-6">Use</h3>
+            <pre class="mt-3 rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto text-sm"><code>import { AgentCache } from 'agentcache-client';
+
+const cache = new AgentCache('ac_demo_test123');
+
+// Check cache before calling LLM
+const result = await cache.get({
+  provider: 'openai',
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: 'Hello' }]
 });
 
-// Set (store response)
-fetch('/api/cache/set', {
-  method: 'POST', headers: { 'content-type': 'application/json', 'X-API-Key': 'ac_demo_test123' },
-  body: JSON.stringify({
-    provider: 'openai',
-    model: 'gpt-4',
-    messages: [{ role: 'user', content: 'Explain Python' }],
-    response: 'Python is a programming language...'
-  })
-});
-</code></pre>
-      </div>
+if (result.hit) {
+  console.log('✅ Cache hit!', result.latency_ms + 'ms');
+  return result.response; // Instant!
+}
 
-      <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
-        <h2 class="text-xl font-semibold">API Endpoints</h2>
-        <ul class="mt-3 list-disc pl-6 text-neutral-300 text-sm">
-          <li>POST <code class="text-neutral-400">/api/cache/get</code> → { hit, response? }</li>
-          <li>POST <code class="text-neutral-400">/api/cache/set</code> → { success }</li>
-          <li>POST <code class="text-neutral-400">/api/cache/check</code> → { cached, ttl }</li>
-          <li>GET <code class="text-neutral-400">/api/health</code> → { status: 'healthy' }</li>
-        </ul>
-      </div>
+// Cache miss - call your LLM
+const llmResponse = await openai.chat.completions.create({...});
 
-      <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
-        <h2 class="text-xl font-semibold">Auth</h2>
-        <p class="mt-2 text-neutral-300">Use the demo API key to test: <code class="text-neutral-400">ac_demo_test123</code>. Full accounts coming soon.</p>
-      </div>
-    </section>
-  </main>
+// Store for next time
+await cache.set({
+  provider: 'openai',
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: 'Hello' }],
+  response: llmResponse.choices[0].message.content
+});</code></pre>
+          </div>
+        </section>
+
+        <!-- NPM Package -->
+        <section id="npm">
+          <h2 class="text-2xl font-semibold tracking-tight flex items-center gap-2">
+            <i data-lucide="package" class="h-6 w-6"></i>
+            NPM Package
+          </h2>
+          <p class="text-neutral-300 mt-3">TypeScript SDK with full type safety.</p>
+
+          <div class="mt-6 space-y-6">
+            <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6">
+              <h3 class="text-lg font-semibold">Installation</h3>
+              <pre class="mt-3 rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto"><code>npm install agentcache-client</code></pre>
+            </div>
+
+            <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6">
+              <h3 class="text-lg font-semibold">Methods</h3>
+              
+              <div class="mt-4 space-y-6">
+                <div>
+                  <h4 class="text-base font-semibold text-neutral-200"><code>cache.get(options)</code></h4>
+                  <p class="text-sm text-neutral-400 mt-2">Check if response is cached</p>
+                  <pre class="mt-3 rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto text-sm"><code>const result = await cache.get({
+  provider: 'openai',
+  model: 'gpt-4',
+  messages: [...]
+});</code></pre>
+                </div>
+
+                <div>
+                  <h4 class="text-base font-semibold text-neutral-200"><code>cache.set(options)</code></h4>
+                  <p class="text-sm text-neutral-400 mt-2">Store LLM response in cache</p>
+                  <pre class="mt-3 rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto text-sm"><code>await cache.set({
+  provider: 'openai',
+  model: 'gpt-4',
+  messages: [...],
+  response: 'LLM response'
+});</code></pre>
+                </div>
+
+                <div>
+                  <h4 class="text-base font-semibold text-neutral-200"><code>cache.moonshot(options)</code></h4>
+                  <p class="text-sm text-neutral-400 mt-2">Call Moonshot AI with reasoning caching</p>
+                  <pre class="mt-3 rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto text-sm"><code>const result = await cache.moonshot({
+  model: 'moonshot-v1-128k',
+  messages: [...],
+  cache_reasoning: true
+});</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- REST API -->
+        <section id="rest-api">
+          <h2 class="text-2xl font-semibold tracking-tight flex items-center gap-2">
+            <i data-lucide="code" class="h-6 w-6"></i>
+            REST API
+          </h2>
+          <p class="text-neutral-300 mt-3">Direct HTTP API for any language.</p>
+
+          <div class="mt-6 space-y-6">
+            <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6">
+              <h3 class="text-lg font-semibold">POST /api/cache/get</h3>
+              <pre class="mt-3 rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto text-sm"><code>curl -X POST https://agentcache.ai/api/cache/get \
+  -H "X-API-Key: ac_demo_test123" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider": "openai",
+    "model": "gpt-4",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'</code></pre>
+            </div>
+
+            <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6">
+              <h3 class="text-lg font-semibold">POST /api/cache/set</h3>
+              <pre class="mt-3 rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto text-sm"><code>curl -X POST https://agentcache.ai/api/cache/set \
+  -H "X-API-Key: ac_demo_test123" \
+  -d '{
+    "provider": "openai",
+    "model": "gpt-4",
+    "messages": [...],
+    "response": "LLM response"
+  }'</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- Moonshot AI -->
+        <section id="moonshot">
+          <h2 class="text-2xl font-semibold tracking-tight flex items-center gap-2">
+            <i data-lucide="sparkles" class="h-6 w-6"></i>
+            Moonshot AI (Kimi K2)
+          </h2>
+          <p class="text-neutral-300 mt-3">Reasoning token caching - 98% cost savings on complex queries.</p>
+
+          <div class="mt-6 rounded-xl ring-1 ring-indigo-500/30 bg-indigo-500/5 p-6">
+            <pre class="rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto text-sm"><code>curl -X POST https://agentcache.ai/api/moonshot \
+  -H "X-API-Key: ac_demo_test123" \
+  -d '{
+    "model": "moonshot-v1-128k",
+    "messages": [...],
+    "cache_reasoning": true
+  }'</code></pre>
+            
+            <div class="mt-4 grid grid-cols-2 gap-4 text-sm">
+              <div class="rounded-lg bg-white/5 p-3">
+                <div class="text-xs text-neutral-400">Without Cache</div>
+                <div class="text-lg font-semibold">$405/mo</div>
+              </div>
+              <div class="rounded-lg bg-emerald-500/10 ring-1 ring-emerald-500/30 p-3">
+                <div class="text-xs text-emerald-200">With Cache</div>
+                <div class="text-lg font-semibold">$8.10/mo</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Namespaces -->
+        <section id="namespaces">
+          <h2 class="text-2xl font-semibold tracking-tight flex items-center gap-2">
+            <i data-lucide="layers" class="h-6 w-6"></i>
+            Namespaces
+          </h2>
+          <p class="text-neutral-300 mt-3">Multi-tenant cache isolation.</p>
+
+          <div class="mt-6 rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6">
+            <pre class="rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto text-sm"><code>curl -H "X-Cache-Namespace: customer_abc" ...</code></pre>
+            <p class="mt-3 text-sm text-neutral-400">Each namespace gets isolated cache. Perfect for multi-tenant platforms.</p>
+          </div>
+        </section>
+
+        <!-- Webhooks -->
+        <section id="webhooks">
+          <h2 class="text-2xl font-semibold tracking-tight flex items-center gap-2">
+            <i data-lucide="webhook" class="h-6 w-6"></i>
+            Webhooks
+          </h2>
+          <p class="text-neutral-300 mt-3">Get notified about quota and cache events.</p>
+
+          <div class="mt-6 rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6">
+            <h3 class="text-base font-semibold">Events</h3>
+            <ul class="mt-3 space-y-2 text-sm text-neutral-300">
+              <li><code>quota.warning</code> - 80% usage</li>
+              <li><code>quota.exceeded</code> - Quota exceeded</li>
+              <li><code>reasoning.cached</code> - Moonshot reasoning cached</li>
+              <li><code>reasoning.reused</code> - Reasoning reused</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- Use Cases -->
+        <section id="use-cases">
+          <h2 class="text-2xl font-semibold tracking-tight flex items-center gap-2">
+            <i data-lucide="lightbulb" class="h-6 w-6"></i>
+            Use Cases
+          </h2>
+
+          <div class="mt-6 grid md:grid-cols-2 gap-4">
+            <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+              <div class="font-semibold text-emerald-400">FAQ Bots</div>
+              <p class="mt-2 text-sm text-neutral-400">95%+ hit rate on common questions</p>
+            </div>
+            <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+              <div class="font-semibold text-indigo-400">Code Review</div>
+              <p class="mt-2 text-sm text-neutral-400">98% cost reduction with reasoning cache</p>
+            </div>
+            <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+              <div class="font-semibold text-purple-400">Multi-Tenant Platforms</div>
+              <p class="mt-2 text-sm text-neutral-400">Namespace isolation per customer</p>
+            </div>
+            <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+              <div class="font-semibold text-pink-400">Robotics</div>
+              <p class="mt-2 text-sm text-neutral-400">Sub-50ms vision model inference</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Authentication -->
+        <section id="auth">
+          <h2 class="text-2xl font-semibold tracking-tight flex items-center gap-2">
+            <i data-lucide="key" class="h-6 w-6"></i>
+            Authentication
+          </h2>
+
+          <div class="mt-6 space-y-6">
+            <div class="rounded-xl ring-1 ring-emerald-500/30 bg-emerald-500/5 p-6">
+              <h3 class="text-lg font-semibold">Demo Key</h3>
+              <pre class="mt-3 rounded-lg bg-black/60 ring-1 ring-white/10 p-4"><code>ac_demo_test123</code></pre>
+              <p class="mt-2 text-sm text-neutral-400">100 requests/min, shared cache</p>
+            </div>
+
+            <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6">
+              <h3 class="text-lg font-semibold">Live Keys</h3>
+              <p class="text-sm text-neutral-400 mt-2">Sign up for 500 req/min, private cache, webhooks</p>
+              <a href="/#signup" class="mt-4 inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold bg-indigo-500 text-white hover:bg-indigo-400">
+                Sign up free
+                <i data-lucide="arrow-right" class="h-4 w-4"></i>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="rounded-2xl ring-1 ring-indigo-500/30 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 p-8 text-center">
+          <h3 class="text-2xl font-semibold">Ready to get started?</h3>
+          <p class="mt-2 text-neutral-300">Install the NPM package or try with demo key</p>
+          <div class="mt-6 flex items-center justify-center gap-3">
+            <a href="/#signup" class="inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold bg-white text-neutral-900 hover:bg-neutral-200">
+              <i data-lucide="rocket" class="h-4 w-4"></i>
+              Get API Key
+            </a>
+            <a href="https://github.com/xinetex/agentcache.ai" class="inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-sm text-neutral-200 ring-1 ring-white/10 hover:bg-white/5">
+              <i data-lucide="github" class="h-4 w-4"></i>
+              GitHub
+            </a>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    if (window.lucide) window.lucide.createIcons({ attrs: { "stroke-width": 1.5 } });
+  </script>
 </body>
 </html>
