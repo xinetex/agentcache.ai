@@ -85,7 +85,39 @@ export default async function handler(req) {
       const quota = (await quotaRes.text()) || '1000';
       const inc = await upstash([["INCR", usageKey],["EXPIRE",usageKey,60*60*24*40]]);
       const count = Array.isArray(inc) ? inc[0]?.result ?? 0 : inc.result ?? 0;
-      if (Number(count) > Number(quota)) return json({ error:'Monthly quota exceeded', quota:Number(quota), used:Number(count) }, 429);
+      
+      // Check for quota warnings (80%, 90%, 100%)
+      const quotaPercent = (Number(count) / Number(quota)) * 100;
+      if (quotaPercent >= 80 && quotaPercent < 81) {
+        // Trigger webhook: quota.warning at 80%
+        try {
+          await fetch(`${new URL(req.url).origin}/api/webhooks/trigger`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', 'x-internal-trigger': 'true' },
+            body: JSON.stringify({
+              hash: authn.hash,
+              event: 'quota.warning',
+              data: { quota: Number(quota), used: Number(count), remaining: Number(quota) - Number(count), percent: quotaPercent }
+            })
+          }).catch(() => {}); // Fire-and-forget
+        } catch (e) {}
+      }
+      
+      if (Number(count) > Number(quota)) {
+        // Trigger webhook: quota.exceeded
+        try {
+          await fetch(`${new URL(req.url).origin}/api/webhooks/trigger`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', 'x-internal-trigger': 'true' },
+            body: JSON.stringify({
+              hash: authn.hash,
+              event: 'quota.exceeded',
+              data: { quota: Number(quota), used: Number(count) }
+            })
+          }).catch(() => {});
+        } catch (e) {}
+        return json({ error:'Monthly quota exceeded', quota:Number(quota), used:Number(count) }, 429);
+      }
     }
 
     if (req.method === 'POST' && req.url.endsWith('/set')) {
