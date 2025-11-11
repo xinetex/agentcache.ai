@@ -6,8 +6,68 @@
     <title>AgentCache.ai — Edge caching for AI API calls</title>
     <meta name="description" content="AgentCache.ai is an edge caching layer for AI API calls. Drop in 5 lines of code to reduce AI costs by up to 90% and make responses 10x faster." />
     <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+      
+      @keyframes shimmer {
+        0% { background-position: -1000px 0; }
+        100% { background-position: 1000px 0; }
+      }
+      
+      .animate-fadeInUp {
+        animation: fadeInUp 0.6s ease-out;
+      }
+      
+      .hover-lift {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      
+      .hover-lift:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+      }
+      
+      .code-shimmer {
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          rgba(139, 92, 246, 0.1) 50%,
+          transparent 100%
+        );
+        background-size: 2000px 100%;
+        animation: shimmer 3s infinite;
+      }
+      
+      /* Smooth scroll */
+      html {
+        scroll-behavior: smooth;
+      }
+      
+      /* Button hover glow */
+      button, a[class*="bg-"] {
+        transition: all 0.3s ease;
+      }
+      
+      button:hover, a[class*="bg-"]:hover {
+        filter: brightness(1.1);
+      }
+    </style>
+  </head>
   <body class="bg-neutral-950 text-neutral-100 antialiased selection:bg-indigo-500/30 selection:text-white">
     <!-- Top Nav -->
     <header class="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/70 bg-neutral-950/60 border-b border-white/10">
@@ -60,11 +120,11 @@
               REST API for caching AI responses. Works with OpenAI, Anthropic, Claude, and Moonshot AI. Cache identical prompts at the edge, reuse responses instantly, and save thousands per month. No SDK required—just HTTP.
             </p>
             <div class="mt-8 flex flex-col sm:flex-row gap-3">
-              <a href="#signup" class="inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold tracking-tight bg-white text-neutral-900 hover:bg-neutral-200 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors">
+              <a href="#signup" class="inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold tracking-tight bg-white text-neutral-900 hover:bg-neutral-200 hover:scale-105 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-all">
                 <i data-lucide="rocket" class="h-4 w-4"></i>
                 Get API key
               </a>
-              <a href="#code" class="inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm text-neutral-200 ring-1 ring-white/10 hover:bg-white/5 hover:ring-white/20 transition-colors">
+              <a href="#code" onclick="document.getElementById('tab-edge').checked=true; document.getElementById('tab-edge').scrollIntoView({behavior:'smooth',block:'center'});" class="inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm text-neutral-200 ring-1 ring-white/10 hover:bg-white/5 hover:ring-white/20 hover:scale-105 transition-all cursor-pointer">
                 <i data-lucide="code" class="h-4 w-4"></i>
                 Try with cURL
               </a>
@@ -87,7 +147,7 @@
 
           <!-- Code Card -->
           <div id="code" class="lg:col-span-6 xl:col-span-7">
-            <div class="relative rounded-xl border border-white/10 bg-gradient-to-b from-white/5 to-white/[0.03] shadow-2xl shadow-black/30">
+            <div class="relative rounded-xl border border-white/10 bg-gradient-to-b from-white/5 to-white/[0.03] shadow-2xl shadow-black/30 hover-lift code-shimmer">
               <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
                 <div class="flex items-center gap-2 text-xs text-neutral-300">
                   <span class="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500/80 ring-2 ring-emerald-500/30"></span>
@@ -257,21 +317,27 @@ curl -X POST https://agentcache.ai/api/moonshot \
     </section>
 
     <!-- Metrics -->
-    <section class="mx-auto max-w-7xl px-6 py-12 sm:py-16">
+    <section id="metrics" class="mx-auto max-w-7xl px-6 py-12 sm:py-16">
       <div class="grid sm:grid-cols-3 gap-4">
-        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5 hover-lift">
           <div class="text-sm text-neutral-400">Cost savings</div>
-          <div class="mt-2 text-3xl font-semibold tracking-tight">Up to 90%</div>
+          <div class="mt-2 text-3xl font-semibold tracking-tight">
+            <span data-animate-number="90" data-suffix="%">0</span>
+          </div>
           <div class="mt-2 text-xs text-neutral-400">Cache identical prompts and reuse responses across your fleet.</div>
         </div>
-        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
-          <div class="text-sm text-neutral-400">Latency</div>
-          <div class="mt-2 text-3xl font-semibold tracking-tight">~10x faster</div>
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5 hover-lift">
+          <div class="text-sm text-neutral-400">Latency improvement</div>
+          <div class="mt-2 text-3xl font-semibold tracking-tight">
+            <span data-animate-number="10" data-suffix="x">0</span> faster
+          </div>
           <div class="mt-2 text-xs text-neutral-400">Global edge network with sub-50ms P95 cache hits.</div>
         </div>
-        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5 hover-lift">
           <div class="text-sm text-neutral-400">Setup time</div>
-          <div class="mt-2 text-3xl font-semibold tracking-tight">5 lines</div>
+          <div class="mt-2 text-3xl font-semibold tracking-tight">
+            <span data-animate-number="5" data-suffix=" lines">0</span>
+          </div>
           <div class="mt-2 text-xs text-neutral-400">Drop-in wrapper around your existing AI clients.</div>
         </div>
       </div>
@@ -654,8 +720,83 @@ curl -X POST https://agentcache.ai/api/moonshot \
       </div>
     </footer>
 
-    <!-- Scripts: icons + UX -->
+    <!-- Scripts: icons + UX + Animations -->
     <script>
+      // Animated gradient background
+      const canvas = document.createElement('canvas');
+      canvas.style.position = 'fixed';
+      canvas.style.top = '0';
+      canvas.style.left = '0';
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.zIndex = '-1';
+      canvas.style.opacity = '0.3';
+      canvas.style.pointerEvents = 'none';
+      document.body.insertBefore(canvas, document.body.firstChild);
+      
+      const ctx = canvas.getContext('2d');
+      let particles = [];
+      let animationId;
+      
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+      
+      class Particle {
+        constructor() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.vx = (Math.random() - 0.5) * 0.5;
+          this.vy = (Math.random() - 0.5) * 0.5;
+          this.radius = Math.random() * 2 + 1;
+        }
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+          if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+        }
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(139, 92, 246, 0.5)';
+          ctx.fill();
+        }
+      }
+      
+      for (let i = 0; i < 50; i++) {
+        particles.push(new Particle());
+      }
+      
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+          p.update();
+          p.draw();
+        });
+        // Draw connections
+        particles.forEach((p1, i) => {
+          particles.slice(i + 1).forEach(p2 => {
+            const dx = p1.x - p2.x;
+            const dy = p1.y - p2.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 100) {
+              ctx.beginPath();
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.strokeStyle = `rgba(139, 92, 246, ${0.2 * (1 - dist / 100)})`;
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
+          });
+        });
+        animationId = requestAnimationFrame(animate);
+      }
+      animate();
+      
       // Render lucide with strokeWidth 1.5
       document.addEventListener("DOMContentLoaded", () => {
         if (window.lucide) {
@@ -689,6 +830,90 @@ curl -X POST https://agentcache.ai/api/moonshot \
         // Year
         const y = document.getElementById("year");
         if (y) y.textContent = new Date().getFullYear();
+        
+        // Animated number counters
+        const animateNumber = (element, target, suffix = '', duration = 2000) => {
+          const start = 0;
+          const increment = target / (duration / 16);
+          let current = start;
+          const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+              current = target;
+              clearInterval(timer);
+            }
+            element.textContent = Math.floor(current) + suffix;
+          }, 16);
+        };
+        
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+          threshold: 0.1,
+          rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.style.opacity = '1';
+              entry.target.style.transform = 'translateY(0)';
+              
+              // Animate numbers in metrics
+              const metricsSection = entry.target.closest('#metrics');
+              if (metricsSection) {
+                const numbers = entry.target.querySelectorAll('[data-animate-number]');
+                numbers.forEach(num => {
+                  const target = parseInt(num.getAttribute('data-animate-number'));
+                  const suffix = num.getAttribute('data-suffix') || '';
+                  animateNumber(num, target, suffix);
+                });
+              }
+            }
+          });
+        }, observerOptions);
+        
+        // Observe all sections
+        document.querySelectorAll('section').forEach(section => {
+          section.style.opacity = '0';
+          section.style.transform = 'translateY(30px)';
+          section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+          observer.observe(section);
+        });
+        
+        // Make hero section visible immediately
+        const heroSection = document.querySelector('section');
+        if (heroSection) {
+          heroSection.style.opacity = '1';
+          heroSection.style.transform = 'translateY(0)';
+        }
+        
+        // Code typing animation
+        const codeBlocks = document.querySelectorAll('pre code');
+        codeBlocks.forEach(block => {
+          const originalText = block.textContent;
+          block.textContent = '';
+          let charIndex = 0;
+          
+          const typeChar = () => {
+            if (charIndex < originalText.length) {
+              block.textContent += originalText.charAt(charIndex);
+              charIndex++;
+              setTimeout(typeChar, 2); // Fast typing
+            }
+          };
+          
+          // Start typing when code block is visible
+          const codeObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                setTimeout(typeChar, 300);
+                codeObserver.disconnect();
+              }
+            });
+          }, { threshold: 0.5 });
+          
+          codeObserver.observe(block.closest('pre'));
+        });
       });
 
       // Waitlist submit
