@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>AgentCache.ai Docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-neutral-950 text-neutral-100 antialiased">
+  <main class="mx-auto max-w-3xl px-6 py-12">
+    <a href="/" class="text-sm text-neutral-400">← Back</a>
+    <h1 class="mt-3 text-4xl font-semibold tracking-tight">AgentCache.ai Documentation</h1>
+    <p class="mt-2 text-neutral-300">Save 90% on AI API costs in 5 lines.</p>
+
+    <section class="mt-8 space-y-6">
+      <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+        <h2 class="text-xl font-semibold">Node Quickstart</h2>
+        <pre class="mt-3 rounded-md bg-black/60 p-4 ring-1 ring-white/10 text-sm overflow-x-auto"><code>POST /api/cache/get
+POST /api/cache/set
+
+// Get (check cache)
+fetch('/api/cache/get', {
+  method: 'POST', headers: { 'content-type': 'application/json', 'X-API-Key': 'ac_demo_test123' },
+  body: JSON.stringify({
+    provider: 'openai',
+    model: 'gpt-4',
+    messages: [{ role: 'user', content: 'Explain Python' }]
+  })
+});
+
+// Set (store response)
+fetch('/api/cache/set', {
+  method: 'POST', headers: { 'content-type': 'application/json', 'X-API-Key': 'ac_demo_test123' },
+  body: JSON.stringify({
+    provider: 'openai',
+    model: 'gpt-4',
+    messages: [{ role: 'user', content: 'Explain Python' }],
+    response: 'Python is a programming language...'
+  })
+});
+</code></pre>
+      </div>
+
+      <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+        <h2 class="text-xl font-semibold">API Endpoints</h2>
+        <ul class="mt-3 list-disc pl-6 text-neutral-300 text-sm">
+          <li>POST <code class="text-neutral-400">/api/cache/get</code> → { hit, response? }</li>
+          <li>POST <code class="text-neutral-400">/api/cache/set</code> → { success }</li>
+          <li>POST <code class="text-neutral-400">/api/cache/check</code> → { cached, ttl }</li>
+          <li>GET <code class="text-neutral-400">/api/health</code> → { status: 'healthy' }</li>
+        </ul>
+      </div>
+
+      <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+        <h2 class="text-xl font-semibold">Auth</h2>
+        <p class="mt-2 text-neutral-300">Use the demo API key to test: <code class="text-neutral-400">ac_demo_test123</code>. Full accounts coming soon.</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
