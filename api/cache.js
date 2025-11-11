@@ -24,12 +24,13 @@ async function upstash(cmds) {
   return res.json();
 }
 
-function stableKey({ provider, model, messages, temperature = 0.7 }) {
+function stableKey({ provider, model, messages, temperature = 0.7, namespace = null }) {
   const data = { provider, model, messages, temperature };
   const text = JSON.stringify(data);
   return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then((buf) => {
     const hex = Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
-    return `agentcache:v1:${provider}:${model}:${hex}`;
+    const ns = namespace ? `${namespace}:` : '';
+    return `agentcache:v1:${ns}${provider}:${model}:${hex}`;
   });
 }
 
@@ -56,11 +57,25 @@ export default async function handler(req) {
     const authn = await auth(req);
     if (!authn.ok) return json({ error: 'Invalid API key' }, 401);
 
+    // Extract namespace from header (for multi-tenant support)
+    const namespace = req.headers.get('x-cache-namespace') || null;
+
+    // Rate limiting: Check request count in last minute
+    if (authn.kind === 'live' || authn.kind === 'demo') {
+      const rateLimitKey = `ratelimit:${authn.hash || 'demo'}:${Math.floor(Date.now() / 60000)}`;
+      const rateLimit = authn.kind === 'demo' ? 100 : 500; // requests per minute
+      const rateCheck = await upstash([["INCR", rateLimitKey], ["EXPIRE", rateLimitKey, 120]]);
+      const reqCount = Array.isArray(rateCheck) ? rateCheck[0]?.result ?? 1 : rateCheck.result ?? 1;
+      if (Number(reqCount) > rateLimit) {
+        return json({ error: 'Rate limit exceeded', limit: rateLimit, window: '1 minute' }, 429);
+      }
+    }
+
     const body = await req.json();
     const { provider, model, messages, temperature, response, ttl = 60 * 60 * 24 * 7 } = body || {};
     if (!provider || !model || !Array.isArray(messages)) return json({ error: 'Invalid payload' }, 400);
 
-    const cacheKey = await stableKey({ provider, model, messages, temperature });
+    const cacheKey = await stableKey({ provider, model, messages, temperature, namespace });
 
     // simple monthly quota for live keys
     if (authn.kind === 'live') {
