@@ -42,5 +42,8 @@
     "drizzle-kit": "^0.31.6",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
