@@ -33,12 +33,12 @@ if (!REDIS_URL) {
 }
 
 // Redis client
-const redis = new Redis(REDIS_URL);
+const redis = new (Redis as any)(REDIS_URL);
 redis.on('connect', () => console.log('✅ Redis connected'));
-redis.on('error', (err) => console.error('❌ Redis error:', err));
+redis.on('error', (err: Error) => console.error('❌ Redis error:', err));
 
 // Stripe client
-const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: '2024-12-18.acacia' });
+const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: '2025-08-27.basil' as any });
 
 // CORS for API routes
 app.use('/api/*', cors({
@@ -313,8 +313,8 @@ app.post('/api/cache/get', async (c) => {
   const authError = await authenticateApiKey(c);
   if (authError) return authError;
 
-  const user = c.get('user');
-  const apiKeyId = c.get('apiKeyId');
+  const user: any = c.get('user');
+  const apiKeyId: string = c.get('apiKeyId');
 
   try {
     const body = await c.req.json();
@@ -363,8 +363,8 @@ app.post('/api/cache/set', async (c) => {
   const authError = await authenticateApiKey(c);
   if (authError) return authError;
 
-  const user = c.get('user');
-  const apiKeyId = c.get('apiKeyId');
+  const user: any = c.get('user');
+  const apiKeyId: string = c.get('apiKeyId');
 
   try {
     const body = await c.req.json();
@@ -413,7 +413,7 @@ app.get('/api/stats', async (c) => {
   const authError = await authenticateApiKey(c);
   if (authError) return authError;
 
-  const user = c.get('user');
+  const user: any = c.get('user');
 
   return c.json({
     plan: user.plan,
