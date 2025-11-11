@@ -481,10 +481,14 @@ export default async function handler(req) {
               <i data-lucide="book-open" class="h-4 w-4"></i>
               View docs
             </a>
-            <a href="#" class="inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold tracking-tight bg-white text-neutral-900 hover:bg-neutral-200 transition-colors">
-              <i data-lucide="key-round" class="h-4 w-4"></i>
-              Get API key
-            </a>
+            <form id="waitlist-form" class="flex items-center gap-2">
+              <input id="waitlist-email" type="email" required placeholder="you@company.com" class="w-64 rounded-md bg-white/5 px-3 py-2 text-sm ring-1 ring-white/10 placeholder:text-neutral-500 focus:outline-none focus:ring-white/20" />
+              <button type="submit" class="inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold tracking-tight bg-white text-neutral-900 hover:bg-neutral-200 transition-colors">
+                <i data-lucide="key-round" class="h-4 w-4"></i>
+                Request access
+              </button>
+            </form>
+            <p id="waitlist-msg" class="hidden text-sm text-emerald-400">Thanks! Check your email shortly.</p>
           </div>
         </div>
       </div>
@@ -577,6 +581,37 @@ export default async function handler(req) {
         const y = document.getElementById("year");
         if (y) y.textContent = new Date().getFullYear();
       });
+
+      // Waitlist submit
+      const form = document.getElementById('waitlist-form');
+      const email = document.getElementById('waitlist-email');
+      const msg = document.getElementById('waitlist-msg');
+      if (form) {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const val = email.value.trim();
+          if (!/.+@.+\..+/.test(val)) {
+            alert('Enter a valid email');
+            return;
+          }
+          try {
+            const res = await fetch('/api/waitlist', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ email: val }),
+            });
+            if (res.ok) {
+              msg?.classList.remove('hidden');
+              form.reset();
+            } else {
+              const data = await res.json().catch(() => ({}));
+              alert(data.error || 'Something went wrong. Please try again.');
+            }
+          } catch (err) {
+            alert('Network error - try again.');
+          }
+        });
+      }
     </script>
   </body>
 </html>
