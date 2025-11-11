@@ -32,6 +32,16 @@
 
     <footer class="mt-10 text-sm text-neutral-500">&copy; <span id="y"></span> AgentCache.ai</footer>
   </main>
-  <script>document.getElementById('y').textContent = new Date().getFullYear()</script>
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+    const u = new URL(location.href);
+    const suffix = u.searchParams.get('suffix');
+    if (suffix) {
+      const el = document.createElement('p');
+      el.className = 'mt-3 text-sm text-neutral-400';
+      el.textContent = `Your API key has been emailed to you. Key suffix: ${suffix}`;
+      document.querySelector('main')?.appendChild(el);
+    }
+  </script>
 </body>
 </html>

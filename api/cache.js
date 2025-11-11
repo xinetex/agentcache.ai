@@ -33,17 +33,28 @@ function stableKey({ provider, model, messages, temperature = 0.7 }) {
   });
 }
 
-function auth(c) {
-  const apiKey = c.headers.get('x-api-key') || c.headers.get('authorization')?.replace('Bearer ', '');
-  if (!apiKey || !apiKey.startsWith('ac_')) return null;
-  // TODO: validate real keys later
-  return apiKey;
+async function sha256Hex(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function auth(req) {
+  const apiKey = req.headers.get('x-api-key') || req.headers.get('authorization')?.replace('Bearer ', '');
+  if (!apiKey || !apiKey.startsWith('ac_')) return { ok:false };
+  if (apiKey.startsWith('ac_demo_')) return { ok:true, kind:'demo', hash:null, quota:200 };
+  // verify live key via hash lookup
+  const hash = await sha256Hex(apiKey);
+  const res = await fetch(`${getEnv().url}/hget/key:${hash}/email`, { headers: { Authorization:`Bearer ${getEnv().token}` }, cache:'no-store' });
+  if (!res.ok) return { ok:false };
+  const email = await res.text();
+  if (!email) return { ok:false };
+  return { ok:true, kind:'live', hash, email };
 }
 
 export default async function handler(req) {
   try {
-    const key = auth(req);
-    if (!key) return json({ error: 'Invalid API key' }, 401);
+    const authn = await auth(req);
+    if (!authn.ok) return json({ error: 'Invalid API key' }, 401);
 
     const body = await req.json();
     const { provider, model, messages, temperature, response, ttl = 60 * 60 * 24 * 7 } = body || {};
@@ -51,9 +62,21 @@ export default async function handler(req) {
 
     const cacheKey = await stableKey({ provider, model, messages, temperature });
 
+    // simple monthly quota for live keys
+    if (authn.kind === 'live') {
+      const month = new Date().toISOString().slice(0,7);
+      const usageKey = `usage:${authn.hash}:m:${month}`;
+      const quotaRes = await fetch(`${getEnv().url}/hget/usage:${authn.hash}/monthlyQuota`, { headers:{ Authorization:`Bearer ${getEnv().token}` }, cache:'no-store' });
+      const quota = (await quotaRes.text()) || '1000';
+      const inc = await upstash([["INCR", usageKey],["EXPIRE",usageKey,60*60*24*40]]);
+      const count = Array.isArray(inc) ? inc[0]?.result ?? 0 : inc.result ?? 0;
+      if (Number(count) > Number(quota)) return json({ error:'Monthly quota exceeded', quota:Number(quota), used:Number(count) }, 429);
+    }
+
     if (req.method === 'POST' && req.url.endsWith('/set')) {
       if (typeof response !== 'string') return json({ error: 'response (string) is required' }, 400);
       await upstash([["SETEX", cacheKey, ttl, response]]);
+      if (authn.kind === 'live') await upstash([["HINCRBY", `usage:${authn.hash}`, "misses", 1]]);
       return json({ success: true, key: cacheKey.slice(-16), ttl });
     }
 
@@ -64,6 +87,7 @@ export default async function handler(req) {
       });
       if (!res.ok) return json({ hit: false }, 404);
       const text = await res.text();
+      if (authn.kind === 'live') await upstash([["HINCRBY", `usage:${authn.hash}`, "hits", 1]]);
       return json({ hit: !!text, response: text });
     }
 
