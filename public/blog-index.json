@@ -20,5 +20,27 @@
     "slug": "openai-pricing-changes-what-they-mean-for-your-budget",
     "filename": "2025-11-16-openai-pricing-changes-what-they-mean-for-your-budget.md",
     "mdPath": "/blog/posts/2025-11-16-openai-pricing-changes-what-they-mean-for-your-budget.md"
+  },
+  {
+    "title": "AI Cost Optimization: Lessons from YC Startups",
+    "date": "2025-11-16",
+    "author": "AgentCache Team",
+    "category": "industry",
+    "excerpt": "AI Cost Optimization: Lessons from YC Startups - Analysis and insights for AI teams building cost-effective systems at scale.",
+    "featured_image": "/blog/images/ai-cost-optimization-lessons-from-yc-startups.png",
+    "slug": "ai-cost-optimization-lessons-from-yc-startups",
+    "filename": "2025-11-16-ai-cost-optimization-lessons-from-yc-startups.md",
+    "mdPath": "/blog/posts/2025-11-16-ai-cost-optimization-lessons-from-yc-startups.md"
+  },
+  {
+    "title": "Zero-Downtime AI: Caching Strategies for Production",
+    "date": "2025-11-16",
+    "author": "AgentCache Team",
+    "category": "technical",
+    "excerpt": "Learn how zero-downtime ai: caching strategies for production with practical examples and code snippets. A technical deep-dive for AI developers.",
+    "featured_image": "/blog/images/zero-downtime-ai-caching-strategies-for-production.png",
+    "slug": "zero-downtime-ai-caching-strategies-for-production",
+    "filename": "2025-11-16-zero-downtime-ai-caching-strategies-for-production.md",
+    "mdPath": "/blog/posts/2025-11-16-zero-downtime-ai-caching-strategies-for-production.md"
   }
 ]
