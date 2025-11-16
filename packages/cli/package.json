@@ -1,0 +1,59 @@
+{
+  "name": "agentcache-cli",
+  "version": "1.0.0",
+  "description": "CLI installer for AgentCache.ai - Automatically integrate AI caching in your project",
+  "bin": {
+    "agentcache-init": "./dist/cli.js",
+    "agentcache": "./dist/cli.js"
+  },
+  "main": "dist/cli.js",
+  "types": "dist/cli.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup src/cli.ts --format cjs --dts --clean --minify",
+    "dev": "tsup src/cli.ts --format cjs --dts --watch",
+    "test": "node dist/cli.js --help"
+  },
+  "keywords": [
+    "agentcache",
+    "cli",
+    "installer",
+    "ai",
+    "cache",
+    "llm",
+    "openai",
+    "setup",
+    "init"
+  ],
+  "author": "AgentCache.ai",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xinetex/agentcache.ai.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/xinetex/agentcache.ai/issues"
+  },
+  "homepage": "https://agentcache.ai",
+  "dependencies": {
+    "prompts": "^2.4.2",
+    "chalk": "^4.1.2",
+    "ora": "^5.4.1",
+    "fs-extra": "^11.2.0",
+    "execa": "^5.1.1"
+  },
+  "devDependencies": {
+    "@types/prompts": "^2.4.9",
+    "@types/fs-extra": "^11.0.4",
+    "tsup": "^8.0.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
