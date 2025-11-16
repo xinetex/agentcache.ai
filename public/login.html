@@ -152,7 +152,7 @@
           <p class="text-xs text-amber-400 mb-3">⚠️ Check your email to verify your account before using this API key.</p>
           
           <button id="gotoDashboard" class="w-full py-2 bg-sky-500 text-slate-950 text-sm font-medium rounded-lg hover:bg-sky-400 transition">
-            Go to Dashboard
+            Continue to Login
           </button>
         </div>
       </div>
@@ -208,7 +208,7 @@
           showStatus('Login successful! Redirecting...', 'success');
           
           setTimeout(() => {
-            window.location.href = '/dashboard';
+            window.location.href = '/dashboard-new.html';
           }, 1000);
         } else {
           if (data.requiresVerification) {
@@ -277,9 +277,13 @@
       });
     });
 
-    // Go to dashboard
+    // Go to dashboard (after registration, switch to login tab)
     document.getElementById('gotoDashboard').addEventListener('click', () => {
-      window.location.href = '/dashboard';
+      // User needs to verify email first, so show login tab
+      document.getElementById('apiKeyDisplay').classList.add('hidden');
+      document.getElementById('loginForm').classList.remove('hidden');
+      document.getElementById('loginTab').click();
+      showStatus('Please verify your email (check inbox), then login to access the dashboard.', 'warning');
     });
 
     // Status message helpers
