@@ -150,7 +150,7 @@ async function register(req) {
   await redis('SETEX', `verify:${verifyToken}`, 172800, emailHash); // 48h TTL
   
   // Send verification email
-  const verifyUrl = `https://agentcache.ai/verify?token=${verifyToken}`;
+  const verifyUrl = `https://agentcache.ai/login.html?token=${verifyToken}`;
   await sendEmail(emailLower, 'Verify your AgentCache account', `
     <h2>Welcome to AgentCache!</h2>
     <p>Hi ${userData.name},</p>
@@ -390,7 +390,7 @@ async function requestReset(req) {
   const userName = await redis('HGET', `user:${emailHash}`, 'name');
   
   // Send reset email
-  const resetUrl = `https://agentcache.ai/login?reset=${resetToken}`;
+  const resetUrl = `https://agentcache.ai/login.html?reset=${resetToken}`;
   await sendEmail(emailLower, 'Reset your AgentCache password', `
     <h2>Password Reset Request</h2>
     <p>Hi ${userName || 'there'},</p>
@@ -491,9 +491,8 @@ async function resendVerification(req) {
   
   // Store verification token
   await redis('SETEX', `verify:${verifyToken}`, 172800, emailHash); // 48h TTL
-  
   // Send verification email
-  const verifyUrl = `https://agentcache.ai/login?token=${verifyToken}`;
+  const verifyUrl = `https://agentcache.ai/login.html?token=${verifyToken}`;
   await sendEmail(emailLower, 'Verify your AgentCache account', `
     <h2>Verify Your Email</h2>
     <p>Hi ${user.name},</p>
@@ -502,6 +501,7 @@ async function resendVerification(req) {
     <p>Or copy this link: ${verifyUrl}</p>
     <p>This link expires in 48 hours.</p>
     <p>Best,<br>The AgentCache Team</p>
+  `);
   `);
 
   return json({
