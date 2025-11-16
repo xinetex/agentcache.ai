@@ -302,6 +302,51 @@ function updateRSS() {
   console.log('📡 RSS feed updated');
 }
 
+// Update public blog index JSON consumed by /public/blog.html
+function updateBlogIndex(post) {
+  try {
+    const publicDir = path.join(__dirname, '..', 'public');
+    const indexPath = path.join(publicDir, 'blog-index.json');
+
+    if (!fs.existsSync(publicDir)) {
+      fs.mkdirSync(publicDir, { recursive: true });
+    }
+
+    let index = [];
+    if (fs.existsSync(indexPath)) {
+      try {
+        index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+      } catch (_) {
+        index = [];
+      }
+    }
+
+    // Merge or insert
+    const meta = {
+      title: post.frontmatter.title,
+      date: post.frontmatter.date,
+      author: post.frontmatter.author,
+      category: post.frontmatter.category,
+      excerpt: post.frontmatter.excerpt,
+      featured_image: post.frontmatter.featured_image,
+      slug: post.slug,
+      filename: post.filename,
+      mdPath: `/blog/posts/${post.filename}`
+    };
+
+    const existingIdx = index.findIndex(p => p.slug === post.slug);
+    if (existingIdx >= 0) index[existingIdx] = meta; else index.push(meta);
+
+    // Sort by date desc
+    index.sort((a, b) => (a.date < b.date ? 1 : -1));
+
+    fs.writeFileSync(indexPath, JSON.stringify(index, null, 2));
+    console.log(`🧭 Blog index updated: ${indexPath}`);
+  } catch (err) {
+    console.error('Failed to update blog index:', err);
+  }
+}
+
 // Main execution
 function main() {
   const args = process.argv.slice(2);
@@ -313,6 +358,9 @@ function main() {
   
   const post = generatePost(category, topicIndex);
   const postPath = savePost(post);
+
+  // Update public blog index for the website
+  updateBlogIndex(post);
   
   updateRSS();
   
