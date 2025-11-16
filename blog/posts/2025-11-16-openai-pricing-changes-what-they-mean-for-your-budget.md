@@ -13,7 +13,7 @@ seo_keywords: AI caching, LLM cost optimization, OpenAI costs, reduce AI expense
 
 Industry trend or news hook
 
-[CONTENT PLACEHOLDER: intro]
+[Generation failed for intro. Please fill manually.]
 
 This section will cover openai pricing changes: what they mean for your budget in detail. Include:
 - Specific technical details or examples
@@ -31,7 +31,7 @@ Include practical examples and keep it under 300 words."
 
 ### 1. Analysis
 
-[CONTENT PLACEHOLDER: analysis]
+[Generation failed for analysis. Please fill manually.]
 
 This section will cover openai pricing changes: what they mean for your budget in detail. Include:
 - Specific technical details or examples
@@ -47,7 +47,7 @@ Include practical examples and keep it under 300 words."
 
 ### 2. Case studies
 
-[CONTENT PLACEHOLDER: case studies]
+[Generation failed for case studies. Please fill manually.]
 
 This section will cover openai pricing changes: what they mean for your budget in detail. Include:
 - Specific technical details or examples
@@ -63,7 +63,7 @@ Include practical examples and keep it under 300 words."
 
 ### 3. Expert insights
 
-[CONTENT PLACEHOLDER: expert insights]
+[Generation failed for expert insights. Please fill manually.]
 
 This section will cover openai pricing changes: what they mean for your budget in detail. Include:
 - Specific technical details or examples
@@ -79,7 +79,7 @@ Include practical examples and keep it under 300 words."
 
 ### 4. Practical implications
 
-[CONTENT PLACEHOLDER: practical implications]
+[Generation failed for practical implications. Please fill manually.]
 
 This section will cover openai pricing changes: what they mean for your budget in detail. Include:
 - Specific technical details or examples

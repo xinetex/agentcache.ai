@@ -1,5 +1,16 @@
 [
   {
+    "title": "Understanding Deterministic Cache Keys in AI Systems",
+    "date": "2025-11-16",
+    "author": "AgentCache Team",
+    "category": "technical",
+    "excerpt": "Learn how understanding deterministic cache keys in ai systems with practical examples and code snippets. A technical deep-dive for AI developers.",
+    "featured_image": "/blog/images/understanding-deterministic-cache-keys-in-ai-systems.png",
+    "slug": "understanding-deterministic-cache-keys-in-ai-systems",
+    "filename": "2025-11-16-understanding-deterministic-cache-keys-in-ai-systems.md",
+    "mdPath": "/blog/posts/2025-11-16-understanding-deterministic-cache-keys-in-ai-systems.md"
+  },
+  {
     "title": "OpenAI Pricing Changes: What They Mean for Your Budget",
     "date": "2025-11-16",
     "author": "AgentCache Team",

@@ -1,0 +1,32 @@
+{
+  "twitter": {
+    "text": "📝 New post: Understanding Deterministic Cache Keys in AI Systems\n\n🚀 Learn how to optimize your AI costs\n💰 Save 90% on LLM expenses\n⚡ 10× faster responses\n\nRead more: https://agentcache.ai/blog/understanding-deterministic-cache-keys-in-ai-systems",
+    "hashtags": [
+      "AI",
+      "MachineLearning",
+      "DevTools",
+      "OpenAI",
+      "CostOptimization"
+    ]
+  },
+  "linkedin": {
+    "text": "I just published a new article: \"Understanding Deterministic Cache Keys in AI Systems\"\n\nIn this post, I dive into strategies for reducing AI API costs while maintaining performance. Key insights:\n\n✓ Practical implementation examples\n✓ Real-world benchmarks\n✓ Cost comparison analysis\n\nPerfect for engineering teams working with OpenAI, Anthropic, or any LLM provider.\n\nRead the full article: https://agentcache.ai/blog/understanding-deterministic-cache-keys-in-ai-systems\n\n#ArtificialIntelligence #Engineering #CostOptimization",
+    "image_required": true
+  },
+  "reddit": {
+    "title": "Understanding Deterministic Cache Keys in AI Systems",
+    "text": "Hey r/MachineLearning, I wrote about understanding deterministic cache keys in ai systems.\n\nTL;DR: [3-4 sentence summary]\n\nWould love to hear your thoughts and experiences with AI caching strategies!\n\nFull article: https://agentcache.ai/blog/understanding-deterministic-cache-keys-in-ai-systems",
+    "subreddits": [
+      "MachineLearning",
+      "LocalLLaMA",
+      "OpenAI",
+      "artificial",
+      "webdev"
+    ]
+  },
+  "hackernews": {
+    "title": "Understanding Deterministic Cache Keys in AI Systems",
+    "url": "https://agentcache.ai/blog/understanding-deterministic-cache-keys-in-ai-systems",
+    "suggested_time": "Tuesday or Thursday, 8-10am PST"
+  }
+}
