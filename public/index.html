@@ -89,9 +89,13 @@
             <i data-lucide="book-open" class="h-4 w-4"></i>
             Docs
           </a>
-          <a href="#signup" class="inline-flex items-center gap-2 rounded-md px-3.5 py-2 text-sm font-semibold tracking-tight bg-indigo-500 text-white hover:bg-indigo-400 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 transition-colors">
-            <i data-lucide="bolt" class="h-4 w-4"></i>
-            Get started
+          <a href="/login.html" class="hidden sm:inline-flex items-center gap-2 rounded-md px-3.5 py-2 text-sm text-neutral-200 hover:text-white transition-colors">
+            <i data-lucide="log-in" class="h-4 w-4"></i>
+            Login
+          </a>
+          <a href="/login.html" class="inline-flex items-center gap-2 rounded-md px-3.5 py-2 text-sm font-semibold tracking-tight bg-indigo-500 text-white hover:bg-indigo-400 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 transition-colors">
+            <i data-lucide="user-plus" class="h-4 w-4"></i>
+            Sign up free
           </a>
         </div>
       </div>
@@ -120,9 +124,9 @@
               NPM package and REST API for caching AI responses. Works with OpenAI, Anthropic, Claude, and Moonshot AI. Cache identical prompts at the edge, reuse responses instantly, and save thousands per month. Install in 30 seconds.
             </p>
             <div class="mt-8 flex flex-col sm:flex-row gap-3">
-              <a href="#signup" class="inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold tracking-tight bg-white text-neutral-900 hover:bg-neutral-200 hover:scale-105 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-all">
+              <a href="/login.html" class="inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold tracking-tight bg-white text-neutral-900 hover:bg-neutral-200 hover:scale-105 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-all">
                 <i data-lucide="rocket" class="h-4 w-4"></i>
-                Get API key
+                Start free trial
               </a>
               <a href="#code" onclick="document.getElementById('tab-edge').checked=true; document.getElementById('tab-edge').scrollIntoView({behavior:'smooth',block:'center'});" class="inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm text-neutral-200 ring-1 ring-white/10 hover:bg-white/5 hover:ring-white/20 hover:scale-105 transition-all cursor-pointer">
                 <i data-lucide="code" class="h-4 w-4"></i>
@@ -933,19 +937,15 @@ curl -X POST https://agentcache.ai/api/moonshot \
             <h4 class="text-2xl font-semibold tracking-tight">Ready to cache your next million prompts?</h4>
             <p class="mt-2 text-sm text-neutral-300">Create a project in seconds and drop in the 5-line wrapper. No code changes to your models.</p>
           </div>
-          <div class="flex items-center gap-3">
+          <div class="flex flex-col sm:flex-row items-center gap-3">
+            <a href="/login.html" class="inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold tracking-tight bg-white text-neutral-900 hover:bg-neutral-200 transition-colors">
+              <i data-lucide="user-plus" class="h-4 w-4"></i>
+              Sign up free - Get API key
+            </a>
             <a href="/docs.html" class="inline-flex items-center gap-2 rounded-md px-3.5 py-2 text-sm text-neutral-200 ring-1 ring-white/10 hover:bg-white/5 hover:ring-white/20 transition-colors">
               <i data-lucide="book-open" class="h-4 w-4"></i>
               View docs
             </a>
-            <form id="waitlist-form" class="flex items-center gap-2">
-              <input id="waitlist-email" type="email" required placeholder="you@company.com" class="w-64 rounded-md bg-white/5 px-3 py-2 text-sm ring-1 ring-white/10 placeholder:text-neutral-500 focus:outline-none focus:ring-white/20" />
-              <button type="submit" class="inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold tracking-tight bg-white text-neutral-900 hover:bg-neutral-200 transition-colors">
-                <i data-lucide="key-round" class="h-4 w-4"></i>
-                Request access
-              </button>
-            </form>
-            <p id="waitlist-msg" class="hidden text-sm text-emerald-400">Thanks! Check your email shortly.</p>
           </div>
         </div>
       </div>

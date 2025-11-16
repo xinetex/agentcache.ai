@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AgentCache – Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-[#050816] text-slate-100 antialiased flex items-center justify-center">
+  <div class="w-full max-w-md p-6">
+    <!-- Logo -->
+    <div class="flex items-center justify-center gap-3 mb-8">
+      <div class="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/40 flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-semibold tracking-tight text-slate-50">AgentCache</h1>
+        <p class="text-xs text-slate-400">Edge Caching for AI APIs</p>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-2 mb-6 bg-slate-950/50 p-1 rounded-lg border border-slate-800">
+      <button id="loginTab" class="flex-1 py-2 px-4 rounded-md bg-sky-500 text-slate-950 text-sm font-medium transition">
+        Login
+      </button>
+      <button id="registerTab" class="flex-1 py-2 px-4 rounded-md text-slate-300 text-sm font-medium transition hover:bg-slate-800">
+        Register
+      </button>
+    </div>
+
+    <!-- Login Form -->
+    <form id="loginForm" class="space-y-4">
+      <div>
+        <label class="block text-sm text-slate-300 mb-1.5">Email</label>
+        <input type="email" id="loginEmail" required 
+          class="w-full px-4 py-2.5 bg-slate-950/70 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 transition">
+      </div>
+
+      <div>
+        <label class="block text-sm text-slate-300 mb-1.5">Password</label>
+        <input type="password" id="loginPassword" required 
+          class="w-full px-4 py-2.5 bg-slate-950/70 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 transition">
+      </div>
+
+      <button type="submit" 
+        class="w-full py-2.5 bg-sky-500 text-slate-950 font-medium rounded-lg hover:bg-sky-400 transition">
+        Login
+      </button>
+
+      <p class="text-xs text-center text-slate-400">
+        <a href="#" id="forgotPasswordLink" class="text-sky-400 hover:text-sky-300">Forgot password?</a>
+      </p>
+    </form>
+
+    <!-- Password Reset Form -->
+    <form id="resetForm" class="space-y-4 hidden">
+      <div>
+        <label class="block text-sm text-slate-300 mb-1.5">Email</label>
+        <input type="email" id="resetEmail" required 
+          class="w-full px-4 py-2.5 bg-slate-950/70 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 transition">
+      </div>
+
+      <button type="submit" 
+        class="w-full py-2.5 bg-sky-500 text-slate-950 font-medium rounded-lg hover:bg-sky-400 transition">
+        Send Reset Link
+      </button>
+
+      <p class="text-xs text-center text-slate-400">
+        <a href="#" id="backToLoginLink" class="text-sky-400 hover:text-sky-300">← Back to login</a>
+      </p>
+    </form>
+
+    <!-- New Password Form (for reset token) -->
+    <form id="newPasswordForm" class="space-y-4 hidden">
+      <div>
+        <label class="block text-sm text-slate-300 mb-1.5">New Password</label>
+        <input type="password" id="newPassword" required 
+          class="w-full px-4 py-2.5 bg-slate-950/70 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 transition">
+        <p class="text-xs text-slate-500 mt-1">Min 8 characters, 1 uppercase, 1 lowercase, 1 number</p>
+      </div>
+
+      <div>
+        <label class="block text-sm text-slate-300 mb-1.5">Confirm New Password</label>
+        <input type="password" id="newPasswordConfirm" required 
+          class="w-full px-4 py-2.5 bg-slate-950/70 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 transition">
+      </div>
+
+      <button type="submit" 
+        class="w-full py-2.5 bg-sky-500 text-slate-950 font-medium rounded-lg hover:bg-sky-400 transition">
+        Reset Password
+      </button>
+    </form>
+
+    <!-- Register Form -->
+    <form id="registerForm" class="space-y-4 hidden">
+      <div>
+        <label class="block text-sm text-slate-300 mb-1.5">Name (optional)</label>
+        <input type="text" id="registerName"
+          class="w-full px-4 py-2.5 bg-slate-950/70 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 transition">
+      </div>
+
+      <div>
+        <label class="block text-sm text-slate-300 mb-1.5">Email</label>
+        <input type="email" id="registerEmail" required 
+          class="w-full px-4 py-2.5 bg-slate-950/70 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 transition">
+      </div>
+
+      <div>
+        <label class="block text-sm text-slate-300 mb-1.5">Password</label>
+        <input type="password" id="registerPassword" required 
+          class="w-full px-4 py-2.5 bg-slate-950/70 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 transition">
+        <p class="text-xs text-slate-500 mt-1">Min 8 characters, 1 uppercase, 1 lowercase, 1 number</p>
+      </div>
+
+      <div>
+        <label class="block text-sm text-slate-300 mb-1.5">Confirm Password</label>
+        <input type="password" id="registerPasswordConfirm" required 
+          class="w-full px-4 py-2.5 bg-slate-950/70 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 transition">
+      </div>
+
+      <button type="submit" 
+        class="w-full py-2.5 bg-sky-500 text-slate-950 font-medium rounded-lg hover:bg-sky-400 transition">
+        Create Account
+      </button>
+
+      <p class="text-xs text-center text-slate-400">
+        By signing up, you agree to our <a href="#" class="text-sky-400 hover:text-sky-300">Terms</a> and <a href="#" class="text-sky-400 hover:text-sky-300">Privacy Policy</a>
+      </p>
+    </form>
+
+    <!-- Success Message (API Key Display) -->
+    <div id="apiKeyDisplay" class="hidden mt-6 p-6 bg-emerald-950/30 border border-emerald-500/40 rounded-lg">
+      <div class="flex items-start gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-emerald-400 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <div class="flex-1">
+          <h3 class="text-sm font-semibold text-emerald-400 mb-2">Account Created!</h3>
+          <p class="text-xs text-slate-300 mb-3">Save your API key securely. You won't be able to see it again:</p>
+          
+          <div class="flex items-center gap-2 p-3 bg-slate-950/80 rounded-lg border border-slate-700 mb-3">
+            <code id="apiKeyValue" class="flex-1 text-xs text-slate-100 font-mono"></code>
+            <button id="copyApiKey" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs text-slate-300 transition">
+              Copy
+            </button>
+          </div>
+
+          <p class="text-xs text-amber-400 mb-3">⚠️ Check your email to verify your account before using this API key.</p>
+          
+          <button id="gotoDashboard" class="w-full py-2 bg-sky-500 text-slate-950 text-sm font-medium rounded-lg hover:bg-sky-400 transition">
+            Go to Dashboard
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error/Status Message -->
+    <div id="statusMessage" class="hidden mt-4 p-4 rounded-lg text-sm"></div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://agentcache.ai';
+
+    // Tab switching
+    document.getElementById('loginTab').addEventListener('click', () => {
+      document.getElementById('loginTab').className = 'flex-1 py-2 px-4 rounded-md bg-sky-500 text-slate-950 text-sm font-medium transition';
+      document.getElementById('registerTab').className = 'flex-1 py-2 px-4 rounded-md text-slate-300 text-sm font-medium transition hover:bg-slate-800';
+      document.getElementById('loginForm').classList.remove('hidden');
+      document.getElementById('registerForm').classList.add('hidden');
+      document.getElementById('apiKeyDisplay').classList.add('hidden');
+      hideStatus();
+    });
+
+    document.getElementById('registerTab').addEventListener('click', () => {
+      document.getElementById('registerTab').className = 'flex-1 py-2 px-4 rounded-md bg-sky-500 text-slate-950 text-sm font-medium transition';
+      document.getElementById('loginTab').className = 'flex-1 py-2 px-4 rounded-md text-slate-300 text-sm font-medium transition hover:bg-slate-800';
+      document.getElementById('registerForm').classList.remove('hidden');
+      document.getElementById('loginForm').classList.add('hidden');
+      document.getElementById('apiKeyDisplay').classList.add('hidden');
+      hideStatus();
+    });
+
+    // Login handler
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      try {
+        const response = await fetch(`${API_BASE}/api/account?action=login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Store session token
+          localStorage.setItem('agentcache_session', data.session);
+          localStorage.setItem('agentcache_user', JSON.stringify(data.user));
+          
+          showStatus('Login successful! Redirecting...', 'success');
+          
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 1000);
+        } else {
+          if (data.requiresVerification) {
+            showStatus('Please verify your email before logging in. Check your inbox.', 'warning');
+          } else {
+            showStatus(data.error || 'Login failed', 'error');
+          }
+        }
+      } catch (err) {
+        console.error('Login error:', err);
+        showStatus('Network error. Please try again.', 'error');
+      }
+    });
+
+    // Register handler
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const name = document.getElementById('registerName').value;
+      const email = document.getElementById('registerEmail').value;
+      const password = document.getElementById('registerPassword').value;
+      const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+
+      // Validate password match
+      if (password !== passwordConfirm) {
+        showStatus('Passwords do not match', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/api/account?action=register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Show API key
+          document.getElementById('apiKeyValue').textContent = data.apiKey;
+          document.getElementById('apiKeyDisplay').classList.remove('hidden');
+          document.getElementById('registerForm').classList.add('hidden');
+          
+          // Store API key in localStorage (user should save it elsewhere too)
+          localStorage.setItem('agentcache_api_key', data.apiKey);
+          
+          showStatus('Account created! Check your email to verify.', 'success');
+        } else {
+          showStatus(data.error || 'Registration failed', 'error');
+        }
+      } catch (err) {
+        console.error('Registration error:', err);
+        showStatus('Network error. Please try again.', 'error');
+      }
+    });
+
+    // Copy API key
+    document.getElementById('copyApiKey').addEventListener('click', () => {
+      const apiKey = document.getElementById('apiKeyValue').textContent;
+      navigator.clipboard.writeText(apiKey).then(() => {
+        document.getElementById('copyApiKey').textContent = 'Copied!';
+        setTimeout(() => {
+          document.getElementById('copyApiKey').textContent = 'Copy';
+        }, 2000);
+      });
+    });
+
+    // Go to dashboard
+    document.getElementById('gotoDashboard').addEventListener('click', () => {
+      window.location.href = '/dashboard';
+    });
+
+    // Status message helpers
+    function showStatus(message, type = 'info') {
+      const el = document.getElementById('statusMessage');
+      el.textContent = message;
+      el.classList.remove('hidden', 'bg-emerald-950/30', 'border-emerald-500/40', 'text-emerald-400',
+                          'bg-rose-950/30', 'border-rose-500/40', 'text-rose-400',
+                          'bg-amber-950/30', 'border-amber-500/40', 'text-amber-400');
+      
+      if (type === 'success') {
+        el.className = 'mt-4 p-4 rounded-lg text-sm bg-emerald-950/30 border border-emerald-500/40 text-emerald-400';
+      } else if (type === 'error') {
+        el.className = 'mt-4 p-4 rounded-lg text-sm bg-rose-950/30 border border-rose-500/40 text-rose-400';
+      } else if (type === 'warning') {
+        el.className = 'mt-4 p-4 rounded-lg text-sm bg-amber-950/30 border border-amber-500/40 text-amber-400';
+      }
+    }
+
+    function hideStatus() {
+      document.getElementById('statusMessage').classList.add('hidden');
+    }
+
+    // Forgot password link
+    document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('loginForm').classList.add('hidden');
+      document.getElementById('resetForm').classList.remove('hidden');
+      hideStatus();
+    });
+
+    // Back to login link
+    document.getElementById('backToLoginLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('resetForm').classList.add('hidden');
+      document.getElementById('loginForm').classList.remove('hidden');
+      hideStatus();
+    });
+
+    // Password reset request handler
+    document.getElementById('resetForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('resetEmail').value;
+
+      try {
+        const response = await fetch(`${API_BASE}/api/account?action=request-reset`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showStatus('If an account exists, a password reset email has been sent. Check your inbox.', 'success');
+          // Clear form
+          document.getElementById('resetEmail').value = '';
+        } else {
+          showStatus(data.error || 'Failed to send reset email', 'error');
+        }
+      } catch (err) {
+        console.error('Reset request error:', err);
+        showStatus('Network error. Please try again.', 'error');
+      }
+    });
+
+    // New password handler
+    document.getElementById('newPasswordForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const newPassword = document.getElementById('newPassword').value;
+      const newPasswordConfirm = document.getElementById('newPasswordConfirm').value;
+      const resetToken = new URLSearchParams(window.location.search).get('reset');
+
+      if (newPassword !== newPasswordConfirm) {
+        showStatus('Passwords do not match', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/api/account?action=reset-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: resetToken, newPassword })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showStatus('Password reset successfully! You can now log in.', 'success');
+          document.getElementById('newPasswordForm').classList.add('hidden');
+          document.getElementById('loginForm').classList.remove('hidden');
+          document.getElementById('loginTab').click();
+          // Clear URL parameters
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } else {
+          showStatus(data.error || 'Password reset failed', 'error');
+        }
+      } catch (err) {
+        console.error('Password reset error:', err);
+        showStatus('Network error. Please try again.', 'error');
+      }
+    });
+
+    // Check for verification token in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const verifyToken = urlParams.get('token');
+    const resetToken = urlParams.get('reset');
+    
+    if (verifyToken) {
+      // Auto-verify if token is present
+      fetch(`${API_BASE}/api/account?action=verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: verifyToken })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          showStatus('Email verified! You can now log in.', 'success');
+          document.getElementById('loginTab').click();
+        } else {
+          showStatus(data.error || 'Verification failed', 'error');
+        }
+      })
+      .catch(err => {
+        console.error('Verification error:', err);
+        showStatus('Verification failed. Please try again.', 'error');
+      });
+    } else if (resetToken) {
+      // Show new password form if reset token is present
+      document.getElementById('loginForm').classList.add('hidden');
+      document.getElementById('registerForm').classList.add('hidden');
+      document.getElementById('newPasswordForm').classList.remove('hidden');
+      showStatus('Enter your new password below', 'info');
+    }
+  </script>
+</body>
+</html>
