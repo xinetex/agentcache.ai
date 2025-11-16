@@ -1,0 +1,68 @@
+name: Automated Blog Posts
+
+on:
+  schedule:
+    # Tuesday at 9am UTC (technical posts)
+    - cron: '0 9 * * 2'
+    # Friday at 9am UTC (industry posts)
+    - cron: '0 9 * * 5'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  generate-post:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Determine post category
+        id: category
+        run: |
+          DAY=$(date +%u)
+          if [ "$DAY" -eq "2" ]; then
+            echo "category=technical" >> $GITHUB_OUTPUT
+          else
+            echo "category=industry" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Generate blog post
+        run: node scripts/generate-blog-post.js ${{ steps.category.outputs.category }}
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          
+      - name: Fill content with AI
+        run: node scripts/fill-blog-content.js
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          
+      - name: Generate featured image
+        run: node scripts/generate-blog-image.js
+        env:
+          REPLICATE_API_TOKEN: ${{ secrets.REPLICATE_API_TOKEN }}
+          
+      - name: Commit and push
+        run: |
+          git config user.name "AgentCache Bot"
+          git config user.email "bot@agentcache.ai"
+          git add blog/
+          git commit -m "chore: add automated blog post for $(date +%Y-%m-%d)" || echo "No changes to commit"
+          git push
+          
+      - name: Deploy to production
+        run: |
+          curl -X POST "https://api.vercel.com/v1/integrations/deploy/${{ secrets.VERCEL_HOOK }}"
+          
+      - name: Post to social media
+        run: node scripts/post-to-social.js
+        env:
+          TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
