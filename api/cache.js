@@ -3,7 +3,13 @@ export const config = { runtime: 'edge' };
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'no-store',
+      'access-control-allow-origin': '*',
+      'access-control-allow-methods': 'POST, OPTIONS',
+      'access-control-allow-headers': 'Content-Type, Authorization, X-API-Key, X-Cache-Namespace',
+    },
   });
 }
 
@@ -53,6 +59,10 @@ async function auth(req) {
 }
 
 export default async function handler(req) {
+  if (req.method === 'OPTIONS') {
+    return json({ ok: true });
+  }
+
   try {
     const authn = await auth(req);
     if (!authn.ok) return json({ error: 'Invalid API key' }, 401);

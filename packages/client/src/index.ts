@@ -1,9 +1,13 @@
 /**
  * AgentCache Client SDK
- * 
+ *
  * JavaScript/TypeScript client for AgentCache.ai
  * Edge caching for AI API calls - 90% cost reduction, 10x faster
  */
+
+// Allow using process.env in Node without forcing a Node typings dependency
+// This is safe in browsers because it's only referenced when present.
+declare const process: any;
 
 export interface AgentCacheConfig {
   apiKey: string;
@@ -109,6 +113,37 @@ export class AgentCache {
         defaultTtl: config.defaultTtl || 604800,
       };
     }
+  }
+
+  /**
+   * Create an AgentCache instance from environment variables.
+   *
+   * Looks for:
+   * - AGENTCACHE_API_KEY (required)
+   * - AGENTCACHE_BASE_URL (optional)
+   * - AGENTCACHE_NAMESPACE (optional)
+   *
+   * This is primarily for Node/Edge runtimes.
+   */
+  static fromEnv(overrides: Partial<Omit<AgentCacheConfig, 'apiKey'>> = {}): AgentCache {
+    const apiKey =
+      (typeof process !== 'undefined' && process?.env?.AGENTCACHE_API_KEY) ||
+      (typeof process !== 'undefined' && process?.env?.NEXT_PUBLIC_AGENTCACHE_API_KEY);
+
+    if (!apiKey) {
+      throw new Error('AGENTCACHE_API_KEY (or NEXT_PUBLIC_AGENTCACHE_API_KEY) is not set in the environment');
+    }
+
+    return new AgentCache({
+      apiKey,
+      baseUrl: overrides.baseUrl ||
+        (typeof process !== 'undefined' && process?.env?.AGENTCACHE_BASE_URL) ||
+        undefined,
+      namespace: overrides.namespace ||
+        (typeof process !== 'undefined' && process?.env?.AGENTCACHE_NAMESPACE) ||
+        undefined,
+      defaultTtl: overrides.defaultTtl,
+    });
   }
 
   /**
@@ -270,6 +305,119 @@ export class AgentCache {
   private async _simpleSet(key: string, value: any, ttl?: number, namespace?: string): Promise<void> {
     // This is a placeholder - real implementation would use cache/set
   }
+}
+
+/**
+ * Utility: normalize messages to improve cache hit rate.
+ *
+ * Strips common volatile markers like timestamps or session IDs
+ * that would otherwise cause identical prompts to miss the cache.
+ */
+export function normalizeMessages(messages: CacheMessage[]): CacheMessage[] {
+  return messages.map((msg) => ({
+    role: msg.role,
+    content: msg.content
+      .replace(/\[Timestamp: .*?\]/g, '')
+      .replace(/Session ID: \w+/g, '')
+      .trim(),
+  }));
+}
+
+export interface CachedLLMCallOptions {
+  provider: string;
+  model: string;
+  messages: CacheMessage[];
+  temperature?: number;
+  namespace?: string;
+  ttl?: number;
+  /** Optional custom normalizer, defaults to normalizeMessages */
+  normalizeMessages?: (messages: CacheMessage[]) => CacheMessage[];
+}
+
+export interface CachedLLMCallResult<TResponse> {
+  hit: boolean;
+  response: TResponse;
+}
+
+/**
+ * High-level helper: wrap a single LLM call with AgentCache.
+ *
+ * This is the "five-line" integration most users want:
+ *
+ * ```ts
+ * const { hit, response } = await cachedLLMCall(cache, {
+ *   provider: 'openai',
+ *   model: 'gpt-4',
+ *   messages,
+ * }, () => openai.chat.completions.create({ ... }));
+ * ```
+ *
+ * If the response is not a string, it is JSON-stringified for storage and
+ * automatically parsed back out on cache hits.
+ */
+export async function cachedLLMCall<TResponse = any>(
+  cache: AgentCache,
+  options: CachedLLMCallOptions,
+  callLLM: () => Promise<TResponse>,
+): Promise<CachedLLMCallResult<TResponse>> {
+  const normalizer = options.normalizeMessages ?? normalizeMessages;
+  const namespace = options.namespace;
+
+  const normalizedMessages = normalizer(options.messages);
+
+  // 1) Try cache first
+  try {
+    const cached = await cache.get({
+      provider: options.provider,
+      model: options.model,
+      messages: normalizedMessages,
+      temperature: options.temperature,
+      namespace,
+    });
+
+    if (cached.hit && typeof cached.response !== 'undefined') {
+      let value: any = cached.response;
+      if (typeof value === 'string') {
+        try {
+          value = JSON.parse(value);
+        } catch {
+          // keep as raw string
+        }
+      }
+
+      return { hit: true, response: value as TResponse };
+    }
+  } catch {
+    // Cache failures should not break LLM calls; fall through
+  }
+
+  // 2) Cache miss or cache error → call LLM
+  const result = await callLLM();
+
+  // 3) Store in cache (fire-and-forget; don't block on cache errors)
+  (async () => {
+    try {
+      const ttl = options.ttl;
+      let toStore: any = result;
+      if (typeof toStore !== 'string') {
+        toStore = JSON.stringify(toStore);
+      }
+
+      await cache.set({
+        provider: options.provider,
+        model: options.model,
+        messages: normalizedMessages,
+        temperature: options.temperature,
+        namespace,
+        response: toStore,
+        ttl,
+      });
+    } catch {
+      // ignore
+    }
+  })();
+
+  return { hit: false, response: result };
 }
 
 // Default export

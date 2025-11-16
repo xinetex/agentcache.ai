@@ -171,6 +171,90 @@ setInterval(async () => {
 
 ---
 
+## JettyThunder TypeScript Service Example
+
+If your JettyThunder backend is TypeScript/Node, prefer the `agentcache-client` SDK over raw `fetch`.
+
+```typescript
+import { AgentCache } from 'agentcache-client';
+
+const cache = new AgentCache({
+  apiKey: process.env.AGENTCACHE_API_KEY!,
+  namespace: 'jettythunder',          // default; override per tenant or workflow
+  defaultTtl: 60 * 60 * 24,           // 1 day
+});
+
+const AGENT_TTLS = {
+  research: 7 * 24 * 60 * 60,
+  coding: 1 * 60 * 60,
+  support: 24 * 60 * 60,
+  data: 5 * 60,
+} as const;
+
+type AgentType = keyof typeof AGENT_TTLS;
+
+function pickTtl(agent: AgentType): number {
+  return AGENT_TTLS[agent] ?? 24 * 60 * 60;
+}
+
+export async function cachedLLMCall(opts: {
+  tenantId: string;
+  agentType: AgentType;
+  provider: string;
+  model: string;
+  messages: { role: string; content: string }[];
+}) {
+  const namespace = `tenant_${opts.tenantId}`;
+  const ttl = pickTtl(opts.agentType);
+
+  // 1) Normalize prompts to improve hit rate
+  const messages = opts.messages.map((m) => ({
+    role: m.role,
+    content: m.content
+      .replace(/\[Timestamp: .*?\]/g, '')
+      .replace(/Session ID: \w+/g, '')
+      .trim(),
+  }));
+
+  // 2) Check cache
+  const result = await cache.get({
+    provider: opts.provider,
+    model: opts.model,
+    messages,
+    namespace,
+  });
+
+  if (result.hit) {
+    return result.response;
+  }
+
+  // 3) Miss → call provider
+  const response = await callProviderDirectly({
+    provider: opts.provider,
+    model: opts.model,
+    messages: opts.messages, // original messages
+  });
+
+  // 4) Store for next time (fire-and-forget safe)
+  cache
+    .set({
+      provider: opts.provider,
+      model: opts.model,
+      messages,
+      namespace,
+      response,
+      ttl,
+    })
+    .catch(() => {});
+
+  return response;
+}
+```
+
+This pattern is what JettyThunder should use in its main LLM pipeline: **every** provider call flows through `cachedLLMCall`, with namespaces per tenant and TTLs per agent type.
+
+---
+
 ## Monitoring & Alerts
 
 ### Health Check
