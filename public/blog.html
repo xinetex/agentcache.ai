@@ -192,7 +192,7 @@
         return `
           <article class="bg-slate-950/70 border ${borderClass} rounded-2xl p-6 hover:transform hover:scale-105 transition-all cursor-pointer" 
                    data-category="${post.category}"
-                   onclick="window.open('${post.mdPath}', '_blank')">
+                   onclick="window.location.href='/post.html?slug=${post.slug}'">
             <div class="flex items-center gap-2 mb-3">
               <span class="px-2 py-1 rounded-full ${colors.bg} border ${colors.border} text-xs ${colors.text}">
                 ${post.category.charAt(0).toUpperCase() + post.category.slice(1)}
