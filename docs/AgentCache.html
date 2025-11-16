@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AgentCache Extension UI System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-[#050816] text-slate-100 antialiased flex flex-col items-center py-8 px-4">
+  <!-- Top Navigation / Brand -->
+  <header class="w-full max-w-6xl mb-6 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div class="flex items-center justify-center w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/40">
+        <!-- Lightning + Cache mark for brand -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="flex flex-col leading-tight">
+        <span class="text-sm font-semibold tracking-tight text-slate-50">AgentCache</span>
+        <span class="text-[11px] text-slate-400">Instant cached AI responses</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-3 text-[11px] text-slate-400">
+      <span class="px-2 py-1 rounded-full border border-slate-700/70 bg-slate-900/70">Chrome Ext · MV3</span>
+      <span class="hidden sm:inline px-2 py-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 text-emerald-300">AA Accessible</span>
+    </div>
+  </header>
+
+  <main class="w-full max-w-6xl grid grid-cols-1 xl:grid-cols-[2fr,1.5fr] gap-6">
+    <!-- LEFT COLUMN: Popups, Badge, Onboarding -->
+    <div class="flex flex-col gap-6">
+      <!-- MAIN POPUP SECTION -->
+      <section class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 shadow-[0_18px_60px_rgba(0,0,0,0.75)]">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-[15px] font-semibold tracking-tight text-slate-50">Main Popup</h2>
+            <p class="text-[11px] text-slate-400">400 × 600 · Active / Empty / Loading</p>
+          </div>
+          <span class="text-[11px] px-2 py-1 rounded-full border border-slate-700/70 text-slate-300">Primary Surface</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <!-- ACTIVE STATE -->
+          <div class="flex flex-col items-center">
+            <span class="text-[11px] text-slate-400 mb-2">Active · With stats</span>
+            <div class="w-[400px] max-w-full h-[600px] bg-[#050816] border border-slate-800 rounded-2xl overflow-hidden flex flex-col shadow-inner">
+              <!-- Popup Header -->
+              <div class="flex items-center justify-between px-4 py-3 border-b border-slate-800">
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-lg bg-sky-500/10 border border-sky-500/50 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <div class="leading-tight">
+                    <p class="text-xs font-semibold tracking-tight text-slate-50">AgentCache</p>
+                    <p class="text-[10px] text-slate-400">This page · Caching active</p>
+                  </div>
+                </div>
+                <button class="text-[10px] px-2 py-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/15 hover:border-emerald-400/60 transition-colors">
+                  ON
+                </button>
+              </div>
+
+              <!-- Stats Summary -->
+              <div class="px-4 py-3 border-b border-slate-800 bg-gradient-to-b from-slate-900/70 to-slate-950/80">
+                <div class="flex items-center justify-between gap-2 mb-2.5">
+                  <div>
+                    <p class="text-xs text-slate-300">Today’s savings</p>
+                    <p class="text-xl font-semibold tracking-tight text-slate-50">12.4s</p>
+                  </div>
+                  <div class="flex items-center gap-2 text-[11px]">
+                    <div class="flex items-center gap-1 text-emerald-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M12 22c5-1.5 8-5.5 8-10V5l-8-3-8 3v7c0 4.5 3 8.5 8 10z" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M9.5 12.5L11 14l3.5-4" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      <span>98% hit rate</span>
+                    </div>
+                    <span class="px-1.5 py-0.5 rounded-full bg-slate-900/80 border border-slate-700/70 text-slate-300">Week</span>
+                  </div>
+                </div>
+                <!-- Mini sparkline / stat chips -->
+                <div class="flex items-center gap-2">
+                  <div class="flex-1 h-1.5 rounded-full bg-slate-900 overflow-hidden">
+                    <div class="w-[78%] h-full bg-emerald-500/70"></div>
+                  </div>
+                  <p class="text-[10px] text-slate-400">24 req · 21 cached</p>
+                </div>
+              </div>
+
+              <!-- Main Body -->
+              <div class="flex-1 px-4 py-3 space-y-3 overflow-y-auto">
+                <!-- Current page panel -->
+                <div class="border border-slate-800 rounded-xl p-3 bg-slate-950/70 hover:border-sky-500/60 hover:bg-slate-900/60 transition-colors">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                      <div class="w-6 h-6 rounded-lg bg-slate-900 flex items-center justify-center border border-slate-700/80">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-sky-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                          <circle cx="12" cy="12" r="4.5"/>
+                          <path d="M4 12a8 8 0 0116 0"/>
+                          <path d="M3 9h2.5M3 15h2.5M18.5 9H21M18.5 15H21"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <p class="text-xs font-semibold tracking-tight text-slate-50 truncate">Current site</p>
+                        <p class="text-[11px] text-slate-400 truncate">app.chat.example.com</p>
+                      </div>
+                    </div>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/40 text-emerald-300">Cached</span>
+                  </div>
+                  <div class="grid grid-cols-3 gap-2 text-[10px] text-slate-300">
+                    <div class="flex flex-col">
+                      <span class="text-slate-400 mb-0.5">This session</span>
+                      <span class="text-xs font-semibold tracking-tight text-slate-50">8 hits</span>
+                    </div>
+                    <div class="flex flex-col">
+                      <span class="text-slate-400 mb-0.5">Saved time</span>
+                      <span class="text-xs font-semibold tracking-tight text-slate-50">4.1s</span>
+                    </div>
+                    <div class="flex flex-col">
+                      <span class="text-slate-400 mb-0.5">Requests</span>
+                      <span class="text-xs font-semibold tracking-tight text-slate-50">10 total</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Recent activity list -->
+                <div class="border border-slate-800 rounded-xl bg-slate-950/70">
+                  <div class="px-3 pt-2 pb-1 flex items-center justify-between">
+                    <p class="text-[11px] font-semibold tracking-tight text-slate-200">Recent requests</p>
+                    <button class="text-[10px] text-sky-300 hover:text-sky-200 hover:underline decoration-sky-400/60 underline-offset-2">View details</button>
+                  </div>
+                  <div class="divide-y divide-slate-800/70">
+                    <div class="px-3 py-2 flex items-center justify-between">
+                      <div class="flex flex-col">
+                        <p class="text-[11px] text-slate-200 truncate">Summarize this email thread</p>
+                        <p class="text-[10px] text-slate-500">Just now · chat.app</p>
+                      </div>
+                      <div class="flex flex-col items-end text-[10px]">
+                        <span class="px-1.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/40 text-emerald-300">Cached</span>
+                        <span class="text-slate-400 mt-0.5">0.4s saved</span>
+                      </div>
+                    </div>
+                    <div class="px-3 py-2 flex items-center justify-between">
+                      <div class="flex flex-col">
+                        <p class="text-[11px] text-slate-200 truncate">Translate message to English</p>
+                        <p class="text-[10px] text-slate-500">2 min ago · docs.app</p>
+                      </div>
+                      <div class="flex flex-col items-end text-[10px]">
+                        <span class="px-1.5 py-0.5 rounded-full bg-yellow-500/10 border border-yellow-400/40 text-yellow-300">Partial</span>
+                        <span class="text-slate-400 mt-0.5">0.2s saved</span>
+                      </div>
+                    </div>
+                    <div class="px-3 py-2 flex items-center justify-between">
+                      <div class="flex flex-col">
+                        <p class="text-[11px] text-slate-200 truncate">Refine product description</p>
+                        <p class="text-[10px] text-slate-500">10 min ago · shop.app</p>
+                      </div>
+                      <div class="flex flex-col items-end text-[10px]">
+                        <span class="px-1.5 py-0.5 rounded-full bg-slate-900 border border-slate-600 text-slate-300">Miss</span>
+                        <span class="text-slate-400 mt-0.5">0.0s saved</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="flex items-center justify-between gap-2">
+                  <button class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-sky-500/90 text-xs font-medium tracking-tight text-slate-950 hover:bg-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M5 12h14" stroke-linecap="round"/>
+                      <path d="M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Force cache this reply</span>
+                  </button>
+                  <button class="px-3 py-2 rounded-lg border border-slate-700 bg-slate-900/80 text-[11px] text-slate-200 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 transition">
+                    Settings
+                  </button>
+                </div>
+              </div>
+
+              <!-- Footer -->
+              <div class="px-4 py-2.5 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-500">
+                <div class="flex items-center gap-1.5">
+                  <span class="inline-flex w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  <span>Healthy · 37ms response</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button class="hover:text-slate-300 underline underline-offset-2 decoration-slate-500/60">Help</button>
+                  <button class="hover:text-slate-300 underline underline-offset-2 decoration-slate-500/60">Pause</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- EMPTY STATE -->
+          <div class="flex flex-col items-center">
+            <span class="text-[11px] text-slate-400 mb-2">Empty · No usage yet</span>
+            <div class="w-[400px] max-w-full h-[600px] bg-[#050816] border border-slate-800 rounded-2xl overflow-hidden flex flex-col">
+              <div class="flex items-center justify-between px-4 py-3 border-b border-slate-800">
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-lg bg-sky-500/10 border border-sky-500/50 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <div class="leading-tight">
+                    <p class="text-xs font-semibold tracking-tight text-slate-50">AgentCache</p>
+                    <p class="text-[10px] text-slate-400">This page · Waiting for first request</p>
+                  </div>
+                </div>
+                <button class="text-[10px] px-2 py-1 rounded-full border border-slate-600 bg-slate-900 text-slate-300 hover:bg-slate-800 transition-colors">
+                  ON
+                </button>
+              </div>
+
+              <div class="flex-1 flex flex-col items-center justify-center px-6 text-center gap-3">
+                <div class="w-20 h-20 rounded-2xl border border-dashed border-slate-700/80 bg-slate-950/80 flex items-center justify-center mb-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-9 h-9 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="4" width="18" height="16" rx="3" ry="3"/>
+                    <path d="M7 10h10M7 14h6" stroke-linecap="round"/>
+                    <path d="M9 3v2M15 3v2" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <h3 class="text-sm font-semibold tracking-tight text-slate-50">No cached responses yet</h3>
+                <p class="text-[11px] text-slate-400 max-w-xs">
+                  Open any AI chat or search page, ask your usual questions, and we’ll start caching responses automatically to speed them up next time.
+                </p>
+                <div class="flex flex-col gap-2 mt-1 w-full max-w-xs">
+                  <button class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-sky-500/90 text-xs font-medium tracking-tight text-slate-950 hover:bg-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M8 12l3 3 5-6" stroke-linecap="round" stroke-linejoin="round"/>
+                      <circle cx="12" cy="12" r="9"/>
+                    </svg>
+                    Try on your favorite AI chat
+                  </button>
+                  <button class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-950 text-[11px] text-slate-200 hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/>
+                    </svg>
+                    See supported sites
+                  </button>
+                </div>
+              </div>
+
+              <div class="px-4 py-2.5 border-t border-slate-800 text-[10px] text-slate-500 flex items-center justify-between">
+                <span>Tip: responses are stored locally and never shared.</span>
+                <button class="hover:text-slate-300 underline underline-offset-2 decoration-slate-500/60">Privacy</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- LOADING STATE -->
+          <div class="flex flex-col items-center">
+            <span class="text-[11px] text-slate-400 mb-2">Loading · Connecting</span>
+            <div class="w-[400px] max-w-full h-[600px] bg-[#050816] border border-slate-800 rounded-2xl overflow-hidden flex flex-col">
+              <div class="flex items-center justify-between px-4 py-3 border-b border-slate-800">
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-lg bg-sky-500/10 border border-sky-500/50 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-sky-400 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <div class="leading-tight">
+                    <p class="text-xs font-semibold tracking-tight text-slate-50">AgentCache</p>
+                    <p class="text-[10px] text-slate-400">This page · Connecting…</p>
+                  </div>
+                </div>
+                <button class="text-[10px] px-2 py-1 rounded-full border border-sky-500/40 bg-slate-900 text-sky-300">
+                  Syncing
+                </button>
+              </div>
+
+              <div class="flex-1 flex flex-col items-center justify-center px-6 text-center gap-4">
+                <div class="relative">
+                  <div class="w-16 h-16 rounded-full border-2 border-slate-800 border-t-sky-400 animate-spin-slow mx-auto"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-sky-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="space-y-1">
+                  <h3 class="text-sm font-semibold tracking-tight text-slate-50">Warming up your cache</h3>
+                  <p class="text-[11px] text-slate-400 max-w-xs mx-auto">
+                    We’re checking connectivity and recent activity so we can show accurate stats for this page.
+                  </p>
+                </div>
+                <div class="w-full max-w-xs space-y-2">
+                  <div class="flex items-center justify-between text-[10px] text-slate-400">
+                    <span>Checking browser storage</span>
+                    <span class="text-emerald-300">Done</span>
+                  </div>
+                  <div class="h-1.5 rounded-full bg-slate-900 overflow-hidden">
+                    <div class="w-3/5 h-full bg-sky-500/80 animate-pulse"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[10px] text-slate-400">
+                    <span>Syncing with this site</span>
+                    <span>In progress…</span>
+                  </div>
+                </div>
+                <button class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-slate-700 bg-slate-900/80 text-[11px] text-slate-200 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M4 4v7h7" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M20 20v-7h-7" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M5 19L9.5 14.5M14.5 9.5L19 5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Retry connection
+                </button>
+              </div>
+
+              <div class="px-4 py-2.5 border-t border-slate-800 text-[10px] text-slate-500 flex items-center justify-between">
+                <span>Status: contacting service…</span>
+                <span class="inline-flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                  <span>Expected &lt; 2s</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- INLINE BADGE / CONTENT SCRIPT SECTION -->
+      <section class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-[15px] font-semibold tracking-tight text-slate-50">Inline Badge &amp; Content Script</h2>
+            <p class="text-[11px] text-slate-400">Within AI chat thread · Hover / Expanded</p>
+          </div>
+          <span class="text-[11px] px-2 py-1 rounded-full border border-sky-500/50 text-sky-300">In-page surface</span>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 md:p-5">
+          <!-- Mock chat message -->
+          <div class="space-y-4">
+            <div class="max-w-xl rounded-2xl bg-slate-900/90 border border-slate-800 p-4 relative">
+              <div class="flex items-start gap-3">
+                <div class="w-7 h-7 rounded-full bg-sky-500/20 flex items-center justify-center text-[11px] text-sky-200 font-medium">AI</div>
+                <div class="space-y-2">
+                  <p class="text-[13px] text-slate-100">
+                    Here’s a summary of the article you shared, focusing on performance optimization for React apps, including memoization, code-splitting, and caching strategies.
+                  </p>
+                  <!-- Inline badge row -->
+                  <div class="flex items-center gap-2 mt-1">
+                    <!-- Compact badge (default) -->
+                    <button class="group inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1 text-[11px] text-emerald-200 hover:bg-emerald-500/15 transition">
+                      <span class="inline-flex w-1.5 h-1.5 rounded-full bg-emerald-400 group-hover:shadow-[0_0_0_3px_rgba(16,185,129,0.35)] transition-shadow"></span>
+                      <span>0.3s faster via AgentCache</span>
+                    </button>
+
+                    <!-- Hover/expanded pill -->
+                    <div class="hidden md:flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900/90 px-2.5 py-1 text-[10px] text-slate-300 shadow-sm">
+                      <span class="text-sky-300">21×</span>
+                      <span>seen before · served from local cache</span>
+                      <button class="ml-1 px-1.5 py-0.5 rounded-full bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-200">Details</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mini popover card preview -->
+              <div class="mt-3 w-full max-w-xs rounded-xl border border-slate-800 bg-slate-950/95 p-3 shadow-lg">
+                <div class="flex items-center justify-between mb-1.5">
+                  <p class="text-[11px] font-semibold tracking-tight text-slate-100">Cache details</p>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/40 text-emerald-300">Hit</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2 text-[10px] text-slate-300 mb-2">
+                  <div>
+                    <p class="text-slate-400">Saved</p>
+                    <p class="font-semibold text-slate-50">0.31s</p>
+                  </div>
+                  <div>
+                    <p class="text-slate-400">First seen</p>
+                    <p>2 days ago</p>
+                  </div>
+                  <div>
+                    <p class="text-slate-400">Served from</p>
+                    <p>Local</p>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between text-[10px] text-slate-400">
+                  <span class="truncate">Key: <span class="text-slate-200">"summarize-article-react-perf"</span></span>
+                  <button class="ml-2 text-sky-300 hover:text-sky-200 hover:underline underline-offset-2">Open log</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Another message showing miss state -->
+            <div class="max-w-xl rounded-2xl bg-slate-900/80 border border-slate-800 p-4">
+              <div class="flex items-start gap-3">
+                <div class="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-[11px] text-slate-300 font-medium">AI</div>
+                <div class="space-y-2">
+                  <p class="text-[13px] text-slate-100">
+                    Draft a follow-up email to a customer who requested a custom pricing plan, emphasizing value and flexibility.
+                  </p>
+                  <button class="inline-flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900/90 px-2.5 py-1 text-[11px] text-slate-300 hover:bg-slate-800 transition">
+                    <span class="inline-flex w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+                    <span>Not cached yet — click to pin this reply</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ONBOARDING / FIRST-RUN SECTION -->
+      <section class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-[15px] font-semibold tracking-tight text-slate-50">Onboarding · First Run</h2>
+            <p class="text-[11px] text-slate-400">Full tab page · Welcome / Permissions</p>
+          </div>
+          <span class="text-[11px] px-2 py-1 rounded-full border border-violet-500/40 text-violet-200">Edge case surface</span>
+        </div>
+
+        <div class="w-full rounded-2xl border border-slate-800 bg-[radial-gradient(circle_at_top,_#1e293b_0,_#020617_55%,_#020617_100%)] overflow-hidden">
+          <div class="grid md:grid-cols-2">
+            <!-- Left: hero & steps -->
+            <div class="p-6 md:p-8 flex flex-col justify-between gap-6">
+              <div class="space-y-3">
+                <div class="inline-flex items-center gap-1.5 rounded-full border border-sky-500/40 bg-sky-500/10 px-2.5 py-1 text-[10px] text-sky-200">
+                  <span class="inline-flex w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>Installed · Ready to set up</span>
+                </div>
+                <h1 class="text-xl md:text-2xl font-semibold tracking-tight text-slate-50">
+                  Welcome to <span class="text-sky-300">AgentCache</span>
+                </h1>
+                <p class="text-[12px] text-slate-300 max-w-md">
+                  We silently cache your AI replies so the answers you ask for most often appear almost instantly the next time.
+                </p>
+              </div>
+
+              <ol class="space-y-3 text-[11px] text-slate-200">
+                <li class="flex items-start gap-2">
+                  <span class="mt-0.5 inline-flex w-4 h-4 items-center justify-center rounded-full bg-sky-500/20 border border-sky-500/60 text-[10px] text-sky-200">1</span>
+                  <div>
+                    <p class="font-semibold">Grant read access to AI pages</p>
+                    <p class="text-slate-400">We only scan AI chat and search result pages to detect when responses finish loading.</p>
+                  </div>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="mt-0.5 inline-flex w-4 h-4 items-center justify-center rounded-full bg-sky-500/20 border border-sky-500/60 text-[10px] text-sky-200">2</span>
+                  <div>
+                    <p class="font-semibold">Keep data on your device</p>
+                    <p class="text-slate-400">Responses are stored locally and never sent to our servers or third parties.</p>
+                  </div>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="mt-0.5 inline-flex w-4 h-4 items-center justify-center rounded-full bg-sky-500/20 border border-sky-500/60 text-[10px] text-sky-200">3</span>
+                  <div>
+                    <p class="font-semibold">Control everything, anytime</p>
+                    <p class="text-slate-400">Pause on specific sites, clear cache, or disable inline badges from the main popup.</p>
+                  </div>
+                </li>
+              </ol>
+
+              <div class="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
+                <button class="inline-flex justify-center items-center gap-1.5 px-4 py-.5 rounded-lg bg-sky-500 text-[12px] font-medium tracking-tight text-slate-950 hover:bg-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M5 12h14" stroke-linecap="round"/>
+                    <path d="M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Enable on supported sites
+                </button>
+                <button class="inline-flex justify-center items-center px-3.5 py-2 rounded-lg border border-slate-700 bg-slate-900/80 text-[11px] text-slate-200 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 transition">
+                  Skip for now
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between text-[10px] text-slate-500">
+                <div class="flex items-center gap-2">
+ <label class="inline-flex items-center gap-1 cursor-pointer">
+                    <input type="checkbox" class="h-3 w-3 rounded border-slate-600 bg-slate-900 text-sky-500 focus:ring-sky-500" checked />
+                    <span>Launch on first open only</span>
+                  </label>
+                </div>
+                <button class="hover:text-slate-300 underline underline-offset-2 decoration-slate-500/60">
+                  Privacy &amp; data usage
+                </button>
+              </div>
+            </div>
+
+            <!-- Right: visual + permissions card -->
+            <div class="relative bg-gradient-to-b from-slate-900/60 to-slate-950/90 border-l border-slate-800/80 p-6 md:p-8 flex flex-col gap-4">
+              <div class="absolute -top-10 -right-10 w-40 h-40 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+              <div class="relative space-y-3">
+                <p class="text-[11px] font-semibold tracking-tight text-slate-200 uppercase">Preview</p>
+                <div class="rounded-xl border border-slate-800 bg-slate-950/90 p-3 space-y-2">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-lg bg-sky-500/10 border border-sky-500/40 flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-sky-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </div>
+                    <div class="leading-tight">
+                      <p class="text-[11px] font-semibold text-slate-50">AgentCache · Active</p>
+                      <p class="text-[10px] text-slate-400">Inline badges + popup enabled</p>
+                    </div>
+                  </div>
+                  <div class="mt-1 rounded-lg border border-slate-800 bg-slate-900/80 p-2 flex items-center justify-between text-[10px] text-slate-300">
+                    <span>Summarize long email threads</span>
+                    <span class="px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/40">0.4s saved</span>
+                  </div>
+                  <div class="mt-1 rounded-lg border border-slate-800 bg-slate-900/80 p-2 flex items-center justify-between text-[10px] text-slate-300">
+                    <span>Translate messages instantly</span>
+                    <span class="px-1.5 py-0.5 rounded-full bg-sky-500/10 text-sky-300 border border-sky-500/40">Hit rate 94%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="relative mt-2 space-y-2">
+                <p class="text-[11px] font-semibold tracking-tight text-slate-200 uppercase">Permissions</p>
+                <div class="rounded-xl border border-slate-800 bg-slate-950/90 p-3 space-y-2 text-[11px] text-slate-200">
+                  <label class="flex items-start gap-2 cursor-pointer">
+                    <input type="checkbox" class="mt-0.5 h-3 w-3 rounded border-slate-600 bg-slate-900 text-sky-500 focus:ring-sky-500" checked />
+                    <div>
+                      <p class="font-semibold">Access AI chat pages</p>
+                      <p class="text-slate-400">Allow AgentCache to detect when AI responses finish rendering to cache them.</p>
+                    </div>
+                  </label>
+                  <label class="flex items-start gap-2 cursor-pointer">
+                    <input type="checkbox" class="mt-0.5 h-3 w-3 rounded border-slate-600 bg-slate-900 text-sky-500 focus:ring-sky-500" />
+                    <div>
+                      <p class="font-semibold">Show inline badges</p>
+                      <p class="text-slate-400">Display small “cached” indicators near responses that came from your local cache.</p>
+                    </div>
+                  </label>
+                  <label class="flex items-start gap-2 cursor-pointer">
+                    <input type="checkbox" class="mt-0.5 h-3 w-3 rounded border-slate-600 bg-slate-900 text-sky-500 focus:ring-sky-500" />
+                    <div>
+                      <p class="font-semibold">Send anonymous diagnostics</p>
+                      <p class="text-slate-400">Share basic error rates and performance metrics to help improve AgentCache (no content data).</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div class="relative mt-auto text-[10px] text-slate-500">
+                You can change these anytime from the extension settings. We never see your prompts, responses, or browsing history.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- RIGHT COLUMN: Options, Logs, Toasts -->
+    <div class="flex flex-col gap-6">
+      <!-- OPTIONS / SETTINGS POPUP -->
+      <section class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-[15px] font-semibold tracking-tight text-slate-50">Quick Settings</h2>
+            <p class="text-[11px] text-slate-400">Nested in popup · Tabs &amp; controls</p>
+          </div>
+          <span class="text-[11px] px-2 py-1 rounded-full border border-slate-700/70 text-slate-300">Secondary Surface</span>
+        </div>
+
+        <div class="w-full max-w-md bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
+          <!-- Tabs -->
+          <div class="flex border-b border-slate-800 text-[11px]">
+            <button class="flex-1 px-3 py-2.5 text-center bg-slate-900/80 text-slate-100 border-b-2 border-sky-500 font-medium">
+              General
+            </button>
+            <button class="flex-1 px-3 py-2.5 text-center text-slate-400 hover:text-slate-100 hover:bg-slate-900/40 transition">
+              Sites
+            </button>
+            <button class="flex-1 px-3 py-2.5 text-center text-slate-400 hover:text-slate-100 hover:bg-slate-900/40 transition">
+              Advanced
+            </button>
+          </div>
+
+          <!-- Content -->
+          <div class="p-4 space-y-4 text-[11px]">
+            <!-- General section -->
+            <div class="space-y-2">
+              <h3 class="text-[11px] font-semibold tracking-tight text-slate-200">Behavior</h3>
+              <label class="flex items-start gap-2 cursor-pointer">
+                <input type="checkbox" class="mt-0.5 h-3 w-3 rounded border-slate-600 bg-slate-900 text-sky-500 focus:ring-sky-500" checked />
+                <div>
+                  <p class="font-medium text-slate-100">Auto-cache supported pages</p>
+                  <p class="text-slate-400">Automatically detect and cache AI responses on supported sites.</p>
+                </div>
+              </label>
+              <label class="flex items-start gap-2 cursor-pointer">
+                <input type="checkbox" class="mt-0.5 h-3 w-3 rounded border-slate-600 bg-slate-900 text-sky-500 focus:ring-sky-500" checked />
+                <div>
+                  <p class="font-medium text-slate-100">Show inline badges</p>
+                  <p class="text-slate-400">Surface small indicators on the page when a reply was served from cache.</p>
+                </div>
+              </label>
+            </div>
+
+            <div class="border-t border-slate-800 pt-3 space-y-3">
+              <h3 class="text-[11px] font-semibold tracking-tight text-slate-200">Performance</h3>
+              <div class="flex items-center justify-between gap-2">
+                <div>
+                  <p class="text-slate-300">Cache size limit</p>
+                  <p class="                  <p class="text-[10px] text-slate-400">Max storage used for cached responses on this device.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input
+                    type="range"
+                    min="128"
+                    max="2048"
+                    value="512"
+                    class="w-28 accent-sky-500 cursor-pointer"
+                    aria-label="Cache size limit in megabytes"
+                  />
+                  <span class="px-2 py-1 rounded-md border border-slate-700 bg-slate-900 text-[10px] text-slate-100">
+                    512 MB
+                  </span>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between gap-2">
+                <div>
+                  <p class="text-slate-300">Eviction strategy</p>
+                  <p class="text-[10px] text-slate-400">How we decide which entries to remove first.</p>
+                </div>
+                <select
+                  class="px-2 py-1.5 rounded-md border border-slate-700 bg-slate-900 text-[10px] text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/70"
+                  aria-label="Eviction strategy"
+                >
+                  <option>LRU (recommended)</option>
+                  <option>Most stale</option>
+                  <option>Largest entries</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="border-t border-slate-800 pt-3 space-y-3">
+              <h3 class="text-[11px] font-semibold tracking-tight text-slate-200">Data</h3>
+              <div class="flex items-center justify-between gap-2">
+                <div>
+                  <p class="text-slate-300">Current usage</p>
+                  <p class="text-[10px] text-slate-400">234 MB · 3,214 entries</p>
+                </div>
+                <button class="px-2.5 py-1.5 rounded-md border border-rose-500/60 bg-rose-500/10 text-[10px] text-rose-200 hover:bg-rose-500/20 transition">
+                  Clear cache…
+                </button>
+              </div>
+              <p class="text-[10px] text-slate-500">
+                Clearing the cache only affects locally stored responses. Your prompts and AI history stay with your providers.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SITE RULES / SCOPES MOCK -->
+      <section class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-[15px] font-semibold tracking-tight text-slate-50">Site Rules</h2>
+            <p class="text-[11px] text-slate-400">Per‑site behavior · Allow / Block</p>
+          </div>
+          <span class="text-[11px] px-2 py-1 rounded-full border border-slate-700/70 text-slate-300">Context Controls</span>
+        </div>
+
+        <div class="w-full max-w-md bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden text-[11px]">
+          <div class="px-4 py-3 border-b border-slate-800 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-lg bg-slate-900 flex items-center justify-center border border-slate-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-sky-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <circle cx="12" cy="12" r="4.5"/>
+                  <path d="M4 12a8 8 0 0116 0"/>
+                </svg>
+              </div>
+              <div>
+                <p class="font-semibold text-slate-100">app.chat.example.com</p>
+                <p class="text-[10px] text-slate-400">This site · Active</p>
+              </div>
+            </div>
+            <button class="px-2.5 py-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/15 transition">
+              Allowed
+            </button>
+          </div>
+
+          <div class="divide-y divide-slate-800">
+            <div class="px-4 py-3 flex            <div class="px-4 py-3 flex items-center justify-between gap-2">
+              <div class="flex flex-col">
+                <p class="font-medium text-slate-100">*.chat.openai.com</p>
+                <p class="text-[10px] text-slate-400">All paths · Inline badges + popup</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/40 text-emerald-300">Allowed</span>
+                <button class="px-1.5 py-0.5 rounded-full border border-slate-700 text-[10px] text-slate-300 hover:bg-slate-800 transition">
+                  Edit
+                </button>
+              </div>
+            </div>
+
+            <div class="px-4 py-3 flex items-center justify-between gap-2">
+              <div class="flex flex-col">
+                <p class="font-medium text-slate-100">mail.example.com</p>
+                <p class="text-[10px] text-slate-400">Only /inbox/* · Popup only</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/40 text-amber-300">Limited</span>
+                <button class="px-1.5 py-0.5 rounded-full border border-slate-700 text-[10px] text-slate-300 hover:bg-slate-800 transition">
+                  Edit
+                </button>
+              </div>
+            </div>
+
+            <div class="px-4 py-3 flex items-center justify-between gap-2">
+              <div class="flex flex-col">
+                <p class="font-medium text-slate-100">private.docs.com</p>
+                <p class="text-[10px] text-slate-400">All paths · Never cache</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/40 text-rose-300">Blocked</span>
+                <button class="px-1.5 py-0.5 rounded-full border border-slate-700 text-[10px] text-slate-300 hover:bg-slate-800 transition">
+                  Edit
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-4 py-3 border-t border-slate-800 bg-slate-950/90 flex flex-col gap-2">
+            <div class="flex items-center gap-2">
+              <input
+                type="text"
+                class="flex-1 px-2.5 py-1.5 rounded-md border border-slate-700 bg-slate-900 text-[11px] text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/70"
+                placeholder="Add domain or pattern (e.g. *.support.example.com)"
+                aria-label="Add site rule pattern"
+              />
+              <button class="px-2.5 py-1.5 rounded-md bg-sky-500 text-[11px] font-medium text-slate-950 hover:bg-sky-400 transition">
+                Add
+              </button>
+            </div>
+            <p class="text-[10px] text-slate-500">
+              Rules are matched from top to bottom. More specific patterns override broader ones.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- LOG VIEWER / HISTORY -->
+      <section class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-[15px] font-semibold tracking-tight text-slate-50">Request Log</h2>
+            <p class="text-[11px] text-slate-400">Recent cache hits, misses, and diagnostics</p>
+          </div>
+          <span class="text-[11px] px-2 py-1 rounded-full border border-slate-700/70 text-slate-300">Debug Surface</span>
+        </div>
+
+        <div class="w-full max-w-md bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden text-[11px]">
+          <div class="px-4 py-2.5 border-b border-slate-800 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <div class="relative">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <circle cx="11" cy="11" r="6"/>
+                  <path d="M16 16l4 4" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <input
+                type="text"
+                class="w-32 sm:w-44 px-2 py-1 rounded-md border border-slate-700 bg-slate-900 text-[11px] text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/70"
+                placeholder="Filter by key or site"
+                aria-label="Filter request log"
+              />
+            </div>
+            <div class="flex items-center gap-2">
+              <select
+                class="px-2 py-1 rounded-md border border-slate-700 bg-slate-900 text-[10px] text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/70"
+                aria-label="Filter by status"
+              >
+                <option>All</option>
+                <option>Hits</option>
+                <option>Misses</option>
+                <option>Partial</option>
+              </select>
+              <button class="px-2 py-1 rounded-md border border-slate-700 bg-slate-900 text-[10px] text-slate-200 hover:bg-slate-800 transition">
+                Export
+              </button>
+            </div>
+          </div>
+
+          <div class="max-h-64 overflow-y-auto divide-y divide-slate-800">
+            <div class="px-4 py-3 flex items-start justify-between gap-3">
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="px-1.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/40 text-emerald-300 text-[10px]">
+                    Hit
+                  </span>
+                  <p class="font-medium text-slate-100 truncate">summarize-article-react-perf</p>
+                </div>
+                <p class="mt-0.5 text-[10px] text-slate-400 truncate">
+                  app.chat.example.com · "Here’s a summary of the article you shared..."
+                </p>
+                <p class="mt-0.5 text-[10px] text-slate-500">
+                  Stored 2 days ago · 0.31s saved · served from local
+                </p>
+              </div>
+              <div class="flex flex-col items-end text-[10px] text-slate-400">
+                <span>Just now</span>
+                <button class="mt-1 px-1.5 py-0.5 rounded-full border border-slate-700 text-slate-300 hover:bg-slate-800 transition">
+                  Inspect
+                </button>
+              </div>
+            </div>
+
+            <div class="px-4 py-3 flex items-start justify-between gap-3">
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="px-1.5 py-0.5 rounded-full bg-slate-900 border border-slate-600 text-slate-300 text-[10px]">
+                    Miss
+                  </span>
+                  <p class="font-medium text-slate-100 truncate">followup-email-custom-plan</p>
+                </div>
+                <p class="mt-0.5 text-[10px] text-slate-400 truncate">
+                  mail.example.com · "Draft a follow-up email to a customer..."
+                </p>
+                <p class="mt-0.5 text-[10px] text-slate-500">
+                  First seen · 0.00s saved · eligible for caching
+                </p>
+              </div>
+              <div class="flex flex-col items-end text-[10px] text-slate-400">
+                <span>2 min ago</span>
+                <button class="mt-1 px-1.5 py-0.5 rounded-full border border-slate-700 text-slate-300 hover:bg-slate-800 transition">
+                  Pin
+                </button>
+              </div>
+            </div>
+
+            <div class="px-4 py-3 flex items-start justify-between gap-3">
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="px-1.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/40 text-amber-300 text-[10px]">
+                    Partial
+                  </span>
+                  <p class="font-medium text-slate-100 truncate">translate-short-message</p>
+                </div>
+                <p class="mt-0.5 text-[10px] text-slate-400 truncate">
+                  docs.app · "Translate the following note to English..."
+                </p>
+                <p class="mt-0.5 text-[10px] text-slate-500">
+                  Variants merged · 0.18s avg saved over 5 uses
+                </p>
+              </div>
+              <div class="flex flex-col items-end text-[10px] text-slate-400">
+                <span>10 min ago</span>
+                <button class="mt-1 px-1.5 py-0.5 rounded-full border border-slate-700 text-slate-300 hover:bg-slate-800 transition">
+                  Inspect
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-4 py-2.5 border-t border-slate-800 bg-slate-950/90 flex items-center justify-between text-[10px] text-slate-500">
+            <span>Showing last 50 requests</span>
+            <button class="hover:text-slate-300 underline underline-offset-2 decoration-slate-500/60">
+              Open full history
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TOASTS / INLINE NOTIFICATIONS -->
+      <section class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-[15px] font-semibold tracking-tight text-slate-50">Toasts &amp; Notifications</h2>
+            <p class="text-[11px] text-slate-400">Ephemeral messages · Success / Error / Info</p>
+          </div>
+          <span class="text-[11px] px-2 py-1 rounded-full border border-slate-700/70 text-slate-300">Transient Surface</span>
+        </div>
+
+        <div class="w-full max-w-md space-y-3 text-[11px]">
+          <!-- Success toast -->
+          <div class="relative overflow-hidden rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-3 py-2.5 flex items-start gap-2">
+            <div class="mt-0.5 text-emerald-300">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M8.5 12.5L11 15l4.5-6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <p class="font-medium text-slate-50">Reply pinned to cache</p>
+              <p class="text-[10px] text-emerald-100">
+                We’ll prioritize storing future variants of this answer for faster hits.
+              </p>
+            </div>
+            <button class="ml-2 text-[10px] text-emerald-200 hover:text-emerald-100 hover:underline underline-offset-2">
+              Undo
+            </button>
+          </div>
+
+          <!-- Error toast -->
+          <div class="relative overflow-hidden rounded-xl border border-rose-500/50 bg-rose-500/10 px-3 py-2.5 flex items-start gap-2">
+            <div class="mt-0.5 text-rose-300">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M12 8v5" stroke-linecap="round"/>
+                <circle cx="12" cy="15.5" r="0.75" fill="currentColor" stroke="none"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <p class="font-medium text-slate-50">Failed to write to cache</p>
+              <p class="text-[10px] text-rose-100">
+                Browser storage quota was exceeded. Try reducing your cache size limit or clearing old entries.
+              </p>
+            </div>
+            <button class="ml-2 text-[10px] text-rose-100 hover:text-rose-50 hover:underline underline-offset-2">
+              Open settings
+            </button>
+          </div>
+
+          <!-- Info toast -->
+          <div class="relative overflow-hidden rounded-xl border border-sky-500/40 bg-sky-500/10 px-3 py-2.5 flex items-start gap-2">
+            <div class="mt-0.5 text-sky-300">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M12 9v6" stroke-linecap="round"/>
+                <circle cx="12" cy="6.5" r="0.75" fill="currentColor" stroke="none"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <p class="font-medium text-slate-50">New site detected</p>
+              <p class="text-[10px] text-sky-100">
+                AgentCache can speed up replies on this page. Open the popup to configure behavior.
+              </p>
+            </div>
+            <button class="ml-2 text-[10px] text-sky-100 hover:text-sky-50 hover:underline underline-offset-2">
+              Configure
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer / meta -->
+  <footer class="w-full max-w-6xl mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] text-slate-500">
+    <p>AgentCache UI system · Extension surfaces preview</p>
+    <div class="flex items-center gap-3">
+      <span>Built with Tailwind · Dark theme first</span>
+      <a href="#" class="text-sky-300 hover:text-sky-200 hover:underline underline-offset-2">Design tokens</a>
+    </div>
+  </footer>
+
+  <!-- Simple animation utility for slower spinner -->
+  <style>
+    .animate-spin-slow {
+      animation: spin 1.6s linear infinite;
+    }
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</body>
+</html>

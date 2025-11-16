@@ -1,4 +1,21 @@
 {
   "name": "agentcache-ai",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "mcp:build": "tsc src/mcp/server.ts --outDir dist/mcp --module NodeNext --moduleResolution NodeNext --target ES2022",
+    "mcp:dev": "tsx src/mcp/server.ts",
+    "mcp:start": "node dist/mcp/server.js"
+  },
+  "dependencies": {
+    "@cfworker/json-schema": "^4.1.1",
+    "@modelcontextprotocol/sdk": "^1.22.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
 }

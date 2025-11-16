@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AgentCache Pricing – Anti-Cache Features</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-[#050816] text-slate-100 antialiased flex flex-col items-center py-8 px-4">
+  <!-- Header -->
+  <header class="w-full max-w-6xl mb-8 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div class="flex items-center justify-center w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/40">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="flex flex-col leading-tight">
+        <span class="text-sm font-semibold tracking-tight text-slate-50">AgentCache</span>
+        <span class="text-[11px] text-slate-400">Intelligent caching + freshness monitoring</span>
+      </div>
+    </div>
+    <button id="closeBtn" class="px-3 py-1.5 rounded-lg border border-slate-700 text-xs text-slate-300 hover:bg-slate-800">
+      Back
+    </button>
+  </header>
+
+  <main class="w-full max-w-6xl">
+    <!-- Pricing Hero -->
+    <div class="text-center mb-8">
+      <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-slate-50 mb-3">
+        Choose Your Plan
+      </h1>
+      <p class="text-slate-400 text-sm md:text-base max-w-2xl mx-auto">
+        Start free, upgrade when you need anti-cache features. <br class="hidden sm:inline"/>
+        All plans include unlimited caching — pay only for freshness monitoring.
+      </p>
+    </div>
+
+    <!-- Pricing Tiers -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+      <!-- FREE -->
+      <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-5 flex flex-col">
+        <div class="mb-4">
+          <h3 class="text-lg font-semibold tracking-tight text-slate-50 mb-1">Free</h3>
+          <div class="flex items-baseline gap-1 mb-2">
+            <span class="text-3xl font-bold text-slate-50">$0</span>
+            <span class="text-sm text-slate-400">/month</span>
+          </div>
+          <p class="text-xs text-slate-400">Perfect for testing & hobby projects</p>
+        </div>
+
+        <ul class="space-y-2 text-xs text-slate-300 mb-6 flex-1">
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-400 mt-0.5">✓</span>
+            <span>Unlimited cache storage</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-400 mt-0.5">✓</span>
+            <span>All LLM providers (OpenAI, Anthropic, etc.)</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-400 mt-0.5">✓</span>
+            <span>90% cost reduction</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-400 mt-0.5">✓</span>
+            <span>10× faster responses</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-slate-600 mt-0.5">✗</span>
+            <span class="text-slate-500">No anti-cache features</span>
+          </li>
+        </ul>
+
+        <button class="w-full py-2.5 rounded-lg border border-slate-700 bg-slate-900/80 text-xs font-medium text-slate-200 hover:bg-slate-800 transition">
+          Get Started Free
+        </button>
+      </div>
+
+      <!-- STARTER -->
+      <div class="bg-slate-950/70 border border-sky-500/50 rounded-2xl p-5 flex flex-col relative">
+        <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-sky-500/20 border border-sky-500/50 text-[10px] text-sky-300 font-medium">
+          MOST POPULAR
+        </div>
+        <div class="mb-4">
+          <h3 class="text-lg font-semibold tracking-tight text-slate-50 mb-1">Starter</h3>
+          <div class="flex items-baseline gap-1 mb-2">
+            <span class="text-3xl font-bold text-slate-50">$19</span>
+            <span class="text-sm text-slate-400">/month</span>
+          </div>
+          <p class="text-xs text-slate-400">For indie devs & small teams</p>
+        </div>
+
+        <ul class="space-y-2 text-xs text-slate-300 mb-6 flex-1">
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-400 mt-0.5">✓</span>
+            <span><strong>Everything in Free</strong></span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-sky-400 mt-0.5">+</span>
+            <span>🟢🟡🔴 Freshness indicators</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-sky-400 mt-0.5">+</span>
+            <span>Manual cache invalidation API</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-sky-400 mt-0.5">+</span>
+            <span>25 URL listeners</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-sky-400 mt-0.5">+</span>
+            <span>Hourly monitoring checks</span>
+          </li>
+        </ul>
+
+        <button class="payment-btn w-full py-2.5 rounded-lg bg-sky-500 text-xs font-medium text-slate-950 hover:bg-sky-400 transition" data-plan="starter" data-price="19">
+          Subscribe to Starter
+        </button>
+      </div>
+
+      <!-- PRO -->
+      <div class="bg-slate-950/70 border border-violet-500/40 rounded-2xl p-5 flex flex-col">
+        <div class="mb-4">
+          <h3 class="text-lg font-semibold tracking-tight text-slate-50 mb-1">Pro</h3>
+          <div class="flex items-baseline gap-1 mb-2">
+            <span class="text-3xl font-bold text-slate-50">$99</span>
+            <span class="text-sm text-slate-400">/month</span>
+          </div>
+          <p class="text-xs text-slate-400">For serious agent platforms</p>
+        </div>
+
+        <ul class="space-y-2 text-xs text-slate-300 mb-6 flex-1">
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-400 mt-0.5">✓</span>
+            <span><strong>Everything in Starter</strong></span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-violet-400 mt-0.5">+</span>
+            <span>250 URL listeners</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-violet-400 mt-0.5">+</span>
+            <span>15-minute monitoring checks</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-violet-400 mt-0.5">+</span>
+            <span>Webhook notifications</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-violet-400 mt-0.5">+</span>
+            <span>Custom freshness rules</span>
+          </li>
+        </ul>
+
+        <button class="payment-btn w-full py-2.5 rounded-lg bg-violet-500 text-xs font-medium text-white hover:bg-violet-400 transition" data-plan="pro" data-price="99">
+          Subscribe to Pro
+        </button>
+      </div>
+
+      <!-- ENTERPRISE -->
+      <div class="bg-slate-950/70 border border-amber-500/40 rounded-2xl p-5 flex flex-col">
+        <div class="mb-4">
+          <h3 class="text-lg font-semibold tracking-tight text-slate-50 mb-1">Enterprise</h3>
+          <div class="flex items-baseline gap-1 mb-2">
+            <span class="text-2xl font-bold text-slate-50">Custom</span>
+          </div>
+          <p class="text-xs text-slate-400">For platforms like JettyThunder</p>
+        </div>
+
+        <ul class="space-y-2 text-xs text-slate-300 mb-6 flex-1">
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-400 mt-0.5">✓</span>
+            <span><strong>Everything in Pro</strong></span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-amber-400 mt-0.5">+</span>
+            <span>Unlimited URL listeners</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-amber-400 mt-0.5">+</span>
+            <span>Real-time monitoring (websockets)</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-amber-400 mt-0.5">+</span>
+            <span>Proactive re-caching</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-amber-400 mt-0.5">+</span>
+            <span>Dedicated support & SLA</span>
+          </li>
+        </ul>
+
+        <button class="w-full py-2.5 rounded-lg bg-amber-500 text-xs font-medium text-slate-950 hover:bg-amber-400 transition">
+          Contact Sales
+        </button>
+      </div>
+    </div>
+
+    <!-- Feature Comparison Table -->
+    <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-6 mb-12">
+      <h2 class="text-xl font-semibold tracking-tight text-slate-50 mb-4">Feature Comparison</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs">
+          <thead>
+            <tr class="border-b border-slate-800">
+              <th class="text-left py-3 px-2 text-slate-300 font-medium">Feature</th>
+              <th class="text-center py-3 px-2 text-slate-300 font-medium">Free</th>
+              <th class="text-center py-3 px-2 text-slate-300 font-medium">Starter</th>
+              <th class="text-center py-3 px-2 text-slate-300 font-medium">Pro</th>
+              <th class="text-center py-3 px-2 text-slate-300 font-medium">Enterprise</th>
+            </tr>
+          </thead>
+          <tbody class="text-slate-400">
+            <tr class="border-b border-slate-800/50">
+              <td class="py-3 px-2">Unlimited cache storage</td>
+              <td class="text-center py-3 px-2"><span class="text-emerald-400">✓</span></td>
+              <td class="text-center py-3 px-2"><span class="text-emerald-400">✓</span></td>
+              <td class="text-center py-3 px-2"><span class="text-emerald-400">✓</span></td>
+              <td class="text-center py-3 px-2"><span class="text-emerald-400">✓</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50">
+              <td class="py-3 px-2">Freshness indicators</td>
+              <td class="text-center py-3 px-2"><span class="text-slate-600">—</span></td>
+              <td class="text-center py-3 px-2"><span class="text-emerald-400">✓</span></td>
+              <td class="text-center py-3 px-2"><span class="text-emerald-400">✓</span></td>
+              <td class="text-center py-3 px-2"><span class="text-emerald-400">✓</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50">
+              <td class="py-3 px-2">Cache invalidation API</td>
+              <td class="text-center py-3 px-2"><span class="text-slate-600">—</span></td>
+              <td class="text-center py-3 px-2"><span class="text-emerald-400">✓</span></td>
+              <td class="text-center py-3 px-2"><span class="text-emerald-400">✓</span></td>
+              <td class="text-center py-3 px-2"><span class="text-emerald-400">✓</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50">
+              <td class="py-3 px-2">URL listeners</td>
+              <td class="text-center py-3 px-2"><span class="text-slate-600">—</span></td>
+              <td class="text-center py-3 px-2">25</td>
+              <td class="text-center py-3 px-2">250</td>
+              <td class="text-center py-3 px-2">Unlimited</td>
+            </tr>
+            <tr class="border-b border-slate-800/50">
+              <td class="py-3 px-2">Check interval</td>
+              <td class="text-center py-3 px-2"><span class="text-slate-600">—</span></td>
+              <td class="text-center py-3 px-2">1 hour</td>
+              <td class="text-center py-3 px-2">15 minutes</td>
+              <td class="text-center py-3 px-2">Real-time</td>
+            </tr>
+            <tr class="border-b border-slate-800/50">
+              <td class="py-3 px-2">Webhook notifications</td>
+              <td class="text-center py-3 px-2"><span class="text-slate-600">—</span></td>
+              <td class="text-center py-3 px-2"><span class="text-slate-600">—</span></td>
+              <td class="text-center py-3 px-2"><span class="text-emerald-400">✓</span></td>
+              <td class="text-center py-3 px-2"><span class="text-emerald-400">✓</span></td>
+            </tr>
+            <tr class="border-b border-slate-800/50">
+              <td class="py-3 px-2">Custom freshness rules</td>
+              <td class="text-center py-3 px-2"><span class="text-slate-600">—</span></td>
+              <td class="text-center py-3 px-2"><span class="text-slate-600">—</span></td>
+              <td class="text-center py-3 px-2"><span class="text-emerald-400">✓</span></td>
+              <td class="text-center py-3 px-2"><span class="text-emerald-400">✓</span></td>
+            </tr>
+            <tr>
+              <td class="py-3 px-2">Proactive re-caching</td>
+              <td class="text-center py-3 px-2"><span class="text-slate-600">—</span></td>
+              <td class="text-center py-3 px-2"><span class="text-slate-600">—</span></td>
+              <td class="text-center py-3 px-2"><span class="text-slate-600">—</span></td>
+              <td class="text-center py-3 px-2"><span class="text-emerald-400">✓</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Payment Modal (Slide-in Panel) -->
+  <div id="paymentModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden">
+    <div class="absolute inset-y-0 right-0 w-full max-w-lg bg-slate-950 border-l border-slate-800 overflow-y-auto transform transition-transform duration-300 translate-x-full" id="paymentPanel">
+      <!-- Panel Header -->
+      <div class="sticky top-0 bg-slate-950 border-b border-slate-800 px-6 py-4 flex items-center justify-between z-10">
+        <div>
+          <h2 class="text-lg font-semibold tracking-tight text-slate-50" id="modalTitle">Subscribe to Starter</h2>
+          <p class="text-xs text-slate-400">Choose your payment method</p>
+        </div>
+        <button id="closeModal" class="p-2 rounded-lg hover:bg-slate-800 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Panel Content -->
+      <div class="p-6 space-y-6">
+        <!-- Plan Summary -->
+        <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm text-slate-300">Selected Plan</span>
+            <span class="text-sm px-2 py-1 rounded-full bg-sky-500/10 border border-sky-500/40 text-sky-300" id="planBadge">Starter</span>
+          </div>
+          <div class="flex items-baseline gap-1">
+            <span class="text-3xl font-bold text-slate-50" id="planPrice">$19</span>
+            <span class="text-sm text-slate-400">/month</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">Billed monthly • Cancel anytime</p>
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="space-y-3">
+          <h3 class="text-sm font-semibold text-slate-200">Payment Methods</h3>
+
+          <!-- Cash App QR Code -->
+          <button class="payment-method-btn w-full text-left border border-slate-800 rounded-xl p-4 hover:border-emerald-500/50 hover:bg-slate-900/50 transition group">
+            <div class="flex items-start gap-3">
+              <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M23.59 3.47c-.18.2-.44.31-.71.31h-1.47l-1.13 1.13A8.01 8.01 0 0117 11.5a8.07 8.07 0 011.18 4.22c.05.14.08.28.08.43V20.5c0 .83-.67 1.5-1.5 1.5H2.5C1.67 22 1 21.33 1 20.5v-17C1 2.67 1.67 2 2.5 2h14c.83 0 1.5.67 1.5 1.5v.28l3.39-3.39c.59-.59 1.54-.59 2.13 0 .59.59.59 1.54 0 2.13l-1 1c-.2.2-.2.51 0 .71.2.2.51.2.71 0l1-1c.98-.98.98-2.56 0-3.54-.49-.49-1.14-.73-1.78-.73-.64 0-1.28.24-1.77.73zM10 18.5c3.31 0 6-2.69 6-6s-2.69-6-6-6-6 2.69-6 6 2.69 6 6 6z"/>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-sm font-medium text-slate-100">Cash App</span>
+                  <span class="px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-[10px] text-emerald-300 border border-emerald-500/40">INSTANT</span>
+                </div>
+                <p class="text-xs text-slate-400">Scan QR code • Fast & secure</p>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-500 group-hover:text-emerald-400 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </button>
+
+          <!-- Venmo/PayPal QR Code -->
+          <button class="payment-method-btn w-full text-left border border-slate-800 rounded-xl p-4 hover:border-sky-500/50 hover:bg-slate-900/50 transition group">
+            <div class="flex items-start gap-3">
+              <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-sky-500/10 border border-sky-500/40 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-sky-400" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.64.64 0 0 1 .633-.54h4.606c.272 0 .538.106.736.296.198.19.31.453.31.724a4.3 4.3 0 0 1-.065.68L9.088 9.756a8.5 8.5 0 0 0-.182 1.7c0 2.403 1.932 4.327 4.347 4.327.582 0 1.14-.116 1.67-.334l-1.922 5.15a.641.641 0 0 1-.603.42h-4.72z"/>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-sm font-medium text-slate-100">Venmo / PayPal</span>
+                </div>
+                <p class="text-xs text-slate-400">Scan QR code or pay by email</p>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-500 group-hover:text-sky-400 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </button>
+
+          <!-- Credit Card (Stripe) -->
+          <button class="payment-method-btn w-full text-left border border-slate-800 rounded-xl p-4 hover:border-violet-500/50 hover:bg-slate-900/50 transition group">
+            <div class="flex items-start gap-3">
+              <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-violet-500/10 border border-violet-500/40 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-violet-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="2" y="5" width="20" height="14" rx="2"/>
+                  <path d="M2 10h20"/>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-sm font-medium text-slate-100">Credit Card</span>
+                  <span class="px-1.5 py-0.5 rounded-full bg-slate-700 text-[10px] text-slate-300">COMING SOON</span>
+                </div>
+                <p class="text-xs text-slate-400">Visa, Mastercard, Amex • Powered by Stripe</p>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-500 group-hover:text-violet-400 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </button>
+        </div>
+
+        <!-- QR Code Display Section (Hidden by default) -->
+        <div id="qrSection" class="hidden space-y-4">
+          <div class="border-t border-slate-800 pt-4">
+            <div class="bg-white p-4 rounded-xl flex items-center justify-center">
+              <!-- Cash App QR Code (First image) -->
+              <img id="cashAppQR" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="Cash App QR Code" class="w-64 h-64 hidden">
+              <!-- Venmo/PayPal QR Code (Second image) -->
+              <img id="venmoQR" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="Venmo/PayPal QR Code" class="w-64 h-64 hidden">
+            </div>
+            <div class="text-center mt-3">
+              <p class="text-sm font-medium text-slate-100" id="qrTitle">Scan with Cash App</p>
+              <p class="text-xs text-slate-400 mt-1">Amount: <span class="text-slate-200 font-medium" id="qrAmount">$19.00</span></p>
+              <p class="text-[11px] text-slate-500 mt-2">After payment, your subscription will be activated within 5 minutes</p>
+            </div>
+          </div>
+
+          <button class="w-full py-2.5 rounded-lg border border-slate-700 bg-slate-900/80 text-xs text-slate-300 hover:bg-slate-800 transition">
+            ← Back to payment methods
+          </button>
+        </div>
+
+        <!-- Terms & Policies -->
+        <div class="border-t border-slate-800 pt-4 space-y-2 text-[11px] text-slate-500">
+          <p>By subscribing, you agree to our <a href="#" class="text-sky-400 hover:underline">Terms of Service</a> and <a href="#" class="text-sky-400 hover:underline">Privacy Policy</a>.</p>
+          <p>• Auto-renews monthly. Cancel anytime from your dashboard.</p>
+          <p>• 7-day money-back guarantee on all plans.</p>
+          <p>• Secure payments processed via Stripe & trusted payment providers.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="w-full max-w-6xl mt-12 pt-8 border-t border-slate-800 text-center">
+    <p class="text-xs text-slate-500">
+      Questions? <a href="mailto:support@agentcache.ai" class="text-sky-400 hover:underline">support@agentcache.ai</a> • 
+      <a href="#" class="text-sky-400 hover:underline">FAQ</a> • 
+      <a href="#" class="text-sky-400 hover:underline">Documentation</a>
+    </p>
+    <p class="text-[10px] text-slate-600 mt-2">
+      AgentCache © 2025 • Built for the MCP ecosystem
+    </p>
+  </footer>
+
+  <script>
+    // Modal controls
+    const paymentModal = document.getElementById('paymentModal');
+    const paymentPanel = document.getElementById('paymentPanel');
+    const closeModal = document.getElementById('closeModal');
+    const qrSection = document.getElementById('qrSection');
+    const modalTitle = document.getElementById('modalTitle');
+    const planBadge = document.getElementById('planBadge');
+    const planPrice = document.getElementById('planPrice');
+
+    // Open payment modal
+    document.querySelectorAll('.payment-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const plan = btn.dataset.plan;
+        const price = btn.dataset.price;
+        
+        modalTitle.textContent = `Subscribe to ${plan.charAt(0).toUpperCase() + plan.slice(1)}`;
+        planBadge.textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+        planPrice.textContent = `$${price}`;
+        
+        paymentModal.classList.remove('hidden');
+        setTimeout(() => {
+          paymentPanel.classList.remove('translate-x-full');
+        }, 10);
+      });
+    });
+
+    // Close modal
+    function closePaymentModal() {
+      paymentPanel.classList.add('translate-x-full');
+      setTimeout(() => {
+        paymentModal.classList.add('hidden');
+        qrSection.classList.add('hidden');
+      }, 300);
+    }
+
+    closeModal.addEventListener('click', closePaymentModal);
+    paymentModal.addEventListener('click', (e) => {
+      if (e.target === paymentModal) closePaymentModal();
+    });
+
+    // Payment method selection
+    const paymentMethodBtns = document.querySelectorAll('.payment-method-btn');
+    const cashAppQR = document.getElementById('cashAppQR');
+    const venmoQR = document.getElementById('venmoQR');
+    const qrTitle = document.getElementById('qrTitle');
+    const qrAmount = document.getElementById('qrAmount');
+
+    paymentMethodBtns.forEach((btn, index) => {
+      btn.addEventListener('click', () => {
+        // Only show QR for Cash App and Venmo
+        if (index === 0) { // Cash App
+          qrTitle.textContent = 'Scan with Cash App';
+          cashAppQR.classList.remove('hidden');
+          venmoQR.classList.add('hidden');
+          qrSection.classList.remove('hidden');
+        } else if (index === 1) { // Venmo/PayPal
+          qrTitle.textContent = 'Scan with Venmo or PayPal';
+          venmoQR.classList.remove('hidden');
+          cashAppQR.classList.add('hidden');
+          qrSection.classList.remove('hidden');
+        } else if (index === 2) { // Credit Card
+          alert('Credit card payments coming soon! Use Cash App or Venmo for now.');
+        }
+        
+        qrAmount.textContent = '$' + planPrice.textContent.replace('$', '');
+      });
+    });
+
+    // Back to payment methods
+    qrSection.querySelector('button').addEventListener('click', () => {
+      qrSection.classList.add('hidden');
+    });
+
+    // TODO: Replace placeholder QR code images with actual QR codes
+    // Upload your QR code images and update the src attributes:
+    // cashAppQR.src = 'path/to/cashapp-qr.png';
+    // venmoQR.src = 'path/to/venmo-qr.png';
+  </script>
+</body>
+</html>

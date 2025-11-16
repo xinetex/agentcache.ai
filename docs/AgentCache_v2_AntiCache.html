@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AgentCache Extension UI System v2 – Anti-Cache Features</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-[#050816] text-slate-100 antialiased flex flex-col items-center py-8 px-4">
+  <!-- Top Navigation / Brand -->
+  <header class="w-full max-w-6xl mb-6 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div class="flex items-center justify-center w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/40">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="flex flex-col leading-tight">
+        <span class="text-sm font-semibold tracking-tight text-slate-50">AgentCache v2</span>
+        <span class="text-[11px] text-slate-400">Intelligent caching + freshness monitoring</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-3 text-[11px] text-slate-400">
+      <span class="px-2 py-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 text-emerald-300">Anti-Cache Ready</span>
+    </div>
+  </header>
+
+  <main class="w-full max-w-6xl grid grid-cols-1 xl:grid-cols-2 gap-6">
+    <!-- LEFT COLUMN: Freshness Features -->
+    <div class="flex flex-col gap-6">
+      <!-- FRESHNESS INDICATORS IN BADGE -->
+      <section class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-[15px] font-semibold tracking-tight text-slate-50">Freshness Indicators · Inline Badge</h2>
+            <p class="text-[11px] text-slate-400">Real-time cache age visualization</p>
+          </div>
+          <span class="text-[11px] px-2 py-1 rounded-full border border-emerald-500/40 text-emerald-300">New Feature</span>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 space-y-4">
+          <!-- Fresh (< 25% TTL) -->
+          <div class="rounded-2xl bg-slate-900/90 border border-slate-800 p-4">
+            <div class="flex items-start gap-3">
+              <div class="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center text-[11px] text-emerald-200 font-medium">AI</div>
+              <div class="space-y-2 flex-1">
+                <p class="text-[13px] text-slate-100">The React documentation recommends using hooks for state management in functional components.</p>
+                <div class="flex items-center gap-2">
+                  <button class="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1 text-[11px] text-emerald-200">
+                    <span class="inline-flex w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    <span>🟢 FRESH · 0.3s saved · cached 2min ago</span>
+                  </button>
+                  <span class="text-[10px] text-slate-400">TTL: 7d remaining</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stale (> 75% TTL) -->
+          <div class="rounded-2xl bg-slate-900/80 border border-amber-600/40 p-4">
+            <div class="flex items-start gap-3">
+              <div class="w-7 h-7 rounded-full bg-amber-500/20 flex items-center justify-center text-[11px] text-amber-200 font-medium">AI</div>
+              <div class="space-y-2 flex-1">
+                <p class="text-[13px] text-slate-100">Current exchange rate: 1 USD = 0.92 EUR (rates updated daily).</p>
+                <div class="flex items-center gap-2">
+                  <button class="inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[11px] text-amber-200">
+                    <span class="inline-flex w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                    <span>🟡 STALE · cached 23h ago</span>
+                  </button>
+                  <button class="text-[10px] px-2 py-0.5 rounded-full border border-sky-500/40 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20">
+                    Refresh now
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Expired (> 100% TTL) -->
+          <div class="rounded-2xl bg-slate-900/80 border border-rose-600/40 p-4">
+            <div class="flex items-start gap-3">
+              <div class="w-7 h-7 rounded-full bg-rose-500/20 flex items-center justify-center text-[11px] text-rose-200 font-medium">AI</div>
+              <div class="space-y-2 flex-1">
+                <p class="text-[13px] text-slate-100 line-through opacity-60">Breaking news: Company X announces product launch event for tomorrow.</p>
+                <div class="flex items-center gap-2">
+                  <button class="inline-flex items-center gap-1.5 rounded-full border border-rose-500/40 bg-rose-500/10 px-2.5 py-1 text-[11px] text-rose-200">
+                    <span class="inline-flex w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                    <span>🔴 EXPIRED · cached 8d ago</span>
+                  </button>
+                  <button class="text-[10px] px-2 py-0.5 rounded-full border border-sky-500/60 bg-sky-500/20 text-sky-100 hover:bg-sky-500/30 font-medium">
+                    Fetch fresh
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ANTI-CACHE SETTINGS PANEL -->
+      <section class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-[15px] font-semibold tracking-tight text-slate-50">Anti-Cache Settings</h2>
+            <p class="text-[11px] text-slate-400">Automatic freshness management</p>
+          </div>
+          <span class="text-[11px] px-2 py-1 rounded-full border border-violet-500/40 text-violet-200">Beta</span>
+        </div>
+
+        <div class="w-full bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
+          <div class="p-4 space-y-4 text-[11px]">
+            <!-- Freshness rules -->
+            <div class="space-y-3">
+              <h3 class="text-[11px] font-semibold tracking-tight text-slate-200">Freshness Rules</h3>
+              
+              <div class="border border-slate-800 rounded-lg p-3 space-y-2">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-slate-300 font-medium">News & Articles</span>
+                    <span class="px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 text-[10px]">*news*</span>
+                  </div>
+                  <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" class="h-3 w-3 rounded border-slate-600 bg-slate-900 text-sky-500" checked />
+                    <span class="text-slate-400">Auto-refresh</span>
+                  </label>
+                </div>
+                <div class="flex items-center justify-between text-[10px] text-slate-400">
+                  <span>Fresh: < 1h</span>
+                  <span>Stale: > 6h</span>
+                  <button class="text-sky-300 hover:underline">Edit</button>
+                </div>
+              </div>
+
+              <div class="border border-slate-800 rounded-lg p-3 space-y-2">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-slate-300 font-medium">Prices & Rates</span>
+                    <span class="px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 text-[10px]">*pricing*</span>
+                  </div>
+                  <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" class="h-3 w-3 rounded border-slate-600 bg-slate-900 text-sky-500" />
+                    <span class="text-slate-400">Auto-refresh</span>
+                  </label>
+                </div>
+                <div class="flex items-center justify-between text-[10px] text-slate-400">
+                  <span>Fresh: < 24h</span>
+                  <span>Stale: > 7d</span>
+                  <button class="text-sky-300 hover:underline">Edit</button>
+                </div>
+              </div>
+
+              <div class="border border-slate-800 rounded-lg p-3 space-y-2">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-slate-300 font-medium">Documentation</span>
+                    <span class="px-1.5 py-0.5 rounded-full bg-slate-700 text-slate-300 text-[10px]">*docs*</span>
+                  </div>
+                  <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" class="h-3 w-3 rounded border-slate-600 bg-slate-900 text-sky-500" />
+                    <span class="text-slate-400">Auto-refresh</span>
+                  </label>
+                </div>
+                <div class="flex items-center justify-between text-[10px] text-slate-400">
+                  <span>Fresh: < 7d</span>
+                  <span>Stale: > 30d</span>
+                  <button class="text-sky-300 hover:underline">Edit</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="border-t border-slate-800 pt-3 space-y-3">
+              <h3 class="text-[11px] font-semibold tracking-tight text-slate-200">Display Options</h3>
+              <label class="flex items-start gap-2 cursor-pointer">
+                <input type="checkbox" class="mt-0.5 h-3 w-3 rounded border-slate-600 bg-slate-900 text-sky-500" checked />
+                <div>
+                  <p class="font-medium text-slate-100">Show freshness badges</p>
+                  <p class="text-slate-400">Display 🟢🟡🔴 indicators on cached responses</p>
+                </div>
+              </label>
+              <label class="flex items-start gap-2 cursor-pointer">
+                <input type="checkbox" class="mt-0.5 h-3 w-3 rounded border-slate-600 bg-slate-900 text-sky-500" checked />
+                <div>
+                  <p class="font-medium text-slate-100">Warn on stale data</p>
+                  <p class="text-slate-400">Show warning when serving outdated cached content</p>
+                </div>
+              </label>
+              <label class="flex items-start gap-2 cursor-pointer">
+                <input type="checkbox" class="mt-0.5 h-3 w-3 rounded border-slate-600 bg-slate-900 text-sky-500" />
+                <div>
+                  <p class="font-medium text-slate-100">Auto-invalidate expired</p>
+                  <p class="text-slate-400">Automatically remove caches past expiration (frees storage)</p>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- RIGHT COLUMN: URL Monitoring & Cache Invalidation -->
+    <div class="flex flex-col gap-6">
+      <!-- URL MONITORING PANEL -->
+      <section class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-[15px] font-semibold tracking-tight text-slate-50">URL Monitoring</h2>
+            <p class="text-[11px] text-slate-400">Auto-invalidate on content change</p>
+          </div>
+          <span class="text-[11px] px-2 py-1 rounded-full border border-sky-500/40 text-sky-300">Pro Feature</span>
+        </div>
+
+        <div class="w-full bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden text-[11px]">
+          <!-- Active listeners -->
+          <div class="divide-y divide-slate-800">
+            <div class="px-4 py-3 flex items-start justify-between gap-3">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="inline-flex w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  <p class="font-medium text-slate-100">competitor.com/pricing</p>
+                </div>
+                <p class="text-[10px] text-slate-400">Checked 2min ago · No changes</p>
+                <div class="flex items-center gap-2 mt-1.5">
+                  <span class="px-1.5 py-0.5 rounded-full bg-sky-500/10 border border-sky-500/40 text-sky-300 text-[10px]">Every 15min</span>
+                  <span class="px-1.5 py-0.5 rounded-full bg-slate-900 border border-slate-600 text-slate-300 text-[10px]">12 caches linked</span>
+                </div>
+              </div>
+              <div class="flex flex-col gap-1">
+                <button class="px-2 py-0.5 rounded-md border border-slate-700 text-[10px] text-slate-200 hover:bg-slate-800">
+                  Check now
+                </button>
+                <button class="px-2 py-0.5 rounded-md border border-rose-500/40 bg-rose-500/10 text-[10px] text-rose-200 hover:bg-rose-500/20">
+                  Remove
+                </button>
+              </div>
+            </div>
+
+            <div class="px-4 py-3 flex items-start justify-between gap-3">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="inline-flex w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                  <p class="font-medium text-slate-100">news.site/breaking</p>
+                </div>
+                <p class="text-[10px] text-amber-300">⚠️ Change detected · Invalidated 3 caches</p>
+                <div class="flex items-center gap-2 mt-1.5">
+                  <span class="px-1.5 py-0.5 rounded-full bg-sky-500/10 border border-sky-500/40 text-sky-300 text-[10px]">Every 1h</span>
+                  <span class="px-1.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/40 text-amber-300 text-[10px]">Changed 5min ago</span>
+                </div>
+              </div>
+              <div class="flex flex-col gap-1">
+                <button class="px-2 py-0.5 rounded-md border border-emerald-500/40 bg-emerald-500/10 text-[10px] text-emerald-200 hover:bg-emerald-500/20">
+                  Re-cache
+                </button>
+                <button class="px-2 py-0.5 rounded-md border border-slate-700 text-[10px] text-slate-200 hover:bg-slate-800">
+                  Settings
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add new listener -->
+          <div class="px-4 py-3 border-t border-slate-800 bg-slate-950/90 space-y-2">
+            <input
+              type="text"
+              class="w-full px-2.5 py-1.5 rounded-md border border-slate-700 bg-slate-900 text-[11px] text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/70"
+              placeholder="https://example.com/page-to-monitor"
+            />
+            <div class="flex items-center gap-2">
+              <select class="flex-1 px-2 py-1.5 rounded-md border border-slate-700 bg-slate-900 text-[10px] text-slate-100">
+                <option>Check every 15 minutes</option>
+                <option>Check every 1 hour</option>
+                <option>Check every 6 hours</option>
+                <option>Check daily</option>
+              </select>
+              <button class="px-3 py-1.5 rounded-md bg-sky-500 text-[11px] font-medium text-slate-950 hover:bg-sky-400">
+                Monitor
+              </button>
+            </div>
+            <p class="text-[10px] text-slate-500">
+              We'll automatically invalidate linked caches when content changes
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- CACHE INVALIDATION PANEL -->
+      <section class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-[15px] font-semibold tracking-tight text-slate-50">Manual Invalidation</h2>
+            <p class="text-[11px] text-slate-400">Force clear cached responses</p>
+          </div>
+        </div>
+
+        <div class="w-full bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
+          <div class="p-4 space-y-3 text-[11px]">
+            <div class="space-y-2">
+              <label class="block text-slate-300 font-medium">Pattern or namespace</label>
+              <input
+                type="text"
+                class="w-full px-2.5 py-1.5 rounded-md border border-slate-700 bg-slate-900 text-[11px] text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/70"
+                placeholder="competitor-pricing/* or namespace:customer_abc"
+              />
+              <p class="text-[10px] text-slate-400">Use * for wildcards (e.g., "news/*" or "*pricing*")</p>
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-slate-300 font-medium">Invalidate caches older than</label>
+              <select class="w-full px-2 py-1.5 rounded-md border border-slate-700 bg-slate-900 text-[11px] text-slate-100">
+                <option value="">All matching (regardless of age)</option>
+                <option value="3600000">1 hour</option>
+                <option value="86400000">24 hours</option>
+                <option value="604800000">7 days</option>
+                <option value="2592000000">30 days</option>
+              </select>
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-slate-300 font-medium">Reason (optional)</label>
+              <input
+                type="text"
+                class="w-full px-2.5 py-1.5 rounded-md border border-slate-700 bg-slate-900 text-[11px] text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/70"
+                placeholder="e.g., pricing update, content refresh"
+              />
+            </div>
+
+            <div class="flex items-start gap-2">
+              <input type="checkbox" class="mt-0.5 h-3 w-3 rounded border-slate-600 bg-slate-900 text-sky-500" />
+              <div>
+                <p class="font-medium text-slate-100">Pre-warm caches</p>
+                <p class="text-slate-400">Automatically re-cache after invalidation</p>
+              </div>
+            </div>
+
+            <button class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-rose-500/90 text-xs font-medium tracking-tight text-white hover:bg-rose-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Invalidate matching caches
+            </button>
+
+            <div class="border-t border-slate-800 pt-3 mt-3">
+              <div class="flex items-center justify-between text-[10px] text-slate-400">
+                <span>Estimated impact:</span>
+                <span class="text-slate-200 font-medium">~42 caches · $0.42 to regenerate</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FRESHNESS STATISTICS -->
+      <section class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-[15px] font-semibold tracking-tight text-slate-50">Cache Health</h2>
+            <p class="text-[11px] text-slate-400">Freshness distribution</p>
+          </div>
+        </div>
+
+        <div class="w-full bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
+          <div class="p-4 space-y-4 text-[11px]">
+            <!-- Distribution bars -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <span class="text-slate-300">Fresh</span>
+                </div>
+                <span class="text-slate-100 font-medium">1,842 (68%)</span>
+              </div>
+              <div class="h-2 rounded-full bg-slate-900 overflow-hidden">
+                <div class="w-[68%] h-full bg-emerald-500/70"></div>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex w-2 h-2 rounded-full bg-amber-400"></span>
+                  <span class="text-slate-300">Stale</span>
+                </div>
+                <span class="text-slate-100 font-medium">624 (23%)</span>
+              </div>
+              <div class="h-2 rounded-full bg-slate-900 overflow-hidden">
+                <div class="w-[23%] h-full bg-amber-500/70"></div>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex w-2 h-2 rounded-full bg-rose-400"></span>
+                  <span class="text-slate-300">Expired</span>
+                </div>
+                <span class="text-slate-100 font-medium">248 (9%)</span>
+              </div>
+              <div class="h-2 rounded-full bg-slate-900 overflow-hidden">
+                <div class="w-[9%] h-full bg-rose-500/70"></div>
+              </div>
+            </div>
+
+            <div class="border-t border-slate-800 pt-3 mt-3 space-y-2">
+              <div class="flex items-center justify-between text-[10px]">
+                <span class="text-slate-400">Avg cache age:</span>
+                <span class="text-slate-200">3.2 days</span>
+              </div>
+              <div class="flex items-center justify-between text-[10px]">
+                <span class="text-slate-400">Auto-refreshed today:</span>
+                <span class="text-slate-200">34 caches</span>
+              </div>
+              <div class="flex items-center justify-between text-[10px]">
+                <span class="text-slate-400">Storage freed (expired):</span>
+                <span class="text-slate-200">18 MB</span>
+              </div>
+            </div>
+
+            <button class="w-full px-3 py-2 rounded-lg border border-sky-500/40 bg-sky-500/10 text-xs text-sky-200 hover:bg-sky-500/20">
+              Refresh all stale caches
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full max-w-6xl mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] text-slate-500">
+    <p>AgentCache UI v2 · Anti-Cache & Freshness Features</p>
+    <div class="flex items-center gap-3">
+      <span>Intelligent caching · Automatic freshness</span>
+      <span class="text-emerald-300">✓ Production ready</span>
+    </div>
+  </footer>
+
+  <style>
+    .animate-spin-slow {
+      animation: spin 1.6s linear infinite;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</body>
+</html>

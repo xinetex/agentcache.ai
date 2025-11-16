@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AgentCache Proxy – Frictionless AI Caching</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-[#050816] text-slate-100 antialiased">
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-950/50 backdrop-blur-sm sticky top-0 z-10">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/40 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-lg font-semibold tracking-tight text-slate-50">AgentCache Proxy</h1>
+            <p class="text-xs text-slate-400">Frictionless AI Caching</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <a href="/dashboard-new.html" class="text-sm text-slate-300 hover:text-sky-400 transition">Dashboard</a>
+          <a href="/login.html" class="px-4 py-2 rounded-lg bg-sky-500 text-sm font-medium text-slate-950 hover:bg-sky-400 transition">
+            Get API Key
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Hero -->
+    <div class="text-center mb-12">
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/40 text-xs text-emerald-300 mb-4">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        Zero code changes required
+      </div>
+      
+      <h2 class="text-4xl font-bold tracking-tight text-slate-50 mb-4">
+        Drop-In AI Caching Proxy
+      </h2>
+      <p class="text-lg text-slate-400 max-w-2xl mx-auto">
+        Change <span class="text-sky-400 font-mono">OPENAI_BASE_URL</span> → Get 90% cost savings + 10× faster responses. That's it.
+      </p>
+    </div>
+
+    <!-- Quick Start -->
+    <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-8 mb-8">
+      <div class="flex items-center gap-2 mb-6">
+        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-sky-500/10 border border-sky-500/40 text-sm font-semibold text-sky-400">1</span>
+        <h3 class="text-xl font-semibold text-slate-50">Get Your API Key</h3>
+      </div>
+      
+      <div class="pl-10">
+        <p class="text-slate-300 mb-4">Sign up (30 seconds) and copy your API key:</p>
+        <a href="/login.html" class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-sky-500 text-sm font-medium text-slate-950 hover:bg-sky-400 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+            <polyline points="10 17 15 12 10 7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+          Sign Up Free
+        </a>
+      </div>
+    </div>
+
+    <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-8 mb-8">
+      <div class="flex items-center gap-2 mb-6">
+        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/40 text-sm font-semibold text-emerald-400">2</span>
+        <h3 class="text-xl font-semibold text-slate-50">Update Environment Variables</h3>
+      </div>
+      
+      <div class="pl-10 space-y-6">
+        <!-- OpenAI -->
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-sky-400" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/>
+            </svg>
+            <h4 class="text-lg font-semibold text-slate-200">OpenAI (GPT-4, GPT-3.5)</h4>
+          </div>
+          
+          <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+            <div class="flex items-start justify-between gap-4">
+              <pre class="text-sm text-slate-300 font-mono overflow-x-auto flex-1"><code># .env or .env.local
+OPENAI_BASE_URL=https://agentcache.ai/v1
+AGENTCACHE_API_KEY=ac_live_xxx  # Your AgentCache key
+X_OPENAI_KEY=sk-xxx              # Your OpenAI key</code></pre>
+              <button onclick="copyCode(this, 'openai')" class="px-3 py-1.5 rounded-lg bg-slate-800 text-xs text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">
+                Copy
+              </button>
+            </div>
+          </div>
+          
+          <p class="text-xs text-slate-400 mt-2">
+            Works with <code class="text-sky-400">openai</code> library (Python/JS) and any OpenAI-compatible tool.
+          </p>
+        </div>
+
+        <!-- Anthropic -->
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="16"/>
+              <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+            <h4 class="text-lg font-semibold text-slate-200">Anthropic (Claude)</h4>
+          </div>
+          
+          <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+            <div class="flex items-start justify-between gap-4">
+              <pre class="text-sm text-slate-300 font-mono overflow-x-auto flex-1"><code># .env or .env.local
+ANTHROPIC_BASE_URL=https://agentcache.ai/v1
+AGENTCACHE_API_KEY=ac_live_xxx     # Your AgentCache key
+X_ANTHROPIC_KEY=sk-ant-xxx         # Your Anthropic key</code></pre>
+              <button onclick="copyCode(this, 'anthropic')" class="px-3 py-1.5 rounded-lg bg-slate-800 text-xs text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">
+                Copy
+              </button>
+            </div>
+          </div>
+          
+          <p class="text-xs text-slate-400 mt-2">
+            Works with <code class="text-sky-400">anthropic</code> library and Claude API clients.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-8 mb-8">
+      <div class="flex items-center gap-2 mb-6">
+        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-violet-500/10 border border-violet-500/40 text-sm font-semibold text-violet-400">3</span>
+        <h3 class="text-xl font-semibold text-slate-50">That's It – Start Saving</h3>
+      </div>
+      
+      <div class="pl-10">
+        <p class="text-slate-300 mb-4">Your agent automatically:</p>
+        <ul class="space-y-2 text-slate-300">
+          <li class="flex items-start gap-2">
+            <svg class="w-5 h-5 text-emerald-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span>Checks cache before calling OpenAI/Anthropic (saves 90% on repeated prompts)</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <svg class="w-5 h-5 text-emerald-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span>Returns cached responses in &lt;50ms (10× faster than fresh API calls)</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <svg class="w-5 h-5 text-emerald-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span>Proxies to real API on cache miss and stores the response for next time</span>
+          </li>
+        </ul>
+        
+        <div class="mt-6 p-4 rounded-lg bg-sky-500/10 border border-sky-500/40">
+          <p class="text-sm text-sky-300">
+            <strong>Monitor your savings:</strong> Check real-time analytics at 
+            <a href="/dashboard-new.html" class="underline hover:text-sky-200">agentcache.ai/dashboard</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Code Examples -->
+    <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-8 mb-8">
+      <h3 class="text-xl font-semibold text-slate-50 mb-6">Code Examples</h3>
+      
+      <div class="space-y-6">
+        <!-- Python -->
+        <div>
+          <h4 class="text-sm font-semibold text-slate-300 mb-3">Python (OpenAI SDK)</h4>
+          <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+            <div class="flex items-start justify-between gap-4">
+              <pre class="text-sm text-slate-300 font-mono overflow-x-auto flex-1"><code>import openai
+import os
+
+client = openai.OpenAI(
+    base_url="https://agentcache.ai/v1",
+    api_key=os.getenv("AGENTCACHE_API_KEY"),
+    default_headers={
+        "X-OpenAI-Key": os.getenv("OPENAI_API_KEY")
+    }
+)
+
+# Use normally - caching is automatic
+response = client.chat.completions.create(
+    model="gpt-4",
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+
+print(response.choices[0].message.content)</code></pre>
+              <button onclick="copyCode(this, 'python')" class="px-3 py-1.5 rounded-lg bg-slate-800 text-xs text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">
+                Copy
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- JavaScript -->
+        <div>
+          <h4 class="text-sm font-semibold text-slate-300 mb-3">JavaScript/TypeScript (OpenAI SDK)</h4>
+          <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+            <div class="flex items-start justify-between gap-4">
+              <pre class="text-sm text-slate-300 font-mono overflow-x-auto flex-1"><code>import OpenAI from 'openai';
+
+const client = new OpenAI({
+  baseURL: 'https://agentcache.ai/v1',
+  apiKey: process.env.AGENTCACHE_API_KEY,
+  defaultHeaders: {
+    'X-OpenAI-Key': process.env.OPENAI_API_KEY
+  }
+});
+
+// Use normally - caching is automatic
+const response = await client.chat.completions.create({
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: 'Hello!' }]
+});
+
+console.log(response.choices[0].message.content);</code></pre>
+              <button onclick="copyCode(this, 'javascript')" class="px-3 py-1.5 rounded-lg bg-slate-800 text-xs text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">
+                Copy
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- cURL -->
+        <div>
+          <h4 class="text-sm font-semibold text-slate-300 mb-3">cURL (Direct API)</h4>
+          <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+            <div class="flex items-start justify-between gap-4">
+              <pre class="text-sm text-slate-300 font-mono overflow-x-auto flex-1"><code>curl -X POST https://agentcache.ai/v1/chat/completions \
+  -H "Authorization: Bearer ac_live_xxx" \
+  -H "X-OpenAI-Key: sk-xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-4",
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'</code></pre>
+              <button onclick="copyCode(this, 'curl')" class="px-3 py-1.5 rounded-lg bg-slate-800 text-xs text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">
+                Copy
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Benefits -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <div class="bg-slate-950/70 border border-emerald-500/30 rounded-2xl p-6">
+        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center mb-4">
+          <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-slate-50 mb-2">90% Cost Savings</h3>
+        <p class="text-sm text-slate-400">Cached responses cost nothing. Average hit rate: 70-80%.</p>
+      </div>
+
+      <div class="bg-slate-950/70 border border-violet-500/30 rounded-2xl p-6">
+        <div class="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/40 flex items-center justify-center mb-4">
+          <svg class="w-6 h-6 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-slate-50 mb-2">10× Faster Responses</h3>
+        <p class="text-sm text-slate-400">Cache hits return in &lt;50ms vs 2-5s for API calls.</p>
+      </div>
+
+      <div class="bg-slate-950/70 border border-sky-500/30 rounded-2xl p-6">
+        <div class="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/40 flex items-center justify-center mb-4">
+          <svg class="w-6 h-6 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-slate-50 mb-2">Zero Integration</h3>
+        <p class="text-sm text-slate-400">Change 1 environment variable. No SDK. No code changes.</p>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-8">
+      <h3 class="text-xl font-semibold text-slate-50 mb-6">FAQ</h3>
+      
+      <div class="space-y-6">
+        <div>
+          <h4 class="text-sm font-semibold text-slate-200 mb-2">Q: How does caching work?</h4>
+          <p class="text-sm text-slate-400">
+            We hash your prompt (messages + model + temperature) to create a deterministic cache key. 
+            Same input = same output = instant cache hit. Cache expires after 7 days.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold text-slate-200 mb-2">Q: Do you see my OpenAI/Anthropic API keys?</h4>
+          <p class="text-sm text-slate-400">
+            No. Your provider API keys are passed through headers and used only to proxy requests on cache misses. 
+            We never store them. AgentCache only stores cached responses.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold text-slate-200 mb-2">Q: What if I need fresh responses?</h4>
+          <p class="text-sm text-slate-400">
+            Add <code class="text-sky-400">cache: false</code> to your request body, or vary the temperature/prompt slightly. 
+            You can also manually invalidate cache keys via the dashboard.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold text-slate-200 mb-2">Q: Does this work with LangChain/LlamaIndex?</h4>
+          <p class="text-sm text-slate-400">
+            Yes! Both frameworks support custom base URLs. Just set <code class="text-sky-400">OPENAI_BASE_URL</code> 
+            and they'll automatically route through AgentCache.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold text-slate-200 mb-2">Q: What's included in the free tier?</h4>
+          <p class="text-sm text-slate-400">
+            1,000 requests/month (cache hits + misses) with 7-day cache TTL. No credit card required.
+            <a href="/login.html" class="text-sky-400 hover:text-sky-300">Sign up here</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="border-t border-slate-800 bg-slate-950/50 py-8 mt-12">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <p class="text-sm text-slate-400">
+        Built with ❤️ for AI agents • 
+        <a href="/" class="text-sky-400 hover:text-sky-300">AgentCache.ai</a> • 
+        <a href="mailto:support@agentcache.ai" class="text-sky-400 hover:text-sky-300">Support</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    function copyCode(button, type) {
+      const codeBlocks = {
+        openai: `# .env or .env.local
+OPENAI_BASE_URL=https://agentcache.ai/v1
+AGENTCACHE_API_KEY=ac_live_xxx  # Your AgentCache key
+X_OPENAI_KEY=sk-xxx              # Your OpenAI key`,
+        anthropic: `# .env or .env.local
+ANTHROPIC_BASE_URL=https://agentcache.ai/v1
+AGENTCACHE_API_KEY=ac_live_xxx     # Your AgentCache key
+X_ANTHROPIC_KEY=sk-ant-xxx         # Your Anthropic key`,
+        python: `import openai
+import os
+
+client = openai.OpenAI(
+    base_url="https://agentcache.ai/v1",
+    api_key=os.getenv("AGENTCACHE_API_KEY"),
+    default_headers={
+        "X-OpenAI-Key": os.getenv("OPENAI_API_KEY")
+    }
+)
+
+# Use normally - caching is automatic
+response = client.chat.completions.create(
+    model="gpt-4",
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+
+print(response.choices[0].message.content)`,
+        javascript: `import OpenAI from 'openai';
+
+const client = new OpenAI({
+  baseURL: 'https://agentcache.ai/v1',
+  apiKey: process.env.AGENTCACHE_API_KEY,
+  defaultHeaders: {
+    'X-OpenAI-Key': process.env.OPENAI_API_KEY
+  }
+});
+
+// Use normally - caching is automatic
+const response = await client.chat.completions.create({
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: 'Hello!' }]
+});
+
+console.log(response.choices[0].message.content);`,
+        curl: `curl -X POST https://agentcache.ai/v1/chat/completions \\
+  -H "Authorization: Bearer ac_live_xxx" \\
+  -H "X-OpenAI-Key: sk-xxx" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "gpt-4",
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'`
+      };
+
+      navigator.clipboard.writeText(codeBlocks[type]).then(() => {
+        button.textContent = 'Copied!';
+        setTimeout(() => {
+          button.textContent = 'Copy';
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>
