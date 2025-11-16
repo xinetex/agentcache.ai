@@ -502,7 +502,6 @@ async function resendVerification(req) {
     <p>This link expires in 48 hours.</p>
     <p>Best,<br>The AgentCache Team</p>
   `);
-  `);
 
   return json({
     success: true,
