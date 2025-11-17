@@ -222,6 +222,13 @@
     const API_KEY = localStorage.getItem('agentcache_api_key') || 'ac_demo_test123';
     let currentPeriod = '7d';
     let statsData = null;
+    let refreshInterval = null;
+
+    function startPolling() {
+      refreshInterval = setInterval(() => {
+        if (!document.hidden) loadDashboard();
+      }, 60000); // 60s instead of 30s
+    }
 
     // Initialize
     document.addEventListener('DOMContentLoaded', () => {
@@ -232,8 +239,21 @@
         loadDashboard();
       });
 
-      // Refresh every 30 seconds
-      setInterval(loadDashboard, 30000);
+      startPolling();
+    });
+    
+    // Pause polling when hidden
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if (refreshInterval) clearInterval(refreshInterval);
+      } else {
+        loadDashboard();
+        startPolling();
+      }
+    });
+    
+    window.addEventListener('beforeunload', () => {
+      if (refreshInterval) clearInterval(refreshInterval);
     });
 
     // Load dashboard data

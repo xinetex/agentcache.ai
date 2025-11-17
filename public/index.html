@@ -134,7 +134,7 @@
                 Setup Guide (1 min)
               </a>
             </div>
-            <div class="flex items-center gap-4 text-xs text-neutral-400">
+            <div class="flex items-center gap-4 text-xs text-neutral-400 mt-6">
               <div class="inline-flex items-center gap-2">
                 <i data-lucide="shield-check" class="h-4 w-4 text-emerald-400"></i>
                 <span>SHA-256 keys</span>
@@ -146,6 +146,10 @@
               <div class="inline-flex items-center gap-2">
                 <i data-lucide="globe" class="h-4 w-4 text-emerald-400"></i>
                 <span>Global edge</span>
+              </div>
+              <div class="inline-flex items-center gap-2">
+                <i data-lucide="gauge" class="h-4 w-4 text-emerald-400"></i>
+                <span>Rate limiting</span>
               </div>
             </div>
           </div>
@@ -480,51 +484,51 @@ curl -X POST https://agentcache.ai/api/moonshot \
         <div class="lg:col-span-2 grid sm:grid-cols-2 gap-6">
           <div class="rounded-xl ring-1 ring-emerald-500/30 bg-emerald-500/5 p-5">
             <div class="flex items-center gap-2 text-sm text-neutral-300">
+              <i data-lucide="plug-zap" class="h-4 w-4"></i>
+              Proxy Mode (Zero-code)
+              <span class="ml-auto text-[10px] text-emerald-400 font-semibold">LIVE</span>
+            </div>
+            <p class="mt-2 text-sm text-neutral-400">OpenAI & Anthropic-compatible proxy. Just change base URL—no code changes.</p>
+          </div>
+          <div class="rounded-xl ring-1 ring-emerald-500/30 bg-emerald-500/5 p-5">
+            <div class="flex items-center gap-2 text-sm text-neutral-300">
+              <i data-lucide="webhook" class="h-4 w-4"></i>
+              Webhooks & Events
+              <span class="ml-auto text-[10px] text-emerald-400 font-semibold">LIVE</span>
+            </div>
+            <p class="mt-2 text-sm text-neutral-400">Real-time notifications for cache hits, quota warnings, anomalies. HMAC-SHA256 signed.</p>
+          </div>
+          <div class="rounded-xl ring-1 ring-emerald-500/30 bg-emerald-500/5 p-5">
+            <div class="flex items-center gap-2 text-sm text-neutral-300">
+              <i data-lucide="gauge" class="h-4 w-4"></i>
+              Rate Limiting
+              <span class="ml-auto text-[10px] text-emerald-400 font-semibold">LIVE</span>
+            </div>
+            <p class="mt-2 text-sm text-neutral-400">Per-key rate limits (100-500 req/min) to prevent runaway agents.</p>
+          </div>
+          <div class="rounded-xl ring-1 ring-emerald-500/30 bg-emerald-500/5 p-5">
+            <div class="flex items-center gap-2 text-sm text-neutral-300">
               <i data-lucide="database" class="h-4 w-4"></i>
-              Deterministic keys
+              Deterministic Keys
               <span class="ml-auto text-[10px] text-emerald-400 font-semibold">LIVE</span>
             </div>
             <p class="mt-2 text-sm text-neutral-400">SHA-256 hashing of prompts, model, and params—100% cache hit accuracy.</p>
           </div>
           <div class="rounded-xl ring-1 ring-emerald-500/30 bg-emerald-500/5 p-5">
             <div class="flex items-center gap-2 text-sm text-neutral-300">
-              <i data-lucide="satellite-dish" class="h-4 w-4"></i>
-              Global edge
+              <i data-lucide="users" class="h-4 w-4"></i>
+              Multi-tenant Namespaces
               <span class="ml-auto text-[10px] text-emerald-400 font-semibold">LIVE</span>
             </div>
-            <p class="mt-2 text-sm text-neutral-400">Upstash Redis with global replication and sub-50ms P95 latency.</p>
-          </div>
-          <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5 opacity-60">
-            <div class="flex items-center gap-2 text-sm text-neutral-300">
-              <i data-lucide="waves" class="h-4 w-4"></i>
-              Streaming support
-              <span class="ml-auto text-[10px] text-indigo-400 font-semibold">Q1 2025</span>
-            </div>
-            <p class="mt-2 text-sm text-neutral-400">SSE/streaming passthrough for real-time responses (in development).</p>
-          </div>
-          <div class="rounded-xl ring-1 ring-emerald-500/30 bg-emerald-500/5 p-5">
-            <div class="flex items-center gap-2 text-sm text-neutral-300">
-              <i data-lucide="clock-9" class="h-4 w-4"></i>
-              Configurable TTL
-              <span class="ml-auto text-[10px] text-emerald-400 font-semibold">LIVE</span>
-            </div>
-            <p class="mt-2 text-sm text-neutral-400">Custom TTLs per request (default 7 days) with manual invalidation.</p>
+            <p class="mt-2 text-sm text-neutral-400">Segment cache by customer/workflow with X-Cache-Namespace header.</p>
           </div>
           <div class="rounded-xl ring-1 ring-emerald-500/30 bg-emerald-500/5 p-5">
             <div class="flex items-center gap-2 text-sm text-neutral-300">
               <i data-lucide="file-search" class="h-4 w-4"></i>
-              Real-time analytics
+              Real-time Analytics
               <span class="ml-auto text-[10px] text-emerald-400 font-semibold">LIVE</span>
             </div>
-            <p class="mt-2 text-sm text-neutral-400">Hit rate, cost savings, and per-user metrics via admin dashboard.</p>
-          </div>
-          <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5 opacity-60">
-            <div class="flex items-center gap-2 text-sm text-neutral-300">
-              <i data-lucide="lock" class="h-4 w-4"></i>
-              PII scrubbing
-              <span class="ml-auto text-[10px] text-indigo-400 font-semibold">Q2 2025</span>
-            </div>
-            <p class="mt-2 text-sm text-neutral-400">Automatic PII detection and redaction for sensitive workloads.</p>
+            <p class="mt-2 text-sm text-neutral-400">Hit rate, cost savings, tokens saved—all via /api/stats endpoint + dashboard.</p>
           </div>
         </div>
       </div>
@@ -1019,7 +1023,8 @@ curl -X POST https://agentcache.ai/api/moonshot \
       
       const ctx = canvas.getContext('2d');
       let particles = [];
-      let animationId;
+      let animationId = null;
+      let isPaused = false;
       
       function resizeCanvas() {
         canvas.width = window.innerWidth;
@@ -1055,6 +1060,7 @@ curl -X POST https://agentcache.ai/api/moonshot \
       }
       
       function animate() {
+        if (isPaused) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         particles.forEach(p => {
           p.update();
@@ -1078,6 +1084,24 @@ curl -X POST https://agentcache.ai/api/moonshot \
         });
         animationId = requestAnimationFrame(animate);
       }
+      
+      // Pause animation when tab is hidden (prevents memory leak)
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          isPaused = true;
+          if (animationId) cancelAnimationFrame(animationId);
+        } else {
+          isPaused = false;
+          animate();
+        }
+      });
+      
+      // Cleanup on page unload
+      window.addEventListener('beforeunload', () => {
+        if (animationId) cancelAnimationFrame(animationId);
+        particles = [];
+      });
+      
       animate();
       
       // Render lucide with strokeWidth 1.5
