@@ -80,11 +80,12 @@ export default async function handler(req) {
     const usageKey = `usage:${authn.hash}`;
     const month = now.toISOString().slice(0,7);
     const monthlyUsageKey = `usage:${authn.hash}:m:${month}`;
+    const quotaKey = `usage:${authn.hash}/monthlyQuota`;
     
     const commands = [
       ['HGETALL', usageKey],
       ['GET', monthlyUsageKey],
-      ['HGET', usageKey, 'monthlyQuota']
+      ['GET', quotaKey]
     ];
 
     const results = await upstash(commands);
