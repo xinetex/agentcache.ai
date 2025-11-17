@@ -1,0 +1,55 @@
+name: Daily Data Update
+
+on:
+  schedule:
+    # Run every day at midnight UTC
+    - cron: '0 0 * * *'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: |
+          if [ -f package.json ]; then
+            npm install
+          fi
+      
+      - name: Run data update script
+        run: node scripts/update-daily-data.js
+        env:
+          NODE_ENV: production
+      
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          git add public/data/*.json
+          
+          # Only commit if there are changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "🤖 Daily data update: $(date +'%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
+      
+      - name: Trigger Vercel deployment
+        if: success()
+        run: |
+          echo "✅ Data updated successfully. Vercel will auto-deploy on push."

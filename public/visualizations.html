@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgentCache.ai | Visualization Experiments</title>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0a0f;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    .header {
+      text-align: center;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    .data-info {
+      background: #1a1a2e;
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 1200px;
+      border-radius: 10px;
+      border: 1px solid #667eea;
+    }
+
+    .data-info h3 {
+      margin-bottom: 10px;
+      color: #667eea;
+    }
+
+    .visualization-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      padding: 20px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    .viz-card {
+      background: #1a1a2e;
+      border-radius: 15px;
+      padding: 20px;
+      border: 2px solid #2a2a3e;
+      transition: border-color 0.3s;
+    }
+
+    .viz-card:hover {
+      border-color: #667eea;
+    }
+
+    .viz-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      color: #667eea;
+    }
+
+    .viz-card p {
+      color: #aaa;
+      margin-bottom: 15px;
+      font-size: 0.95rem;
+    }
+
+    .viz-container {
+      width: 100%;
+      height: 500px;
+      background: #0f0f1a;
+      border-radius: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    .tooltip {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.9);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 5px;
+      font-size: 12px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 100;
+      border: 1px solid #667eea;
+    }
+
+    .legend {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(26, 26, 46, 0.9);
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      border: 1px solid #667eea;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .legend-color {
+      width: 15px;
+      height: 15px;
+      margin-right: 8px;
+      border-radius: 3px;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 768px) {
+      .visualization-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🎨 AgentCache Visualization Experiments</h1>
+    <p class="subtitle">4 Different Ways to Display Cached Data | 724KB Total Cached</p>
+  </div>
+
+  <div class="data-info">
+    <h3>📊 Cached Data Sources</h3>
+    <p><strong>CoinGecko Crypto Markets:</strong> 79KB | Top 100 coins by market cap</p>
+    <p><strong>GitHub Trending Repos:</strong> 644KB | Top 100 repositories by stars</p>
+    <p style="margin-top: 10px; color: #667eea;"><em>All visualizations use 100% cached data - zero API costs for experimentation!</em></p>
+  </div>
+
+  <div class="visualization-grid">
+    <!-- Visualization 1: 3D Particle Galaxy -->
+    <div class="viz-card">
+      <h2>1. 3D Particle Galaxy</h2>
+      <p>Crypto market caps mapped to rotating particle cloud with depth perception</p>
+      <div class="viz-container" id="viz1">
+        <canvas id="canvas1"></canvas>
+        <div class="legend">
+          <div class="legend-item">
+            <div class="legend-color" style="background: #667eea;"></div>
+            <span>Large Cap (&gt;$10B)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #f093fb;"></div>
+            <span>Mid Cap ($1B-$10B)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #4facfe;"></div>
+            <span>Small Cap (&lt;$1B)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Visualization 2: Force-Directed Network -->
+    <div class="viz-card">
+      <h2>2. Force-Directed Network</h2>
+      <p>GitHub repos connected by language similarity with D3.js physics</p>
+      <div class="viz-container" id="viz2">
+        <div class="tooltip" id="tooltip2"></div>
+      </div>
+    </div>
+
+    <!-- Visualization 3: Animated Heatmap Grid -->
+    <div class="viz-card">
+      <h2>3. Animated Heatmap Grid</h2>
+      <p>Crypto price changes with Anime.js color transitions and pulse effects</p>
+      <div class="viz-container" id="viz3"></div>
+    </div>
+
+    <!-- Visualization 4: Data Stream Flow -->
+    <div class="viz-card">
+      <h2>4. Data Stream Flow</h2>
+      <p>Real-time particle flow visualization showing GitHub star velocity</p>
+      <div class="viz-container" id="viz4">
+        <canvas id="canvas4"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Load cached data
+    let cryptoData = [];
+    let githubData = [];
+
+    Promise.all([
+      fetch('/data/crypto-cached.json').then(r => r.json()),
+      fetch('/data/github-cached.json').then(r => r.json())
+    ]).then(([crypto, github]) => {
+      cryptoData = crypto;
+      githubData = github.items;
+      
+      initViz1();
+      initViz2();
+      initViz3();
+      initViz4();
+    });
+
+    // === VISUALIZATION 1: 3D Particle Galaxy ===
+    function initViz1() {
+      const canvas = document.getElementById('canvas1');
+      const ctx = canvas.getContext('2d');
+      const container = document.getElementById('viz1');
+      
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+
+      // Create particles from crypto data (top 50 for performance)
+      const particles = cryptoData.slice(0, 50).map((coin, i) => {
+        const angle = (i / 50) * Math.PI * 2;
+        const radius = 150 + (coin.market_cap_rank * 2);
+        
+        return {
+          x: Math.cos(angle) * radius,
+          y: Math.sin(angle) * radius,
+          z: (Math.random() - 0.5) * 200,
+          size: Math.log(coin.market_cap) / 3,
+          color: coin.market_cap > 10e9 ? '#667eea' : coin.market_cap > 1e9 ? '#f093fb' : '#4facfe',
+          name: coin.symbol.toUpperCase(),
+          price: coin.current_price
+        };
+      });
+
+      let rotation = 0;
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        rotation += 0.003;
+        
+        // Sort by Z for depth
+        particles.sort((a, b) => b.z - a.z);
+        
+        particles.forEach(p => {
+          // Rotate
+          const cosR = Math.cos(rotation);
+          const sinR = Math.sin(rotation);
+          const x = p.x * cosR - p.z * sinR;
+          const z = p.x * sinR + p.z * cosR;
+          
+          // Project to 2D
+          const scale = 300 / (300 + z);
+          const x2d = x * scale + canvas.width / 2;
+          const y2d = p.y * scale + canvas.height / 2;
+          
+          // Draw particle
+          ctx.globalAlpha = scale * 0.8;
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(x2d, y2d, p.size * scale, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Draw label for large caps
+          if (scale > 0.8 && p.size > 5) {
+            ctx.fillStyle = '#fff';
+            ctx.font = `${10 * scale}px monospace`;
+            ctx.fillText(p.name, x2d + 10, y2d);
+          }
+        });
+        
+        requestAnimationFrame(animate);
+      }
+      
+      animate();
+    }
+
+    // === VISUALIZATION 2: Force-Directed Network ===
+    function initViz2() {
+      const container = d3.select('#viz2');
+      const width = container.node().clientWidth;
+      const height = container.node().clientHeight;
+
+      const svg = container.append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+      // Use top 40 repos
+      const repos = githubData.slice(0, 40);
+      
+      // Create language groups
+      const languages = [...new Set(repos.map(r => r.language).filter(Boolean))];
+      const colorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(languages);
+
+      // Create nodes
+      const nodes = repos.map(r => ({
+        id: r.id,
+        name: r.name,
+        stars: r.stargazers_count,
+        language: r.language || 'None',
+        radius: Math.sqrt(r.stargazers_count) / 100
+      }));
+
+      // Create links (connect repos with same language)
+      const links = [];
+      nodes.forEach((n1, i) => {
+        nodes.slice(i + 1).forEach(n2 => {
+          if (n1.language === n2.language && n1.language !== 'None') {
+            links.push({ source: n1.id, target: n2.id });
+          }
+        });
+      });
+
+      const simulation = d3.forceSimulation(nodes)
+        .force('link', d3.forceLink(links).id(d => d.id).distance(100))
+        .force('charge', d3.forceManyBody().strength(-200))
+        .force('center', d3.forceCenter(width / 2, height / 2))
+        .force('collision', d3.forceCollide().radius(d => d.radius + 2));
+
+      // Draw links
+      const link = svg.append('g')
+        .selectAll('line')
+        .data(links)
+        .join('line')
+        .attr('stroke', '#667eea')
+        .attr('stroke-opacity', 0.3)
+        .attr('stroke-width', 1);
+
+      // Draw nodes
+      const node = svg.append('g')
+        .selectAll('circle')
+        .data(nodes)
+        .join('circle')
+        .attr('r', d => d.radius)
+        .attr('fill', d => colorScale(d.language))
+        .attr('stroke', '#fff')
+        .attr('stroke-width', 1.5)
+        .call(drag(simulation));
+
+      // Tooltip
+      const tooltip = d3.select('#tooltip2');
+      
+      node.on('mouseover', (event, d) => {
+        tooltip.style('opacity', 1)
+          .html(`<strong>${d.name}</strong><br/>⭐ ${d.stars.toLocaleString()}<br/>📝 ${d.language}`)
+          .style('left', event.pageX + 10 + 'px')
+          .style('top', event.pageY - 30 + 'px');
+      }).on('mouseout', () => {
+        tooltip.style('opacity', 0);
+      });
+
+      simulation.on('tick', () => {
+        link
+          .attr('x1', d => d.source.x)
+          .attr('y1', d => d.source.y)
+          .attr('x2', d => d.target.x)
+          .attr('y2', d => d.target.y);
+
+        node
+          .attr('cx', d => d.x)
+          .attr('cy', d => d.y);
+      });
+
+      function drag(simulation) {
+        function dragstarted(event) {
+          if (!event.active) simulation.alphaTarget(0.3).restart();
+          event.subject.fx = event.subject.x;
+          event.subject.fy = event.subject.y;
+        }
+
+        function dragged(event) {
+          event.subject.fx = event.x;
+          event.subject.fy = event.y;
+        }
+
+        function dragended(event) {
+          if (!event.active) simulation.alphaTarget(0);
+          event.subject.fx = null;
+          event.subject.fy = null;
+        }
+
+        return d3.drag()
+          .on('start', dragstarted)
+          .on('drag', dragged)
+          .on('end', dragended);
+      }
+    }
+
+    // === VISUALIZATION 3: Animated Heatmap Grid ===
+    function initViz3() {
+      const container = document.getElementById('viz3');
+      const gridSize = 8; // 8x8 grid
+      const cellSize = container.clientWidth / gridSize;
+
+      // Create grid cells from top 64 cryptos
+      cryptoData.slice(0, 64).forEach((coin, i) => {
+        const cell = document.createElement('div');
+        cell.style.position = 'absolute';
+        cell.style.width = cellSize + 'px';
+        cell.style.height = cellSize + 'px';
+        cell.style.left = (i % gridSize) * cellSize + 'px';
+        cell.style.top = Math.floor(i / gridSize) * cellSize + 'px';
+        cell.style.border = '1px solid #2a2a3e';
+        cell.style.display = 'flex';
+        cell.style.alignItems = 'center';
+        cell.style.justifyContent = 'center';
+        cell.style.fontSize = '10px';
+        cell.style.fontWeight = 'bold';
+        cell.style.cursor = 'pointer';
+        cell.textContent = coin.symbol.toUpperCase();
+        
+        // Color based on 24h change
+        const change = coin.price_change_percentage_24h;
+        const color = change > 0 ? 
+          `rgba(0, 255, 100, ${Math.abs(change) / 10})` : 
+          `rgba(255, 0, 100, ${Math.abs(change) / 10})`;
+        
+        cell.style.background = color;
+        
+        // Tooltip on hover
+        cell.title = `${coin.name}\nPrice: $${coin.current_price.toLocaleString()}\n24h: ${change.toFixed(2)}%`;
+        
+        container.appendChild(cell);
+        
+        // Animate with Anime.js
+        anime({
+          targets: cell,
+          scale: [0, 1],
+          opacity: [0, 1],
+          delay: i * 20,
+          duration: 800,
+          easing: 'spring(1, 80, 10, 0)'
+        });
+
+        // Pulse animation on interval
+        setInterval(() => {
+          anime({
+            targets: cell,
+            scale: [1, 1.1, 1],
+            duration: 600,
+            easing: 'easeInOutQuad'
+          });
+        }, 3000 + (i * 50));
+      });
+    }
+
+    // === VISUALIZATION 4: Data Stream Flow ===
+    function initViz4() {
+      const canvas = document.getElementById('canvas4');
+      const ctx = canvas.getContext('2d');
+      const container = document.getElementById('viz4');
+      
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+
+      // Create flowing particles based on GitHub star counts
+      const streams = githubData.slice(0, 30).map((repo, i) => ({
+        y: (i / 30) * canvas.height,
+        speed: repo.stargazers_count / 50000, // Speed based on stars
+        particles: [],
+        color: `hsl(${(i * 12) % 360}, 70%, 60%)`,
+        name: repo.name,
+        stars: repo.stargazers_count
+      }));
+
+      // Initialize particles
+      streams.forEach(stream => {
+        for (let i = 0; i < 20; i++) {
+          stream.particles.push({
+            x: Math.random() * canvas.width,
+            size: 2 + Math.random() * 3,
+            alpha: Math.random()
+          });
+        }
+      });
+
+      function animate() {
+        ctx.fillStyle = 'rgba(15, 15, 26, 0.1)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        streams.forEach(stream => {
+          stream.particles.forEach(p => {
+            // Move particle
+            p.x += stream.speed;
+            if (p.x > canvas.width) p.x = 0;
+
+            // Draw particle with glow
+            ctx.globalAlpha = p.alpha;
+            ctx.fillStyle = stream.color;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = stream.color;
+            ctx.beginPath();
+            ctx.arc(p.x, stream.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+          });
+
+          // Draw stream label
+          ctx.globalAlpha = 0.6;
+          ctx.fillStyle = '#fff';
+          ctx.font = '9px monospace';
+          ctx.fillText(`${stream.name} (${(stream.stars / 1000).toFixed(0)}k⭐)`, 10, stream.y - 5);
+        });
+
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    }
+  </script>
+</body>
+</html>
