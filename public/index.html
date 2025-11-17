@@ -7,6 +7,7 @@
     <meta name="description" content="AgentCache.ai is an edge caching layer for AI API calls. Drop in 5 lines of code to reduce AI costs by up to 90% and make responses 10x faster." />
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
       @keyframes fadeInUp {
         from {
@@ -288,65 +289,28 @@ curl -X POST https://agentcache.ai/api/moonshot \
 # 98% cost savings on reasoning-heavy queries!
                 </code></pre>
 
-                <!-- Visual Tab - Live Cached Data Demo -->
-                <div id="pane-visual" class="tab-pane block rounded-lg bg-gradient-to-br from-indigo-950/40 to-purple-950/40 ring-1 ring-white/10 p-6 max-h-[480px] overflow-hidden">
-                  <div class="flex flex-col gap-4">
-                    <!-- Live Demo Header -->
-                    <div class="flex items-center justify-between">
-                      <div>
-                        <div class="flex items-center gap-2 text-sm font-semibold text-white">
-                          <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-                          Live AgentCache Demo
-                        </div>
-                        <div class="text-xs text-neutral-400 mt-0.5">Fetching real public data through cache</div>
-                      </div>
-                      <button id="refresh-demo" class="px-2.5 py-1 rounded-md text-xs bg-indigo-500/20 ring-1 ring-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30 transition">
-                        <i data-lucide="refresh-cw" class="h-3 w-3 inline"></i> Refresh
-                      </button>
+                <!-- Visual Tab - 3D Cache Visualization -->
+                <div id="pane-visual" class="tab-pane block rounded-lg bg-black/60 ring-1 ring-white/10 overflow-hidden">
+                  <div class="flex flex-col h-[480px]">
+                    <!-- 3D Visualization Container -->
+                    <div id="cache-3d-viz" class="flex-1 relative">
+                      <!-- D3.js will render here -->
                     </div>
-
-                    <!-- Real-time Metrics -->
-                    <div class="grid grid-cols-3 gap-2">
-                      <div class="rounded-lg bg-emerald-500/10 ring-1 ring-emerald-500/30 p-3 text-center">
-                        <div class="text-xs text-emerald-400 mb-1">Cache Hits</div>
-                        <div class="text-2xl font-bold text-white" id="demo-hits">0</div>
-                        <div class="text-[10px] text-emerald-300 mt-1"><span id="demo-hit-rate">0</span>% hit rate</div>
+                    
+                    <!-- Legend -->
+                    <div class="flex items-center justify-center gap-6 px-4 py-3 border-t border-white/10 text-xs">
+                      <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-emerald-400"></div>
+                        <span class="text-emerald-300">Cache Hits (90%)</span>
                       </div>
-                      <div class="rounded-lg bg-indigo-500/10 ring-1 ring-indigo-500/30 p-3 text-center">
-                        <div class="text-xs text-indigo-400 mb-1">Avg Latency</div>
-                        <div class="text-2xl font-bold text-white"><span id="demo-latency">0</span>ms</div>
-                        <div class="text-[10px] text-indigo-300 mt-1">10x faster</div>
+                      <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                        <span class="text-yellow-300">Cache Misses (10%)</span>
                       </div>
-                      <div class="rounded-lg bg-purple-500/10 ring-1 ring-purple-500/30 p-3 text-center">
-                        <div class="text-xs text-purple-400 mb-1">Cost Saved</div>
-                        <div class="text-2xl font-bold text-white">$<span id="demo-savings">0.00</span></div>
-                        <div class="text-[10px] text-purple-300 mt-1">90% reduction</div>
+                      <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-indigo-400"></div>
+                        <span class="text-indigo-300">Processing</span>
                       </div>
-                    </div>
-
-                    <!-- Live Request Feed -->
-                    <div class="space-y-2">
-                      <div class="text-xs text-neutral-400 font-semibold uppercase tracking-wide">Recent Requests</div>
-                      <div id="demo-feed" class="space-y-1.5 max-h-[180px] overflow-y-auto">
-                        <!-- Populated by JS -->
-                        <div class="flex items-center gap-2 text-xs text-neutral-500 py-2">
-                          <i data-lucide="loader" class="h-3 w-3 animate-spin"></i>
-                          Loading demo data...
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Data Sources -->
-                    <div class="flex items-center gap-3 text-[10px] text-neutral-500 pt-2 border-t border-white/10">
-                      <span class="flex items-center gap-1">
-                        <i data-lucide="github" class="h-3 w-3"></i> GitHub API
-                      </span>
-                      <span class="flex items-center gap-1">
-                        <i data-lucide="cloud" class="h-3 w-3"></i> Weather API
-                      </span>
-                      <span class="flex items-center gap-1">
-                        <i data-lucide="trending-up" class="h-3 w-3"></i> Crypto API
-                      </span>
                     </div>
                   </div>
                 </div>
@@ -964,100 +928,7 @@ curl -X POST https://agentcache.ai/api/moonshot \
 
     <!-- Scripts: icons + UX + Animations -->
     <script>
-      // Animated gradient background
-      const canvas = document.createElement('canvas');
-      canvas.style.position = 'fixed';
-      canvas.style.top = '0';
-      canvas.style.left = '0';
-      canvas.style.width = '100%';
-      canvas.style.height = '100%';
-      canvas.style.zIndex = '-1';
-      canvas.style.opacity = '0.3';
-      canvas.style.pointerEvents = 'none';
-      document.body.insertBefore(canvas, document.body.firstChild);
-      
-      const ctx = canvas.getContext('2d');
-      let particles = [];
-      let animationId = null;
-      let isPaused = false;
-      
-      function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-      }
-      resizeCanvas();
-      window.addEventListener('resize', resizeCanvas);
-      
-      class Particle {
-        constructor() {
-          this.x = Math.random() * canvas.width;
-          this.y = Math.random() * canvas.height;
-          this.vx = (Math.random() - 0.5) * 0.5;
-          this.vy = (Math.random() - 0.5) * 0.5;
-          this.radius = Math.random() * 2 + 1;
-        }
-        update() {
-          this.x += this.vx;
-          this.y += this.vy;
-          if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-          if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
-        }
-        draw() {
-          ctx.beginPath();
-          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(139, 92, 246, 0.5)';
-          ctx.fill();
-        }
-      }
-      
-      for (let i = 0; i < 50; i++) {
-        particles.push(new Particle());
-      }
-      
-      function animate() {
-        if (isPaused) return;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach(p => {
-          p.update();
-          p.draw();
-        });
-        // Draw connections
-        particles.forEach((p1, i) => {
-          particles.slice(i + 1).forEach(p2 => {
-            const dx = p1.x - p2.x;
-            const dy = p1.y - p2.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < 100) {
-              ctx.beginPath();
-              ctx.moveTo(p1.x, p1.y);
-              ctx.lineTo(p2.x, p2.y);
-              ctx.strokeStyle = `rgba(139, 92, 246, ${0.2 * (1 - dist / 100)})`;
-              ctx.lineWidth = 0.5;
-              ctx.stroke();
-            }
-          });
-        });
-        animationId = requestAnimationFrame(animate);
-      }
-      
-      // Pause animation when tab is hidden (prevents memory leak)
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-          isPaused = true;
-          if (animationId) cancelAnimationFrame(animationId);
-        } else {
-          isPaused = false;
-          animate();
-        }
-      });
-      
-      // Cleanup on page unload
-      window.addEventListener('beforeunload', () => {
-        if (animationId) cancelAnimationFrame(animationId);
-        particles = [];
-      });
-      
-      animate();
+      // Removed particle animation to prevent memory issues
       
       // Render lucide with strokeWidth 1.5
       document.addEventListener("DOMContentLoaded", () => {
@@ -1189,71 +1060,102 @@ curl -X POST https://agentcache.ai/api/moonshot \
         });
       });
 
-      // Live Cache Demo
-      let demoHits = 0, demoMisses = 0, demoTotalLatency = 0, demoRequests = 0;
-      const demoFeed = document.getElementById('demo-feed');
-      const refreshBtn = document.getElementById('refresh-demo');
-      
-      async function fetchCachedData(url, source) {
-        const startTime = Date.now();
-        try {
-          const res = await fetch(url, { cache: 'force-cache' });
-          const latency = Date.now() - startTime;
-          const cacheStatus = res.headers.get('x-cache') || 'MISS';
-          const isHit = latency < 100; // Assume cache hit if < 100ms
+      // 3D Cache Visualization with D3.js
+      function init3DViz() {
+        const container = document.getElementById('cache-3d-viz');
+        if (!container || !window.d3) return;
+        
+        const width = container.offsetWidth;
+        const height = container.offsetHeight;
+        
+        // Generate random data points (simulating cached queries)
+        const numPoints = 200;
+        const data = Array.from({ length: numPoints }, (_, i) => {
+          const isHit = Math.random() > 0.1; // 90% hits
+          return {
+            x: (Math.random() - 0.5) * 100,
+            y: (Math.random() - 0.5) * 100,
+            z: (Math.random() - 0.5) * 100,
+            size: Math.random() * 3 + 2,
+            color: isHit ? '#10b981' : '#facc15', // emerald or yellow
+            type: isHit ? 'hit' : 'miss'
+          };
+        });
+        
+        // Create SVG
+        const svg = d3.select(container)
+          .append('svg')
+          .attr('width', width)
+          .attr('height', height)
+          .style('background', 'transparent');
+        
+        // Projection parameters
+        let angleX = 0.3;
+        let angleY = 0.5;
+        const scale = 3;
+        
+        // 3D to 2D projection
+        function project(point) {
+          // Rotate around Y axis
+          const cosY = Math.cos(angleY);
+          const sinY = Math.sin(angleY);
+          const x1 = point.x * cosY - point.z * sinY;
+          const z1 = point.x * sinY + point.z * cosY;
           
-          if (isHit) demoHits++;
-          else demoMisses++;
-          demoTotalLatency += latency;
-          demoRequests++;
+          // Rotate around X axis
+          const cosX = Math.cos(angleX);
+          const sinX = Math.sin(angleX);
+          const y1 = point.y * cosX - z1 * sinX;
+          const z2 = point.y * sinX + z1 * cosX;
           
-          // Update metrics
-          document.getElementById('demo-hits').textContent = demoHits;
-          document.getElementById('demo-hit-rate').textContent = Math.round((demoHits / demoRequests) * 100);
-          document.getElementById('demo-latency').textContent = Math.round(demoTotalLatency / demoRequests);
-          document.getElementById('demo-savings').textContent = (demoHits * 0.003).toFixed(2);
-          
-          // Add to feed
-          const feedItem = document.createElement('div');
-          feedItem.className = `flex items-center justify-between text-xs px-2 py-1.5 rounded-md ${isHit ? 'bg-emerald-500/10 ring-1 ring-emerald-500/30' : 'bg-yellow-500/10 ring-1 ring-yellow-500/30'}`;
-          feedItem.innerHTML = `
-            <div class="flex items-center gap-2">
-              <i data-lucide="${source === 'github' ? 'github' : source === 'weather' ? 'cloud' : 'trending-up'}" class="h-3 w-3 ${isHit ? 'text-emerald-400' : 'text-yellow-400'}"></i>
-              <span class="${isHit ? 'text-emerald-300' : 'text-yellow-300'}">${source.toUpperCase()}</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="${isHit ? 'text-emerald-400' : 'text-yellow-400'} font-semibold">${isHit ? 'HIT' : 'MISS'}</span>
-              <span class="text-neutral-500">${latency}ms</span>
-            </div>
-          `;
-          if (demoFeed.firstChild) demoFeed.insertBefore(feedItem, demoFeed.firstChild);
-          else demoFeed.appendChild(feedItem);
-          
-          // Keep only last 8 items
-          while (demoFeed.children.length > 8) demoFeed.removeChild(demoFeed.lastChild);
-          
-          // Reinitialize lucide icons
-          if (window.lucide) window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
-        } catch (err) {
-          console.error('Demo fetch error:', err);
+          // Project to 2D
+          const perspective = 400 / (400 + z2);
+          return {
+            x: width / 2 + x1 * scale * perspective,
+            y: height / 2 + y1 * scale * perspective,
+            scale: perspective,
+            z: z2
+          };
         }
+        
+        // Draw points
+        function render() {
+          const projected = data.map(d => ({ ...d, ...project(d) }));
+          projected.sort((a, b) => a.z - b.z); // Z-sorting
+          
+          const circles = svg.selectAll('circle')
+            .data(projected, (d, i) => i);
+          
+          circles.enter()
+            .append('circle')
+            .merge(circles)
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr('r', d => d.size * d.scale)
+            .attr('fill', d => d.color)
+            .attr('opacity', d => 0.6 + d.scale * 0.4);
+          
+          circles.exit().remove();
+        }
+        
+        // Animation loop
+        function animate() {
+          angleY += 0.005;
+          render();
+          requestAnimationFrame(animate);
+        }
+        
+        render();
+        animate();
       }
       
-      async function runDemo() {
-        demoFeed.innerHTML = '';
-        // Fetch public APIs (with slight delays to show animation)
-        await fetchCachedData('https://api.github.com/repos/vercel/next.js', 'github');
-        setTimeout(() => fetchCachedData('https://wttr.in/London?format=j1', 'weather'), 500);
-        setTimeout(() => fetchCachedData('https://api.coindesk.com/v1/bpi/currentprice.json', 'crypto'), 1000);
-        setTimeout(() => fetchCachedData('https://api.github.com/repos/facebook/react', 'github'), 1500);
-        setTimeout(() => fetchCachedData('https://wttr.in/Tokyo?format=j1', 'weather'), 2000);
-      }
-      
-      if (refreshBtn) {
-        refreshBtn.addEventListener('click', runDemo);
-        // Auto-run demo on page load
-        setTimeout(runDemo, 500);
-      }
+      // Initialize 3D viz when tab is active
+      setTimeout(() => {
+        const visualTab = document.getElementById('tab-visual');
+        if (visualTab && visualTab.checked) {
+          init3DViz();
+        }
+      }, 500);
 
       // Waitlist submit
       const form = document.getElementById('waitlist-form');
