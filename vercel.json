@@ -3,6 +3,10 @@
   "installCommand": "",
   "buildCommand": "",
   "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/daily", "destination": "/daily.html" },
+    { "source": "/visualizations", "destination": "/visualizations.html" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
