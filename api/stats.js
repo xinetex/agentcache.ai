@@ -18,16 +18,16 @@ const getEnv = () => ({
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
-async function upstash(cmds) {
+async function redis(command, ...args) {
   const { url, token } = getEnv();
   if (!url || !token) throw new Error('Upstash not configured');
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-    body: JSON.stringify({ commands: cmds }),
+  const path = `${command}/${args.map(encodeURIComponent).join('/')}`;
+  const res = await fetch(`${url}/${path}`, {
+    headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error(`Upstash ${res.status}`);
-  return res.json();
+  const data = await res.json();
+  return data.result;
 }
 
 async function sha256Hex(text) {
@@ -82,18 +82,10 @@ export default async function handler(req) {
     const monthlyUsageKey = `usage:${authn.hash}:m:${month}`;
     const quotaKey = `usage:${authn.hash}/monthlyQuota`;
     
-    const commands = [
-      ['HGETALL', usageKey],
-      ['GET', monthlyUsageKey],
-      ['GET', quotaKey]
-    ];
-
-    const results = await upstash(commands);
-    
-    // Parse results
-    const usageData = results[0]?.result || [];
-    const monthlyCount = parseInt(results[1]?.result || '0', 10);
-    const quota = parseInt(results[2]?.result || '1000', 10);
+    // Make individual Redis calls
+    const usageData = await redis('HGETALL', usageKey) || [];
+    const monthlyCount = parseInt(await redis('GET', monthlyUsageKey) || '0', 10);
+    const quota = parseInt(await redis('GET', quotaKey) || '10000', 10);
 
     // Convert usage data array to object
     const usage = {};
