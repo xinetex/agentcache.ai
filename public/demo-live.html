@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Live Demo - AgentCache.ai + Kimi K2</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body class="bg-neutral-950 text-neutral-100">
+  <div class="mx-auto max-w-7xl px-6 py-12">
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold mb-3">Live Kimi K2 + AgentCache Demo</h1>
+      <p class="text-neutral-400">Watch reasoning tokens get cached in real-time</p>
+    </div>
+
+    <!-- Demo Control -->
+    <div class="flex justify-center gap-4 mb-8">
+      <button id="run-demo" class="px-6 py-3 rounded-lg bg-indigo-500 text-white font-semibold hover:bg-indigo-400">
+        <i data-lucide="play" class="inline h-4 w-4 mr-2"></i>
+        Run Query (First Time)
+      </button>
+      <button id="run-cached" class="px-6 py-3 rounded-lg border border-emerald-500 text-emerald-400 hover:bg-emerald-500/10" disabled>
+        <i data-lucide="zap" class="inline h-4 w-4 mr-2"></i>
+        Run Again (Cached)
+      </button>
+    </div>
+
+    <!-- Query Display -->
+    <div class="rounded-xl border border-white/10 bg-neutral-900/50 p-6 mb-6">
+      <div class="text-sm text-neutral-400 mb-2">Query to Kimi K2:</div>
+      <div class="text-lg font-mono text-white" id="query-text">
+        "Analyze air quality in 15 major US cities and provide 3D coordinates for visualization"
+      </div>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-6">
+      <!-- 3D Visualization -->
+      <div class="rounded-xl border border-white/10 bg-neutral-900/50 overflow-hidden">
+        <div class="p-4 border-b border-white/10">
+          <h3 class="font-semibold">3D Visualization</h3>
+          <p class="text-xs text-neutral-400 mt-1">Cities plotted by lat/long/AQI</p>
+        </div>
+        <div id="viz-3d" class="h-96 relative">
+          <div class="absolute inset-0 flex items-center justify-center text-neutral-500">
+            <div class="text-center">
+              <i data-lucide="play-circle" class="h-16 w-16 mx-auto mb-3 opacity-50"></i>
+              <p>Click "Run Query" to visualize data</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance Metrics -->
+      <div class="space-y-4">
+        <!-- First Request (Cache MISS) -->
+        <div id="miss-card" class="rounded-xl border border-yellow-500/30 bg-yellow-500/5 p-6 opacity-30">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="text-sm font-semibold text-white">First Request (MISS)</div>
+              <div class="text-xs text-yellow-300 mt-1">Calling Kimi K2...</div>
+            </div>
+            <div class="text-right">
+              <div class="text-2xl font-bold text-yellow-400" id="miss-latency">-</div>
+              <div class="text-xs text-neutral-400">Latency</div>
+            </div>
+          </div>
+          <div class="space-y-2 text-xs">
+            <div class="flex items-center justify-between py-2 px-3 rounded bg-black/20">
+              <span>Reasoning Tokens</span>
+              <span id="miss-reasoning" class="text-yellow-400">-</span>
+            </div>
+            <div class="flex items-center justify-between py-2 px-3 rounded bg-black/20">
+              <span>Response Tokens</span>
+              <span id="miss-response" class="text-yellow-400">-</span>
+            </div>
+            <div class="flex items-center justify-between py-2 px-3 rounded bg-black/20">
+              <span>Cost</span>
+              <span id="miss-cost" class="text-yellow-400 font-semibold">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Second Request (Cache HIT) -->
+        <div id="hit-card" class="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-6 opacity-30">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="text-sm font-semibold text-white">Cached Request (HIT)</div>
+              <div class="text-xs text-emerald-300 mt-1">Instant from edge</div>
+            </div>
+            <div class="text-right">
+              <div class="text-2xl font-bold text-emerald-400" id="hit-latency">-</div>
+              <div class="text-xs text-neutral-400">Latency</div>
+            </div>
+          </div>
+          <div class="space-y-2 text-xs">
+            <div class="flex items-center justify-between py-2 px-3 rounded bg-black/20">
+              <span>Reasoning Tokens</span>
+              <span id="hit-reasoning" class="text-emerald-400">Cached ✓</span>
+            </div>
+            <div class="flex items-center justify-between py-2 px-3 rounded bg-black/20">
+              <span>Response Tokens</span>
+              <span id="hit-response" class="text-emerald-400">Cached ✓</span>
+            </div>
+            <div class="flex items-center justify-between py-2 px-3 rounded bg-black/20">
+              <span>Cost</span>
+              <span id="hit-cost" class="text-emerald-400 font-semibold">$0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Savings Summary -->
+        <div class="rounded-xl border border-purple-500/30 bg-purple-500/5 p-6">
+          <div class="text-center">
+            <div class="text-4xl font-bold text-purple-400" id="savings-total">$0.00</div>
+            <div class="text-xs text-neutral-400 mt-1">Total Savings (98% reduction)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Anti-Cache Explainer -->
+    <div class="mt-12 rounded-xl border border-indigo-500/30 bg-indigo-500/5 p-6">
+      <h3 class="text-lg font-semibold mb-3">
+        <i data-lucide="clock" class="inline h-5 w-5 mr-2"></i>
+        Anti-Cache Feature
+      </h3>
+      <p class="text-sm text-neutral-300 mb-4">
+        Smart TTLs ensure fresh data when needed. Weather updates hourly, stock prices every 30s, code reviews cached 7 days.
+      </p>
+      <div class="grid md:grid-cols-3 gap-4 text-xs">
+        <div class="p-3 rounded bg-black/20">
+          <div class="font-semibold text-white mb-1">Weather Data</div>
+          <div class="text-neutral-400">Cache TTL: 1 hour</div>
+        </div>
+        <div class="p-3 rounded bg-black/20">
+          <div class="font-semibold text-white mb-1">Stock Prices</div>
+          <div class="text-neutral-400">Cache TTL: 30 seconds</div>
+        </div>
+        <div class="p-3 rounded bg-black/20">
+          <div class="font-semibold text-white mb-1">Code Reviews</div>
+          <div class="text-neutral-400">Cache TTL: 7 days</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if (window.lucide) lucide.createIcons();
+
+    const runBtn = document.getElementById('run-demo');
+    const cachedBtn = document.getElementById('run-cached');
+    const missCard = document.getElementById('miss-card');
+    const hitCard = document.getElementById('hit-card');
+
+    // Simulated demo (replace with real Kimi API call)
+    runBtn.addEventListener('click', async () => {
+      runBtn.disabled = true;
+      missCard.classList.remove('opacity-30');
+      
+      // Simulate API call
+      await new Promise(r => setTimeout(r, 2300));
+      
+      // Update metrics
+      document.getElementById('miss-latency').textContent = '2.3s';
+      document.getElementById('miss-reasoning').textContent = '15,234';
+      document.getElementById('miss-response').textContent = '8,456';
+      document.getElementById('miss-cost').textContent = '$0.152';
+      
+      // Enable cached button
+      cachedBtn.disabled = false;
+      
+      // Render 3D viz with mock data
+      render3DViz();
+    });
+
+    cachedBtn.addEventListener('click', async () => {
+      cachedBtn.disabled = true;
+      hitCard.classList.remove('opacity-30');
+      
+      // Instant cached response
+      await new Promise(r => setTimeout(r, 45));
+      
+      document.getElementById('hit-latency').textContent = '45ms';
+      document.getElementById('savings-total').textContent = '$0.152';
+      
+      // Animate savings
+      anime({
+        targets: '#savings-total',
+        scale: [1, 1.2, 1],
+        duration: 600,
+        easing: 'spring(1, 80, 10, 0)'
+      });
+    });
+
+    function render3DViz() {
+      const container = document.getElementById('viz-3d');
+      container.innerHTML = '';
+      
+      const width = container.offsetWidth;
+      const height = container.offsetHeight;
+      
+      // Mock city data
+      const cities = [
+        { name: 'NYC', x: 200, y: 150, aqi: 85, color: '#facc15' },
+        { name: 'LA', x: 100, y: 200, aqi: 105, color: '#ef4444' },
+        { name: 'Chicago', x: 250, y: 100, aqi: 65, color: '#10b981' },
+        { name: 'Houston', x: 180, y: 250, aqi: 75, color: '#10b981' },
+        { name: 'Phoenix', x: 120, y: 220, aqi: 95, color: '#facc15' }
+      ];
+      
+      const svg = d3.select(container).append('svg')
+        .attr('width', width)
+        .attr('height', height);
+      
+      cities.forEach(city => {
+        svg.append('circle')
+          .attr('cx', city.x)
+          .attr('cy', city.y)
+          .attr('r', 0)
+          .attr('fill', city.color)
+          .attr('opacity', 0.8)
+          .transition()
+          .duration(1000)
+          .attr('r', Math.sqrt(city.aqi) * 2);
+        
+        svg.append('text')
+          .attr('x', city.x)
+          .attr('y', city.y - 20)
+          .attr('text-anchor', 'middle')
+          .attr('fill', 'white')
+          .attr('font-size', '10px')
+          .attr('opacity', 0)
+          .text(`${city.name} (${city.aqi})`)
+          .transition()
+          .delay(500)
+          .duration(500)
+          .attr('opacity', 1);
+      });
+    }
+  </script>
+</body>
+</html>
