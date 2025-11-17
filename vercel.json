@@ -4,6 +4,9 @@
   "buildCommand": "",
   "outputDirectory": "public",
   "rewrites": [
+    { "source": "/api/cache/get", "destination": "/api/cache" },
+    { "source": "/api/cache/set", "destination": "/api/cache" },
+    { "source": "/api/cache/check", "destination": "/api/cache" },
     { "source": "/daily", "destination": "/daily.html" },
     { "source": "/visualizations", "destination": "/visualizations.html" },
     { "source": "/dashboard", "destination": "/dashboard.html" },

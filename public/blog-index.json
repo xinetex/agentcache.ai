@@ -1,46 +1,13 @@
 [
   {
-    "title": "Understanding Deterministic Cache Keys in AI Systems",
-    "date": "2025-11-16",
+    "title": "How to Protect Your Enterprise RAG System from Indirect Prompt Injection",
+    "date": "2025-11-17",
     "author": "AgentCache Team",
     "category": "technical",
-    "excerpt": "Learn how understanding deterministic cache keys in ai systems with practical examples and code snippets. A technical deep-dive for AI developers.",
-    "featured_image": "/blog/images/understanding-deterministic-cache-keys-in-ai-systems.png",
-    "slug": "understanding-deterministic-cache-keys-in-ai-systems",
-    "filename": "2025-11-16-understanding-deterministic-cache-keys-in-ai-systems.md",
-    "mdPath": "/blog/posts/2025-11-16-understanding-deterministic-cache-keys-in-ai-systems.md"
-  },
-  {
-    "title": "OpenAI Pricing Changes: What They Mean for Your Budget",
-    "date": "2025-11-16",
-    "author": "AgentCache Team",
-    "category": "industry",
-    "excerpt": "OpenAI Pricing Changes: What They Mean for Your Budget - Analysis and insights for AI teams building cost-effective systems at scale.",
-    "featured_image": "/blog/images/openai-pricing-changes-what-they-mean-for-your-budget.png",
-    "slug": "openai-pricing-changes-what-they-mean-for-your-budget",
-    "filename": "2025-11-16-openai-pricing-changes-what-they-mean-for-your-budget.md",
-    "mdPath": "/blog/posts/2025-11-16-openai-pricing-changes-what-they-mean-for-your-budget.md"
-  },
-  {
-    "title": "AI Cost Optimization: Lessons from YC Startups",
-    "date": "2025-11-16",
-    "author": "AgentCache Team",
-    "category": "industry",
-    "excerpt": "AI Cost Optimization: Lessons from YC Startups - Analysis and insights for AI teams building cost-effective systems at scale.",
-    "featured_image": "/blog/images/ai-cost-optimization-lessons-from-yc-startups.png",
-    "slug": "ai-cost-optimization-lessons-from-yc-startups",
-    "filename": "2025-11-16-ai-cost-optimization-lessons-from-yc-startups.md",
-    "mdPath": "/blog/posts/2025-11-16-ai-cost-optimization-lessons-from-yc-startups.md"
-  },
-  {
-    "title": "Zero-Downtime AI: Caching Strategies for Production",
-    "date": "2025-11-16",
-    "author": "AgentCache Team",
-    "category": "technical",
-    "excerpt": "Learn how zero-downtime ai: caching strategies for production with practical examples and code snippets. A technical deep-dive for AI developers.",
-    "featured_image": "/blog/images/zero-downtime-ai-caching-strategies-for-production.png",
-    "slug": "zero-downtime-ai-caching-strategies-for-production",
-    "filename": "2025-11-16-zero-downtime-ai-caching-strategies-for-production.md",
-    "mdPath": "/blog/posts/2025-11-16-zero-downtime-ai-caching-strategies-for-production.md"
+    "excerpt": "How to Protect Your Enterprise RAG System from Indirect Prompt Injection - A comprehensive guide for engineering teams building secure, cost-effective AI systems.",
+    "featured_image": "/blog/images/how-to-protect-your-enterprise-rag-system-from-indirect-prompt-injection.png",
+    "slug": "how-to-protect-your-enterprise-rag-system-from-indirect-prompt-injection",
+    "filename": "2025-11-17-how-to-protect-your-enterprise-rag-system-from-indirect-prompt-injection.md",
+    "mdPath": "/blog/posts/2025-11-17-how-to-protect-your-enterprise-rag-system-from-indirect-prompt-injection.md"
   }
 ]
