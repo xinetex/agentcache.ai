@@ -18,16 +18,16 @@ const getEnv = () => ({
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
-async function upstash(cmds) {
+async function redis(command, ...args) {
   const { url, token } = getEnv();
   if (!url || !token) throw new Error('Upstash not configured');
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-    body: JSON.stringify({ commands: cmds }),
+  const path = `${command}/${args.map(encodeURIComponent).join('/')}`;
+  const res = await fetch(`${url}/${path}`, {
+    headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error(`Upstash ${res.status}`);
-  return res.json();
+  const data = await res.json();
+  return data.result;
 }
 
 function stableKey({ provider, model, messages, temperature = 0.7, namespace = null }) {
@@ -74,8 +74,8 @@ export default async function handler(req) {
     if (authn.kind === 'live' || authn.kind === 'demo') {
       const rateLimitKey = `ratelimit:${authn.hash || 'demo'}:${Math.floor(Date.now() / 60000)}`;
       const rateLimit = authn.kind === 'demo' ? 100 : 500; // requests per minute
-      const rateCheck = await upstash([["INCR", rateLimitKey], ["EXPIRE", rateLimitKey, 120]]);
-      const reqCount = Array.isArray(rateCheck) ? rateCheck[0]?.result ?? 1 : rateCheck.result ?? 1;
+      const reqCount = await redis('INCR', rateLimitKey);
+      await redis('EXPIRE', rateLimitKey, 120);
       if (Number(reqCount) > rateLimit) {
         return json({ error: 'Rate limit exceeded', limit: rateLimit, window: '1 minute' }, 429);
       }
@@ -91,10 +91,10 @@ export default async function handler(req) {
     if (authn.kind === 'live') {
       const month = new Date().toISOString().slice(0,7);
       const usageKey = `usage:${authn.hash}:m:${month}`;
-      const quotaRes = await fetch(`${getEnv().url}/hget/usage:${authn.hash}/monthlyQuota`, { headers:{ Authorization:`Bearer ${getEnv().token}` }, cache:'no-store' });
-      const quota = (await quotaRes.text()) || '1000';
-      const inc = await upstash([["INCR", usageKey],["EXPIRE",usageKey,60*60*24*40]]);
-      const count = Array.isArray(inc) ? inc[0]?.result ?? 0 : inc.result ?? 0;
+      const quotaKey = `usage:${authn.hash}/monthlyQuota`;
+      const quota = await redis('GET', quotaKey) || '10000';
+      const count = await redis('INCR', usageKey);
+      await redis('EXPIRE', usageKey, 60*60*24*40);
       
       // Check for quota warnings (80%, 90%, 100%)
       const quotaPercent = (Number(count) / Number(quota)) * 100;
@@ -133,47 +133,46 @@ export default async function handler(req) {
     if (req.method === 'POST' && req.url.endsWith('/set')) {
       if (typeof response !== 'string') return json({ error: 'response (string) is required' }, 400);
       const today = new Date().toISOString().slice(0, 10);
-      const commands = [
-        ["SETEX", cacheKey, ttl, response],
-        ["INCR", `stats:global:misses:d:${today}`],
-        ["EXPIRE", `stats:global:misses:d:${today}`, 60*60*24*7]
-      ];
+      
+      // Store cached response
+      await redis('SETEX', cacheKey, ttl, response);
+      
+      // Track stats
+      await redis('INCR', `stats:global:misses:d:${today}`);
+      await redis('EXPIRE', `stats:global:misses:d:${today}`, 60*60*24*7);
+      
       if (authn.kind === 'live') {
-        commands.push(["HINCRBY", `usage:${authn.hash}`, "misses", 1]);
+        await redis('HINCRBY', `usage:${authn.hash}`, 'misses', 1);
       }
-      await upstash(commands);
+      
       return json({ success: true, key: cacheKey.slice(-16), ttl });
     }
 
     if (req.method === 'POST' && req.url.endsWith('/get')) {
-      const res = await fetch(`${getEnv().url}/get/${encodeURIComponent(cacheKey)}`, {
-        headers: { Authorization: `Bearer ${getEnv().token}` },
-        cache: 'no-store',
-      });
-      if (!res.ok) return json({ hit: false }, 404);
-      const text = await res.text();
+      const cachedValue = await redis('GET', cacheKey);
+      
+      if (!cachedValue) return json({ hit: false }, 404);
       
       // Track global stats and estimate tokens (rough: ~4 chars = 1 token)
       const today = new Date().toISOString().slice(0, 10);
-      const estimatedTokens = Math.floor(text.length / 4);
-      const commands = [
-        ["INCR", `stats:global:hits:d:${today}`],
-        ["EXPIRE", `stats:global:hits:d:${today}`, 60*60*24*7],
-        ["INCRBY", `stats:global:tokens:d:${today}`, estimatedTokens],
-        ["EXPIRE", `stats:global:tokens:d:${today}`, 60*60*24*7]
-      ];
+      const estimatedTokens = Math.floor(cachedValue.length / 4);
+      
+      await redis('INCR', `stats:global:hits:d:${today}`);
+      await redis('EXPIRE', `stats:global:hits:d:${today}`, 60*60*24*7);
+      await redis('INCRBY', `stats:global:tokens:d:${today}`, estimatedTokens);
+      await redis('EXPIRE', `stats:global:tokens:d:${today}`, 60*60*24*7);
+      
       if (authn.kind === 'live') {
-        commands.push(["HINCRBY", `usage:${authn.hash}`, "hits", 1]);
+        await redis('HINCRBY', `usage:${authn.hash}`, 'hits', 1);
       }
-      await upstash(commands);
-      return json({ hit: !!text, response: text });
+      
+      return json({ hit: true, response: cachedValue });
     }
 
     if (req.method === 'POST' && req.url.endsWith('/check')) {
-      const r = await upstash([["EXISTS", cacheKey], ["TTL", cacheKey]]);
-      const exists = Array.isArray(r) ? r[0] === 1 || r[0]?.result === 1 : r.result === 1;
-      const ttlVal = Array.isArray(r) ? (r[1]?.result ?? 0) : 0;
-      return json({ cached: exists, ttl: ttlVal });
+      const exists = await redis('EXISTS', cacheKey);
+      const ttlVal = await redis('TTL', cacheKey);
+      return json({ cached: !!exists, ttl: ttlVal || 0 });
     }
 
     return json({ error: 'Not found' }, 404);
