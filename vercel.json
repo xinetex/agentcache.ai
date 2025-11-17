@@ -5,7 +5,13 @@
   "outputDirectory": "public",
   "rewrites": [
     { "source": "/daily", "destination": "/daily.html" },
-    { "source": "/visualizations", "destination": "/visualizations.html" }
+    { "source": "/visualizations", "destination": "/visualizations.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/docs", "destination": "/docs.html" },
+    { "source": "/blog", "destination": "/blog.html" },
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/terms", "destination": "/terms.html" }
   ],
   "headers": [
     {
