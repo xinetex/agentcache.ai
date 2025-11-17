@@ -21,6 +21,75 @@
       overflow-x: hidden;
     }
 
+    .nav {
+      background: rgba(26, 26, 46, 0.95);
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #667eea;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-logo {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #fff;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-logo:hover {
+      color: #667eea;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 25px;
+      align-items: center;
+    }
+
+    .nav-link {
+      color: #aaa;
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover {
+      color: #667eea;
+    }
+
+    .nav-link.active {
+      color: #667eea;
+      font-weight: 600;
+    }
+
+    .nav-mobile {
+      display: none;
+    }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      cursor: pointer;
+      padding: 5px;
+    }
+
+    .hamburger span {
+      width: 24px;
+      height: 2px;
+      background: #fff;
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+
     .header {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       padding: 40px 20px;
@@ -225,11 +294,72 @@
 
       .stats-bar {
         gap: 20px;
+        font-size: 0.9rem;
+      }
+
+      .nav-links {
+        gap: 15px;
+      }
+
+      .nav-link {
+        font-size: 0.85rem;
+      }
+
+      .panel-content {
+        min-height: 250px;
+      }
+
+      .big-number {
+        font-size: 3rem;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .hamburger {
+        display: flex;
+      }
+
+      .nav-mobile {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        padding: 20px;
+        background: #1a1a2e;
+        border-bottom: 1px solid #667eea;
+      }
+
+      .nav-mobile.hidden {
+        display: none;
       }
     }
   </style>
 </head>
 <body>
+  <nav class="nav">
+    <a href="/" class="nav-logo">
+      ⚡ AgentCache.ai
+    </a>
+    <div class="nav-links">
+      <a href="/" class="nav-link">Home</a>
+      <a href="/daily" class="nav-link active">Daily Pulse</a>
+      <a href="/docs" class="nav-link">Docs</a>
+      <a href="/dashboard" class="nav-link">Dashboard</a>
+    </div>
+    <div class="hamburger" onclick="toggleMobileNav()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </nav>
+  <div class="nav-mobile hidden" id="mobileNav">
+    <a href="/" class="nav-link">Home</a>
+    <a href="/daily" class="nav-link active">Daily Pulse</a>
+    <a href="/docs" class="nav-link">Docs</a>
+    <a href="/dashboard" class="nav-link">Dashboard</a>
+  </div>
+
   <div class="header">
     <h1>📊 Daily AI Market Pulse</h1>
     <p class="tagline">Free real-time insights into AI, Crypto, and Tech trends</p>
@@ -551,6 +681,12 @@
           💡 Developer engagement is a leading indicator of tech adoption. High activity = strong ecosystem growth.
         </div>
       `;
+    }
+
+    // Mobile menu toggle
+    function toggleMobileNav() {
+      const mobileNav = document.getElementById('mobileNav');
+      mobileNav.classList.toggle('hidden');
     }
   </script>
 </body>
