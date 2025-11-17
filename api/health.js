@@ -37,15 +37,12 @@ export default async function handler(req) {
       }, 503);
     }
 
-    // Quick Redis ping
+    // Quick Redis ping using simple REST API
     const redisStart = Date.now();
-    const res = await fetch(url, {
-      method: 'POST',
+    const res = await fetch(`${url}/ping`, {
       headers: { 
-        Authorization: `Bearer ${token}`, 
-        'content-type': 'application/json' 
-      },
-      body: JSON.stringify({ commands: [["PING"]] }),
+        Authorization: `Bearer ${token}`
+      }
     });
     const redisLatency = Date.now() - redisStart;
 
@@ -65,7 +62,7 @@ export default async function handler(req) {
     }
 
     const data = await res.json();
-    const redisPong = data?.[0]?.result === 'PONG';
+    const redisPong = data?.result === 'PONG';
 
     if (!redisPong) {
       return json({
