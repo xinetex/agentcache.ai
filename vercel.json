@@ -9,7 +9,6 @@
     { "source": "/api/cache/check", "destination": "/api/cache" },
     { "source": "/daily", "destination": "/daily.html" },
     { "source": "/visualizations", "destination": "/visualizations.html" },
-    { "source": "/dashboard", "destination": "/dashboard.html" },
     { "source": "/docs", "destination": "/docs.html" },
     { "source": "/blog", "destination": "/blog.html" },
     { "source": "/login", "destination": "/login.html" },
