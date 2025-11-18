@@ -7,10 +7,143 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-neutral-950 text-neutral-100 antialiased">
-  <main class="mx-auto max-w-3xl px-6 py-12">
-    <a href="/" class="text-sm text-neutral-400">← Back</a>
-    <h1 class="mt-3 text-4xl font-semibold tracking-tight">Terms of Service</h1>
-    <p class="mt-4 text-neutral-300">By using AgentCache.ai, you agree to our acceptable use, rate limits, and fair usage policies. Service is provided “as is” without warranties. Contact: legal@agentcache.ai</p>
+  <main class="mx-auto max-w-4xl px-6 py-16">
+    <a href="/" class="text-sm text-neutral-400 hover:text-white">← Back to Home</a>
+    <h1 class="mt-6 text-5xl font-bold tracking-tight">Terms of Service</h1>
+    <p class="mt-2 text-neutral-400">Last updated: November 18, 2025</p>
+
+    <div class="mt-12 space-y-12 text-neutral-300">
+      
+      <section>
+        <h2 class="text-2xl font-semibold text-white mb-4">1. Agreement to Terms</h2>
+        <p>By accessing or using AgentCache.ai ("the Service"), operated by <a href="https://drgnflai.org" class="text-indigo-400 hover:text-indigo-300">Drgnflai.org</a>, you agree to be bound by these Terms of Service. If you disagree with any part of these terms, you may not access the Service.</p>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-semibold text-white mb-4">2. Description of Service</h2>
+        <p>AgentCache.ai provides edge caching infrastructure for AI API calls, reducing latency and costs for LLM applications. The Service acts as a caching layer between your application and LLM providers (OpenAI, Anthropic, etc.).</p>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-semibold text-white mb-4">3. Acceptable Use</h2>
+        <p class="mb-4">You agree NOT to:</p>
+        <ul class="list-disc list-inside space-y-2 ml-4">
+          <li>Violate any laws or regulations</li>
+          <li>Infringe on intellectual property rights</li>
+          <li>Upload malicious code or attempt to breach security</li>
+          <li>Abuse rate limits or overwhelm infrastructure</li>
+          <li>Resell the Service without authorization</li>
+          <li>Cache content that violates OpenAI/Anthropic terms</li>
+          <li>Use the Service for illegal content generation</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-semibold text-white mb-4">4. Account Responsibilities</h2>
+        <ul class="list-disc list-inside space-y-2 ml-4">
+          <li>You are responsible for maintaining account security</li>
+          <li>You must provide accurate billing information</li>
+          <li>API keys must be kept confidential</li>
+          <li>You are liable for all activity under your account</li>
+          <li>Notify us immediately of any unauthorized access</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-semibold text-white mb-4">5. Pricing & Billing</h2>
+        <ul class="list-disc list-inside space-y-2 ml-4">
+          <li>Pricing is available at <a href="/" class="text-indigo-400 hover:text-indigo-300">agentcache.ai</a></li>
+          <li>Billing is processed monthly or annually</li>
+          <li>No refunds for partial months</li>
+          <li>We reserve the right to change pricing with 30 days notice</li>
+          <li>Unpaid accounts may be suspended</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-semibold text-white mb-4">6. Service Limits</h2>
+        <ul class="list-disc list-inside space-y-2 ml-4">
+          <li><strong>Free tier:</strong> 10,000 requests/month</li>
+          <li><strong>Rate limits:</strong> Per plan tier (detailed in dashboard)</li>
+          <li><strong>Cache TTL:</strong> 7 days default, configurable per request</li>
+          <li><strong>Quota exceeded:</strong> Requests blocked until quota reset or upgrade</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-semibold text-white mb-4">7. Service Availability</h2>
+        <p>We strive for 99.9% uptime but the Service is provided "as is" without guarantees. We may perform maintenance with reasonable notice. In case of downtime, the Service automatically fails over to direct LLM calls.</p>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-semibold text-white mb-4">8. Data & Privacy</h2>
+        <p>Your use of the Service is governed by our <a href="/privacy.html" class="text-indigo-400 hover:text-indigo-300">Privacy Policy</a>. Cached content is encrypted and automatically deleted after the retention period. We never use your cached content for training or share it with third parties.</p>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-semibold text-white mb-4">9. Intellectual Property</h2>
+        <ul class="list-disc list-inside space-y-2 ml-4">
+          <li>You retain all rights to your cached content</li>
+          <li>AgentCache.ai name, logo, and service are our property</li>
+          <li>You grant us license to cache and serve your content as needed to provide the Service</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-semibold text-white mb-4">10. Warranties & Disclaimers</h2>
+        <p class="mb-4">THE SERVICE IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED. WE DISCLAIM ALL WARRANTIES INCLUDING:</p>
+        <ul class="list-disc list-inside space-y-2 ml-4">
+          <li>MERCHANTABILITY</li>
+          <li>FITNESS FOR A PARTICULAR PURPOSE</li>
+          <li>NON-INFRINGEMENT</li>
+          <li>ACCURACY OR RELIABILITY</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-semibold text-white mb-4">11. Limitation of Liability</h2>
+        <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, DRGNFLAI.ORG SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOST PROFITS, DATA LOSS, OR BUSINESS INTERRUPTION.</p>
+        <p class="mt-4">Our total liability is limited to the amount you paid in the past 12 months, or $100, whichever is greater.</p>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-semibold text-white mb-4">12. Termination</h2>
+        <ul class="list-disc list-inside space-y-2 ml-4">
+          <li>You may cancel your account anytime from the dashboard</li>
+          <li>We may terminate accounts for Terms violations</li>
+          <li>Upon termination, cached content is deleted within 7 days</li>
+          <li>No refunds for early termination</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-semibold text-white mb-4">13. Changes to Terms</h2>
+        <p>We may modify these Terms at any time. Material changes will be notified via email 30 days in advance. Continued use after changes constitutes acceptance.</p>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-semibold text-white mb-4">14. Governing Law</h2>
+        <p>These Terms are governed by the laws of the United States. Disputes will be resolved in courts located in the jurisdiction of Drgnflai.org's primary operations.</p>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-semibold text-white mb-4">15. Contact</h2>
+        <div class="bg-neutral-900 border border-neutral-800 rounded-lg p-6">
+          <p class="mb-2"><strong>Email:</strong> <a href="mailto:legal@agentcache.ai" class="text-indigo-400 hover:text-indigo-300">legal@agentcache.ai</a></p>
+          <p class="mb-2"><strong>Organization:</strong> <a href="https://drgnflai.org" class="text-indigo-400 hover:text-indigo-300">Drgnflai.org</a></p>
+          <p><strong>Service:</strong> <a href="https://agentcache.ai" class="text-indigo-400 hover:text-indigo-300">AgentCache.ai</a></p>
+        </div>
+      </section>
+
+    </div>
   </main>
+
+  <footer class="border-t border-white/10 py-8 px-6 mt-16">
+    <div class="mx-auto max-w-4xl text-center text-sm text-neutral-500">
+      © 2025 AgentCache.ai by <a href="https://drgnflai.org" class="text-indigo-400 hover:text-indigo-300">Drgnflai.org</a> • 
+      <a href="/privacy.html" class="hover:text-white">Privacy</a> • 
+      <a href="/terms.html" class="hover:text-white">Terms</a>
+    </div>
+  </footer>
 </body>
 </html>
