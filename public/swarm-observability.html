@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swarm Observability | AgentCache.ai</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+</head>
+<body class="bg-neutral-950 text-neutral-100 antialiased">
+  
+  <header class="sticky top-0 z-50 backdrop-blur bg-neutral-950/80 border-b border-white/10">
+    <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <div class="h-8 w-8 rounded-md bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold">AC</div>
+        <span class="font-semibold">AgentCache<span class="text-neutral-400">.ai</span></span>
+      </a>
+      <nav class="hidden md:flex gap-6 text-sm text-neutral-300">
+        <a href="/docs.html" class="hover:text-white transition">Docs</a>
+        <a href="/blog.html" class="hover:text-white transition">Blog</a>
+      </nav>
+      <a href="/login.html" class="px-4 py-2 rounded-md bg-indigo-500 text-sm font-semibold text-white hover:bg-indigo-400 transition">
+        Get Started
+      </a>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-6 py-12">
+    
+    <!-- Header -->
+    <div class="mb-12">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-indigo-500/20 border border-emerald-500/30 flex items-center justify-center">
+          <i data-lucide="activity" class="h-6 w-6 text-emerald-400"></i>
+        </div>
+        <div>
+          <h1 class="text-4xl font-bold tracking-tight">Swarm Observability</h1>
+          <p class="text-neutral-400">Multi-model AI execution tracing and analytics</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trace Lookup -->
+    <div class="bg-gradient-to-br from-neutral-900 to-neutral-950 border border-neutral-800 rounded-2xl p-8 mb-8">
+      <h2 class="text-2xl font-bold mb-4">View Trace</h2>
+      <div class="flex gap-3">
+        <input 
+          type="text" 
+          id="traceIdInput" 
+          placeholder="Enter trace ID (e.g., trace_1700000000000_abc123xyz)"
+          class="flex-1 px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-700 text-neutral-200 placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+        <button 
+          onclick="loadTrace()" 
+          class="px-6 py-3 rounded-lg bg-indigo-500 text-white font-semibold hover:bg-indigo-400 transition flex items-center gap-2">
+          <i data-lucide="search" class="h-5 w-5"></i>
+          Load Trace
+        </button>
+      </div>
+      <p class="text-sm text-neutral-500 mt-3">
+        After running a swarm query, paste the trace ID here to see detailed observability data
+      </p>
+    </div>
+
+    <!-- Trace Details (Hidden until loaded) -->
+    <div id="traceDetails" class="hidden space-y-8">
+      
+      <!-- Summary Cards -->
+      <div class="grid md:grid-cols-4 gap-4" id="summaryCards">
+        <!-- Populated dynamically -->
+      </div>
+
+      <!-- Timeline Visualization -->
+      <div class="bg-gradient-to-br from-neutral-900 to-neutral-950 border border-neutral-800 rounded-2xl p-8">
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+          <i data-lucide="git-branch" class="h-6 w-6 text-purple-400"></i>
+          Execution Timeline
+        </h2>
+        <div id="timeline" class="space-y-4">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Provider Comparison -->
+      <div class="bg-gradient-to-br from-neutral-900 to-neutral-950 border border-neutral-800 rounded-2xl p-8">
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+          <i data-lucide="bar-chart-3" class="h-6 w-6 text-indigo-400"></i>
+          Provider Performance
+        </h2>
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <canvas id="latencyChart"></canvas>
+          </div>
+          <div>
+            <canvas id="cacheChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detailed Spans Table -->
+      <div class="bg-gradient-to-br from-neutral-900 to-neutral-950 border border-neutral-800 rounded-2xl p-8">
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+          <i data-lucide="layers" class="h-6 w-6 text-emerald-400"></i>
+          Span Details
+        </h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm" id="spansTable">
+            <thead class="text-left border-b border-neutral-800">
+              <tr>
+                <th class="pb-3 font-semibold text-neutral-300">Span ID</th>
+                <th class="pb-3 font-semibold text-neutral-300">Provider</th>
+                <th class="pb-3 font-semibold text-neutral-300">Model</th>
+                <th class="pb-3 font-semibold text-neutral-300">Latency</th>
+                <th class="pb-3 font-semibold text-neutral-300">Status</th>
+                <th class="pb-3 font-semibold text-neutral-300">Cost</th>
+              </tr>
+            </thead>
+            <tbody id="spansTableBody">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Raw JSON -->
+      <div class="bg-gradient-to-br from-neutral-900 to-neutral-950 border border-neutral-800 rounded-2xl p-8">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-2xl font-bold flex items-center gap-2">
+            <i data-lucide="code" class="h-6 w-6 text-neutral-400"></i>
+            Raw Trace Data
+          </h2>
+          <button onclick="copyTraceData()" class="px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition text-sm">
+            Copy JSON
+          </button>
+        </div>
+        <pre id="rawTrace" class="bg-black/60 rounded-lg p-6 overflow-x-auto text-xs text-neutral-300 font-mono"></pre>
+      </div>
+
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="text-center py-24">
+      <div class="w-20 h-20 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center mx-auto mb-6">
+        <i data-lucide="search" class="h-10 w-10 text-neutral-600"></i>
+      </div>
+      <h3 class="text-2xl font-bold mb-2">No Trace Loaded</h3>
+      <p class="text-neutral-400 mb-8">Enter a trace ID above to view execution details</p>
+      
+      <!-- Example -->
+      <div class="max-w-2xl mx-auto text-left bg-neutral-900 border border-neutral-800 rounded-xl p-6">
+        <h4 class="font-semibold mb-3">How to get a trace ID:</h4>
+        <pre class="bg-black/60 rounded-lg p-4 text-xs text-neutral-300 font-mono overflow-x-auto">curl -X POST https://agentcache.ai/api/swarm \
+  -H "X-API-Key: ac_demo_test123" \
+  -d '{
+    "models": [
+      {"provider": "openai", "model": "gpt-4"},
+      {"provider": "anthropic", "model": "claude-3-opus"}
+    ],
+    "messages": [{"role": "user", "content": "Hello"}],
+    "strategy": "parallel"
+  }'</pre>
+        <p class="text-sm text-neutral-400 mt-4">
+          The response will include a <code class="px-2 py-1 rounded bg-neutral-800 text-indigo-400">traceId</code> field
+        </p>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-white/10 py-8 mt-16 text-center text-sm text-neutral-500">
+    © 2025 All rights reserved. Drgnflai, Inc., AgentCache.ai • <a href="/privacy.html" class="hover:text-white">Privacy</a> • <a href="/terms.html" class="hover:text-white">Terms</a>
+  </footer>
+
+  <script>
+    let currentTrace = null;
+    let latencyChart = null;
+    let cacheChart = null;
+
+    if (window.lucide) lucide.createIcons();
+
+    // Check URL for traceId parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlTraceId = urlParams.get('traceId');
+    if (urlTraceId) {
+      document.getElementById('traceIdInput').value = urlTraceId;
+      loadTrace();
+    }
+
+    async function loadTrace() {
+      const traceId = document.getElementById('traceIdInput').value.trim();
+      if (!traceId) {
+        alert('Please enter a trace ID');
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/trace/${traceId}`);
+        if (!res.ok) {
+          const error = await res.json();
+          alert(`Error: ${error.error || 'Failed to load trace'}`);
+          return;
+        }
+
+        currentTrace = await res.json();
+        renderTrace(currentTrace);
+
+        // Hide empty state, show details
+        document.getElementById('emptyState').classList.add('hidden');
+        document.getElementById('traceDetails').classList.remove('hidden');
+
+        // Update URL
+        window.history.pushState({}, '', `?traceId=${traceId}`);
+
+      } catch (err) {
+        console.error('Failed to load trace:', err);
+        alert('Failed to load trace. Please check the trace ID.');
+      }
+    }
+
+    function renderTrace(trace) {
+      // Summary Cards
+      const summaryCards = document.getElementById('summaryCards');
+      summaryCards.innerHTML = `
+        <div class="bg-gradient-to-br from-emerald-900/30 to-neutral-900 border border-emerald-500/30 rounded-xl p-6">
+          <div class="text-emerald-400 text-sm font-semibold mb-2">Cache Hit Rate</div>
+          <div class="text-3xl font-bold">${trace.summary.cacheHitRate.toFixed(1)}%</div>
+          <div class="text-xs text-neutral-400 mt-2">${trace.summary.cacheHits} hits / ${trace.summary.cacheMisses} misses</div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-indigo-900/30 to-neutral-900 border border-indigo-500/30 rounded-xl p-6">
+          <div class="text-indigo-400 text-sm font-semibold mb-2">Avg Latency</div>
+          <div class="text-3xl font-bold">${trace.summary.avgLatency}ms</div>
+          <div class="text-xs text-neutral-400 mt-2">Across ${trace.summary.totalSpans} spans</div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-purple-900/30 to-neutral-900 border border-purple-500/30 rounded-xl p-6">
+          <div class="text-purple-400 text-sm font-semibold mb-2">Cost Savings</div>
+          <div class="text-3xl font-bold">${trace.summary.savingsPercent}%</div>
+          <div class="text-xs text-neutral-400 mt-2">$${trace.summary.estimatedSavings} saved</div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-amber-900/30 to-neutral-900 border border-amber-500/30 rounded-xl p-6">
+          <div class="text-amber-400 text-sm font-semibold mb-2">Strategy</div>
+          <div class="text-2xl font-bold capitalize">${trace.strategy}</div>
+          <div class="text-xs text-neutral-400 mt-2">${trace.summary.totalModels} models</div>
+        </div>
+      `;
+
+      // Timeline
+      renderTimeline(trace.spans);
+
+      // Charts
+      renderCharts(trace.byProvider);
+
+      // Spans Table
+      renderSpansTable(trace.spans);
+
+      // Raw JSON
+      document.getElementById('rawTrace').textContent = JSON.stringify(trace, null, 2);
+    }
+
+    function renderTimeline(spans) {
+      const timeline = document.getElementById('timeline');
+      const maxLatency = Math.max(...spans.map(s => s.latency));
+
+      timeline.innerHTML = spans.map((span, i) => {
+        const widthPercent = (span.latency / maxLatency) * 100;
+        const statusColor = span.cached ? 'emerald' : (span.status === 'error' ? 'red' : 'amber');
+        
+        return `
+          <div class="flex items-center gap-4">
+            <div class="w-32 text-sm text-neutral-400 font-mono">${span.spanId.slice(-8)}</div>
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-sm font-semibold">${span.provider}</span>
+                <span class="text-xs text-neutral-500">${span.model}</span>
+                ${span.cached ? '<span class="px-2 py-0.5 text-[10px] rounded bg-emerald-500/20 text-emerald-300">CACHED</span>' : ''}
+                ${span.status === 'error' ? '<span class="px-2 py-0.5 text-[10px] rounded bg-red-500/20 text-red-300">ERROR</span>' : ''}
+              </div>
+              <div class="h-6 bg-neutral-900 rounded-lg overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-${statusColor}-500 to-${statusColor}-600 rounded-lg flex items-center px-3 text-xs font-semibold" style="width: ${widthPercent}%">
+                  ${span.latency}ms
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderCharts(byProvider) {
+      // Latency Chart
+      const latencyCtx = document.getElementById('latencyChart');
+      if (latencyChart) latencyChart.destroy();
+      
+      latencyChart = new Chart(latencyCtx, {
+        type: 'bar',
+        data: {
+          labels: byProvider.map(p => p.provider),
+          datasets: [{
+            label: 'Avg Latency (ms)',
+            data: byProvider.map(p => p.avgLatency.toFixed(0)),
+            backgroundColor: 'rgba(99, 102, 241, 0.5)',
+            borderColor: 'rgba(99, 102, 241, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { ticks: { color: '#a3a3a3' }, grid: { color: '#262626' } },
+            x: { ticks: { color: '#a3a3a3' }, grid: { display: false } }
+          }
+        }
+      });
+
+      // Cache Hit Rate Chart
+      const cacheCtx = document.getElementById('cacheChart');
+      if (cacheChart) cacheChart.destroy();
+      
+      cacheChart = new Chart(cacheCtx, {
+        type: 'doughnut',
+        data: {
+          labels: byProvider.map(p => p.provider),
+          datasets: [{
+            data: byProvider.map(p => ((p.cached / p.requests) * 100).toFixed(1)),
+            backgroundColor: ['#10b981', '#6366f1', '#8b5cf6', '#f59e0b'],
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { labels: { color: '#a3a3a3' } },
+            title: { display: true, text: 'Cache Hit Rate by Provider', color: '#e5e5e5' }
+          }
+        }
+      });
+    }
+
+    function renderSpansTable(spans) {
+      const tbody = document.getElementById('spansTableBody');
+      tbody.innerHTML = spans.map(span => `
+        <tr class="border-t border-neutral-800">
+          <td class="py-3 font-mono text-xs text-neutral-400">${span.spanId.slice(-12)}</td>
+          <td class="py-3">${span.provider}</td>
+          <td class="py-3 text-neutral-400">${span.model}</td>
+          <td class="py-3 font-semibold">${span.latency}ms</td>
+          <td class="py-3">
+            ${span.cached 
+              ? '<span class="px-2 py-1 rounded text-xs bg-emerald-500/20 text-emerald-300">Cached</span>' 
+              : (span.status === 'error' 
+                ? '<span class="px-2 py-1 rounded text-xs bg-red-500/20 text-red-300">Error</span>'
+                : '<span class="px-2 py-1 rounded text-xs bg-amber-500/20 text-amber-300">Miss</span>')
+            }
+          </td>
+          <td class="py-3 text-neutral-400">
+            ${span.cost ? `$${span.cost.toFixed(6)}` : (span.estimatedSavings ? `-$${span.estimatedSavings.toFixed(6)}` : '-')}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function copyTraceData() {
+      const text = document.getElementById('rawTrace').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Trace data copied to clipboard!');
+      });
+    }
+  </script>
+
+</body>
+</html>
