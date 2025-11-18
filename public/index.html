@@ -5,10 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>AgentCache.ai — Edge caching for AI API calls</title>
     <meta name="description" content="Edge caching for AI APIs. 10x faster, 90% cheaper. Drop-in proxy for OpenAI and Anthropic." />
-    <link rel="stylesheet" href="/css/emergency.css">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              neutral: {
+                950: '#0a0a0a',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    
+    <!-- Icons and animations -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js"></script>
+    
+    <!-- Emergency CSS fallback (only loads if Tailwind CDN fails) -->
+    <script>
+      // Check if Tailwind loaded by testing for a Tailwind class
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          const testDiv = document.createElement('div');
+          testDiv.className = 'bg-neutral-950';
+          testDiv.style.display = 'none';
+          document.body.appendChild(testDiv);
+          const bg = window.getComputedStyle(testDiv).backgroundColor;
+          document.body.removeChild(testDiv);
+          
+          // If Tailwind didn't load (bg color not set), load emergency CSS
+          if (!bg || bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = '/css/emergency.css';
+            document.head.appendChild(link);
+          }
+        }, 100);
+      });
+    </script>
+    
     <style>
       @keyframes pulse-glow {
         0%, 100% { opacity: 0.4; transform: scale(1); }
@@ -19,10 +59,6 @@
     </style>
   </head>
   <body class="bg-neutral-950 text-neutral-100 antialiased">
-    <!-- CDN Outage Banner -->
-    <div style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-bottom: 3px solid #ef4444; padding: 1rem; text-align: center; font-weight: 600; color: #991b1b;">
-      🚨 <strong>LIVE INCIDENT:</strong> Multiple CDNs offline — <a href="/cdn-down.html" style="color: #0ea5e9; text-decoration: underline; font-weight: bold;">See how we stay online →</a>
-    </div>
     <!-- Nav -->
     <header class="sticky top-0 z-50 backdrop-blur bg-neutral-950/80 border-b border-white/10">
       <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
