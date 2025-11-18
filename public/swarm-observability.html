@@ -195,7 +195,7 @@
       }
 
       try {
-        const res = await fetch(`/api/trace/${traceId}`);
+        const res = await fetch(`/api/trace?id=${encodeURIComponent(traceId)}`);
         if (!res.ok) {
           const error = await res.json();
           alert(`Error: ${error.error || 'Failed to load trace'}`);

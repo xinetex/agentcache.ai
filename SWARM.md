@@ -174,7 +174,7 @@ Every swarm execution generates a detailed trace:
 https://agentcache.ai/swarm-observability.html?traceId=trace_1700000000000_abc123xyz
 
 # Or via API
-curl https://agentcache.ai/api/trace/trace_1700000000000_abc123xyz
+curl https://agentcache.ai/api/trace?id=trace_1700000000000_abc123xyz
 ```
 
 ### Trace Data Includes:
@@ -372,7 +372,7 @@ curl https://agentcache.ai/api/stats?period=24h
 ### Trace Retention
 
 - Traces stored for **7 days**
-- Retrievable via `/api/trace/:traceId`
+- Retrievable via `/api/trace?id=YOUR_TRACE_ID`
 - Automatic cleanup after TTL
 
 ## Integration Examples

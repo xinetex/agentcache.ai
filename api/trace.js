@@ -28,23 +28,25 @@ async function redis(command, ...args) {
   return data.result;
 }
 
-export default async function handler(req, { params }) {
+export default async function handler(req) {
   if (req.method !== 'GET') {
     return json({ error: 'Method not allowed' }, 405);
   }
   
   try {
-    const traceId = params?.traceId;
+    // Get traceId from URL query parameter
+    const url = new URL(req.url);
+    const traceId = url.searchParams.get('id');
     
     if (!traceId) {
-      return json({ error: 'traceId is required' }, 400);
+      return json({ error: 'traceId is required. Use: /api/trace?id=YOUR_TRACE_ID' }, 400);
     }
     
     // Fetch trace data from Redis
     const traceData = await redis('GET', `trace:${traceId}`);
     
     if (!traceData) {
-      return json({ error: 'Trace not found or expired' }, 404);
+      return json({ error: 'Trace not found or expired', traceId }, 404);
     }
     
     const trace = JSON.parse(traceData);

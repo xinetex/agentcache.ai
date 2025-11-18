@@ -417,7 +417,8 @@ export default async function handler(req) {
       models: models.length,
       results,
       observability: {
-        traceUrl: `/api/trace/${traceId}`,
+        traceUrl: `/api/trace?id=${traceId}`,
+        dashboardUrl: `/swarm-observability.html?traceId=${traceId}`,
         totalLatency: trace.totalLatency,
         cacheHits: trace.cacheHits,
         cacheMisses: trace.cacheMisses,
