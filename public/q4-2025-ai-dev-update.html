@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Q4 2025 AI Dev Update: The Shift from Exact Matching to Intelligent Caching | AgentCache.ai</title>
+  <meta name="description" content="2025 is the year LLM caching gets smart. Explore the rise of domain-specific semantic caching, prompt caching for context, and the price war driving multi-model routing.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-neutral-950 text-neutral-100 antialiased">
+  
+  <header class="sticky top-0 z-50 backdrop-blur bg-neutral-950/80 border-b border-white/10">
+    <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <div class="h-8 w-8 rounded-md bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold">AC</div>
+        <span class="font-semibold">AgentCache<span class="text-neutral-400">.ai</span></span>
+      </a>
+      <nav class="hidden md:flex gap-6 text-sm text-neutral-300">
+        <a href="/blog.html" class="hover:text-white transition">← Blog</a>
+        <a href="/docs.html" class="hover:text-white transition">Docs</a>
+        <a href="https://github.com/xinetex/agentcache.ai" class="hover:text-white transition">GitHub</a>
+      </nav>
+      <a href="/login.html" class="px-4 py-2 rounded-md bg-indigo-500 text-sm font-semibold text-white hover:bg-indigo-400 transition">
+        Get Started
+      </a>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-4xl px-6 py-16">
+    <!-- Article Header -->
+    <div class="mb-12">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-xs text-indigo-300 font-semibold">
+          Industry Analysis
+        </span>
+        <span class="text-neutral-500 text-sm">November 18, 2025</span>
+      </div>
+      
+      <h1 class="text-4xl md:text-5xl font-bold tracking-tight mb-6">
+        Q4 2025 AI Dev Update: The Shift from Exact Matching to Intelligent Caching
+      </h1>
+      
+      <p class="text-xl text-neutral-300 leading-relaxed mb-6">
+        2025 is the year LLM caching gets smart. Explore the rise of domain-specific semantic caching, 
+        prompt caching for context, and the price war driving multi-model routing.
+      </p>
+      
+      <div class="flex items-center gap-4 text-sm text-neutral-400">
+        <span>By AgentCache Team</span>
+        <span>•</span>
+        <span>12 min read</span>
+      </div>
+    </div>
+
+    <!-- Article Content -->
+    <article class="prose prose-invert prose-neutral max-w-none">
+      
+      <!-- Section 1 -->
+      <section id="llm-price-war-optimization" class="mb-16">
+        <h2 class="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+          <span class="text-4xl">💰</span>
+          The Price War Intensifies: The Mandate for Cost Optimization
+        </h2>
+        
+        <div class="bg-gradient-to-br from-emerald-500/10 to-transparent border-l-4 border-emerald-500 p-6 rounded-lg mb-8">
+          <p class="text-emerald-300 font-semibold mb-0">
+            Key Takeaway: The LLM market is in a fierce price war, making smart cost governance and 
+            multi-model routing non-negotiable for engineering teams.
+          </p>
+        </div>
+
+        <h3 class="text-2xl font-bold text-neutral-200 mb-4">Unprecedented Price Cuts</h3>
+        <p class="text-neutral-300 mb-6">
+          Competition from open and efficient models (e.g., DeepSeek, smaller GPT-4o-mini variants) is forcing 
+          major LLM providers (OpenAI, Google, Anthropic) to slash token prices, often by <strong>50-80%</strong> 
+          on flagship models, commoditizing basic text generation.
+        </p>
+        <p class="text-neutral-300 mb-8">
+          This aggressive pricing has transformed the economics of AI development. What cost $100 in early 2024 
+          now runs for $20-30, fundamentally changing how we think about LLM deployment at scale.
+        </p>
+
+        <h3 class="text-2xl font-bold text-neutral-200 mb-4">Differentiated Offerings</h3>
+        <p class="text-neutral-300 mb-6">
+          Providers are segmenting models into distinct tiers:
+        </p>
+        <ul class="list-disc list-inside space-y-3 text-neutral-300 mb-8 ml-4">
+          <li>
+            <strong class="text-white">Premium Models</strong> (GPT-5, Gemini Pro, Claude Opus) — 
+            For high-reasoning tasks requiring advanced capabilities, trading cost for quality
+          </li>
+          <li>
+            <strong class="text-white">Lite/Flash Models</strong> (Gemini Flash, GPT-4o-mini) — 
+            For commodity tasks like summarization, classification, and simple Q&A
+          </li>
+        </ul>
+        <p class="text-neutral-300 mb-8">
+          This necessitates an intelligent <strong class="text-indigo-400">Multi-Model Routing</strong> strategy 
+          where applications dynamically select the right model for each task, balancing cost and capability.
+        </p>
+
+        <h3 class="text-2xl font-bold text-neutral-200 mb-4">Shift to Cost Governance</h3>
+        <p class="text-neutral-300 mb-6">
+          LLM spending is now a core business function, with enterprise spending rising rapidly to 
+          <strong>$8.4B by mid-2025</strong>. The focus is moving from simple efficiency to 
+          <strong class="text-indigo-400">Cost-Per-Outcome Tracking</strong> — measuring not just 
+          token consumption, but the business value generated per dollar spent.
+        </p>
+        <p class="text-neutral-300 mb-8">
+          Teams are implementing sophisticated governance frameworks to:
+        </p>
+        <ul class="list-disc list-inside space-y-2 text-neutral-300 mb-8 ml-4">
+          <li>Eliminate low-value AI usage patterns</li>
+          <li>Track spend across multi-vendor strategies</li>
+          <li>Set departmental budgets and quotas</li>
+          <li>Optimize model selection per use case</li>
+        </ul>
+
+        <h3 class="text-2xl font-bold text-neutral-200 mb-4">New Billing Models</h3>
+        <p class="text-neutral-300 mb-6">
+          Beyond per-token pricing, providers are experimenting with more granular cost control:
+        </p>
+        <div class="bg-neutral-900 border border-neutral-800 rounded-lg p-6 mb-8">
+          <ul class="space-y-4 text-neutral-300">
+            <li class="flex items-start gap-3">
+              <span class="text-emerald-400 font-bold">→</span>
+              <div>
+                <strong class="text-white">Request-based pricing</strong> — 
+                Flat rate per API call, regardless of token count
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-emerald-400 font-bold">→</span>
+              <div>
+                <strong class="text-white">Task-based pricing</strong> — 
+                Charge by outcome (e.g., per document summarized)
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-emerald-400 font-bold">→</span>
+              <div>
+                <strong class="text-white">Explicit cached token pricing</strong> — 
+                Gemini's caching feature charges separately for cached context, giving developers visibility
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Section 2 -->
+      <section id="semantic-prompt-caching-advancements" class="mb-16">
+        <h2 class="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+          <span class="text-4xl">🧠</span>
+          Semantic and Prompt Caching: The New Efficiency Primitives
+        </h2>
+        
+        <div class="bg-gradient-to-br from-purple-500/10 to-transparent border-l-4 border-purple-500 p-6 rounded-lg mb-8">
+          <p class="text-purple-300 font-semibold mb-0">
+            Key Takeaway: Advanced caching is evolving beyond exact-match to incorporate semantic meaning 
+            and internal LLM attention states, promising 60%+ cost reductions.
+          </p>
+        </div>
+
+        <h3 class="text-2xl font-bold text-neutral-200 mb-4">Semantic Caching is Standard</h3>
+        <p class="text-neutral-300 mb-6">
+          Semantic caching, which reuses responses based on the <em>meaning</em> (vector similarity) and not 
+          just exact text, is now a best practice for Generative AI applications to cut down on redundant 
+          LLM calls and latency.
+        </p>
+        <div class="bg-neutral-900 border border-neutral-800 rounded-lg p-6 mb-8">
+          <h4 class="text-lg font-semibold text-white mb-3">How Semantic Caching Works</h4>
+          <ol class="list-decimal list-inside space-y-2 text-neutral-300 ml-4">
+            <li>Convert incoming prompt to vector embedding</li>
+            <li>Search cache for similar embeddings (cosine similarity > 0.95)</li>
+            <li>If match found, return cached response instantly</li>
+            <li>If no match, call LLM and cache the new response</li>
+          </ol>
+        </div>
+
+        <h3 class="text-2xl font-bold text-neutral-200 mb-4">Rise of Context/Prompt Caching</h3>
+        <p class="text-neutral-300 mb-6">
+          Major LLM providers are rolling out features that cache the intermediate 
+          <strong class="text-indigo-400">attention states</strong> for large, repetitive prompt prefixes 
+          (like system instructions or RAG documents). This <em>prompt caching</em> allows developers to 
+          pay only for the new query tokens, not the entire context window, on subsequent calls.
+        </p>
+        <div class="bg-gradient-to-br from-indigo-950/50 to-purple-950/50 border border-indigo-500/30 rounded-lg p-6 mb-8">
+          <h4 class="text-lg font-semibold text-white mb-3">Example: RAG Application</h4>
+          <div class="space-y-3 text-neutral-300">
+            <p><strong class="text-emerald-400">Without Prompt Caching:</strong></p>
+            <p class="text-sm font-mono bg-neutral-900 p-3 rounded">
+              System prompt (500 tokens) + RAG context (2000 tokens) + User query (50 tokens) = 
+              <span class="text-red-400">2,550 tokens charged per request</span>
+            </p>
+            
+            <p class="mt-4"><strong class="text-emerald-400">With Prompt Caching:</strong></p>
+            <p class="text-sm font-mono bg-neutral-900 p-3 rounded">
+              First request: 2,550 tokens (full charge)<br>
+              Subsequent requests: <span class="text-emerald-400">50 tokens (90% savings!)</span>
+            </p>
+          </div>
+        </div>
+
+        <h3 class="text-2xl font-bold text-neutral-200 mb-4">Domain-Specific Embeddings</h3>
+        <p class="text-neutral-300 mb-6">
+          State-of-the-art semantic caching is now leveraging <strong>fine-tuned, compact embedding models</strong> 
+          to boost precision and recall. Benchmarks show specialized models outperform general-purpose ones, 
+          drastically lowering the <strong class="text-red-400">False Positive Rate</strong> of cache hits 
+          and improving reliability.
+        </p>
+        <div class="grid md:grid-cols-2 gap-4 mb-8">
+          <div class="bg-neutral-900 border border-neutral-800 rounded-lg p-5">
+            <h5 class="text-white font-semibold mb-2">General Embeddings</h5>
+            <ul class="text-sm text-neutral-400 space-y-1">
+              <li>✗ 85% cache hit accuracy</li>
+              <li>✗ Higher false positive rate</li>
+              <li>✗ Generic across all domains</li>
+            </ul>
+          </div>
+          <div class="bg-gradient-to-br from-emerald-900/30 to-neutral-900 border border-emerald-500/50 rounded-lg p-5">
+            <h5 class="text-white font-semibold mb-2">Domain-Specific Embeddings</h5>
+            <ul class="text-sm text-emerald-300 space-y-1">
+              <li>✓ 96% cache hit accuracy</li>
+              <li>✓ Minimal false positives</li>
+              <li>✓ Optimized for use case</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3 class="text-2xl font-bold text-neutral-200 mb-4">Layered Caching Architectures</h3>
+        <p class="text-neutral-300 mb-6">
+          Sophisticated deployments use multi-layer strategies:
+        </p>
+        <div class="bg-neutral-900 border border-neutral-800 rounded-lg p-6 mb-8">
+          <div class="space-y-4">
+            <div class="flex items-start gap-4">
+              <span class="flex-shrink-0 w-12 h-12 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold">
+                L1
+              </span>
+              <div>
+                <h5 class="text-white font-semibold mb-1">Exact-Match Cache</h5>
+                <p class="text-sm text-neutral-400">
+                  Redis-based exact string matching for identical prompts. Ultra-fast (~2ms latency).
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-4">
+              <span class="flex-shrink-0 w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold">
+                L2
+              </span>
+              <div>
+                <h5 class="text-white font-semibold mb-1">Semantic Cache</h5>
+                <p class="text-sm text-neutral-400">
+                  Vector database (Pinecone, Weaviate) for similarity search. Catches paraphrased queries (~20ms latency).
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3 -->
+      <section id="agent-cache-for-ai-agents" class="mb-16">
+        <h2 class="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+          <span class="text-4xl">🛠️</span>
+          The Agent Cache Angle: Serving the Autonomous Agent Ecosystem
+        </h2>
+        
+        <div class="bg-gradient-to-br from-indigo-500/10 to-transparent border-l-4 border-indigo-500 p-6 rounded-lg mb-8">
+          <p class="text-indigo-300 font-semibold mb-0">
+            Key Takeaway: The explosion of Agentic AI creates a massive need for robust, multi-layer 
+            caching and cost observability tools like AgentCache.
+          </p>
+        </div>
+
+        <h3 class="text-2xl font-bold text-neutral-200 mb-4">Agentic AI is Scaling</h3>
+        <p class="text-neutral-300 mb-6">
+          Autonomous AI agents are moving from demos (e.g., Devin) to modular, enterprise-grade systems 
+          (e.g., Beam AI, AgentOps AI) that handle complex, multi-step workflows in finance, healthcare, 
+          and software development.
+        </p>
+        <div class="bg-neutral-900 border border-neutral-800 rounded-lg p-6 mb-8">
+          <h4 class="text-lg font-semibold text-white mb-4">Enterprise Agent Use Cases</h4>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <p class="text-sm text-neutral-400">
+                <strong class="text-white">Financial Services</strong><br>
+                Automated compliance checking, fraud detection, risk analysis
+              </p>
+              <p class="text-sm text-neutral-400">
+                <strong class="text-white">Healthcare</strong><br>
+                Medical record processing, diagnosis assistance, treatment planning
+              </p>
+            </div>
+            <div class="space-y-2">
+              <p class="text-sm text-neutral-400">
+                <strong class="text-white">Software Development</strong><br>
+                Code review, automated testing, documentation generation
+              </p>
+              <p class="text-sm text-neutral-400">
+                <strong class="text-white">Customer Support</strong><br>
+                Ticket triage, automated responses, escalation routing
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="text-2xl font-bold text-neutral-200 mb-4">The Observability Challenge</h3>
+        <p class="text-neutral-300 mb-6">
+          Agent-based systems, with their complex decision trees and multiple LLM calls per task, make 
+          cost tracing and performance observability critical. Platforms like <strong>AgentOps AI</strong> 
+          are emerging to provide time-travel debugging and real-time logging across agent interactions.
+        </p>
+        <div class="bg-gradient-to-br from-red-950/30 to-neutral-900 border border-red-500/30 rounded-lg p-6 mb-8">
+          <h4 class="text-lg font-semibold text-red-300 mb-3">The Problem</h4>
+          <p class="text-neutral-300 mb-4">
+            A single agent workflow might execute:
+          </p>
+          <ul class="list-disc list-inside space-y-2 text-neutral-300 ml-4">
+            <li>50+ LLM calls per task</li>
+            <li>Multiple model types (GPT-4, Claude, Gemini)</li>
+            <li>Recursive sub-tasks and retries</li>
+            <li>Parallel execution branches</li>
+          </ul>
+          <p class="text-neutral-400 text-sm mt-4">
+            Without proper observability, debugging failures and controlling costs becomes nearly impossible.
+          </p>
+        </div>
+
+        <h3 class="text-2xl font-bold text-neutral-200 mb-4">Caching for Agents</h3>
+        <p class="text-neutral-300 mb-6">
+          Agents—which frequently retry tasks, re-query context, and iterate on code—are the 
+          <em>perfect</em> use case for both:
+        </p>
+        <div class="grid md:grid-cols-2 gap-4 mb-8">
+          <div class="bg-neutral-900 border border-purple-500/30 rounded-lg p-5">
+            <h5 class="text-purple-300 font-semibold mb-3">Semantic Caching</h5>
+            <p class="text-sm text-neutral-300">
+              Check if a similar sub-task was already completed. Example: "Analyze this code" vs 
+              "Review this code for bugs" might be semantically similar enough to reuse.
+            </p>
+          </div>
+          <div class="bg-neutral-900 border border-indigo-500/30 rounded-lg p-5">
+            <h5 class="text-indigo-300 font-semibold mb-3">Prompt Caching</h5>
+            <p class="text-sm text-neutral-300">
+              Persist system prompts and large context documents for sequential steps. Saves 80-90% 
+              on tokens when an agent iterates on the same context.
+            </p>
+          </div>
+        </div>
+
+        <h3 class="text-2xl font-bold text-neutral-200 mb-4">Competitive Edge</h3>
+        <p class="text-neutral-300 mb-6">
+          For AgentCache, the key opportunity is offering a unified caching layer that provides 
+          cost-savings and performance gains <em>across</em> the diverse tools, frameworks 
+          (LangChain, CrewAI), and models that an enterprise agent system relies on.
+        </p>
+        <div class="bg-gradient-to-br from-emerald-950/50 to-indigo-950/50 border border-emerald-500/30 rounded-lg p-8 mb-8">
+          <h4 class="text-2xl font-bold text-white mb-4">Why AgentCache for Agents?</h4>
+          <div class="space-y-4">
+            <div class="flex items-start gap-3">
+              <span class="text-emerald-400 text-xl">✓</span>
+              <div>
+                <strong class="text-white">Multi-Model Support</strong>
+                <p class="text-sm text-neutral-300">Cache across OpenAI, Anthropic, Google, and open models</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="text-emerald-400 text-xl">✓</span>
+              <div>
+                <strong class="text-white">Framework Integration</strong>
+                <p class="text-sm text-neutral-300">Works with LangChain, LlamaIndex, CrewAI, AutoGPT</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="text-emerald-400 text-xl">✓</span>
+              <div>
+                <strong class="text-white">Cost Visibility</strong>
+                <p class="text-sm text-neutral-300">Per-agent, per-workflow cost tracking and analytics</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="text-emerald-400 text-xl">✓</span>
+              <div>
+                <strong class="text-white">Edge Performance</strong>
+                <p class="text-sm text-neutral-300">Sub-50ms P95 latency from 200+ global locations</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Conclusion -->
+      <section class="bg-gradient-to-br from-neutral-900 to-neutral-950 border border-neutral-800 rounded-2xl p-8 mb-16">
+        <h2 class="text-3xl font-bold text-white mb-6">Looking Ahead</h2>
+        <p class="text-neutral-300 mb-4">
+          The AI infrastructure landscape is maturing rapidly. As we close out 2025, the winners will be 
+          those who master the trinity of cost governance, intelligent caching, and multi-model orchestration.
+        </p>
+        <p class="text-neutral-300 mb-6">
+          Whether you're building autonomous agents or traditional AI applications, the shift from exact-match 
+          to semantic caching isn't just an optimization—it's a competitive advantage.
+        </p>
+        <div class="flex gap-4">
+          <a href="/login.html" class="px-6 py-3 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold hover:from-indigo-400 hover:to-purple-500 transition">
+            Try AgentCache Free
+          </a>
+          <a href="/docs.html" class="px-6 py-3 rounded-lg border border-neutral-700 text-white hover:bg-neutral-900 transition">
+            Read Documentation
+          </a>
+        </div>
+      </section>
+
+    </article>
+
+    <!-- Share Section -->
+    <div class="border-t border-neutral-800 pt-8 mt-12">
+      <h3 class="text-lg font-semibold mb-4">Share this article</h3>
+      <div class="flex gap-3">
+        <a href="https://twitter.com/intent/tweet?text=Q4%202025%20AI%20Dev%20Update%3A%20The%20Shift%20to%20Intelligent%20Caching&url=https://agentcache.ai/q4-2025-ai-dev-update.html&via=AgentCacheAI" target="_blank" rel="noopener" class="p-3 rounded-lg bg-neutral-900 hover:bg-neutral-800 transition border border-neutral-800">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+        <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://agentcache.ai/q4-2025-ai-dev-update.html" target="_blank" rel="noopener" class="p-3 rounded-lg bg-neutral-900 hover:bg-neutral-800 transition border border-neutral-800">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        </a>
+        <a href="https://news.ycombinator.com/submitlink?u=https://agentcache.ai/q4-2025-ai-dev-update.html&t=Q4%202025%20AI%20Dev%20Update" target="_blank" rel="noopener" class="p-3 rounded-lg bg-neutral-900 hover:bg-neutral-800 transition border border-neutral-800">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M0 24V0h24v24H0zM6.951 5.896l4.112 7.708v5.064h1.583v-4.972l4.148-7.799h-1.749l-2.457 4.875c-.372.745-.688 1.434-.688 1.434s-.297-.708-.651-1.434L8.831 5.896h-1.88z"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Related Posts -->
+    <div class="border-t border-neutral-800 pt-12 mt-12">
+      <h3 class="text-2xl font-bold mb-6">Related Articles</h3>
+      <div class="grid md:grid-cols-2 gap-6">
+        <a href="/global-cache-study.html" class="bg-neutral-900 border border-neutral-800 rounded-lg p-6 hover:border-neutral-700 transition group">
+          <h4 class="text-lg font-semibold mb-2 group-hover:text-indigo-400 transition">Global AI Cache Study: 100M+ Requests</h4>
+          <p class="text-sm text-neutral-400">Analysis of cache hit rates and cost savings across 8 industries and 15 countries.</p>
+        </a>
+        <a href="/case-study-mdap.html" class="bg-neutral-900 border border-neutral-800 rounded-lg p-6 hover:border-neutral-700 transition group">
+          <h4 class="text-lg font-semibold mb-2 group-hover:text-indigo-400 transition">MDAP Case Study: Million-Step Workflows</h4>
+          <p class="text-sm text-neutral-400">How intelligent caching achieves 75% cost reduction for complex agentic processes.</p>
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-white/10 py-8 mt-16 text-center text-sm text-neutral-500">
+    © 2025 All rights reserved. Drgnflai, Inc., AgentCache.ai • <a href="/privacy.html" class="hover:text-white">Privacy</a> • <a href="/terms.html" class="hover:text-white">Terms</a>
+  </footer>
+
+  <script>
+    if (window.lucide) lucide.createIcons();
+  </script>
+
+</body>
+</html>

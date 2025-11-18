@@ -1,5 +1,16 @@
 [
   {
+    "title": "Q4 2025 AI Dev Update: The Shift from Exact Matching to Intelligent Caching",
+    "date": "2025-11-18",
+    "author": "AgentCache Team",
+    "category": "industry",
+    "excerpt": "2025 is the year LLM caching gets smart. Explore the rise of domain-specific semantic caching, prompt caching for context, and the price war driving multi-model routing.",
+    "featured_image": "/images/q4-2025-update.png",
+    "slug": "q4-2025-ai-dev-update",
+    "filename": "q4-2025-ai-dev-update.html",
+    "externalUrl": "/q4-2025-ai-dev-update.html"
+  },
+  {
     "title": "Why Multi-Provider Architecture Matters for AI Infrastructure",
     "date": "2025-11-18",
     "author": "AgentCache Team",
