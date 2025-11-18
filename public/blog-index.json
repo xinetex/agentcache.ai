@@ -1,5 +1,16 @@
 [
   {
+    "title": "Global AI Cache Study: 100M+ Requests Across 15 Countries",
+    "date": "2025-11-18",
+    "author": "AgentCache Research Team",
+    "category": "industry",
+    "excerpt": "Analysis of 100M+ AI API calls reveals 68% average cache hit rate and $12.4M in potential annual savings across 8 industries and 15 countries.",
+    "featured_image": "/images/global-study.png",
+    "slug": "global-cache-study",
+    "filename": "global-cache-study.html",
+    "externalUrl": "/global-cache-study.html"
+  },
+  {
     "title": "How to Protect Your Enterprise RAG System from Indirect Prompt Injection",
     "date": "2025-11-17",
     "author": "AgentCache Team",
