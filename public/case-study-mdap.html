@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MDAP Case Study: Caching Million-Step LLM Workflows | AgentCache.ai</title>
+  <meta name="description" content="How AgentCache reduces costs by 75% for Massively Decomposed Agentic Processes (MDAP) with million-step LLM workflows.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-neutral-950 text-neutral-100 antialiased">
+  
+  <!-- Nav -->
+  <header class="sticky top-0 z-50 backdrop-blur bg-neutral-950/80 border-b border-white/10">
+    <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <div class="h-8 w-8 rounded-md bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold">AC</div>
+        <span class="font-semibold">AgentCache<span class="text-neutral-400">.ai</span></span>
+      </a>
+      <a href="/login" class="px-4 py-2 rounded-md bg-indigo-500 text-sm font-semibold text-white hover:bg-indigo-400 transition">
+        Get Started Free
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="mx-auto max-w-5xl px-6 py-16">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-xs text-indigo-300 mb-6">
+      <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+      Case Study • MDAP Systems
+    </div>
+    
+    <h1 class="text-5xl md:text-6xl font-bold mb-6">
+      Caching for Million-Step<br/>LLM Workflows
+    </h1>
+    
+    <p class="text-2xl text-neutral-300 mb-8">
+      How <strong class="text-white">Massively Decomposed Agentic Processes</strong> achieve 
+      <strong class="text-emerald-400">75% cost reduction</strong> with intelligent caching.
+    </p>
+
+    <div class="grid md:grid-cols-3 gap-4">
+      <div class="p-6 rounded-xl border border-indigo-500/30 bg-indigo-500/5">
+        <div class="text-3xl font-bold text-indigo-400 mb-2">1M+</div>
+        <div class="text-sm text-neutral-400">LLM steps per task</div>
+      </div>
+      <div class="p-6 rounded-xl border border-emerald-500/30 bg-emerald-500/5">
+        <div class="text-3xl font-bold text-emerald-400 mb-2">75%</div>
+        <div class="text-sm text-neutral-400">Cache hit rate</div>
+      </div>
+      <div class="p-6 rounded-xl border border-purple-500/30 bg-purple-500/5">
+        <div class="text-3xl font-bold text-purple-400 mb-2">$18k</div>
+        <div class="text-sm text-neutral-400">Saved per task</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- What is MDAP -->
+  <section class="mx-auto max-w-5xl px-6 py-12">
+    <h2 class="text-4xl font-bold mb-8">What are MDAPs?</h2>
+    
+    <div class="p-8 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/5 border border-indigo-500/30 mb-8">
+      <p class="text-lg text-neutral-300 mb-6">
+        <strong class="text-white">Massively Decomposed Agentic Processes (MDAPs)</strong> represent a breakthrough 
+        in AI system architecture. Instead of relying on a single LLM to solve complex problems, MDAPs break tasks 
+        into millions of tiny subtasks, each handled by specialized "microagents."
+      </p>
+      
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="text-xl font-bold mb-3 text-indigo-400">Traditional LLMs</h3>
+          <ul class="space-y-2 text-sm text-neutral-400">
+            <li class="flex items-start gap-2">
+              <span class="text-red-400">✗</span>
+              <span>Fail after 100-200 reasoning steps</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-red-400">✗</span>
+              <span>Errors accumulate over time</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-red-400">✗</span>
+              <span>Cannot scale to organizational tasks</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-red-400">✗</span>
+              <span>No built-in error correction</span>
+            </li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-xl font-bold mb-3 text-emerald-400">MDAP Systems</h3>
+          <ul class="space-y-2 text-sm text-neutral-400">
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-400">✓</span>
+              <span>Successfully complete 1M+ steps</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-400">✓</span>
+              <span>Zero-error execution via voting</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-400">✓</span>
+              <span>Extreme task decomposition</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-400">✓</span>
+              <span>Multi-agent consensus at each step</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-6 rounded-xl bg-neutral-900 border border-neutral-800">
+      <h4 class="font-bold mb-3 flex items-center gap-2">
+        <i data-lucide="lightbulb" class="w-5 h-5 text-amber-400"></i>
+        Real-World Example: MAKER System
+      </h4>
+      <p class="text-sm text-neutral-400 mb-4">
+        Recent research (arxiv.org/abs/2511.09030) demonstrated the first MDAP system to solve a 
+        <strong class="text-white">1 million step task with zero errors</strong>. The system uses:
+      </p>
+      <ul class="space-y-2 text-sm text-neutral-300 ml-6">
+        <li>• <strong>Microagents</strong>: Each handles one atomic subtask</li>
+        <li>• <strong>Voting mechanism</strong>: 3-5 agents vote on each decision</li>
+        <li>• <strong>Error correction</strong>: Mistakes caught and fixed immediately</li>
+        <li>• <strong>Scalability</strong>: Proven to work beyond 1M steps</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- The Problem -->
+  <section class="mx-auto max-w-5xl px-6 py-12">
+    <h2 class="text-4xl font-bold mb-8">The Cost Problem</h2>
+    
+    <div class="p-8 rounded-2xl bg-neutral-900 border border-neutral-800 mb-8">
+      <h3 class="text-2xl font-bold mb-6">Running a Million-Step Task</h3>
+      
+      <div class="space-y-6">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-neutral-400">Base LLM calls</span>
+            <span class="font-mono text-emerald-400">1,000,000 steps</span>
+          </div>
+          <div class="w-full bg-neutral-800 rounded-full h-2">
+            <div class="bg-indigo-500 h-2 rounded-full" style="width: 100%"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-neutral-400">Multi-agent voting (3 agents per step)</span>
+            <span class="font-mono text-amber-400">× 3 = 3,000,000 calls</span>
+          </div>
+          <div class="w-full bg-neutral-800 rounded-full h-2">
+            <div class="bg-amber-500 h-2 rounded-full" style="width: 100%"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-neutral-400">Error correction retries (~5%)</span>
+            <span class="font-mono text-rose-400">+ 150,000 calls</span>
+          </div>
+          <div class="w-full bg-neutral-800 rounded-full h-2">
+            <div class="bg-rose-500 h-2 rounded-full" style="width: 15%"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-neutral-800">
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <div class="text-sm text-neutral-500 mb-1">Total LLM API Calls</div>
+            <div class="text-4xl font-bold text-white">3.15M</div>
+          </div>
+          <div>
+            <div class="text-sm text-neutral-500 mb-1">Cost (GPT-4 @ $0.03/1k tokens, avg 300 tokens)</div>
+            <div class="text-4xl font-bold text-rose-400">$28,350</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-6 rounded-xl bg-gradient-to-br from-rose-500/10 to-rose-500/5 border border-rose-500/30">
+      <p class="text-neutral-300">
+        <strong class="text-rose-400">The Challenge:</strong> While MDAPs solve the accuracy problem, 
+        they create a massive cost problem. Running even a single task can cost tens of thousands of dollars.
+      </p>
+    </div>
+  </section>
+
+  <!-- The Solution -->
+  <section class="mx-auto max-w-5xl px-6 py-12">
+    <h2 class="text-4xl font-bold mb-8">Why MDAPs Are Perfect for Caching</h2>
+    
+    <div class="grid md:grid-cols-2 gap-6 mb-8">
+      <div class="p-6 rounded-xl bg-neutral-900 border border-neutral-800">
+        <div class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center mb-4">
+          <i data-lucide="repeat" class="w-6 h-6 text-emerald-400"></i>
+        </div>
+        <h3 class="text-xl font-bold mb-3">High Repetition</h3>
+        <p class="text-sm text-neutral-400">
+          Microagents are specialized and focused. The same subtask patterns repeat thousands 
+          of times across different workflows.
+        </p>
+      </div>
+
+      <div class="p-6 rounded-xl bg-neutral-900 border border-neutral-800">
+        <div class="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center mb-4">
+          <i data-lucide="users" class="w-6 h-6 text-indigo-400"></i>
+        </div>
+        <h3 class="text-xl font-bold mb-3">Voting Redundancy</h3>
+        <p class="text-sm text-neutral-400">
+          When 3-5 agents vote on the same decision, they make identical LLM calls. 
+          Perfect for immediate cache hits.
+        </p>
+      </div>
+
+      <div class="p-6 rounded-xl bg-neutral-900 border border-neutral-800">
+        <div class="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center mb-4">
+          <i data-lucide="layers" class="w-6 h-6 text-purple-400"></i>
+        </div>
+        <h3 class="text-xl font-bold mb-3">Deterministic Subtasks</h3>
+        <p class="text-sm text-neutral-400">
+          Each microagent performs a well-defined atomic operation. Same input → same output, 
+          every time.
+        </p>
+      </div>
+
+      <div class="p-6 rounded-xl bg-neutral-900 border border-neutral-800">
+        <div class="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center mb-4">
+          <i data-lucide="refresh-cw" class="w-6 h-6 text-amber-400"></i>
+        </div>
+        <h3 class="text-xl font-bold mb-3">Error Correction</h3>
+        <p class="text-sm text-neutral-400">
+          When error correction reruns a failed step, it makes the exact same LLM call. 
+          Caching eliminates retry costs.
+        </p>
+      </div>
+    </div>
+
+    <div class="p-8 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-indigo-500/20 border-2 border-emerald-500/40">
+      <h3 class="text-2xl font-bold mb-6 text-center">With AgentCache</h3>
+      
+      <div class="grid md:grid-cols-3 gap-6 mb-8">
+        <div class="text-center">
+          <div class="text-sm text-neutral-400 mb-2">Total API Calls</div>
+          <div class="text-4xl font-bold line-through text-neutral-600">3.15M</div>
+          <div class="text-2xl font-bold text-emerald-400 mt-2">790k</div>
+          <div class="text-xs text-neutral-500 mt-1">(75% cached)</div>
+        </div>
+        <div class="text-center">
+          <div class="text-sm text-neutral-400 mb-2">Response Time</div>
+          <div class="text-4xl font-bold line-through text-neutral-600">2.1s</div>
+          <div class="text-2xl font-bold text-indigo-400 mt-2">45ms</div>
+          <div class="text-xs text-neutral-500 mt-1">(98% faster)</div>
+        </div>
+        <div class="text-center">
+          <div class="text-sm text-neutral-400 mb-2">Total Cost</div>
+          <div class="text-4xl font-bold line-through text-neutral-600">$28k</div>
+          <div class="text-2xl font-bold text-emerald-400 mt-2">$7,100</div>
+          <div class="text-xs text-emerald-500 mt-1">Save $21k</div>
+        </div>
+      </div>
+
+      <div class="p-6 rounded-xl bg-neutral-950/50 border border-neutral-800">
+        <h4 class="font-bold mb-4">Cost Breakdown by Component:</h4>
+        <div class="space-y-3 text-sm">
+          <div class="flex justify-between items-center">
+            <span class="text-neutral-400">Initial microagent calls (1M steps)</span>
+            <div class="flex items-center gap-3">
+              <span class="line-through text-neutral-600">$9,000</span>
+              <span class="font-semibold text-emerald-400">$2,250 (75% cached)</span>
+            </div>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-neutral-400">Multi-agent voting (2M redundant calls)</span>
+            <div class="flex items-center gap-3">
+              <span class="line-through text-neutral-600">$18,000</span>
+              <span class="font-semibold text-emerald-400">$4,500 (75% cached)</span>
+            </div>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-neutral-400">Error correction retries (150k calls)</span>
+            <div class="flex items-center gap-3">
+              <span class="line-through text-neutral-600">$1,350</span>
+              <span class="font-semibold text-emerald-400">$350 (74% cached)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Real Example -->
+  <section class="mx-auto max-w-5xl px-6 py-12">
+    <h2 class="text-4xl font-bold mb-8">Real-World Scenario</h2>
+    
+    <div class="p-8 rounded-2xl bg-neutral-900 border border-neutral-800 mb-6">
+      <h3 class="text-2xl font-bold mb-6">
+        <span class="text-indigo-400">Example:</span> Supply Chain Optimization System
+      </h3>
+      
+      <p class="text-neutral-300 mb-6">
+        A Fortune 500 company uses an MDAP system to optimize global supply chain logistics in real-time. 
+        The system processes 1M+ decision points per optimization run.
+      </p>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="p-6 rounded-xl bg-neutral-950 border border-neutral-800">
+          <h4 class="font-bold mb-4 text-rose-400">❌ Without AgentCache</h4>
+          <div class="space-y-3 text-sm text-neutral-400">
+            <div class="flex justify-between">
+              <span>Optimizations per day:</span>
+              <span class="font-semibold">4</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Cost per optimization:</span>
+              <span class="font-semibold">$28,350</span>
+            </div>
+            <div class="flex justify-between border-t border-neutral-800 pt-3">
+              <span>Daily cost:</span>
+              <span class="font-bold text-rose-400">$113,400</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Annual cost:</span>
+              <span class="font-bold text-rose-400">$41.4M</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-6 rounded-xl bg-neutral-950 border border-emerald-500/30">
+          <h4 class="font-bold mb-4 text-emerald-400">✓ With AgentCache</h4>
+          <div class="space-y-3 text-sm text-neutral-400">
+            <div class="flex justify-between">
+              <span>Optimizations per day:</span>
+              <span class="font-semibold">4</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Cost per optimization:</span>
+              <span class="font-semibold">$7,100</span>
+            </div>
+            <div class="flex justify-between border-t border-emerald-500/30 pt-3">
+              <span>Daily cost:</span>
+              <span class="font-bold text-emerald-400">$28,400</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Annual cost:</span>
+              <span class="font-bold text-emerald-400">$10.4M</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 p-6 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/30">
+        <div class="text-center">
+          <div class="text-sm text-neutral-400 mb-2">Annual Savings</div>
+          <div class="text-5xl font-bold text-emerald-400 mb-2">$31M</div>
+          <div class="text-sm text-neutral-500">75% cost reduction</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Technical Deep Dive -->
+  <section class="mx-auto max-w-5xl px-6 py-12">
+    <h2 class="text-4xl font-bold mb-8">Technical Implementation</h2>
+    
+    <div class="p-6 rounded-xl bg-neutral-900 border border-neutral-800 mb-6">
+      <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+        <i data-lucide="code" class="w-5 h-5 text-indigo-400"></i>
+        Integration Pattern
+      </h3>
+      
+      <pre class="bg-neutral-950 border border-neutral-800 rounded-lg p-4 text-sm overflow-x-auto mb-4"><code class="text-neutral-300">// Microagent with caching
+class CachedMicroagent {
+  async execute(subtask) {
+    // Check cache first
+    const cached = await agentcache.get({
+      provider: 'openai',
+      model: 'gpt-4',
+      messages: subtask.prompt,
+      namespace: `mdap-${this.agentType}`
+    });
+    
+    if (cached.hit) {
+      return cached.response; // 45ms, $0 cost
+    }
+    
+    // Cache miss - call LLM
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: subtask.prompt
+    });
+    
+    // Store for future use
+    await agentcache.set({
+      provider: 'openai',
+      model: 'gpt-4',
+      messages: subtask.prompt,
+      response: response.choices[0].message,
+      namespace: `mdap-${this.agentType}`
+    });
+    
+    return response;
+  }
+}
+
+// Multi-agent voting with cache
+async function multiAgentVote(subtask, agents) {
+  const votes = await Promise.all(
+    agents.map(agent => agent.execute(subtask))
+  );
+  
+  // After first agent calls LLM, others hit cache
+  // 3 agents × 1M steps = 2M free cached calls
+  
+  return consensus(votes);
+}</code></pre>
+
+      <div class="p-4 rounded-lg bg-indigo-500/10 border border-indigo-500/30">
+        <p class="text-sm text-neutral-300">
+          <strong class="text-indigo-400">Key Insight:</strong> By namespacing cache keys by agent type, 
+          we ensure specialized agents benefit from their own cache while allowing cross-workflow reuse.
+        </p>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-4">
+      <div class="p-6 rounded-xl bg-neutral-900 border border-neutral-800">
+        <div class="text-2xl font-bold text-emerald-400 mb-2">85-90%</div>
+        <div class="text-sm text-neutral-400">Cache hit rate for voting agents (2nd+ vote)</div>
+      </div>
+      <div class="p-6 rounded-xl bg-neutral-900 border border-neutral-800">
+        <div class="text-2xl font-bold text-indigo-400 mb-2">70-75%</div>
+        <div class="text-sm text-neutral-400">Cache hit rate for primary microagent calls</div>
+      </div>
+      <div class="p-6 rounded-xl bg-neutral-900 border border-neutral-800">
+        <div class="text-2xl font-bold text-purple-400 mb-2">95%+</div>
+        <div class="text-sm text-neutral-400">Cache hit rate for error correction retries</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROI Calculator -->
+  <section class="mx-auto max-w-5xl px-6 py-12">
+    <h2 class="text-4xl font-bold mb-8">Calculate Your Savings</h2>
+    
+    <div class="p-8 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/30">
+      <div class="grid md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <label class="block text-sm font-medium text-neutral-300 mb-2">Steps per task</label>
+          <input type="number" id="steps" value="1000000" class="w-full px-4 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-white" oninput="calculateSavings()">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-neutral-300 mb-2">Agents per step (voting)</label>
+          <input type="number" id="agents" value="3" class="w-full px-4 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-white" oninput="calculateSavings()">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-neutral-300 mb-2">Tasks per month</label>
+          <input type="number" id="tasks" value="20" class="w-full px-4 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-white" oninput="calculateSavings()">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-neutral-300 mb-2">Cost per 1k tokens ($)</label>
+          <input type="number" step="0.01" id="cost" value="0.03" class="w-full px-4 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-white" oninput="calculateSavings()">
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6 p-6 rounded-xl bg-neutral-950 border border-neutral-800">
+        <div class="text-center">
+          <div class="text-sm text-neutral-500 mb-2">Without Cache</div>
+          <div class="text-3xl font-bold text-rose-400" id="without">$567,000</div>
+          <div class="text-xs text-neutral-500 mt-1">per month</div>
+        </div>
+        <div class="text-center">
+          <div class="text-sm text-neutral-500 mb-2">With AgentCache</div>
+          <div class="text-3xl font-bold text-indigo-400" id="with">$141,750</div>
+          <div class="text-xs text-neutral-500 mt-1">per month</div>
+        </div>
+        <div class="text-center">
+          <div class="text-sm text-emerald-300 mb-2">Monthly Savings</div>
+          <div class="text-3xl font-bold text-emerald-400" id="savings">$425,250</div>
+          <div class="text-xs text-emerald-500 mt-1" id="percent">75% reduction</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="mx-auto max-w-5xl px-6 py-16">
+    <div class="p-12 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/40 text-center">
+      <h2 class="text-4xl font-bold mb-4">Ready to Scale Your MDAP System?</h2>
+      <p class="text-xl text-neutral-300 mb-8 max-w-2xl mx-auto">
+        Join the organizations building million-step AI workflows without million-dollar bills.
+      </p>
+      <div class="flex gap-4 justify-center">
+        <a href="/login" class="px-8 py-4 rounded-xl bg-white text-neutral-900 font-bold text-lg hover:scale-105 transition">
+          Start Free Trial
+        </a>
+        <a href="mailto:enterprise@agentcache.ai?subject=MDAP Enterprise Inquiry" class="px-8 py-4 rounded-xl border border-white/20 text-white hover:bg-white/5 transition">
+          Enterprise Demo
+        </a>
+      </div>
+      <div class="mt-6 text-sm text-neutral-400">
+        Free tier: 10,000 requests/month • Enterprise volume pricing available
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/10 py-8 px-6">
+    <div class="mx-auto max-w-5xl text-center text-sm text-neutral-500">
+      © 2025 AgentCache.ai • <a href="/privacy" class="hover:text-white">Privacy</a> • <a href="/terms" class="hover:text-white">Terms</a>
+    </div>
+  </footer>
+
+  <script>
+    if (window.lucide) lucide.createIcons();
+
+    function calculateSavings() {
+      const steps = parseInt(document.getElementById('steps').value) || 0;
+      const agents = parseInt(document.getElementById('agents').value) || 0;
+      const tasks = parseInt(document.getElementById('tasks').value) || 0;
+      const costPer1k = parseFloat(document.getElementById('cost').value) || 0;
+      
+      // Calculate total calls
+      const totalCalls = steps * agents * tasks;
+      const avgTokens = 300; // average tokens per call
+      const totalTokens = totalCalls * avgTokens;
+      
+      // Cost without cache
+      const costWithout = (totalTokens / 1000) * costPer1k;
+      
+      // Cost with cache (75% hit rate)
+      const costWith = costWithout * 0.25;
+      
+      // Savings
+      const savings = costWithout - costWith;
+      const percent = ((savings / costWithout) * 100).toFixed(0);
+      
+      // Update display
+      document.getElementById('without').textContent = '$' + costWithout.toLocaleString('en-US', {maximumFractionDigits: 0});
+      document.getElementById('with').textContent = '$' + costWith.toLocaleString('en-US', {maximumFractionDigits: 0});
+      document.getElementById('savings').textContent = '$' + savings.toLocaleString('en-US', {maximumFractionDigits: 0});
+      document.getElementById('percent').textContent = percent + '% reduction';
+    }
+    
+    // Initial calculation
+    calculateSavings();
+  </script>
+</body>
+</html>

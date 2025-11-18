@@ -1,5 +1,16 @@
 [
   {
+    "title": "MDAP Case Study: Caching Million-Step LLM Workflows",
+    "date": "2025-11-18",
+    "author": "AgentCache Research Team",
+    "category": "technical",
+    "excerpt": "How Massively Decomposed Agentic Processes achieve 75% cost reduction with intelligent caching for 1M+ step workflows.",
+    "featured_image": "/images/mdap-study.png",
+    "slug": "mdap-case-study",
+    "filename": "case-study-mdap.html",
+    "externalUrl": "/case-study-mdap.html"
+  },
+  {
     "title": "Global AI Cache Study: 100M+ Requests Across 15 Countries",
     "date": "2025-11-18",
     "author": "AgentCache Research Team",
