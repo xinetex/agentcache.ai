@@ -410,6 +410,10 @@ export default async function handler(req) {
       authn
     );
     
+    // Calculate cache hit rate safely
+    const totalRequests = trace.cacheHits + trace.cacheMisses;
+    const cacheHitRate = totalRequests > 0 ? (trace.cacheHits / totalRequests * 100) : 0;
+    
     return json({
       success: true,
       traceId,
@@ -422,7 +426,7 @@ export default async function handler(req) {
         totalLatency: trace.totalLatency,
         cacheHits: trace.cacheHits,
         cacheMisses: trace.cacheMisses,
-        cacheHitRate: trace.cacheHits / (trace.cacheHits + trace.cacheMisses) * 100,
+        cacheHitRate: Math.round(cacheHitRate * 10) / 10, // Round to 1 decimal
         errors: trace.errors
       }
     });

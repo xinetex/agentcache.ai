@@ -84,6 +84,10 @@ export default async function handler(req) {
       p.avgLatency = p.totalLatency / p.requests;
     });
     
+    // Calculate metrics safely
+    const totalRequests = trace.cacheHits + trace.cacheMisses;
+    const cacheHitRate = totalRequests > 0 ? (trace.cacheHits / totalRequests * 100) : 0;
+    
     return json({
       traceId: trace.traceId,
       strategy: trace.strategy,
@@ -96,7 +100,7 @@ export default async function handler(req) {
         avgLatency: Math.round(avgLatency),
         cacheHits: trace.cacheHits,
         cacheMisses: trace.cacheMisses,
-        cacheHitRate: trace.cacheHits / (trace.cacheHits + trace.cacheMisses) * 100,
+        cacheHitRate: Math.round(cacheHitRate * 10) / 10,
         errors: trace.errors,
         totalCost: totalCost.toFixed(6),
         estimatedSavings: totalSavings.toFixed(6),

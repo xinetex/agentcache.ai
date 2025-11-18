@@ -1,3 +1,8 @@
 .vercel
 .env*.local
 .env.vercel
+node_modules/
+*.log
+logs/
+dist/
+.DS_Store
