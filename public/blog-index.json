@@ -1,5 +1,16 @@
 [
   {
+    "title": "Why Multi-Provider Architecture Matters for AI Infrastructure",
+    "date": "2025-11-18",
+    "author": "AgentCache Team",
+    "category": "technical",
+    "excerpt": "When major cloud providers experience outages, multi-provider architecture isn't just nice to have—it's essential. Here's how we built AgentCache for resilience from day one.",
+    "featured_image": "/blog/images/multi-provider-architecture.png",
+    "slug": "why-multi-provider-architecture-matters",
+    "filename": "2025-11-18-why-multi-provider-architecture-matters.md",
+    "mdPath": "/blog/posts/2025-11-18-why-multi-provider-architecture-matters.md"
+  },
+  {
     "title": "MDAP Case Study: Caching Million-Step LLM Workflows",
     "date": "2025-11-18",
     "author": "AgentCache Research Team",
