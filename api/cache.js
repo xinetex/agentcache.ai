@@ -58,6 +58,64 @@ async function auth(req) {
   return { ok:true, kind:'live', hash, email };
 }
 
+// Helper to stream cached response (OpenAI-compatible SSE)
+function streamCachedResponse(text, model) {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    start(controller) {
+      // Split text into chunks (simulating token stream)
+      // We split by spaces to preserve words, but could be finer
+      const chunks = text.split(/(\s+)/);
+      const timestamp = Math.floor(Date.now() / 1000);
+      const id = `cache-${Date.now()}`;
+
+      for (const chunk of chunks) {
+        if (!chunk) continue;
+        
+        const event = {
+          id,
+          object: 'chat.completion.chunk',
+          created: timestamp,
+          model: model,
+          choices: [{
+            index: 0,
+            delta: { content: chunk },
+            finish_reason: null
+          }]
+        };
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
+      }
+
+      // Final chunk
+      const endEvent = {
+        id,
+        object: 'chat.completion.chunk',
+        created: timestamp,
+        model: model,
+        choices: [{
+          index: 0,
+          delta: {},
+          finish_reason: 'stop'
+        }]
+      };
+      controller.enqueue(encoder.encode(`data: ${JSON.stringify(endEvent)}\n\n`));
+      controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+      controller.close();
+    }
+  });
+
+  return new Response(stream, {
+    headers: {
+      'content-type': 'text/event-stream',
+      'cache-control': 'no-cache',
+      'connection': 'keep-alive',
+      'access-control-allow-origin': '*',
+      'access-control-allow-methods': 'POST, OPTIONS',
+      'access-control-allow-headers': 'Content-Type, Authorization, X-API-Key, X-Cache-Namespace',
+    }
+  });
+}
+
 export default async function handler(req) {
   if (req.method === 'OPTIONS') {
     return json({ ok: true });
@@ -82,7 +140,7 @@ export default async function handler(req) {
     }
 
     const body = await req.json();
-    const { provider, model, messages, temperature, response, ttl = 60 * 60 * 24 * 7 } = body || {};
+    const { provider, model, messages, temperature, response, ttl = 60 * 60 * 24 * 7, stream = false } = body || {};
     if (!provider || !model || !Array.isArray(messages)) return json({ error: 'Invalid payload' }, 400);
 
     const cacheKey = await stableKey({ provider, model, messages, temperature, namespace });
@@ -164,6 +222,10 @@ export default async function handler(req) {
       
       if (authn.kind === 'live') {
         await redis('HINCRBY', `usage:${authn.hash}`, 'hits', 1);
+      }
+
+      if (stream) {
+        return streamCachedResponse(cachedValue, model);
       }
       
       return json({ hit: true, response: cachedValue });

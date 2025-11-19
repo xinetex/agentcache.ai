@@ -29,6 +29,54 @@ curl -H "Authorization: Bearer ac_demo_test123" ...
 
 ---
 
+### Streaming Support
+
+AgentCache supports streaming responses (Server-Sent Events) for cache hits, compatible with OpenAI's streaming format.
+
+**Request:**
+Include `"stream": true` in your JSON body.
+
+```bash
+curl -X POST https://agentcache.ai/api/cache/get \
+  -H "X-API-Key: ac_demo_test123" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider": "openai",
+    "model": "gpt-4",
+    "messages": [{"role": "user", "content": "Hello"}],
+    "stream": true
+  }'
+```
+
+**Response (Stream):**
+```
+data: {"id":"cache-123","object":"chat.completion.chunk","choices":[{"delta":{"content":"Hello"}}]}
+
+data: {"id":"cache-123","object":"chat.completion.chunk","choices":[{"delta":{"content":" world"}}]}
+
+data: [DONE]
+```
+
+## Python SDK
+
+A Python client is available for easier integration.
+
+```python
+# pip install agentcache (Coming Soon)
+import agentcache
+
+# Streaming example
+stream = agentcache.completion(
+    model="gpt-4",
+    messages=[{"role": "user", "content": "Hello"}],
+    stream=True
+)
+
+if stream:
+    for chunk in stream:
+        print(chunk['choices'][0]['delta'].get('content', ''), end="")
+```
+
 ## Endpoints
 
 ### 1. Cache GET
