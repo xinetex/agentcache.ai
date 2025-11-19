@@ -1,0 +1,15 @@
+{
+  "status": "deployed",
+  "version": "1.0.0",
+  "features": {
+    "swarm_api": true,
+    "trace_api": true,
+    "observability_dashboard": true
+  },
+  "endpoints": {
+    "swarm": "/api/swarm",
+    "trace": "/api/trace",
+    "dashboard": "/swarm-observability.html"
+  },
+  "timestamp": "2025-11-19T00:22:00Z"
+}
