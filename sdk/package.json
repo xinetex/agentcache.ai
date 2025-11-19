@@ -1,0 +1,19 @@
+{
+  "name": "@agentcache/overflow-client",
+  "version": "1.0.0",
+  "description": "Partner SDK for AgentCache Overflow API",
+  "main": "overflow-client.js",
+  "type": "commonjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "agentcache",
+    "overflow",
+    "cache",
+    "ai",
+    "llm"
+  ],
+  "author": "AgentCache.ai",
+  "license": "MIT"
+}

@@ -7,7 +7,8 @@
  */
 
 const Redis = require('ioredis');
-const AgentCacheOverflow = require('@agentcache/overflow-client');
+// Use local SDK for example
+const AgentCacheOverflow = require('../sdk/overflow-client');
 
 // Initialize Redis (primary cache)
 const redis = new Redis({

@@ -9,7 +9,7 @@
 
 export const config = { runtime: 'edge' };
 
-const PARTNERS = {
+const HARDCODED_PARTNERS = {
   'redis-labs': { split: 0.30, name: 'Redis Labs', active: true },
   'pinecone': { split: 0.20, name: 'Pinecone', active: true },
   'together-ai': { split: 0.20, name: 'Together.ai', active: true },
@@ -39,16 +39,43 @@ async function authenticatePartner(req) {
   if (!partnerId || !partnerKey) {
     return { ok: false, error: 'Missing partner credentials' };
   }
+
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   
-  const partner = PARTNERS[partnerId];
+  // 1. Lookup partner (Hardcoded first, then Redis)
+  let partner = HARDCODED_PARTNERS[partnerId];
+  
+  if (!partner) {
+    // Try dynamic lookup from Redis (created via onboard-partner script)
+    try {
+      const infoRes = await fetch(`${url}/hgetall/partner:${partnerId}:info`, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).then(r => r.json());
+      
+      if (infoRes.result && infoRes.result.length > 0) {
+        // Parse flat array ["key", "val", ...] to object
+        const data = {};
+        for (let i = 0; i < infoRes.result.length; i += 2) {
+          data[infoRes.result[i]] = infoRes.result[i+1];
+        }
+        
+        partner = {
+          name: data.name,
+          split: parseFloat(data.revenue_share),
+          active: data.status === 'active'
+        };
+      }
+    } catch (err) {
+      console.error('Partner lookup error:', err);
+    }
+  }
+  
   if (!partner || !partner.active) {
     return { ok: false, error: 'Invalid or inactive partner' };
   }
   
-  // Verify partner key against Redis
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  
+  // 2. Verify partner key against Redis
   const keyHash = await sha256(partnerKey);
   const storedKey = await fetch(`${url}/get/partner:${partnerId}:key`, {
     headers: { Authorization: `Bearer ${token}` }

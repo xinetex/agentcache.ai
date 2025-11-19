@@ -29,6 +29,16 @@ class AgentCacheOverflow {
     };
   }
   
+  // Helper for timeout signal (Node 16 compatibility)
+  _getSignal(ms) {
+    if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) {
+      return AbortSignal.timeout(ms);
+    }
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), ms);
+    return controller.signal;
+  }
+  
   /**
    * Check AgentCache for cached response
    * 
@@ -64,7 +74,7 @@ class AgentCacheOverflow {
           metadata: metadata || {},
           action: 'get'
         }),
-        signal: AbortSignal.timeout(this.timeout)
+        signal: this._getSignal(this.timeout)
       });
       
       const data = await response.json();
@@ -134,7 +144,7 @@ class AgentCacheOverflow {
           response: response,
           action: 'set'
         }),
-        signal: AbortSignal.timeout(this.timeout)
+        signal: this._getSignal(this.timeout)
       });
       
       const data = await result.json();
