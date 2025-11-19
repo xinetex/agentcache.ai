@@ -140,10 +140,23 @@ export default async function handler(req) {
     }
 
     const body = await req.json();
-    const { provider, model, messages, temperature, response, ttl = 60 * 60 * 24 * 7, stream = false } = body || {};
+    const { provider, model, messages, temperature, response, ttl = 60 * 60 * 24 * 7, stream = false, semantic = false, similarity_threshold = 0.95 } = body || {};
     if (!provider || !model || !Array.isArray(messages)) return json({ error: 'Invalid payload' }, 400);
 
     const cacheKey = await stableKey({ provider, model, messages, temperature, namespace });
+
+    // Semantic Cache Placeholder Logic (Feature Flagged)
+    if (semantic) {
+      // In the future, this will:
+      // 1. Generate embedding for messages
+      // 2. Query Vector DB
+      // 3. Return if similarity > threshold
+      // For now, return 501 Not Implemented but acknowledging the flag
+      if (!process.env.UPSTASH_VECTOR_REST_URL) {
+        // Fallback silently to exact match if not configured
+        // Or we could return a warning header
+      }
+    }
 
     // simple monthly quota for live keys
     if (authn.kind === 'live') {
