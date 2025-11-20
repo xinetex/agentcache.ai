@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Contact Sales — AgentCache.ai</title>
+    <meta name="description"
+        content="Get in touch with our team for enterprise solutions, partnerships, or technical support." />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        neutral: { 950: '#050505', 900: '#0a0a0a' },
+                        brand: { 500: '#6366f1', 600: '#4f46e5' },
+                        accent: { 500: '#10b981' }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body class="bg-neutral-950 text-neutral-100 antialiased">
+
+    <!-- Nav -->
+    <header class="fixed top-0 w-full z-50 bg-neutral-950/80 backdrop-blur-md border-b border-white/5">
+        <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-3 group">
+                <div
+                    class="h-9 w-9 rounded-xl bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-sm font-bold shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform">
+                    AC</div>
+                <span class="font-bold text-lg">AgentCache<span class="text-neutral-500">.ai</span></span>
+            </a>
+            <nav class="hidden md:flex gap-8 text-sm font-medium text-neutral-400">
+                <a href="/#features" class="hover:text-white transition">Features</a>
+                <a href="/pricing.html" class="hover:text-white transition">Pricing</a>
+                <a href="/docs.html" class="hover:text-white transition">Docs</a>
+                <a href="/contact.html" class="text-white">Contact</a>
+            </nav>
+            <a href="/login.html"
+                class="px-5 py-2.5 rounded-lg bg-white text-neutral-950 text-sm font-bold hover:bg-neutral-200 transition">Get
+                Started</a>
+        </div>
+    </header>
+
+    <main class="pt-32 pb-20">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid md:grid-cols-2 gap-12">
+
+                <!-- Left: Info -->
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-bold mb-6">Let's Talk</h1>
+                    <p class="text-xl text-neutral-400 mb-12">
+                        Whether you're a Fortune 500 company or a fast-growing startup, we'd love to hear from you.
+                    </p>
+
+                    <div class="space-y-8">
+                        <!-- Enterprise -->
+                        <div class="flex gap-4">
+                            <div
+                                class="flex-shrink-0 w-12 h-12 rounded-xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center">
+                                <i data-lucide="building-2" class="w-6 h-6 text-brand-400"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold mb-1">Enterprise Sales</h3>
+                                <p class="text-sm text-neutral-400 mb-2">Custom solutions for Fortune 500 companies</p>
+                                <a href="mailto:hello@agentcache.ai?subject=Enterprise%20Inquiry"
+                                    class="text-sm text-brand-400 hover:text-brand-300 font-medium">hello@agentcache.ai</a>
+                            </div>
+                        </div>
+
+                        <!-- Support -->
+                        <div class="flex gap-4">
+                            <div
+                                class="flex-shrink-0 w-12 h-12 rounded-xl bg-accent-500/10 border border-accent-500/20 flex items-center justify-center">
+                                <i data-lucide="life-buoy" class="w-6 h-6 text-accent-400"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold mb-1">Technical Support</h3>
+                                <p class="text-sm text-neutral-400 mb-2">Get help from our engineering team</p>
+                                <a href="/docs.html"
+                                    class="text-sm text-brand-400 hover:text-brand-300 font-medium">View Documentation
+                                    →</a>
+                            </div>
+                        </div>
+
+                        <!-- Partners -->
+                        <div class="flex gap-4">
+                            <div
+                                class="flex-shrink-0 w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+                                <i data-lucide="handshake" class="w-6 h-6 text-purple-400"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold mb-1">Partnerships</h3>
+                                <p class="text-sm text-neutral-400 mb-2">Integrate AgentCache into your platform</p>
+                                <a href="mailto:hello@agentcache.ai?subject=Partnership%20Opportunity"
+                                    class="text-sm text-brand-400 hover:text-brand-300 font-medium">hello@agentcache.ai</a>
+                            </div>
+                        </div>
+
+                        <!-- Community -->
+                        <div class="flex gap-4">
+                            <div
+                                class="flex-shrink-0 w-12 h-12 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center">
+                                <i data-lucide="users" class="w-6 h-6 text-yellow-400"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold mb-1">Community</h3>
+                                <p class="text-sm text-neutral-400 mb-2">Join our developer community</p>
+                                <a href="https://github.com/xinetex/agentcache.ai"
+                                    class="text-sm text-brand-400 hover:text-brand-300 font-medium">GitHub Discussions
+                                    →</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Form -->
+                <div class="glass rounded-2xl p-8 border border-white/10">
+                    <h2 class="text-2xl font-bold mb-6">Send us a message</h2>
+                    <form id="contact-form" class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Name *</label>
+                            <input type="text" required
+                                class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:border-brand-500 transition"
+                                placeholder="John Doe" />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Work Email *</label>
+                            <input type="email" required
+                                class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:border-brand-500 transition"
+                                placeholder="john@company.com" />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Company</label>
+                            <input type="text"
+                                class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:border-brand-500 transition"
+                                placeholder="Acme Inc." />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Monthly LLM Spend</label>
+                            <select
+                                class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-500 transition">
+                                <option value="">Select range</option>
+                                <option>
+                                    < $1,000</option>
+                                <option>$1,000 - $5,000</option>
+                                <option>$5,000 - $25,000</option>
+                                <option>$25,000 - $100,000</option>
+                                <option>> $100,000</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-2">What can we help with? *</label>
+                            <textarea required rows="4"
+                                class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:border-brand-500 transition resize-none"
+                                placeholder="Tell us about your use case..."></textarea>
+                        </div>
+
+                        <button type="submit"
+                            class="w-full px-6 py-3 rounded-lg bg-brand-500 hover:bg-brand-600 transition font-bold flex items-center justify-center gap-2">
+                            Send Message
+                            <i data-lucide="send" class="w-5 h-5"></i>
+                        </button>
+
+                        <p class="text-xs text-neutral-500 text-center">
+                            We'll get back to you within 24 hours
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 py-12 bg-neutral-950">
+        <div class="mx-auto max-w-7xl px-6">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="h-6 w-6 rounded bg-white/10 flex items-center justify-center text-[10px] font-bold">
+                            AC</div>
+                        <span class="text-sm font-semibold">AgentCache.ai</span>
+                    </div>
+                    <p class="text-sm text-neutral-500">The Global Edge Cache for LLMs</p>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-3 text-sm">Product</h4>
+                    <ul class="space-y-2 text-sm text-neutral-500">
+                        <li><a href="/#features" class="hover:text-white transition">Features</a></li>
+                        <li><a href="/pricing.html" class="hover:text-white transition">Pricing</a></li>
+                        <li><a href="/docs.html" class="hover:text-white transition">Documentation</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-3 text-sm">Company</h4>
+                    <ul class="space-y-2 text-sm text-neutral-500">
+                        <li><a href="/blog.html" class="hover:text-white transition">Blog</a></li>
+                        <li><a href="/contact.html" class="hover:text-white transition">Contact</a></li>
+                        <li><a href="https://github.com/xinetex/agentcache.ai"
+                                class="hover:text-white transition">GitHub</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-3 text-sm">Contact</h4>
+                    <ul class="space-y-2 text-sm text-neutral-500">
+                        <li><a href="mailto:hello@agentcache.ai"
+                                class="hover:text-white transition">hello@agentcache.ai</a></li>
+                        <li><a href="/contact.html" class="hover:text-white transition">Enterprise Sales</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div
+                class="flex flex-col md:flex-row justify-between items-center gap-4 pt-8 border-t border-white/5 text-sm text-neutral-600">
+                <div>© 2025 Drgnflai, Inc.</div>
+                <div class="flex gap-6">
+                    <a href="/privacy.html" class="hover:text-white transition">Privacy</a>
+                    <a href="/terms.html" class="hover:text-white transition">Terms</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        if (window.lucide) lucide.createIcons();
+
+        document.getElementById('contact-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            alert('Form submission will be connected to your backend/email service. For now, please email hello@agentcache.ai');
+        });
+    </script>
+</body>
+
+</html>
