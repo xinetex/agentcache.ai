@@ -1,5 +1,10 @@
 import Stripe from 'stripe';
 
+// Specify Node.js runtime for Stripe SDK compatibility
+export const config = {
+  runtime: 'nodejs',
+};
+
 export default async function handler(req, res) {
   // Debug: Check if Stripe key is available
   if (!process.env.STRIPE_SECRET_KEY) {
