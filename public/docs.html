@@ -30,8 +30,11 @@
       <nav class="space-y-1 lg:sticky lg:top-24 lg:self-start">
         <div class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Documentation</div>
         <a href="#quickstart" class="block px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-md">Quick Start</a>
-        <a href="#npm" class="block px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-md">NPM Package</a>
+        <a href="#python-sdk" class="block px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-md">Python SDK</a>
+        <a href="#streaming" class="block px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-md">Streaming</a>
         <a href="#rest-api" class="block px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-md">REST API</a>
+        <a href="#swarm" class="block px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-md">Swarm API</a>
+        <a href="#overflow" class="block px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-md">Elastic Overflow</a>
         <a href="#moonshot" class="block px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-md">Moonshot AI</a>
         <a href="#namespaces" class="block px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-md">Namespaces</a>
         <a href="#webhooks" class="block px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-md">Webhooks</a>
@@ -52,92 +55,72 @@
             <i data-lucide="zap" class="h-6 w-6"></i>
             Quick Start
           </h2>
-          <p class="text-neutral-300 mt-3">Get started in 30 seconds with our NPM package or REST API.</p>
+          <p class="text-neutral-300 mt-3">Get started in 30 seconds with our Python SDK.</p>
           
           <div class="mt-6 rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6">
             <h3 class="text-lg font-semibold">Install</h3>
-            <pre class="mt-3 rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto"><code>npm install agentcache-client</code></pre>
+            <pre class="mt-3 rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto"><code>pip install agentcache</code></pre>
             
             <h3 class="text-lg font-semibold mt-6">Use</h3>
-            <pre class="mt-3 rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto text-sm"><code>import { AgentCache } from 'agentcache-client';
+            <pre class="mt-3 rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto text-sm"><code>import agentcache
 
-const cache = new AgentCache('ac_demo_test123');
-
-// Check cache before calling LLM
-const result = await cache.get({
-  provider: 'openai',
-  model: 'gpt-4',
-  messages: [{ role: 'user', content: 'Hello' }]
+// Drop-in replacement for OpenAI
+const response = agentcache.completion({
+  model: "gpt-4",
+  messages: [{ role: "user", content: "Hello" }],
+  provider: "openai"
 });
 
-if (result.hit) {
-  console.log('✅ Cache hit!', result.latency_ms + 'ms');
-  return result.response; // Instant!
-}
-
-// Cache miss - call your LLM
-const llmResponse = await openai.chat.completions.create({...});
-
-// Store for next time
-await cache.set({
-  provider: 'openai',
-  model: 'gpt-4',
-  messages: [{ role: 'user', content: 'Hello' }],
-  response: llmResponse.choices[0].message.content
-});</code></pre>
+if (response.get('hit')) {
+  console.log("💚 Cache hit!", response.response);
+} else {
+  console.log("Cache miss");
+}</code></pre>
           </div>
         </section>
 
-        <!-- NPM Package -->
-        <section id="npm">
+        <!-- Python SDK -->
+        <section id="python-sdk">
           <h2 class="text-2xl font-semibold tracking-tight flex items-center gap-2">
-            <i data-lucide="package" class="h-6 w-6"></i>
-            NPM Package
+            <i data-lucide="box" class="h-6 w-6"></i>
+            Python SDK
           </h2>
-          <p class="text-neutral-300 mt-3">TypeScript SDK with full type safety.</p>
+          <p class="text-neutral-300 mt-3">Official Python client for AgentCache.</p>
 
           <div class="mt-6 space-y-6">
             <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6">
-              <h3 class="text-lg font-semibold">Installation</h3>
-              <pre class="mt-3 rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto"><code>npm install agentcache-client</code></pre>
+              <h3 class="text-lg font-semibold">Streaming</h3>
+              <pre class="mt-3 rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto text-sm"><code>stream = agentcache.completion(
+  model="gpt-4",
+  messages=[{ "role": "user", "content": "Write a poem" }],
+  stream=True
+)
+
+if stream:
+    for chunk in stream:
+        print(chunk['choices'][0]['delta'].get('content', ''), end="")</code></pre>
             </div>
+          </div>
+        </section>
 
-            <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6">
-              <h3 class="text-lg font-semibold">Methods</h3>
-              
-              <div class="mt-4 space-y-6">
-                <div>
-                  <h4 class="text-base font-semibold text-neutral-200"><code>cache.get(options)</code></h4>
-                  <p class="text-sm text-neutral-400 mt-2">Check if response is cached</p>
-                  <pre class="mt-3 rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto text-sm"><code>const result = await cache.get({
-  provider: 'openai',
-  model: 'gpt-4',
-  messages: [...]
-});</code></pre>
-                </div>
+        <!-- Streaming -->
+        <section id="streaming">
+          <h2 class="text-2xl font-semibold tracking-tight flex items-center gap-2">
+            <i data-lucide="activity" class="h-6 w-6"></i>
+            Streaming Support
+          </h2>
+          <p class="text-neutral-300 mt-3">Server-Sent Events (SSE) for cached responses.</p>
 
-                <div>
-                  <h4 class="text-base font-semibold text-neutral-200"><code>cache.set(options)</code></h4>
-                  <p class="text-sm text-neutral-400 mt-2">Store LLM response in cache</p>
-                  <pre class="mt-3 rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto text-sm"><code>await cache.set({
-  provider: 'openai',
-  model: 'gpt-4',
-  messages: [...],
-  response: 'LLM response'
-});</code></pre>
-                </div>
-
-                <div>
-                  <h4 class="text-base font-semibold text-neutral-200"><code>cache.moonshot(options)</code></h4>
-                  <p class="text-sm text-neutral-400 mt-2">Call Moonshot AI with reasoning caching</p>
-                  <pre class="mt-3 rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto text-sm"><code>const result = await cache.moonshot({
-  model: 'moonshot-v1-128k',
-  messages: [...],
-  cache_reasoning: true
-});</code></pre>
-                </div>
-              </div>
-            </div>
+          <div class="mt-6 rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6">
+            <pre class="rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto text-sm"><code>curl -X POST https://agentcache.ai/api/cache/get \
+  -H "X-API-Key: ac_demo_test123" \
+  -d '{
+    "provider": "openai",
+    "model": "gpt-4",
+    "messages": [{"role": "user", "content": "Hello"}],
+    "stream": true
+  }'</code></pre>
+            <p class="mt-3 text-sm text-neutral-400">Returns OpenAI-compatible SSE events.</p>
           </div>
         </section>
 
@@ -174,6 +157,63 @@ await cache.set({
   }'</code></pre>
             </div>
           </div>
+        </section>
+
+        <!-- Swarm API -->
+        <section id="swarm">
+          <h2 class="text-2xl font-semibold tracking-tight flex items-center gap-2">
+            <i data-lucide="network" class="h-6 w-6"></i>
+            Swarm API
+          </h2>
+          <p class="text-neutral-300 mt-3">Execute multi-model swarms with observability.</p>
+
+          <div class="mt-6 rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6">
+            <h3 class="text-lg font-semibold">POST /api/swarm</h3>
+            <pre class="mt-3 rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto text-sm"><code>curl -X POST https://agentcache.ai/api/swarm \
+  -H "X-API-Key: ac_demo_test123" \
+  -d '{
+    "strategy": "fastest",
+    "models": [
+      {"provider": "openai", "model": "gpt-4"},
+      {"provider": "anthropic", "model": "claude-3-opus"}
+    ],
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'</code></pre>
+            
+            <div class="mt-4 grid grid-cols-2 gap-4 text-sm">
+              <div class="rounded-lg bg-white/5 p-3">
+                <div class="text-xs text-neutral-400">Strategy</div>
+                <div class="font-semibold">parallel, consensus, fastest, cheapest</div>
+              </div>
+              <div class="rounded-lg bg-emerald-500/10 ring-1 ring-emerald-500/30 p-3">
+                <div class="text-xs text-emerald-200">Observability</div>
+                <div class="font-semibold">Full Trace & Dashboard</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Elastic Overflow -->
+        <section id="overflow">
+          <h2 class="text-2xl font-semibold tracking-tight flex items-center gap-2">
+            <i data-lucide="server" class="h-6 w-6"></i>
+            Elastic Overflow
+          </h2>
+          <p class="text-neutral-300 mt-3">Use AgentCache as a fallback for Redis, ElastiCache, or Vector DBs.</p>
+
+          <div class="mt-6 rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6">
+            <h3 class="text-lg font-semibold">POST /api/overflow</h3>
+            <p class="mt-2 text-sm text-neutral-400">Partner API for revenue-sharing integrations.</p>
+            <pre class="mt-3 rounded-lg bg-black/60 ring-1 ring-white/10 p-4 overflow-x-auto text-sm"><code>// Node.js Partner SDK
+const overflow = new AgentCacheOverflow({
+  partnerId: 'redis-labs',
+  apiKey: '...'
+});
+
+const result = await overflow.get({
+  customerId: 'cust_123',
+  request: { provider: 'openai', ... }
+});</code></pre>
         </section>
 
         <!-- Moonshot AI -->

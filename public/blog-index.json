@@ -1,14 +1,14 @@
 [
   {
-    "title": "Q4 2025 AI Dev Update: The Shift from Exact Matching to Intelligent Caching",
-    "date": "2025-11-18",
+    "title": "The Hidden Cost of Reasoning Models (and How to Fix It)",
+    "date": "2025-11-20",
     "author": "AgentCache Team",
-    "category": "industry",
-    "excerpt": "2025 is the year LLM caching gets smart. Explore the rise of domain-specific semantic caching, prompt caching for context, and the price war driving multi-model routing.",
-    "featured_image": "/images/q4-2025-update.png",
-    "slug": "q4-2025-ai-dev-update",
-    "filename": "q4-2025-ai-dev-update.html",
-    "externalUrl": "/q4-2025-ai-dev-update.html"
+    "category": "technical",
+    "excerpt": "Reasoning models like OpenAI o1 are powerful but expensive. Learn how caching reasoning traces can reduce costs by 80% and slash latency by 10x.",
+    "featured_image": "/blog/images/hidden-cost-reasoning-models.png",
+    "slug": "the-hidden-cost-of-reasoning-models",
+    "filename": "2025-11-20-the-hidden-cost-of-reasoning-models.md",
+    "mdPath": "/blog/posts/2025-11-20-the-hidden-cost-of-reasoning-models.md"
   },
   {
     "title": "Why Multi-Provider Architecture Matters for AI Infrastructure",

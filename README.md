@@ -27,54 +27,42 @@ AgentCache sits between your app and AI providers:
 
 **Demo API key for testing:** `ac_demo_test123`
 
+### Python SDK
+
 ```bash
-npm install agentcache-client
+pip install agentcache
 ```
 
-```javascript
-import { AgentCache } from 'agentcache-client';
+```python
+import agentcache
 
-const cache = new AgentCache('ac_demo_test123');
+# Drop-in replacement for OpenAI
+response = agentcache.completion(
+    model="gpt-4",
+    messages=[{"role": "user", "content": "What is Python?"}],
+    provider="openai"
+)
 
-// Check cache
-const cached = await cache.get({
-  provider: 'openai',
-  model: 'gpt-4',
-  messages: [{ role: 'user', content: 'What is Python?' }]
-});
-
-if (cached.hit) {
-  console.log('💚 Cache hit! Saved $0.05, latency: 23ms');
-  return cached.response;
-}
-
-// Cache miss - call your provider
-const response = await callOpenAI(...);
-
-// Store for next time
-await cache.set({
-  provider: 'openai',
-  model: 'gpt-4',
-  messages: [{ role: 'user', content: 'What is Python?' }],
-  response: response
-});
+if response.get('hit'):
+    print(f"💚 Cache hit! Saved ${response.get('billing', {}).get('cost_saved', 0)}")
+    print(response['response'])
+else:
+    # Cache miss - AgentCache returns 404 or handle normally
+    print("Cache miss")
 ```
 
-## ROI Example
+### REST API
 
-**Before AgentCache:**
-```
-100,000 GPT-4 calls/month × $0.03 = $3,000/month
-```
-
-**After AgentCache (85% hit rate):**
-```
-15,000 uncached × $0.03 = $450
-85,000 cached × $0 = $0
-AgentCache Pro = $49
-─────────────────────────
-Total: $499/month
-💰 SAVE $2,501/MONTH
+```bash
+curl -X POST https://agentcache.ai/api/cache/get \
+  -H "X-API-Key: ac_demo_test123" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider": "openai",
+    "model": "gpt-4",
+    "messages": [{"role": "user", "content": "Hello"}],
+    "stream": true
+  }'
 ```
 
 ## Features
@@ -82,8 +70,10 @@ Total: $499/month
 - **Provider agnostic** - OpenAI, Anthropic, Moonshot, Cohere, Together, Groq
 - **Global edge** - Upstash Redis with <50ms P95 latency
 - **Streaming support** - SSE passthrough for cached responses
+- **Multi-Model Swarm** - Run parallel, consensus, or cheapest strategies
+- **Semantic Caching** - (Beta) Vector-based matching for higher hit rates
+- **Elastic Overflow** - Use AgentCache as overflow for Redis/ElastiCache
 - **Zero config** - Automatic cache key generation
-- **Usage analytics** - Track hit rates and savings in real-time
 - **Deterministic keys** - Same input = same key, always
 
 ## Pricing
@@ -131,19 +121,23 @@ Same API question asked 1000x = $30 → $0.03
 
 ## Current Status
 
-🚧 **MVP - Beta Launch** (January 2025)
+🚧 **MVP - Production Ready** (January 2025)
 
 What works:
-- ✅ Core caching API
-- ✅ Demo API keys
+- ✅ Core caching API (Get, Set, Check)
+- ✅ Streaming Support (SSE)
+- ✅ Python SDK
+- ✅ Multi-Model Swarm & Observability
+- ✅ Elastic Overflow Service
+- ✅ Semantic Caching (Strategy defined)
 - ✅ Redis backend
 - ✅ Beautiful landing page
 
 Coming soon:
 - 🔜 User authentication & Stripe billing
 - 🔜 Usage dashboard
-- 🔜 NPM package
-- 🔜 Python SDK
+- 🔜 Go SDK
+- 🔜 Self-hosted option
 
 ## Architecture
 
