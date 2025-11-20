@@ -4,6 +4,7 @@ import json
 import requests
 from typing import List, Dict, Optional, Union, Any
 from .strategies.reasoning import ReasoningCache
+from .strategies.multimodal import MultimodalCache
 
 class AgentCache:
     def __init__(self, api_key: str = None, base_url: str = "https://agentcache.ai"):
@@ -12,6 +13,7 @@ class AgentCache:
             raise ValueError("API key must be provided or set in AGENTCACHE_API_KEY environment variable")
         self.base_url = base_url
         self.reasoning_cache = ReasoningCache()
+        self.multimodal_cache = MultimodalCache()
 
     def _headers(self):
         return {
@@ -61,6 +63,35 @@ class AgentCache:
             # If miss, we would normally call the LLM here.
             # For the SDK wrapper, we return None to indicate miss, 
             # and the user would call the LLM and then call set()
+            return None
+
+        # Handle Multimodal Cache Strategy
+        if strategy == "multimodal":
+            # Extract file path if present in messages (convention: {"role": "user", "file_path": "..."})
+            # Or user can pass it in a custom way, but for now we'll look for a 'file_path' key in the last message
+            file_path = None
+            if messages and "file_path" in messages[-1]:
+                file_path = messages[-1]["file_path"]
+
+            context = {
+                "model": model,
+                "messages": messages,
+                "file_path": file_path
+            }
+            
+            cached_asset = self.multimodal_cache.retrieve_asset(context)
+            if cached_asset:
+                return {
+                    "choices": [{
+                        "message": {
+                            "content": "Cached Asset Retrieved",
+                            "role": "assistant",
+                            "data": cached_asset # Return the actual object
+                        }
+                    }],
+                    "cached": True,
+                    "asset": cached_asset
+                }
             return None
 
         payload = {
@@ -113,10 +144,24 @@ class AgentCache:
             provider: str = "openai",
             temperature: float = 0.7,
             strategy: str = "standard",
-            reasoning_trace: List[str] = None):
+            reasoning_trace: List[str] = None,
+            multimodal_data: Any = None):
         """
         Store a response in the cache
         """
+        
+        if strategy == "multimodal" and multimodal_data:
+            file_path = None
+            if messages and "file_path" in messages[-1]:
+                file_path = messages[-1]["file_path"]
+
+            context = {
+                "model": model,
+                "messages": messages,
+                "file_path": file_path
+            }
+            self.multimodal_cache.cache_asset(context, multimodal_data)
+            return True
         
         if strategy == "reasoning_cache" and reasoning_trace:
             context = {

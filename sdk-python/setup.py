@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="agentcache",
-    version="0.2.0",
+    version="0.3.0",
     author="AgentCache.ai",
     author_email="support@agentcache.ai",
     description="Official Python client for AgentCache.ai - Reduce LLM costs by 90%",
