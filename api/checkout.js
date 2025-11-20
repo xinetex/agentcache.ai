@@ -30,6 +30,19 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Construct base URL
+    let baseUrl = req.headers.origin;
+    if (!baseUrl) {
+      const host = req.headers.host;
+      if (host) {
+        // Assume https unless localhost
+        const protocol = host.includes('localhost') ? 'http' : 'https';
+        baseUrl = `${protocol}://${host}`;
+      } else {
+        baseUrl = 'https://agentcache.ai';
+      }
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card'],
@@ -39,8 +52,8 @@ export default async function handler(req, res) {
           quantity: 1,
         },
       ],
-      success_url: `${req.headers.origin || req.headers.host || 'https://agentcache.ai'}/success.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.origin || req.headers.host || 'https://agentcache.ai'}/login.html`,
+      success_url: `${baseUrl}/success.html?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/login.html`,
       customer_email: email || undefined,
       allow_promotion_codes: true,
       billing_address_collection: 'auto',
