@@ -1,8 +1,4 @@
 {
-  "version": 2,
-  "installCommand": "npm install",
-  "buildCommand": "echo 'No build needed for static site with API routes'",
-  "outputDirectory": "public",
   "rewrites": [
     {
       "source": "/api/cache/get",
