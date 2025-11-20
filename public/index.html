@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AgentCache.ai — Edge caching for AI API calls</title>
-    <meta name="description" content="Edge caching for AI APIs. 10x faster, 90% cheaper. Drop-in proxy for OpenAI and Anthropic." />
+    <title>AgentCache.ai — The Cognitive Layer for AI Agents</title>
+    <meta name="description" content="Edge caching for AI APIs. 10x faster, 90% cheaper. Now with Neuro-Symbolic Reasoning Cache for o1 and Kimi." />
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,7 +14,25 @@
           extend: {
             colors: {
               neutral: {
-                950: '#0a0a0a',
+                950: '#050505', // Deeper black
+                900: '#0a0a0a',
+              },
+              brand: {
+                500: '#6366f1', // Indigo
+                600: '#4f46e5',
+              },
+              accent: {
+                500: '#10b981', // Emerald
+              }
+            },
+            animation: {
+              'float': 'float 6s ease-in-out infinite',
+              'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            },
+            keyframes: {
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-20px)' },
               }
             }
           }
@@ -26,233 +44,321 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js"></script>
     
-    <!-- Emergency CSS fallback (only loads if Tailwind CDN fails) -->
-    <script>
-      // Check if Tailwind loaded by testing for a Tailwind class
-      window.addEventListener('load', function() {
-        setTimeout(function() {
-          const testDiv = document.createElement('div');
-          testDiv.className = 'bg-neutral-950';
-          testDiv.style.display = 'none';
-          document.body.appendChild(testDiv);
-          const bg = window.getComputedStyle(testDiv).backgroundColor;
-          document.body.removeChild(testDiv);
-          
-          // If Tailwind didn't load (bg color not set), load emergency CSS
-          if (!bg || bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') {
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = '/css/emergency.css';
-            document.head.appendChild(link);
-          }
-        }, 100);
-      });
-    </script>
-    
     <style>
-      @keyframes pulse-glow {
-        0%, 100% { opacity: 0.4; transform: scale(1); }
-        50% { opacity: 0.8; transform: scale(1.1); }
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar { width: 8px; }
+      ::-webkit-scrollbar-track { background: #0a0a0a; }
+      ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: #444; }
+      
+      /* Glassmorphism Utilities */
+      .glass {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
       }
-      .cache-particle { animation: pulse-glow 2s ease-in-out infinite; }
-      html { scroll-behavior: smooth; }
+      .glass-hover:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+      }
+      
+      /* Code Block Syntax Highlighting Simulation */
+      .token-keyword { color: #c678dd; }
+      .token-string { color: #98c379; }
+      .token-comment { color: #5c6370; font-style: italic; }
+      .token-function { color: #61afef; }
     </style>
   </head>
-  <body class="bg-neutral-950 text-neutral-100 antialiased">
+  <body class="bg-neutral-950 text-neutral-100 antialiased selection:bg-brand-500/30">
+    
     <!-- Nav -->
-    <header class="sticky top-0 z-50 backdrop-blur bg-neutral-950/80 border-b border-white/10">
-      <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="h-8 w-8 rounded-md bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold">AC</div>
-          <span class="font-semibold">AgentCache<span class="text-neutral-400">.ai</span></span>
+    <header class="fixed top-0 w-full z-50 transition-all duration-300" id="navbar">
+      <div class="absolute inset-0 bg-neutral-950/80 backdrop-blur-md border-b border-white/5"></div>
+      <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between relative">
+        <div class="flex items-center gap-3 group cursor-pointer">
+          <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-sm font-bold shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform">AC</div>
+          <span class="font-bold text-lg tracking-tight">AgentCache<span class="text-neutral-500">.ai</span></span>
         </div>
-        <nav class="hidden md:flex gap-6 text-sm text-neutral-300">
-          <a href="/daily" class="hover:text-white transition flex items-center gap-1">
-            📊 Daily Pulse
-            <span class="px-1.5 py-0.5 text-[10px] rounded bg-emerald-500/20 text-emerald-300 font-semibold">NEW</span>
+        <nav class="hidden md:flex gap-8 text-sm font-medium text-neutral-400">
+          <a href="#features" class="hover:text-white transition">Features</a>
+          <a href="#architecture" class="hover:text-white transition">Architecture</a>
+          <a href="/daily" class="hover:text-white transition flex items-center gap-1.5">
+            Daily Pulse
+            <span class="w-1.5 h-1.5 rounded-full bg-accent-500 animate-pulse"></span>
           </a>
           <a href="/docs.html" class="hover:text-white transition">Docs</a>
           <a href="/blog.html" class="hover:text-white transition">Blog</a>
-          <a href="https://github.com/xinetex/agentcache.ai" class="hover:text-white transition">GitHub</a>
         </nav>
-        <a href="/login.html" class="px-4 py-2 rounded-md bg-indigo-500 text-sm font-semibold text-white hover:bg-indigo-400 transition">
-          Sign up free
-        </a>
+        <div class="flex items-center gap-4">
+          <a href="https://github.com/xinetex/agentcache.ai" class="hidden md:block text-neutral-400 hover:text-white transition">
+            <i data-lucide="github" class="w-5 h-5"></i>
+          </a>
+          <a href="/login.html" class="px-5 py-2.5 rounded-lg bg-white text-neutral-950 text-sm font-bold hover:bg-neutral-200 transition shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+            Get API Key
+          </a>
+        </div>
       </div>
     </header>
 
-    <!-- Hero -->
-    <section class="relative overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-radial from-indigo-500/20 via-transparent to-transparent blur-3xl"></div>
-      <div class="mx-auto max-w-7xl px-6 py-24 text-center relative">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300 mb-6">
-          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-          Zero-friction proxy • Just change OPENAI_BASE_URL
-        </div>
-        <h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-6">
-          Edge caching for AI APIs.<br/>
-          <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">10x faster, 90% cheaper.</span>
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
+      <!-- Background Effects -->
+      <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none">
+        <div class="absolute top-20 left-20 w-96 h-96 bg-brand-500/20 rounded-full blur-[128px] animate-pulse-slow"></div>
+        <div class="absolute bottom-20 right-20 w-96 h-96 bg-purple-500/20 rounded-full blur-[128px] animate-pulse-slow" style="animation-delay: 2s;"></div>
+      </div>
+
+      <div class="mx-auto max-w-7xl px-6 relative text-center z-10">
+        <!-- Badge -->
+        <a href="/blog/posts/2025-11-20-the-hidden-cost-of-reasoning-models.html" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm text-neutral-300 hover:bg-white/10 transition mb-8 group">
+          <span class="flex h-2 w-2 relative">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
+          </span>
+          New: Neuro-Symbolic Reasoning Cache
+          <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-0.5 transition-transform text-neutral-500"></i>
+        </a>
+
+        <!-- Headline -->
+        <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-8 leading-tight">
+          The Cognitive Layer<br/>
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 via-purple-400 to-brand-400 bg-300% animate-gradient">for AI Agents.</span>
         </h1>
-        <p class="text-xl text-neutral-300 mb-8 max-w-2xl mx-auto">
-          Drop-in caching proxy for OpenAI and Anthropic. One environment variable = instant savings.
+
+        <!-- Subheadline -->
+        <p class="text-xl md:text-2xl text-neutral-400 mb-10 max-w-3xl mx-auto leading-relaxed">
+          Stop paying for repeated thought. AgentCache provides <span class="text-white font-medium">edge caching</span>, <span class="text-white font-medium">semantic routing</span>, and <span class="text-white font-medium">reasoning persistence</span> for your LLM apps.
         </p>
-        <div class="flex gap-4 justify-center">
-          <a href="/login.html" class="px-6 py-3 rounded-lg bg-white text-neutral-900 font-semibold hover:scale-105 transition">
-            Get API key – Free
+
+        <!-- CTAs -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div class="relative group">
+            <div class="absolute -inset-0.5 bg-gradient-to-r from-brand-500 to-purple-600 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-200"></div>
+            <a href="/login.html" class="relative px-8 py-4 rounded-xl bg-neutral-950 text-white font-bold text-lg flex items-center gap-2 hover:bg-neutral-900 transition">
+              Start Free
+              <i data-lucide="chevron-right" class="w-5 h-5"></i>
+            </a>
+          </div>
+          <a href="/docs.html" class="px-8 py-4 rounded-xl border border-white/10 text-neutral-300 font-medium hover:bg-white/5 hover:text-white transition flex items-center gap-2">
+            <i data-lucide="book" class="w-5 h-5"></i>
+            Documentation
           </a>
-          <a href="/docs.html" class="px-6 py-3 rounded-lg border border-white/20 text-white hover:bg-white/5 transition">
-            Read Docs
-          </a>
+        </div>
+
+        <!-- Code Snippet Preview -->
+        <div class="mt-20 mx-auto max-w-4xl glass rounded-2xl p-1 border border-white/10 shadow-2xl animate-float">
+          <div class="bg-neutral-950/50 rounded-xl overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-3 border-b border-white/5 bg-white/5">
+              <div class="flex gap-1.5">
+                <div class="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50"></div>
+                <div class="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50"></div>
+                <div class="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50"></div>
+              </div>
+              <span class="ml-2 text-xs text-neutral-500 font-mono">agent.py</span>
+            </div>
+            <div class="p-6 text-left overflow-x-auto">
+              <pre class="font-mono text-sm leading-relaxed"><code><span class="token-keyword">from</span> agentcache <span class="token-keyword">import</span> AgentCache
+
+client = AgentCache()
+
+<span class="token-comment"># 🚀 Enable Neuro-Symbolic Caching for complex reasoning</span>
+response = client.completion(
+    model=<span class="token-string">"o1-preview"</span>,
+    messages=[{<span class="token-string">"role"</span>: <span class="token-string">"user"</span>, <span class="token-string">"content"</span>: <span class="token-string">"Analyze this legal contract..."</span>}],
+    <span class="token-keyword">strategy</span>=<span class="token-string">"reasoning_cache"</span>
+)
+
+<span class="token-comment"># Result: 15s latency → 50ms. $0.50 cost → $0.00.</span></code></pre>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
+    <!-- Architecture Section -->
+    <section id="architecture" class="py-24 relative">
+      <div class="mx-auto max-w-7xl px-6">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl md:text-5xl font-bold mb-6">Neuro-Symbolic Architecture</h2>
+          <p class="text-lg text-neutral-400 max-w-2xl mx-auto">
+            Inspired by the human brain's PBWM model. We separate <span class="text-brand-400">Working Memory</span> (active context) from <span class="text-purple-400">Episodic Memory</span> (long-term patterns) to solve the "Reasoning Gap."
+          </p>
+        </div>
 
-    <!-- Featured: Daily Pulse -->
-    <section class="mx-auto max-w-7xl px-6 py-16">
-      <div class="text-center mb-8">
-        <h2 class="text-4xl font-bold mb-3">Free Daily AI Market Insights</h2>
-        <p class="text-neutral-400 text-lg">Updated every 24 hours • Zero cost • Built with edge caching</p>
+        <div class="grid lg:grid-cols-3 gap-8">
+          <!-- Step 1 -->
+          <div class="glass p-8 rounded-2xl relative overflow-hidden group">
+            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition">
+              <i data-lucide="brain-circuit" class="w-24 h-24"></i>
+            </div>
+            <div class="relative z-10">
+              <div class="w-12 h-12 rounded-lg bg-brand-500/20 flex items-center justify-center mb-6 text-brand-400">
+                <span class="font-bold text-xl">1</span>
+              </div>
+              <h3 class="text-xl font-bold mb-3">Intent Fingerprinting</h3>
+              <p class="text-neutral-400">
+                We don't just hash text. We analyze the *intent* of the query using a lightweight model to understand what the agent is trying to solve.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="glass p-8 rounded-2xl relative overflow-hidden group">
+            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition">
+              <i data-lucide="git-branch" class="w-24 h-24"></i>
+            </div>
+            <div class="relative z-10">
+              <div class="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center mb-6 text-purple-400">
+                <span class="font-bold text-xl">2</span>
+              </div>
+              <h3 class="text-xl font-bold mb-3">The Cheap Critic</h3>
+              <p class="text-neutral-400">
+                A fast, cheap "Gating Model" verifies if cached reasoning applies to the new context. Prevents "hallucinated hits" common in standard semantic cache.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="glass p-8 rounded-2xl relative overflow-hidden group">
+            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition">
+              <i data-lucide="database" class="w-24 h-24"></i>
+            </div>
+            <div class="relative z-10">
+              <div class="w-12 h-12 rounded-lg bg-accent-500/20 flex items-center justify-center mb-6 text-accent-400">
+                <span class="font-bold text-xl">3</span>
+              </div>
+              <h3 class="text-xl font-bold mb-3">Episodic Retrieval</h3>
+              <p class="text-neutral-400">
+                Successful reasoning traces are stored in a vector database. Your agents get smarter and faster the more they run.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-      
-      <div class="relative rounded-3xl border-2 border-emerald-500/40 bg-gradient-to-br from-emerald-500/15 via-indigo-500/10 to-transparent p-10 overflow-hidden shadow-2xl">
-        <!-- Glow effect -->
-        <div class="absolute inset-0 bg-gradient-radial from-emerald-500/20 via-transparent to-transparent blur-3xl"></div>
-        
-        <div class="relative">
-          <div class="flex items-start justify-between mb-6">
-            <div>
-              <div class="flex items-center gap-3 mb-4">
-                <span class="text-5xl">📊</span>
-                <div>
-                  <h3 class="text-3xl font-bold">Daily AI Market Pulse</h3>
-                  <p class="text-emerald-400 font-semibold flex items-center gap-2 mt-1">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    LIVE • Updated Today
-                  </p>
+    </section>
+
+    <!-- Features Grid -->
+    <section id="features" class="py-24 bg-neutral-900/30 border-y border-white/5">
+      <div class="mx-auto max-w-7xl px-6">
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <!-- Feature 1 -->
+          <div class="p-6 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition group">
+            <i data-lucide="zap" class="h-8 w-8 text-yellow-400 mb-4 group-hover:scale-110 transition-transform"></i>
+            <h3 class="text-lg font-bold mb-2">Edge Caching</h3>
+            <p class="text-sm text-neutral-400">Sub-50ms latency from 200+ global locations. We sit between your app and OpenAI.</p>
+          </div>
+
+          <!-- Feature 2 -->
+          <div class="p-6 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition group">
+            <i data-lucide="layers" class="h-8 w-8 text-brand-400 mb-4 group-hover:scale-110 transition-transform"></i>
+            <h3 class="text-lg font-bold mb-2">Multi-Model Swarm</h3>
+            <p class="text-sm text-neutral-400">Route requests to the best model. Use `gpt-4o` for reasoning and `haiku` for formatting.</p>
+          </div>
+
+          <!-- Feature 3 -->
+          <div class="p-6 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition group">
+            <i data-lucide="search" class="h-8 w-8 text-accent-400 mb-4 group-hover:scale-110 transition-transform"></i>
+            <h3 class="text-lg font-bold mb-2">Semantic Caching</h3>
+            <p class="text-sm text-neutral-400">Vector-based matching understands that "Hello" and "Hi" are the same intent.</p>
+          </div>
+
+          <!-- Feature 4 -->
+          <div class="p-6 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition group">
+            <i data-lucide="shield-check" class="h-8 w-8 text-green-400 mb-4 group-hover:scale-110 transition-transform"></i>
+            <h3 class="text-lg font-bold mb-2">The Cheap Critic</h3>
+            <p class="text-sm text-neutral-400">Built-in verification step ensures cached responses are actually valid for the new prompt.</p>
+          </div>
+
+          <!-- Feature 5 -->
+          <div class="p-6 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition group">
+            <i data-lucide="lock" class="h-8 w-8 text-red-400 mb-4 group-hover:scale-110 transition-transform"></i>
+            <h3 class="text-lg font-bold mb-2">Enterprise Security</h3>
+            <p class="text-sm text-neutral-400">SOC2 compliant architecture. Your API keys are encrypted and never logged.</p>
+          </div>
+
+          <!-- Feature 6 -->
+          <div class="p-6 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition group">
+            <i data-lucide="bar-chart-3" class="h-8 w-8 text-blue-400 mb-4 group-hover:scale-110 transition-transform"></i>
+            <h3 class="text-lg font-bold mb-2">FinOps Dashboard</h3>
+            <p class="text-sm text-neutral-400">Track token usage, cache hit rates, and cost savings in real-time.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Daily Pulse Teaser -->
+    <section class="py-24 relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-radial from-brand-900/20 via-transparent to-transparent opacity-50"></div>
+      <div class="mx-auto max-w-7xl px-6 relative z-10">
+        <div class="glass rounded-3xl p-8 md:p-12 border border-brand-500/20 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div class="max-w-2xl">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-500/10 text-accent-400 text-xs font-bold mb-4">
+              <span class="w-2 h-2 rounded-full bg-accent-500 animate-pulse"></span>
+              LIVE DEMO
+            </div>
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">See it in action.</h2>
+            <p class="text-lg text-neutral-400 mb-6">
+              We built a Daily AI Market Pulse dashboard that runs entirely on AgentCache. It serves thousands of users for $0.00/day.
+            </p>
+            <a href="/daily" class="inline-flex items-center gap-2 text-white font-bold hover:text-brand-400 transition">
+              View Live Dashboard <i data-lucide="arrow-right" class="w-5 h-5"></i>
+            </a>
+          </div>
+          <div class="relative">
+            <div class="absolute inset-0 bg-brand-500 blur-[60px] opacity-20"></div>
+            <div class="relative bg-neutral-950 border border-white/10 rounded-xl p-6 w-full max-w-sm shadow-2xl rotate-3 hover:rotate-0 transition duration-500">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex gap-2">
+                  <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                </div>
+                <span class="text-xs text-neutral-500">dashboard.tsx</span>
+              </div>
+              <div class="space-y-3">
+                <div class="h-2 bg-white/10 rounded w-3/4"></div>
+                <div class="h-2 bg-white/10 rounded w-1/2"></div>
+                <div class="h-20 bg-brand-500/10 rounded border border-brand-500/20 flex items-center justify-center">
+                  <span class="text-brand-400 font-mono text-xs">Cache Hit: 12ms</span>
                 </div>
               </div>
             </div>
-            <span class="px-4 py-2 rounded-full bg-emerald-500/30 text-emerald-300 text-sm font-bold border border-emerald-400/50">✨ NEW</span>
           </div>
-          
-          <p class="text-xl text-neutral-200 mb-8 max-w-3xl">
-            Track AI/Crypto markets, GitHub trends, and developer activity with our free daily dashboard. 
-            <span class="text-emerald-400 font-semibold">A real-world demo of AgentCache edge caching</span> — 
-            serving unlimited traffic at $0.00 cost.
-          </p>
-          
-          <div class="grid md:grid-cols-2 gap-6 mb-8">
-            <div class="flex items-start gap-3">
-              <div class="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                🚀
-              </div>
-              <div>
-                <h4 class="font-semibold mb-1">Top Market Movers</h4>
-                <p class="text-sm text-neutral-400">24h crypto price changes & AI token performance</p>
-              </div>
-            </div>
-            <div class="flex items-start gap-3">
-              <div class="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
-                ⭐
-              </div>
-              <div>
-                <h4 class="font-semibold mb-1">Trending Repos</h4>
-                <p class="text-sm text-neutral-400">Top GitHub projects with AI/ML focus</p>
-              </div>
-            </div>
-            <div class="flex items-start gap-3">
-              <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                💡
-              </div>
-              <div>
-                <h4 class="font-semibold mb-1">Sentiment Score</h4>
-                <p class="text-sm text-neutral-400">Real-time market mood: 0-100 bullish/bearish</p>
-              </div>
-            </div>
-            <div class="flex items-start gap-3">
-              <div class="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                ⚡
-              </div>
-              <div>
-                <h4 class="font-semibold mb-1">Zero Cost</h4>
-                <p class="text-sm text-neutral-400">$0.00 per load vs $0.50 uncached</p>
-              </div>
-            </div>
-          </div>
-          
-          <div class="flex flex-wrap gap-4 items-center">
-            <a href="/daily" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold text-lg hover:from-emerald-400 hover:to-emerald-500 transition shadow-lg">
-              View Daily Dashboard
-              <i data-lucide="arrow-right" class="h-5 w-5"></i>
-            </a>
-            
-            <!-- Social Share Buttons -->
-            <div class="flex gap-2">
-              <a href="https://twitter.com/intent/tweet?text=Check%20out%20Daily%20AI%20Market%20Pulse%20-%20free%20daily%20dashboard%20tracking%20AI/crypto%20markets!&url=https://agentcache.ai/daily&via=AgentCacheAI" target="_blank" rel="noopener" class="p-2.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition" title="Share on Twitter">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-              </a>
-              <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://agentcache.ai/daily" target="_blank" rel="noopener" class="p-2.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition" title="Share on LinkedIn">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-              </a>
-              <a href="https://news.ycombinator.com/submitlink?u=https://agentcache.ai/daily&t=Daily%20AI%20Market%20Pulse" target="_blank" rel="noopener" class="p-2.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition" title="Share on HackerNews">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M0 24V0h24v24H0zM6.951 5.896l4.112 7.708v5.064h1.583v-4.972l4.148-7.799h-1.749l-2.457 4.875c-.372.745-.688 1.434-.688 1.434s-.297-.708-.651-1.434L8.831 5.896h-1.88z"/></svg>
-              </a>
-              <button onclick="copyDailyLink()" class="p-2.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition" title="Copy link">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Features -->
-    <section class="mx-auto max-w-7xl px-6 py-16">
-      <div class="grid md:grid-cols-3 gap-8">
-        <div class="p-6 rounded-xl border border-emerald-500/30 bg-emerald-500/5">
-          <i data-lucide="zap" class="h-8 w-8 text-emerald-400 mb-4"></i>
-          <h3 class="text-lg font-semibold mb-2">Zero-Code Integration</h3>
-          <p class="text-sm text-neutral-400">Change one env var. No SDK, no code changes, no hassle.</p>
-        </div>
-        <div class="p-6 rounded-xl border border-indigo-500/30 bg-indigo-500/5">
-          <i data-lucide="globe" class="h-8 w-8 text-indigo-400 mb-4"></i>
-          <h3 class="text-lg font-semibold mb-2">Global Edge Network</h3>
-          <p class="text-sm text-neutral-400">Sub-50ms P95 latency from 200+ locations worldwide.</p>
-        </div>
-        <div class="p-6 rounded-xl border border-purple-500/30 bg-purple-500/5">
-          <i data-lucide="shield" class="h-8 w-8 text-purple-400 mb-4"></i>
-          <h3 class="text-lg font-semibold mb-2">SHA-256 Security</h3>
-          <p class="text-sm text-neutral-400">Deterministic cache keys. Your API keys never stored.</p>
         </div>
       </div>
     </section>
 
     <!-- Footer -->
-    <footer class="border-t border-white/10 py-8 text-center text-sm text-neutral-500">
-      © 2025 All rights reserved. Drgnflai, Inc., AgentCache.ai • <a href="/privacy.html" class="hover:text-white">Privacy</a> • <a href="/terms.html" class="hover:text-white">Terms</a>
+    <footer class="border-t border-white/5 py-12 bg-neutral-950">
+      <div class="mx-auto max-w-7xl px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="flex items-center gap-2">
+          <div class="h-6 w-6 rounded bg-white/10 flex items-center justify-center text-[10px] font-bold">AC</div>
+          <span class="text-sm font-semibold text-neutral-400">AgentCache.ai</span>
+        </div>
+        <div class="flex gap-6 text-sm text-neutral-500">
+          <a href="/privacy.html" class="hover:text-white transition">Privacy</a>
+          <a href="/terms.html" class="hover:text-white transition">Terms</a>
+          <a href="https://github.com/xinetex/agentcache.ai" class="hover:text-white transition">GitHub</a>
+        </div>
+        <div class="text-sm text-neutral-600">
+          © 2025 Drgnflai, Inc.
+        </div>
+      </div>
     </footer>
 
     <script>
       // Initialize Lucide icons
       if (window.lucide) lucide.createIcons();
-
-      // Copy Daily Dashboard link to clipboard
-      function copyDailyLink() {
-        const url = 'https://agentcache.ai/daily';
-        navigator.clipboard.writeText(url).then(() => {
-          // Show toast notification
-          const button = event.target.closest('button');
-          const originalHTML = button.innerHTML;
-          button.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
-          button.classList.add('bg-emerald-600');
-          
-          setTimeout(() => {
-            button.innerHTML = originalHTML;
-            button.classList.remove('bg-emerald-600');
-          }, 2000);
-        });
-      }
+      
+      // Navbar scroll effect
+      window.addEventListener('scroll', () => {
+        const nav = document.getElementById('navbar');
+        if (window.scrollY > 20) {
+          nav.classList.add('shadow-lg');
+        } else {
+          nav.classList.remove('shadow-lg');
+        }
+      });
     </script>
   </body>
 </html>
