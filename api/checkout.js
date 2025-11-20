@@ -1,11 +1,6 @@
-import Stripe from 'stripe';
+const Stripe = require('stripe');
 
-// Specify Node.js runtime for Stripe SDK compatibility
-export const config = {
-  runtime: 'nodejs',
-};
-
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   // Debug: Check if Stripe key is available
   if (!process.env.STRIPE_SECRET_KEY) {
     console.error('STRIPE_SECRET_KEY is not set!');
@@ -39,8 +34,8 @@ export default async function handler(req, res) {
           quantity: 1,
         },
       ],
-      success_url: `${req.headers.origin || 'https://agentcache.ai'}/success.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.origin || 'https://agentcache.ai'}/login.html`,
+      success_url: `${req.headers.origin || req.headers.host || 'https://agentcache.ai'}/success.html?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.origin || req.headers.host || 'https://agentcache.ai'}/login.html`,
       customer_email: email || undefined,
       allow_promotion_codes: true,
       billing_address_collection: 'auto',
@@ -53,6 +48,11 @@ export default async function handler(req, res) {
     res.redirect(303, session.url);
   } catch (error) {
     console.error('Stripe checkout error:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      error: error.message,
+      type: error.type || 'unknown',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
-}
+};
+

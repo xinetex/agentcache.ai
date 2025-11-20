@@ -1,8 +1,4 @@
-export const config = {
-    runtime: 'nodejs',
-};
-
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
 
     const envCheck = {
@@ -10,8 +6,8 @@ export default async function handler(req, res) {
         stripeKeyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 7) || 'NOT_SET',
         nodeVersion: process.version,
         platform: process.platform,
-        runtime: 'nodejs'
+        vercelRegion: process.env.VERCEL_REGION || 'unknown'
     };
 
     res.status(200).json(envCheck);
-}
+};
