@@ -47,8 +47,45 @@ if response.get('hit'):
     print(f"💚 Cache hit! Saved ${response.get('billing', {}).get('cost_saved', 0)}")
     print(response['response'])
 else:
-    # Cache miss - AgentCache returns 404 or handle normally
-    print("Cache miss")
+    print("Cache miss - call your LLM provider normally")
+
+## Caching Strategies
+
+AgentCache supports three powerful caching strategies:
+
+### 1. Standard Cache (Default)
+Fast key-value caching for identical prompts:
+```python
+response = agentcache.completion(
+    model="gpt-4",
+    messages=[{"role": "user", "content": "Hello"}]
+)
+```
+
+### 2. Reasoning Cache
+**NEW** - Neuro-symbolic caching for reasoning models (o1, Kimi, DeepSeek):
+```python
+response = agentcache.completion(
+    model="o1-preview",
+    messages=[{"role": "user", "content": "Analyze this legal contract..."}],
+    strategy="reasoning_cache"
+)
+# Caches reasoning traces, not just final outputs
+```
+
+### 3. Multimodal Cache
+**NEW** - Cache generative assets (3D meshes, images, audio):
+```python
+response = agentcache.completion(
+    model="sam-3d-body",
+    messages=[{
+        "role": "user",
+        "content": "Generate 3D model",
+        "file_path": "input_image.jpg"
+    }],
+    strategy="multimodal"
+)
+# Save 99% on GPU compute for repeated requests
 ```
 
 ### REST API

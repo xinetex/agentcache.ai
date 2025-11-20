@@ -15,7 +15,7 @@ class AgentCache:
         self.reasoning_cache = ReasoningCache()
         self.multimodal_cache = MultimodalCache()
 
-    def _headers(self):
+    def _headers(self) -> Dict[str, str]:
         return {
             "Content-Type": "application/json",
             "X-API-Key": self.api_key
@@ -33,7 +33,7 @@ class AgentCache:
         mimics openai.chat.completions.create()
         
         Args:
-            strategy: "standard" (default) or "reasoning_cache"
+            strategy: "standard" (default), "reasoning_cache", or "multimodal"
         """
         
         # Handle Reasoning Cache Strategy
@@ -47,7 +47,13 @@ class AgentCache:
             }
             
             # Try to retrieve from reasoning cache
-            cached_state = self.reasoning_cache.retrieve_reasoning(context)
+            # Pass self.completion as the verification function (Critic)
+            # We use strategy="standard" to avoid infinite recursion
+            def critic_fn(**kwargs):
+                kwargs["strategy"] = "standard"
+                return self.completion(**kwargs)
+
+            cached_state = self.reasoning_cache.retrieve_reasoning(context, completion_fn=critic_fn)
             if cached_state:
                 return {
                     "choices": [{

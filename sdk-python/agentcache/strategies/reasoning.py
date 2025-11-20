@@ -45,7 +45,8 @@ class ReasoningCache:
     def __init__(self, 
                  working_memory_capacity: int = 7,  # Miller's magic number
                  cache_threshold: float = 0.6,
-                 decay_rate: float = 0.95):
+                 decay_rate: float = 0.95,
+                 verification_model: str = "gpt-4o-mini"):
         
         # Working memory: active reasoning states
         self.working_memory: Dict[str, ReasoningState] = {}
@@ -60,6 +61,7 @@ class ReasoningCache:
         # Gating parameters
         self.cache_threshold = cache_threshold
         self.decay_rate = decay_rate
+        self.verification_model = verification_model
         
         # Statistics
         self.cache_hits = 0
@@ -72,6 +74,45 @@ class ReasoningCache:
         context_str = json.dumps(context, sort_keys=True, default=str)
         return hashlib.sha256(context_str.encode()).hexdigest()[:16]
     
+    def _extract_prompt(self, context: Dict[str, Any]) -> str:
+        """Extract text prompt from context messages"""
+        if "messages" in context:
+            # Join all user messages
+            return " ".join([m.get("content", "") for m in context["messages"] if m.get("role") == "user"])
+        return str(context)
+
+    def verify_match(self, new_context: Dict[str, Any], cached_context: Dict[str, Any], completion_fn: Any) -> bool:
+        """
+        The Cheap Critic: Verify if cached reasoning applies to new context using a cheap model.
+        """
+        if not completion_fn:
+            return True # Skip verification if no LLM available
+            
+        new_prompt = self._extract_prompt(new_context)
+        cached_prompt = self._extract_prompt(cached_context)
+        
+        # Construct verification prompt
+        system_prompt = "You are a reasoning verifier. Determine if the reasoning logic for the first problem can be directly applied to the second problem. Answer only YES or NO."
+        user_prompt = f"Problem A: {cached_prompt}\nProblem B: {new_prompt}\n\nCan the reasoning trace for Problem A be reused for Problem B?"
+        
+        try:
+            response = completion_fn(
+                model=self.verification_model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.0
+            )
+            
+            if response and "choices" in response and len(response["choices"]) > 0:
+                content = response["choices"][0]["message"]["content"].strip().upper()
+                return "YES" in content
+            return False
+        except Exception as e:
+            print(f"Verification failed: {e}")
+            return False # Fail safe: don't use cache if verification fails
+
     def _similarity_score(self, ctx1: str, ctx2: str) -> float:
         """
         Simplified similarity for MVP.
@@ -157,7 +198,8 @@ class ReasoningCache:
     
     def retrieve_reasoning(self, 
                           context: Dict[str, Any],
-                          similarity_threshold: float = 0.7) -> Optional[ReasoningState]:
+                          similarity_threshold: float = 0.7,
+                          completion_fn: Any = None) -> Optional[ReasoningState]:
         """
         Retrieve cached reasoning for similar context
         """
@@ -208,6 +250,13 @@ class ReasoningCache:
                     best_match = state
         
         if best_match:
+            # The Cheap Critic: Verify the match
+            if completion_fn:
+                is_valid = self.verify_match(context, best_match.context_data, completion_fn)
+                if not is_valid:
+                    # Verification failed, treat as miss
+                    return None
+            
             self.cache_hits += 1
             self.reasoning_steps_saved += len(best_match.reasoning_trace)
             return best_match
