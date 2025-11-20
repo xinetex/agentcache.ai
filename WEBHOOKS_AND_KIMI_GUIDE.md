@@ -152,36 +152,47 @@ const response = await agentcache.get({
 });
 ```
 
-### Reasoning Token Caching (Coming in Phase 2)
+### Reasoning Token Caching (Available Now)
 
-**Concept**: Kimi K2 shows its "thinking" before answering. We can cache both:
+**Concept**: Kimi K2 shows its "thinking" before answering. With AgentCache's new **Neuro-Symbolic Reasoning Cache**, you can cache this expensive thinking process and reuse it for similar queries.
 
-```typescript
-// Future API design
-const response = await agentcache.get({
-  provider: 'moonshot',
-  model: 'moonshot-v1-128k',
-  messages: [...],
-  cache_reasoning: true,  // ← Cache reasoning tokens separately
-  reasoning_ttl: 3600     // Cache reasoning for 1 hour
-});
+```python
+# Python SDK Example
+from agentcache import AgentCache
 
-// Response includes:
-{
-  "hit": true,
-  "response": "Quantum computing is...",
-  "reasoning": {
-    "cached": true,
-    "tokens": 5000,
-    "cost_saved": "$0.15",
-    "thinking_steps": [
-      "First, I need to understand the basics...",
-      "Then, I'll explain superposition...",
-      "Finally, I'll discuss applications..."
-    ]
-  }
-}
+client = AgentCache()
+
+# 1. First call: Performs reasoning (slow, expensive)
+response = client.completion(
+    provider='moonshot',
+    model='moonshot-v1-128k',
+    messages=[
+        { "role": "system", "content": "You are a helpful assistant." },
+        { "role": "user", "content": "Explain quantum computing" }
+    ],
+    strategy="reasoning_cache"  # <--- Enables Neuro-Symbolic Caching
+)
+
+# 2. Second call: Returns cached reasoning (instant, free)
+# Even if the prompt is slightly different!
+response_cached = client.completion(
+    provider='moonshot',
+    model='moonshot-v1-128k',
+    messages=[
+        { "role": "system", "content": "You are a helpful assistant." },
+        { "role": "user", "content": "Explain quantum computing please" }
+    ],
+    strategy="reasoning_cache"
+)
+
+print(response_cached['cached']) # True
+print(response_cached['reasoning_trace']) # ["First, I need...", "Then..."]
 ```
+
+**Cost Savings**:
+- **Without Cache**: 5,000 reasoning tokens * $0.012/1k = $0.06 per call
+- **With Cache**: 0 tokens = **$0.00** per call
+- **Savings**: 100% on repeated reasoning tasks.
 
 ### Long Context Caching
 
