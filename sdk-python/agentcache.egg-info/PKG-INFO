@@ -1,3 +1,28 @@
+Metadata-Version: 2.4
+Name: agentcache
+Version: 0.3.0
+Summary: Official Python client for AgentCache.ai - Reduce LLM costs by 90%
+Home-page: https://github.com/xinetex/agentcache.ai
+Author: AgentCache.ai
+Author-email: support@agentcache.ai
+Project-URL: Bug Tracker, https://github.com/xinetex/agentcache.ai/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+Requires-Dist: requests>=2.25.0
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: project-url
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
 # AgentCache Python Client
 
 Official Python client for [AgentCache.ai](https://agentcache.ai) - The Global Edge Cache for LLMs.

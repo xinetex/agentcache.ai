@@ -21,7 +21,7 @@ setup(
         "Operating System :: OS Independent",
     ],
     package_dir={"": "."},
-    packages=find_packages(where="."),
+    packages=find_packages(where=".", exclude=["*.pyc", "__pycache__"]),
     python_requires=">=3.7",
     install_requires=[
         "requests>=2.25.0",
