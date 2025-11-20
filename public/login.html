@@ -251,11 +251,11 @@
   <script>
     if (window.lucide) lucide.createIcons();
 
-    // TODO: Replace these with your actual Stripe Price IDs
+    // Stripe Price IDs from dashboard
     const STRIPE_PRICES = {
-      starter: 'price_STARTER_ID_HERE',  // Replace after creating in Stripe
-      pro: 'price_PRO_ID_HERE',
-      business: 'price_BUSINESS_ID_HERE'
+      starter: 'price_1SVZz8R8qHioZwuvAjax6UjF',   // $29/month
+      pro: 'price_1SVZydR8qHioZwuvN24ePSab',       // $99/month
+      business: 'price_1SVZwmR8qHioZwuvlTbjts6v'   // $299/month
     };
 
     function signupFree() {
@@ -268,11 +268,6 @@
 
     function checkout(tier) {
       const priceId = STRIPE_PRICES[tier];
-
-      if (!priceId || priceId.includes('_HERE')) {
-        alert('Stripe integration setup required. Please contact hello@agentcache.ai to subscribe.');
-        return;
-      }
 
       // Redirect to Stripe Checkout
       window.location.href = `/api/checkout?price=${priceId}`;
