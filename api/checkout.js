@@ -1,16 +1,17 @@
-```javascript
-module.exports = async (req, res) => {
+import Stripe from 'stripe';
+
+export default async function handler(req, res) {
   // Debug: Check if Stripe key is available
   if (!process.env.STRIPE_SECRET_KEY) {
     console.error('STRIPE_SECRET_KEY is not set!');
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: 'Stripe configuration error',
       details: 'Missing STRIPE_SECRET_KEY environment variable'
     });
   }
 
   // Initialize Stripe with the secret key
-  const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
   // Only allow POST and GET
   if (req.method !== 'POST' && req.method !== 'GET') {
@@ -33,20 +34,20 @@ module.exports = async (req, res) => {
           quantity: 1,
         },
       ],
-      success_url: `${ req.headers.origin || 'https://agentcache.ai' }/success.html?session_id={CHECKOUT_SESSION_ID}`,
-cancel_url: `${req.headers.origin || 'https://agentcache.ai'}/login.html`,
-  customer_email: email || undefined,
-    allow_promotion_codes: true,
+      success_url: `${req.headers.origin || 'https://agentcache.ai'}/success.html?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.origin || 'https://agentcache.ai'}/login.html`,
+      customer_email: email || undefined,
+      allow_promotion_codes: true,
       billing_address_collection: 'auto',
-        metadata: {
-  source: 'agentcache_website'
-}
+      metadata: {
+        source: 'agentcache_website'
+      }
     });
 
-// Redirect to Stripe Checkout
-res.redirect(303, session.url);
+    // Redirect to Stripe Checkout
+    res.redirect(303, session.url);
   } catch (error) {
-  console.error('Stripe checkout error:', error);
-  res.status(500).json({ error: error.message });
+    console.error('Stripe checkout error:', error);
+    res.status(500).json({ error: error.message });
+  }
 }
-};
