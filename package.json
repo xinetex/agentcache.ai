@@ -11,7 +11,11 @@
   "dependencies": {
     "@cfworker/json-schema": "^4.1.1",
     "@modelcontextprotocol/sdk": "^1.22.0",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "@upstash/redis": "^1.31.6",
+    "drizzle-orm": "^0.33.0",
+    "postgres": "^3.4.4",
+    "stripe": "^17.4.0"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
