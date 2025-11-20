@@ -1,25 +1,56 @@
 {
   "version": 2,
-  "installCommand": "",
-  "buildCommand": "",
   "outputDirectory": "public",
   "rewrites": [
-    { "source": "/api/cache/get", "destination": "/api/cache" },
-    { "source": "/api/cache/set", "destination": "/api/cache" },
-    { "source": "/api/cache/check", "destination": "/api/cache" },
-    { "source": "/daily", "destination": "/daily.html" },
-    { "source": "/visualizations", "destination": "/visualizations.html" },
-    { "source": "/docs", "destination": "/docs.html" },
-    { "source": "/blog", "destination": "/blog.html" },
-    { "source": "/login", "destination": "/login.html" },
-    { "source": "/privacy", "destination": "/privacy.html" },
-    { "source": "/terms", "destination": "/terms.html" }
+    {
+      "source": "/api/cache/get",
+      "destination": "/api/cache"
+    },
+    {
+      "source": "/api/cache/set",
+      "destination": "/api/cache"
+    },
+    {
+      "source": "/api/cache/check",
+      "destination": "/api/cache"
+    },
+    {
+      "source": "/daily",
+      "destination": "/daily.html"
+    },
+    {
+      "source": "/visualizations",
+      "destination": "/visualizations.html"
+    },
+    {
+      "source": "/docs",
+      "destination": "/docs.html"
+    },
+    {
+      "source": "/blog",
+      "destination": "/blog.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/login.html"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/privacy.html"
+    },
+    {
+      "source": "/terms",
+      "destination": "/terms.html"
+    }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=300, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, must-revalidate"
+        }
       ]
     }
   ]
