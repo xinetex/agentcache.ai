@@ -1,12 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title id="page-title">Blog Post</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    /* Custom Blog Styling */
+    :root {
+      --bg-color: #050816;
+      --text-color: #f1f5f9;
+      --accent-color: #0ea5e9;
+      --heading-color: #f8fafc;
+      --base-font-size: 19px;
+      --line-height: 1.4;
+      --h1-size: 2.3rem;
+      --max-width: 74ch;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
+
+    .prose {
+      font-size: var(--base-font-size);
+      line-height: var(--line-height);
+      max-width: var(--max-width);
+    }
+
+    .prose h1 {
+      font-size: var(--h1-size);
+      color: var(--heading-color);
+    }
+
+    .prose h2,
+    .prose h3 {
+      color: var(--heading-color);
+    }
+
+    .prose a {
+      color: var(--accent-color);
+    }
+  </style>
 </head>
+
 <body class="min-h-screen bg-[#050816] text-slate-100 antialiased">
   <!-- Header -->
   <header class="border-b border-slate-800 bg-slate-950/50 backdrop-blur-sm sticky top-0 z-10">
@@ -15,8 +55,9 @@
         <div class="flex items-center gap-3">
           <a href="/" class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/40 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke-linecap="round" stroke-linejoin="round"/>
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-sky-400" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.5">
+                <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </div>
             <div>
@@ -25,11 +66,12 @@
             </div>
           </a>
         </div>
-        
+
         <div class="flex items-center gap-3">
           <a href="/blog.html" class="text-sm text-slate-300 hover:text-sky-400 transition">← All Posts</a>
           <a href="/" class="text-sm text-slate-300 hover:text-sky-400 transition">Home</a>
-          <a href="/login.html" class="px-4 py-2 rounded-lg bg-sky-500 text-sm font-medium text-slate-950 hover:bg-sky-400 transition">
+          <a href="/login.html"
+            class="px-4 py-2 rounded-lg bg-sky-500 text-sm font-medium text-slate-950 hover:bg-sky-400 transition">
             Get Started
           </a>
         </div>
@@ -58,23 +100,25 @@
           <span id="post-category" class="px-3 py-1 rounded-full text-xs font-medium"></span>
           <span class="text-xs text-slate-400" id="post-date"></span>
         </div>
-        
+
         <h1 id="post-title" class="text-4xl md:text-5xl font-bold tracking-tight text-slate-50 mb-4"></h1>
-        
+
         <p id="post-excerpt" class="text-lg text-slate-400 mb-6"></p>
-        
+
         <div class="flex items-center gap-4 text-sm text-slate-500 border-b border-slate-800 pb-6">
           <div class="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <polyline points="12 6 12 12 16 14"/>
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
             </svg>
             <span id="read-time">5 min read</span>
           </div>
           <div class="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
             </svg>
             <span id="post-author">AgentCache Team</span>
           </div>
@@ -82,7 +126,8 @@
       </div>
 
       <!-- Post Body -->
-      <div id="post-body" class="prose prose-invert prose-slate max-w-none prose-headings:text-slate-50 prose-h2:text-2xl prose-h2:font-semibold prose-h2:mt-8 prose-h2:mb-4 prose-h3:text-xl prose-h3:font-semibold prose-h3:mt-6 prose-h3:mb-3 prose-p:text-slate-300 prose-p:leading-relaxed prose-a:text-sky-400 prose-a:no-underline hover:prose-a:text-sky-300 prose-code:text-sky-400 prose-code:bg-slate-900 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-800 prose-ul:text-slate-300 prose-ol:text-slate-300">
+      <div id="post-body"
+        class="prose prose-invert prose-slate max-w-none prose-headings:text-slate-50 prose-h2:text-2xl prose-h2:font-semibold prose-h2:mt-8 prose-h2:mb-4 prose-h3:text-xl prose-h3:font-semibold prose-h3:mt-6 prose-h3:mb-3 prose-p:text-slate-300 prose-p:leading-relaxed prose-a:text-sky-400 prose-a:no-underline hover:prose-a:text-sky-300 prose-code:text-sky-400 prose-code:bg-slate-900 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-800 prose-ul:text-slate-300 prose-ol:text-slate-300">
         <!-- Markdown content rendered here -->
       </div>
 
@@ -91,10 +136,12 @@
         <h3 class="text-xl font-semibold text-slate-50 mb-2">Ready to reduce your AI costs by 90%?</h3>
         <p class="text-slate-300 mb-4">Get started with AgentCache today. No credit card required.</p>
         <div class="flex gap-3">
-          <a href="/login.html" class="px-6 py-3 rounded-lg bg-sky-500 text-sm font-medium text-slate-950 hover:bg-sky-400 transition">
+          <a href="/login.html"
+            class="px-6 py-3 rounded-lg bg-sky-500 text-sm font-medium text-slate-950 hover:bg-sky-400 transition">
             Get Your API Key
           </a>
-          <a href="/proxy.html" class="px-6 py-3 rounded-lg border border-sky-500/40 text-sm font-medium text-sky-400 hover:bg-sky-500/10 transition">
+          <a href="/proxy.html"
+            class="px-6 py-3 rounded-lg border border-sky-500/40 text-sm font-medium text-sky-400 hover:bg-sky-500/10 transition">
             Read Setup Guide
           </a>
         </div>
@@ -105,13 +152,16 @@
         <div>
           <p class="text-sm text-slate-400 mb-2">Share this post</p>
           <div class="flex gap-2">
-            <button onclick="shareTwitter()" class="px-4 py-2 rounded-lg bg-slate-900 text-sm text-slate-300 hover:bg-slate-800 transition">
+            <button onclick="shareTwitter()"
+              class="px-4 py-2 rounded-lg bg-slate-900 text-sm text-slate-300 hover:bg-slate-800 transition">
               Twitter
             </button>
-            <button onclick="shareLinkedIn()" class="px-4 py-2 rounded-lg bg-slate-900 text-sm text-slate-300 hover:bg-slate-800 transition">
+            <button onclick="shareLinkedIn()"
+              class="px-4 py-2 rounded-lg bg-slate-900 text-sm text-slate-300 hover:bg-slate-800 transition">
               LinkedIn
             </button>
-            <button onclick="copyLink()" class="px-4 py-2 rounded-lg bg-slate-900 text-sm text-slate-300 hover:bg-slate-800 transition">
+            <button onclick="copyLink()"
+              class="px-4 py-2 rounded-lg bg-slate-900 text-sm text-slate-300 hover:bg-slate-800 transition">
               Copy Link
             </button>
           </div>
@@ -126,7 +176,7 @@
   <footer class="border-t border-slate-800 bg-slate-950/50 py-8 mt-12">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
       <p class="text-sm text-slate-400">
-        Built with ❤️ for AI developers • 
+        Built with ❤️ for AI developers •
         <a href="/" class="text-sky-400 hover:text-sky-300">AgentCache.ai</a>
       </p>
     </div>
@@ -136,7 +186,7 @@
     // Get slug from URL parameter
     const urlParams = new URLSearchParams(window.location.search);
     const slug = urlParams.get('slug');
-    
+
     if (!slug) {
       document.getElementById('loading').classList.add('hidden');
       document.getElementById('error').classList.remove('hidden');
@@ -150,25 +200,25 @@
         const indexResponse = await fetch('/blog-index.json');
         const posts = await indexResponse.json();
         const post = posts.find(p => p.slug === slug);
-        
+
         if (!post) {
           throw new Error('Post not found');
         }
-        
+
         // Load markdown content
         const mdResponse = await fetch(post.mdPath);
         const markdown = await mdResponse.text();
-        
+
         // Parse frontmatter and content
         const { frontmatter, body } = parseFrontmatter(markdown);
-        
+
         // Update page
         document.getElementById('page-title').textContent = post.title;
         document.getElementById('post-title').textContent = post.title;
         document.getElementById('post-excerpt').textContent = post.excerpt;
         document.getElementById('post-date').textContent = new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
         document.getElementById('post-author').textContent = post.author;
-        
+
         // Category badge
         const categoryEl = document.getElementById('post-category');
         const categoryColors = {
@@ -178,14 +228,14 @@
         };
         categoryEl.className = `px-3 py-1 rounded-full border text-xs font-medium ${categoryColors[post.category]}`;
         categoryEl.textContent = post.category.charAt(0).toUpperCase() + post.category.slice(1);
-        
+
         // Render markdown
         document.getElementById('post-body').innerHTML = marked.parse(body);
-        
+
         // Show content, hide loading
         document.getElementById('loading').classList.add('hidden');
         document.getElementById('post-content').classList.remove('hidden');
-        
+
       } catch (err) {
         console.error('Failed to load post:', err);
         document.getElementById('loading').classList.add('hidden');
@@ -198,7 +248,7 @@
       let inFrontmatter = false;
       let frontmatter = {};
       let bodyStart = 0;
-      
+
       for (let i = 0; i < lines.length; i++) {
         if (lines[i] === '---') {
           if (!inFrontmatter) {
@@ -214,7 +264,7 @@
           }
         }
       }
-      
+
       return {
         frontmatter,
         body: lines.slice(bodyStart).join('\n')
@@ -239,4 +289,5 @@
     }
   </script>
 </body>
+
 </html>
