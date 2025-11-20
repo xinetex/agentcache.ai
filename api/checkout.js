@@ -1,7 +1,16 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 module.exports = async (req, res) => {
-  // Only allow POST
+  // Debug: Check if Stripe key is available
+  if (!process.env.STRIPE_SECRET_KEY) {
+    console.error('STRIPE_SECRET_KEY is not set!');
+    return res.status(500).json({
+      error: 'Stripe configuration error',
+      details: 'Missing STRIPE_SECRET_KEY environment variable'
+    });
+  }
+
+  // Only allow POST and GET
   if (req.method !== 'POST' && req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
