@@ -6,7 +6,7 @@
     "category": "technical",
     "excerpt": "Reasoning models like OpenAI o1 are powerful but expensive. Learn how caching reasoning traces can reduce costs by 80% and slash latency by 10x.",
     "featured_image": "/blog/images/hidden-cost-reasoning-models.png",
-    "slug": "the-hidden-cost-of-reasoning-models",
+    "slug": "2025-11-20-the-hidden-cost-of-reasoning-models",
     "filename": "2025-11-20-the-hidden-cost-of-reasoning-models.md",
     "mdPath": "/blog/posts/2025-11-20-the-hidden-cost-of-reasoning-models.md"
   },
