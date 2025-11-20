@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Welcome to AgentCache! 🎉</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        neutral: { 950: '#050505', 900: '#0a0a0a' },
+                        brand: { 500: '#6366f1', 600: '#4f46e5' },
+                        accent: { 500: '#10b981' }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body class="bg-neutral-950 text-neutral-100 antialiased">
+
+    <main class="min-h-screen flex items-center justify-center px-6">
+        <div class="max-w-md w-full text-center">
+
+            <!-- Success Animation -->
+            <div class="mb-8 flex justify-center">
+                <div
+                    class="w-20 h-20 rounded-full bg-accent-500/20 border-2 border-accent-500 flex items-center justify-center">
+                    <i data-lucide="check" class="w-10 h-10 text-accent-500"></i>
+                </div>
+            </div>
+
+            <h1 class="text-4xl font-bold mb-4">Welcome to AgentCache!</h1>
+            <p class="text-xl text-neutral-400 mb-8">
+                Your subscription is active. Let's get you set up.
+            </p>
+
+            <!-- Steps -->
+            <div class="glass rounded-2xl p-8 border border-white/10 mb-8 text-left">
+                <h2 class="font-bold mb-4">Next Steps:</h2>
+
+                <div class="space-y-4">
+                    <div class="flex gap-4">
+                        <div
+                            class="flex-shrink-0 w-8 h-8 rounded-full bg-brand-500/20 border border-brand-500 flex items-center justify-center text-sm font-bold">
+                            1
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-1">Check Your Email</h3>
+                            <p class="text-sm text-neutral-400">We've sent your API key to the email you provided.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div
+                            class="flex-shrink-0 w-8 h-8 rounded-full bg-brand-500/20 border border-brand-500 flex items-center justify-center text-sm font-bold">
+                            2
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-1">Install the SDK</h3>
+                            <code class="block mt-2 px-4 py-2 rounded bg-neutral-900 text-accent-400 text-sm">
+                  pip install agentcache
+                </code>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div
+                            class="flex-shrink-0 w-8 h-8 rounded-full bg-brand-500/20 border border-brand-500 flex items-center justify-center text-sm font-bold">
+                            3
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-1">Start Caching</h3>
+                            <p class="text-sm text-neutral-400">Check out our docs to integrate AgentCache in 5 minutes
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/docs.html" class="px-6 py-3 rounded-lg bg-brand-500 hover:bg-brand-600 transition font-bold">
+                    Read Documentation
+                </a>
+                <a href="/" class="px-6 py-3 rounded-lg border border-white/20 hover:bg-white/5 transition font-medium">
+                    Back to Home
+                </a>
+            </div>
+
+            <!-- Support -->
+            <p class="mt-8 text-sm text-neutral-500">
+                Need help? <a href="mailto:hello@agentcache.ai" class="text-brand-400 hover:text-brand-300">Contact
+                    support</a>
+            </p>
+        </div>
+    </main>
+
+    <script>
+        if (window.lucide) lucide.createIcons();
+    </script>
+</body>
+
+</html>
