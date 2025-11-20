@@ -1,11 +1,16 @@
-const Stripe = require('stripe');
-const crypto = require('crypto');
+import Stripe from 'stripe';
+import crypto from 'crypto';
+
+// Specify Node.js runtime for Stripe SDK compatibility
+export const config = {
+    runtime: 'nodejs',
+};
 
 /**
  * Stripe Webhook Handler
  * Handles subscription events and manages API keys
  */
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
     // Initialize Stripe
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 

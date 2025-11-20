@@ -1,6 +1,11 @@
-const Stripe = require('stripe');
+import Stripe from 'stripe';
 
-module.exports = async (req, res) => {
+// Specify Node.js runtime for Stripe SDK compatibility
+export const config = {
+  runtime: 'nodejs',
+};
+
+export default async function handler(req, res) {
   // Debug: Check if Stripe key is available
   if (!process.env.STRIPE_SECRET_KEY) {
     console.error('STRIPE_SECRET_KEY is not set!');
