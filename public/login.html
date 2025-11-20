@@ -251,23 +251,43 @@
   <script>
     if (window.lucide) lucide.createIcons();
 
-    // Stripe Price IDs from dashboard
-    const STRIPE_PRICES = {
-      starter: 'price_1SVZz8R8qHioZwuvAjax6UjF',   // $29/month
-      pro: 'price_1SVZydR8qHioZwuvN24ePSab',       // $99/month
-      business: 'price_1SVZwmR8qHioZwuvlTbjts6v'   // $299/month
+    // Default/Fallback Price IDs (Sandbox)
+    let STRIPE_PRICES = {
+      starter: 'price_1SVZz8R8qHioZwuvAjax6UjF',
+      pro: 'price_1SVZydR8qHioZwuvN24ePSab',
+      business: 'price_1SVZwmR8qHioZwuvlTbjts6v'
     };
+
+    // Fetch configuration from backend
+    async function loadConfig() {
+      try {
+        const response = await fetch('/api/config');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.prices) {
+            STRIPE_PRICES = data.prices;
+            console.log('Loaded Stripe configuration:', data.mode);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load config, using defaults:', e);
+      }
+    }
+
+    // Load config on startup
+    loadConfig();
 
     function signupFree() {
       // For free tier, just show instructions
       alert('Free tier coming soon! For now, use demo key: ac_demo_test123\n\nCheck your email for instructions.');
-
-      // TODO: Send to backend to create free account
-      // window.location.href = '/api/signup/free';
     }
 
     function checkout(tier) {
       const priceId = STRIPE_PRICES[tier];
+      if (!priceId) {
+        alert('Configuration error: Price ID not found for ' + tier);
+        return;
+      }
 
       // Redirect to Stripe Checkout
       window.location.href = `/api/checkout?price=${priceId}`;
