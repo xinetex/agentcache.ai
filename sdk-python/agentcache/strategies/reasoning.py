@@ -75,9 +75,16 @@ class ReasoningCache:
     def _similarity_score(self, ctx1: str, ctx2: str) -> float:
         """
         Simplified similarity for MVP.
+        Uses word-token Jaccard similarity.
         In production, this would use vector embeddings.
         """
-        set1, set2 = set(ctx1), set(ctx2)
+        # Simple tokenization by splitting on whitespace and punctuation
+        def tokenize(text):
+            return set(text.lower().replace('"', ' ').replace(':', ' ').replace('{', ' ').replace('}', ' ').split())
+            
+        set1 = tokenize(ctx1)
+        set2 = tokenize(ctx2)
+        
         intersection = len(set1 & set2)
         union = len(set1 | set2)
         return intersection / union if union > 0 else 0.0
