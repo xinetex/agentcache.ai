@@ -233,7 +233,7 @@
               </li>
             </ul>
 
-            <button onclick="checkout('price_1SVnlJAjvdndXr9TBx2KeD4s')"
+            <button onclick="checkout('starter')"
               class="w-full px-6 py-3 rounded-lg bg-brand-500 hover:bg-brand-600 transition font-bold">
               Subscribe Now
             </button>
@@ -280,7 +280,7 @@
               </li>
             </ul>
 
-            <button onclick="checkout('price_1SVnlHAjvdndXr9TaPzkDg5h')"
+            <button onclick="checkout('pro')"
               class="w-full px-6 py-3 rounded-lg bg-white text-neutral-950 hover:bg-neutral-200 transition font-bold">
               Subscribe Now
             </button>
@@ -367,52 +367,49 @@
   <!-- Firefly Animation -->
   <script src="/assets/fireflies.js"></script>
 
-</body>
+  <script>
+    // Default/Fallback Price IDs (Sandbox)
+    let STRIPE_PRICES = {
+      starter: 'price_1SVZz8R8qHioZwuvAjax6UjF',
+      pro: 'price_1SVZydR8qHioZwuvN24ePSab',
+      business: 'price_1SVZwmR8qHioZwuvlTbjts6v'
+    };
 
-</html>
+    // Fetch configuration from backend
+    async function loadConfig() {
+      try {
+        const response = await fetch('/api/config');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.prices) {
+            STRIPE_PRICES = data.prices;
+            console.log('Loaded Stripe configuration:', data.mode);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load config, using defaults:', e);
+      }
+    }
 
-// Default/Fallback Price IDs (Sandbox)
-let STRIPE_PRICES = {
-starter: 'price_1SVZz8R8qHioZwuvAjax6UjF',
-pro: 'price_1SVZydR8qHioZwuvN24ePSab',
-business: 'price_1SVZwmR8qHioZwuvlTbjts6v'
-};
+    // Load config on startup
+    loadConfig();
 
-// Fetch configuration from backend
-async function loadConfig() {
-try {
-const response = await fetch('/api/config');
-if (response.ok) {
-const data = await response.json();
-if (data.prices) {
-STRIPE_PRICES = data.prices;
-console.log('Loaded Stripe configuration:', data.mode);
-}
-}
-} catch (e) {
-console.error('Failed to load config, using defaults:', e);
-}
-}
+    function signupFree() {
+      // For free tier, just show instructions
+      alert('Free tier coming soon! For now, use demo key: ac_demo_test123\n\nCheck your email for instructions.');
+    }
 
-// Load config on startup
-loadConfig();
+    function checkout(tier) {
+      const priceId = STRIPE_PRICES[tier];
+      if (!priceId) {
+        alert('Configuration error: Price ID not found for ' + tier);
+        return;
+      }
 
-function signupFree() {
-// For free tier, just show instructions
-alert('Free tier coming soon! For now, use demo key: ac_demo_test123\n\nCheck your email for instructions.');
-}
-
-function checkout(tier) {
-const priceId = STRIPE_PRICES[tier];
-if (!priceId) {
-alert('Configuration error: Price ID not found for ' + tier);
-return;
-}
-
-// Redirect to Stripe Checkout
-window.location.href = `/api/checkout?price=${priceId}`;
-}
-</script>
+      // Redirect to Stripe Checkout
+      window.location.href = `/api/checkout?price=${priceId}`;
+    }
+  </script>
 </body>
 
 </html>
