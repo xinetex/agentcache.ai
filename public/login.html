@@ -2,20 +2,24 @@
 <html lang="en" class="scroll-smooth">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Get Started — AgentCache.ai</title>
-  <meta name="description" content="Start saving 80-90% on your LLM costs. Sign up in 60 seconds." />
-
+  <meta name="description" content="Start saving 80-90% on your LLM costs. Sign up in 60 seconds.">
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/premium.css">
   <script>
     tailwind.config = {
       theme: {
         extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
           colors: {
-            neutral: { 950: '#050505', 900: '#0a0a0a' },
-            brand: { 500: '#6366f1', 600: '#4f46e5' },
-            accent: { 500: '#10b981' }
+            brand: {
+              50: '#f0f9ff',
+              500: '#0ea5e9',
+              900: '#0c4a6e',
+            }
           }
         }
       }
@@ -24,275 +28,391 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body class="bg-neutral-950 text-neutral-100 antialiased">
+<body class="antialiased selection:bg-cyan-500 selection:text-white">
 
-  <!-- Nav -->
-  <header class="fixed top-0 w-full z-50 bg-neutral-950/80 backdrop-blur-md border-b border-white/5">
-    <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-3 group">
-        <div
-          class="h-9 w-9 rounded-xl bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-sm font-bold shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform">
-          AC</div>
-        <span class="font-bold text-lg">AgentCache<span class="text-neutral-500">.ai</span></span>
-      </a>
-      <a href="/"
-        class="px-5 py-2.5 rounded-lg border border-white/20 hover:bg-white/5 text-sm font-medium transition">Back to
-        Home</a>
-    </div>
-  </header>
+  <!-- Animated Background -->
+  <div class="animated-bg"></div>
 
-  <main class="pt-32 pb-20 min-h-screen">
-    <div class="max-w-4xl mx-auto px-6">
+  <!-- Content Wrapper -->
+  <div class="content-wrapper">
 
-      <!-- Header -->
-      <div class="text-center mb-12">
-        <h1 class="text-4xl md:text-5xl font-bold mb-4">Choose Your Plan</h1>
-        <p class="text-xl text-neutral-400">Start free. Upgrade anytime. Cancel anytime.</p>
-      </div>
-
-      <!-- Pricing Cards -->
-      <div class="grid md:grid-cols-2 gap-6 mb-12">
-
-        <!-- Free -->
-        <div class="p-8 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-white/20 transition">
-          <div class="flex justify-between items-start mb-6">
-            <div>
-              <h3 class="text-2xl font-bold mb-2">Free</h3>
-              <p class="text-neutral-400 text-sm">Perfect for testing</p>
-            </div>
-            <div class="text-right">
-              <div class="text-3xl font-bold">$0</div>
-              <div class="text-sm text-neutral-500">forever</div>
-            </div>
-          </div>
-
-          <ul class="space-y-3 mb-8 text-sm">
-            <li class="flex items-start gap-2">
-              <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
-              <span>10K requests/month</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
-              <span>All caching strategies</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
-              <span>Community support</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
-              <span>Basic analytics</span>
-            </li>
-          </ul>
-
-          <button onclick="signupFree()"
-            class="w-full px-6 py-3 rounded-lg border border-white/20 hover:bg-white/5 transition font-bold">
-            Start Free
-          </button>
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass border-b border-slate-800">
+      <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-4 h-4 bg-cyan-500 rounded-sm rotate-45"></div>
+          <span class="font-bold text-lg tracking-tight">AgentCache</span>
         </div>
 
-        <!-- Starter -->
-        <div class="p-8 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-white/20 transition">
-          <div class="flex justify-between items-start mb-6">
-            <div>
-              <h3 class="text-2xl font-bold mb-2">Starter</h3>
-              <p class="text-neutral-400 text-sm">For side projects</p>
-            </div>
-            <div class="text-right">
-              <div class="text-3xl font-bold">$29</div>
-              <div class="text-sm text-neutral-500">/month</div>
+        <div class="hidden md:flex gap-6 relative">
+          <!-- Platform Dropdown -->
+          <div class="relative group">
+            <button class="text-sm font-medium text-slate-400 hover:text-white transition flex items-center gap-1">
+              Platform
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            <div
+              class="absolute top-full left-0 mt-2 w-56 glass rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+              <a href="/#cognitive" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                <div class="font-semibold text-white">Cognitive Memory OS</div>
+                <div class="text-xs text-slate-500">3-tier architecture</div>
+              </a>
+              <a href="/#moonshot" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                <div class="font-semibold text-white">Reasoning Cache</div>
+                <div class="text-xs text-slate-500">98% cost savings</div>
+              </a>
+              <a href="/monitor.html" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                <div class="font-semibold text-white">Memory Monitor</div>
+                <div class="text-xs text-slate-500">Live demo</div>
+              </a>
             </div>
           </div>
 
-          <ul class="space-y-3 mb-8 text-sm">
-            <li class="flex items-start gap-2">
-              <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
-              <span>100K requests/month</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
-              <span>Everything in Free</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
-              <span>Email support</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
-              <span>Advanced analytics</span>
-            </li>
-          </ul>
+          <!-- Developers Dropdown -->
+          <div class="relative group">
+            <button class="text-sm font-medium text-slate-400 hover:text-white transition flex items-center gap-1">
+              Developers
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            <div
+              class="absolute top-full left-0 mt-2 w-56 glass rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+              <a href="/docs.html" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                <div class="font-semibold text-white">Documentation</div>
+                <div class="text-xs text-slate-500">API reference</div>
+              </a>
+              <a href="/docs.html#quickstart" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                <div class="font-semibold text-white">Quick Start</div>
+                <div class="text-xs text-slate-500">30 second setup</div>
+              </a>
+              <a href="/changelog.html" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                <div class="font-semibold text-white">Changelog</div>
+                <div class="text-xs text-slate-500">What's new</div>
+              </a>
+            </div>
+          </div>
 
-          <button onclick="checkout('price_1SVnlJAjvdndXr9TBx2KeD4s')"
-            class="w-full px-6 py-3 rounded-lg bg-brand-500 hover:bg-brand-600 transition font-bold">
-            Subscribe Now
-          </button>
+          <a href="/blog.html" class="text-sm font-medium text-slate-400 hover:text-white transition">Blog</a>
+          <a href="/pricing.html" class="text-sm font-medium text-slate-400 hover:text-white transition">Pricing</a>
         </div>
 
-        <!-- Pro -->
-        <div class="relative p-8 rounded-2xl border-2 border-brand-500 bg-brand-500/10">
-          <div
-            class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-brand-500 text-white text-xs font-bold">
-            MOST POPULAR
-          </div>
-
-          <div class="flex justify-between items-start mb-6">
-            <div>
-              <h3 class="text-2xl font-bold mb-2">Pro</h3>
-              <p class="text-neutral-400 text-sm">For production apps</p>
-            </div>
-            <div class="text-right">
-              <div class="text-3xl font-bold">$99</div>
-              <div class="text-sm text-neutral-500">/month</div>
-            </div>
-          </div>
-
-          <ul class="space-y-3 mb-8 text-sm">
-            <li class="flex items-start gap-2">
-              <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
-              <span>500K requests/month</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
-              <span>Everything in Starter</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
-              <span>Priority support</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
-              <span>Custom cache rules</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
-              <span>99.9% SLA</span>
-            </li>
-          </ul>
-
-          <button onclick="checkout('price_1SVnlHAjvdndXr9TaPzkDg5h')"
-            class="w-full px-6 py-3 rounded-lg bg-white text-neutral-950 hover:bg-neutral-200 transition font-bold">
-            Subscribe Now
-          </button>
-        </div>
-
-        <!-- Business -->
-        <div class="p-8 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-white/20 transition">
-          <div class="flex justify-between items-start mb-6">
-            <div>
-              <h3 class="text-2xl font-bold mb-2">Business</h3>
-              <p class="text-neutral-400 text-sm">For scale-ups</p>
-            </div>
-            <div class="text-right">
-              <div class="text-3xl font-bold">$299</div>
-              <div class="text-sm text-neutral-500">/month</div>
-            </div>
-          </div>
-
-          <ul class="space-y-3 mb-8 text-sm">
-            <li class="flex items-start gap-2">
-              <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
-              <span>2M requests/month</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
-              <span>Everything in Pro</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
-              <span>Dedicated support</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
-              <span>SSO/SAML</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
-              <span>99.99% SLA</span>
-            </li>
-          </ul>
-
-          <button onclick="checkout('business')"
-            class="w-full px-6 py-3 rounded-lg border border-white/20 hover:bg-white/5 transition font-bold">
-            Subscribe Now
-          </button>
-        </div>
-      </div>
-
-      <!-- Enterprise CTA -->
-      <div class="text-center p-8 rounded-2xl border border-white/10 bg-white/[0.02]">
-        <h3 class="text-xl font-bold mb-2">Need Enterprise?</h3>
-        <p class="text-neutral-400 mb-4">Custom solutions for Fortune 500 companies</p>
-        <a href="/contact.html"
-          class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-brand-500 hover:bg-brand-600 transition font-bold">
-          Contact Sales
-          <i data-lucide="arrow-right" class="w-5 h-5"></i>
+        <a href="/login.html"
+          class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full text-sm font-medium transition-all border border-white/10">
+          Get Started
         </a>
       </div>
 
-      <!-- Trust Badges -->
-      <div class="mt-12 flex flex-wrap justify-center gap-8 text-sm text-neutral-500">
-        <div class="flex items-center gap-2">
-          <i data-lucide="shield-check" class="w-5 h-5 text-accent-500"></i>
-          <span>SSL Encrypted</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <i data-lucide="credit-card" class="w-5 h-5 text-accent-500"></i>
-          <span>Powered by Stripe</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <i data-lucide="rotate-ccw" class="w-5 h-5 text-accent-500"></i>
-          <span>Cancel Anytime</span>
+      <!-- Mobile Menu Button -->
+      <div class="md:hidden absolute top-4 right-6">
+        <button id="mobile-menu-btn" class="text-slate-300 hover:text-white p-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mobile Menu (Hidden by default) -->
+      <div id="mobile-menu"
+        class="hidden md:hidden absolute top-16 left-0 w-full glass border-b border-slate-800 p-4 flex flex-col gap-4">
+        <div class="space-y-4">
+          <div class="font-semibold text-slate-400 text-xs uppercase tracking-wider px-2">Platform</div>
+          <a href="/#cognitive" class="block px-2 text-sm text-slate-300 hover:text-white">Cognitive Memory OS</a>
+          <a href="/#moonshot" class="block px-2 text-sm text-slate-300 hover:text-white">Reasoning Cache</a>
+          <a href="/monitor.html" class="block px-2 text-sm text-slate-300 hover:text-white">Memory Monitor</a>
+
+          <div class="font-semibold text-slate-400 text-xs uppercase tracking-wider px-2 mt-4">Developers</div>
+          <a href="/docs.html" class="block px-2 text-sm text-slate-300 hover:text-white">Documentation</a>
+          <a href="/docs.html#quickstart" class="block px-2 text-sm text-slate-300 hover:text-white">Quick Start</a>
+          <a href="/changelog.html" class="block px-2 text-sm text-slate-300 hover:text-white">Changelog</a>
+
+          <div class="border-t border-white/10 my-2"></div>
+          <a href="/blog.html" class="block px-2 text-sm font-medium text-slate-300 hover:text-white">Blog</a>
+          <a href="/pricing.html" class="block px-2 text-sm font-medium text-slate-300 hover:text-white">Pricing</a>
+          <a href="/login.html"
+            class="block w-full text-center bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all mt-4">
+            Get Started
+          </a>
         </div>
       </div>
-    </div>
-  </main>
+    </nav>
 
-  <script>
-    if (window.lucide) lucide.createIcons();
+    <script>
+      // Mobile Menu Toggle
+      const mobileBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
 
-    // Default/Fallback Price IDs (Sandbox)
-    let STRIPE_PRICES = {
-      starter: 'price_1SVZz8R8qHioZwuvAjax6UjF',
-      pro: 'price_1SVZydR8qHioZwuvN24ePSab',
-      business: 'price_1SVZwmR8qHioZwuvlTbjts6v'
-    };
-
-    // Fetch configuration from backend
-    async function loadConfig() {
-      try {
-        const response = await fetch('/api/config');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.prices) {
-            STRIPE_PRICES = data.prices;
-            console.log('Loaded Stripe configuration:', data.mode);
-          }
-        }
-      } catch (e) {
-        console.error('Failed to load config, using defaults:', e);
+      if (mobileBtn && mobileMenu) {
+        mobileBtn.addEventListener('click', () => {
+          mobileMenu.classList.toggle('hidden');
+        });
       }
-    }
+    </script>
 
-    // Load config on startup
-    loadConfig();
+    <main class="pt-32 pb-20 min-h-screen">
+      <div class="max-w-4xl mx-auto px-6">
 
-    function signupFree() {
-      // For free tier, just show instructions
-      alert('Free tier coming soon! For now, use demo key: ac_demo_test123\n\nCheck your email for instructions.');
-    }
+        <!-- Header -->
+        <div class="text-center mb-12">
+          <h1 class="text-4xl md:text-5xl font-bold mb-4">Choose Your Plan</h1>
+          <p class="text-xl text-neutral-400">Start free. Upgrade anytime. Cancel anytime.</p>
+        </div>
 
-    function checkout(tier) {
-      const priceId = STRIPE_PRICES[tier];
-      if (!priceId) {
-        alert('Configuration error: Price ID not found for ' + tier);
-        return;
-      }
+        <!-- Pricing Cards -->
+        <div class="grid md:grid-cols-2 gap-6 mb-12">
 
-      // Redirect to Stripe Checkout
-      window.location.href = `/api/checkout?price=${priceId}`;
-    }
-  </script>
+          <!-- Free -->
+          <div class="p-8 rounded-2xl glass hover:bg-slate-800/50 transition">
+            <div class="flex justify-between items-start mb-6">
+              <div>
+                <h3 class="text-2xl font-bold mb-2">Free</h3>
+                <p class="text-neutral-400 text-sm">Perfect for testing</p>
+              </div>
+              <div class="text-right">
+                <div class="text-3xl font-bold">$0</div>
+                <div class="text-sm text-neutral-500">forever</div>
+              </div>
+            </div>
+
+            <ul class="space-y-3 mb-8 text-sm">
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
+                <span>10K requests/month</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
+                <span>All caching strategies</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
+                <span>Community support</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
+                <span>Basic analytics</span>
+              </li>
+            </ul>
+
+            <button onclick="signupFree()"
+              class="w-full px-6 py-3 rounded-lg border border-white/20 hover:bg-white/5 transition font-bold">
+              Start Free
+            </button>
+          </div>
+
+          <!-- Starter -->
+          <div class="p-8 rounded-2xl glass hover:bg-slate-800/50 transition">
+            <div class="flex justify-between items-start mb-6">
+              <div>
+                <h3 class="text-2xl font-bold mb-2">Starter</h3>
+                <p class="text-neutral-400 text-sm">For side projects</p>
+              </div>
+              <div class="text-right">
+                <div class="text-3xl font-bold">$29</div>
+                <div class="text-sm text-neutral-500">/month</div>
+              </div>
+            </div>
+
+            <ul class="space-y-3 mb-8 text-sm">
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
+                <span>100K requests/month</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
+                <span>Everything in Free</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
+                <span>Email support</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
+                <span>Advanced analytics</span>
+              </li>
+            </ul>
+
+            <button onclick="checkout('price_1SVnlJAjvdndXr9TBx2KeD4s')"
+              class="w-full px-6 py-3 rounded-lg bg-brand-500 hover:bg-brand-600 transition font-bold">
+              Subscribe Now
+            </button>
+          </div>
+
+          <!-- Pro -->
+          <div class="relative p-8 rounded-2xl border-2 border-brand-500 bg-brand-500/10">
+            <div
+              class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-brand-500 text-white text-xs font-bold">
+              MOST POPULAR
+            </div>
+
+            <div class="flex justify-between items-start mb-6">
+              <div>
+                <h3 class="text-2xl font-bold mb-2">Pro</h3>
+                <p class="text-neutral-400 text-sm">For production apps</p>
+              </div>
+              <div class="text-right">
+                <div class="text-3xl font-bold">$99</div>
+                <div class="text-sm text-neutral-500">/month</div>
+              </div>
+            </div>
+
+            <ul class="space-y-3 mb-8 text-sm">
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
+                <span>500K requests/month</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
+                <span>Everything in Starter</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
+                <span>Priority support</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
+                <span>Custom cache rules</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
+                <span>99.9% SLA</span>
+              </li>
+            </ul>
+
+            <button onclick="checkout('price_1SVnlHAjvdndXr9TaPzkDg5h')"
+              class="w-full px-6 py-3 rounded-lg bg-white text-neutral-950 hover:bg-neutral-200 transition font-bold">
+              Subscribe Now
+            </button>
+          </div>
+
+          <!-- Business -->
+          <div class="p-8 rounded-2xl glass hover:bg-slate-800/50 transition">
+            <div class="flex justify-between items-start mb-6">
+              <div>
+                <h3 class="text-2xl font-bold mb-2">Business</h3>
+                <p class="text-neutral-400 text-sm">For scale-ups</p>
+              </div>
+              <div class="text-right">
+                <div class="text-3xl font-bold">$299</div>
+                <div class="text-sm text-neutral-500">/month</div>
+              </div>
+            </div>
+
+            <ul class="space-y-3 mb-8 text-sm">
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
+                <span>2M requests/month</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
+                <span>Everything in Pro</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
+                <span>Dedicated support</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
+                <span>SSO/SAML</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5"></i>
+                <span>99.99% SLA</span>
+              </li>
+            </ul>
+
+            <button onclick="checkout('business')"
+              class="w-full px-6 py-3 rounded-lg border border-white/20 hover:bg-white/5 transition font-bold">
+              Subscribe Now
+            </button>
+          </div>
+        </div>
+
+        <!-- Enterprise CTA -->
+        <div class="text-center p-8 rounded-2xl border border-white/10 bg-white/[0.02]">
+          <h3 class="text-xl font-bold mb-2">Need Enterprise?</h3>
+          <p class="text-neutral-400 mb-4">Custom solutions for Fortune 500 companies</p>
+          <a href="/contact.html"
+            class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-brand-500 hover:bg-brand-600 transition font-bold">
+            Contact Sales
+            <i data-lucide="arrow-right" class="w-5 h-5"></i>
+          </a>
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="mt-12 flex flex-wrap justify-center gap-8 text-sm text-neutral-500">
+          <div class="flex items-center gap-2">
+            <i data-lucide="shield-check" class="w-5 h-5 text-accent-500"></i>
+            <span>SSL Encrypted</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i data-lucide="credit-card" class="w-5 h-5 text-accent-500"></i>
+            <span>Powered by Stripe</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i data-lucide="rotate-ccw" class="w-5 h-5 text-accent-500"></i>
+            <span>Cancel Anytime</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      if (window.lucide) lucide.createIcons();
+    </script>
+
+  </div><!-- /content-wrapper -->
+
+  <!-- Firefly Animation -->
+  <script src="/assets/fireflies.js"></script>
+
+</body>
+
+</html>
+
+// Default/Fallback Price IDs (Sandbox)
+let STRIPE_PRICES = {
+starter: 'price_1SVZz8R8qHioZwuvAjax6UjF',
+pro: 'price_1SVZydR8qHioZwuvN24ePSab',
+business: 'price_1SVZwmR8qHioZwuvlTbjts6v'
+};
+
+// Fetch configuration from backend
+async function loadConfig() {
+try {
+const response = await fetch('/api/config');
+if (response.ok) {
+const data = await response.json();
+if (data.prices) {
+STRIPE_PRICES = data.prices;
+console.log('Loaded Stripe configuration:', data.mode);
+}
+}
+} catch (e) {
+console.error('Failed to load config, using defaults:', e);
+}
+}
+
+// Load config on startup
+loadConfig();
+
+function signupFree() {
+// For free tier, just show instructions
+alert('Free tier coming soon! For now, use demo key: ac_demo_test123\n\nCheck your email for instructions.');
+}
+
+function checkout(tier) {
+const priceId = STRIPE_PRICES[tier];
+if (!priceId) {
+alert('Configuration error: Price ID not found for ' + tier);
+return;
+}
+
+// Redirect to Stripe Checkout
+window.location.href = `/api/checkout?price=${priceId}`;
+}
+</script>
 </body>
 
 </html>
