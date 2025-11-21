@@ -86,11 +86,27 @@
                     (Vector DB)
                 </div>
             </div>
+
             <canvas id="monitor-canvas" class="w-full h-full rounded-lg"></canvas>
+
+            <!-- D3 Metrics Panel -->
+            <div class="absolute bottom-4 right-4 z-10 flex gap-4">
+                <!-- Latency Chart -->
+                <div class="bg-slate-900/80 backdrop-blur border border-slate-700 rounded-lg p-3 w-48">
+                    <div class="text-[10px] uppercase tracking-wider text-slate-400 mb-1">Latency (ms)</div>
+                    <div id="latency-chart" class="h-12 w-full"></div>
+                </div>
+                <!-- Cost Savings -->
+                <div class="bg-slate-900/80 backdrop-blur border border-slate-700 rounded-lg p-3 w-32">
+                    <div class="text-[10px] uppercase tracking-wider text-slate-400 mb-1">Cost Savings</div>
+                    <div id="cost-savings" class="text-xl font-mono text-emerald-400">$0.0000</div>
+                </div>
+            </div>
         </div>
 
     </main>
 
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
         // --- CONFIG ---
         const API_URL = '/api/agent/chat';
@@ -98,7 +114,7 @@
         const SESSION_ID = 'demo-' + Math.floor(Math.random() * 10000);
         document.getElementById('sessionId').innerText = SESSION_ID;
 
-        // --- VISUALIZATION ENGINE ---
+        // --- VISUALIZATION ENGINE (CANVAS) ---
         const canvas = document.getElementById('monitor-canvas');
         const ctx = canvas.getContext('2d');
 
@@ -214,6 +230,68 @@
         }
         animate();
 
+        // --- D3.js METRICS ENGINE ---
+
+        // Data Stores
+        const latencyData = []; // { id, value }
+        let totalSavings = 0;
+        let requestCount = 0;
+
+        // Setup D3 Charts
+        function initCharts() {
+            // 1. Latency Chart
+            const latencyContainer = d3.select("#latency-chart");
+            const margin = { top: 5, right: 5, bottom: 5, left: 5 };
+            const w = latencyContainer.node().getBoundingClientRect().width - margin.left - margin.right;
+            const h = 48 - margin.top - margin.bottom;
+
+            const svg = latencyContainer.append("svg")
+                .attr("width", w + margin.left + margin.right)
+                .attr("height", h + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            // X Axis
+            const x = d3.scaleLinear().range([0, w]);
+
+            // Y Axis
+            const y = d3.scaleLinear().range([h, 0]);
+
+            // Line
+            const line = d3.line()
+                .x((d, i) => x(i))
+                .y(d => y(d.value))
+                .curve(d3.curveMonotoneX);
+
+            const path = svg.append("path")
+                .datum(latencyData)
+                .attr("fill", "none")
+                .attr("stroke", "#0ea5e9")
+                .attr("stroke-width", 2);
+
+            // Update Function
+            window.updateLatencyChart = (newValue) => {
+                latencyData.push({ id: requestCount++, value: newValue });
+                if (latencyData.length > 20) latencyData.shift(); // Keep last 20
+
+                x.domain([0, latencyData.length - 1]);
+                y.domain([0, d3.max(latencyData, d => d.value) * 1.2 || 100]); // 20% padding
+
+                path.datum(latencyData)
+                    .attr("d", line);
+            };
+
+            // 2. Cost Savings Counter
+            window.updateSavings = (amount) => {
+                totalSavings += amount;
+                d3.select("#cost-savings").text(`$${totalSavings.toFixed(4)}`);
+            };
+        }
+
+        // Initialize charts after load
+        setTimeout(initCharts, 100);
+
+
         // --- LOGIC ---
 
         function spawnDataPacket(from, to, count = 1) {
@@ -234,8 +312,8 @@
 
             const bubble = document.createElement('div');
             bubble.className = `max-w-[80%] rounded-lg px-4 py-2 text-sm ${role === 'user'
-                    ? 'bg-cyan-600 text-white rounded-br-none shadow-lg shadow-cyan-900/20'
-                    : 'bg-slate-800 text-slate-200 rounded-bl-none border border-slate-700'
+                ? 'bg-cyan-600 text-white rounded-br-none shadow-lg shadow-cyan-900/20'
+                : 'bg-slate-800 text-slate-200 rounded-bl-none border border-slate-700'
                 }`;
             bubble.innerText = text;
 
@@ -264,6 +342,8 @@
             // Visual: Input goes to L1 (Hot)
             spawnDataPacket('L2', 'L1', 3); // Simulate fetching recent history
 
+            const startTime = performance.now();
+
             try {
                 const res = await fetch(API_URL, {
                     method: 'POST',
@@ -277,6 +357,18 @@
                     })
                 });
                 const data = await res.json();
+                const endTime = performance.now();
+                const latency = Math.round(endTime - startTime);
+
+                // Update Metrics
+                if (window.updateLatencyChart) window.updateLatencyChart(latency);
+
+                // Calculate Savings (Simulated based on context source)
+                let savings = 0;
+                if (data.contextSource === 'HYBRID') savings = 0.002; // Cache hit
+                if (data.contextSource === 'L2') savings = 0.0005;
+                if (window.updateSavings) window.updateSavings(savings);
+
 
                 // Visual Logic based on Response
                 if (data.contextSource === 'HYBRID') {
@@ -294,7 +386,7 @@
                 }, 1000);
 
                 // Display Response
-                const meta = `Source: ${data.contextSource} | L3 Memories: ${data.systemContext.length}`;
+                const meta = `Source: ${data.contextSource} | Latency: ${latency}ms`;
                 appendMessage('assistant', data.message, meta);
 
             } catch (err) {

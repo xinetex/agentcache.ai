@@ -136,6 +136,9 @@ export class ContextManager {
         } else {
             console.warn(`[CognitiveEngine] Memory rejected (Score: ${validation.score}): ${validation.reason}`);
         }
+
+        // DeepAgent: Trigger Autonomous Optimization (Fire-and-Forget)
+        this.triggerOptimization(sessionId).catch(err => console.error(err));
     }
 
     /**
@@ -145,6 +148,24 @@ export class ContextManager {
     async deleteMemory(memoryId: string) {
         if (vectorIndex) {
             await vectorIndex.delete(memoryId);
+        }
+    }
+
+    /**
+     * DeepAgent: Trigger autonomous optimization.
+     * This is a "fire-and-forget" background process.
+     */
+    async triggerOptimization(sessionId: string) {
+        try {
+            // Lazy load redis client to avoid circular dependencies if any
+            const { redis } = await import('../lib/redis.js');
+
+            const result = await this.cognitiveEngine.optimizeMemory(sessionId, redis);
+            if (result.demoted > 0) {
+                console.log(`[DeepAgent] Optimized Session ${sessionId}: Demoted ${result.demoted} items to Cold Tier.`);
+            }
+        } catch (error) {
+            console.error('[DeepAgent] Optimization failed:', error);
         }
     }
 }

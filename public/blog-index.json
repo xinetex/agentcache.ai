@@ -1,5 +1,16 @@
 [
   {
+    "title": "Decoding Gemini 3's Thought Signatures: A Guide for Developers",
+    "date": "2025-11-21",
+    "author": "AgentCache Team",
+    "category": "technical",
+    "excerpt": "Google's Gemini 3 introduces 'Thought Signatures'—encrypted reasoning traces. Learn how to cache them with AgentCache to slash latency and maintain state.",
+    "featured_image": "/blog/images/gemini-3-thought-signatures.png",
+    "slug": "decoding-gemini-3-thought-signatures",
+    "filename": "2025-11-21-decoding-gemini-3-thought-signatures.md",
+    "mdPath": "/blog/posts/2025-11-21-decoding-gemini-3-thought-signatures.md"
+  },
+  {
     "title": "The Hidden Cost of Reasoning Models (and How to Fix It)",
     "date": "2025-11-20",
     "author": "AgentCache Team",

@@ -181,11 +181,19 @@ export default async function handler(req) {
 
       const response = JSON.parse(cached);
 
+      // Calculate cryptographic proof (SHA-256 of response body)
+      const responseString = JSON.stringify(response);
+      const proofBuffer = new TextEncoder().encode(responseString);
+      const proofHashBuffer = await crypto.subtle.digest('SHA-256', proofBuffer);
+      const proofHashArray = Array.from(new Uint8Array(proofHashBuffer));
+      const proofHash = proofHashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
       // Return cached response with OpenAI format + cache headers
       return json(response, 200, {
         'X-Cache': 'HIT',
         'X-Cache-Latency': `${latency}ms`,
-        'X-AgentCache-Savings': '90%'
+        'X-AgentCache-Savings': '90%',
+        'X-AgentCache-Hash': proofHash
       });
     }
 
@@ -247,11 +255,19 @@ export default async function handler(req) {
       await incrementUsage(auth.hash);
     }
 
+    // Calculate cryptographic proof (SHA-256 of response body)
+    const responseString = JSON.stringify(upstreamData);
+    const proofBuffer = new TextEncoder().encode(responseString);
+    const proofHashBuffer = await crypto.subtle.digest('SHA-256', proofBuffer);
+    const proofHashArray = Array.from(new Uint8Array(proofHashBuffer));
+    const proofHash = proofHashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
     // Return response with cache headers
     return json(upstreamData, 200, {
       'X-Cache': 'MISS',
       'X-Cache-Latency': `${totalLatency}ms`,
-      'X-AgentCache-Provider': provider
+      'X-AgentCache-Provider': provider,
+      'X-AgentCache-Hash': proofHash
     });
 
   } catch (err) {
