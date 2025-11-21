@@ -111,401 +111,444 @@
                     Get Started
                 </a>
             </div>
-        </nav>
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-btn" class="md:hidden text-slate-300 hover:text-white p-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
+                    </path>
+                </svg>
+            </button>
+    </div>
 
-        <!-- Hero Section -->
-        <section class="relative pt-32 pb-20 overflow-hidden hero-glow min-h-screen flex items-center">
-            <div class="max-w-7xl mx-auto px-6 text-center relative z-10">
-                <div
-                    class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-mono mb-8">
-                    <span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
-                    World's First Cognitive Memory OS
+    <!-- Mobile Menu (Hidden by default) -->
+    <div id="mobile-menu"
+        class="hidden md:hidden absolute top-16 left-0 w-full glass border-b border-slate-800 p-4 flex flex-col gap-4">
+        <div class="space-y-4">
+            <div class="font-semibold text-slate-400 text-xs uppercase tracking-wider px-2">Platform</div>
+            <a href="#cognitive" class="block px-2 text-sm text-slate-300 hover:text-white">Cognitive Memory OS</a>
+            <a href="#moonshot" class="block px-2 text-sm text-slate-300 hover:text-white">Reasoning Cache</a>
+            <a href="/monitor.html" class="block px-2 text-sm text-slate-300 hover:text-white">Memory Monitor</a>
+
+            <div class="font-semibold text-slate-400 text-xs uppercase tracking-wider px-2 mt-4">Developers</div>
+            <a href="/docs.html" class="block px-2 text-sm text-slate-300 hover:text-white">Documentation</a>
+            <a href="/docs.html#quickstart" class="block px-2 text-sm text-slate-300 hover:text-white">Quick Start</a>
+            <a href="/changelog.html" class="block px-2 text-sm text-slate-300 hover:text-white">Changelog</a>
+
+            <div class="border-t border-white/10 my-2"></div>
+            <a href="/blog.html" class="block px-2 text-sm font-medium text-slate-300 hover:text-white">Blog</a>
+            <a href="/pricing.html" class="block px-2 text-sm font-medium text-slate-300 hover:text-white">Pricing</a>
+            <a href="/login.html"
+                class="block w-full text-center bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all mt-4">
+                Get Started
+            </a>
+        </div>
+    </div>
+    </nav>
+
+    <script>
+        // Mobile Menu Toggle
+        const mobileBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        if (mobileBtn && mobileMenu) {
+            mobileBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+    </script>
+
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-20 overflow-hidden hero-glow min-h-screen flex items-center">
+        <div class="max-w-7xl mx-auto px-6 text-center relative z-10">
+            <div
+                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-mono mb-8">
+                <span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+                World's First Cognitive Memory OS
+            </div>
+
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
+                Stop Giving Your Agents <br>
+                <span class="text-gradient">Amnesia.</span>
+            </h1>
+
+            <p class="text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
+                The only AI memory system that <strong>caches the thinking process</strong>, not just the answer.
+                <br>
+                Infinite context + 98% cost savings + zero hallucinations.
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+                <a href="/monitor.html"
+                    class="px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold text-lg shadow-lg shadow-cyan-500/20 transition-all transform hover:scale-105">
+                    Launch Memory Monitor
+                </a>
+                <a href="/pricing.html"
+                    class="px-8 py-4 glass hover:bg-slate-800 text-slate-300 rounded-xl font-medium transition-all">
+                    View Pricing
+                </a>
+            </div>
+
+            <div class="flex items-center justify-center gap-6 text-sm text-slate-500">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    No credit card required
                 </div>
+                <div>•</div>
+                <div>Start free, upgrade anytime</div>
+            </div>
 
-                <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
-                    Stop Giving Your Agents <br>
-                    <span class="text-gradient">Amnesia.</span>
-                </h1>
-
-                <p class="text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
-                    The only AI memory system that <strong>caches the thinking process</strong>, not just the answer.
-                    <br>
-                    Infinite context + 98% cost savings + zero hallucinations.
-                </p>
-
-                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-                    <a href="/monitor.html"
-                        class="px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold text-lg shadow-lg shadow-cyan-500/20 transition-all transform hover:scale-105">
-                        Launch Memory Monitor
-                    </a>
-                    <a href="/pricing.html"
-                        class="px-8 py-4 glass hover:bg-slate-800 text-slate-300 rounded-xl font-medium transition-all">
-                        View Pricing
-                    </a>
+            <!-- 3-Tier Architecture Visual -->
+            <div class="mt-20 relative max-w-5xl mx-auto">
+                <div class="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent z-10">
                 </div>
-
-                <div class="flex items-center justify-center gap-6 text-sm text-slate-500">
-                    <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd"
-                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                clip-rule="evenodd"></path>
-                        </svg>
-                        No credit card required
-                    </div>
-                    <div>•</div>
-                    <div>Start free, upgrade anytime</div>
-                </div>
-
-                <!-- 3-Tier Architecture Visual -->
-                <div class="mt-20 relative max-w-5xl mx-auto">
-                    <div class="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent z-10">
-                    </div>
-                    <div class="glass rounded-2xl p-1 border border-slate-700/50">
-                        <div class="bg-slate-900/80 rounded-xl p-8 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-                            <!-- L1 -->
-                            <div class="space-y-3">
-                                <div
-                                    class="w-12 h-12 rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-500 mb-3">
-                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M13 10V3L4 14h7v7l9-11h-7z">
-                                        </path>
-                                    </svg>
-                                </div>
-                                <h3 class="text-xl font-bold text-white">L1: Hot Context</h3>
-                                <p class="text-sm text-slate-400">Active conversation window. Immediate awareness.
-                                    <strong>Zero latency</strong>.
-                                </p>
-                                <div class="text-xs text-slate-600">In-Memory</div>
+                <div class="glass rounded-2xl p-1 border border-slate-700/50">
+                    <div class="bg-slate-900/80 rounded-xl p-8 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+                        <!-- L1 -->
+                        <div class="space-y-3">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-500 mb-3">
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 10V3L4 14h7v7l9-11h-7z">
+                                    </path>
+                                </svg>
                             </div>
-                            <!-- L2 -->
-                            <div class="space-y-3">
-                                <div
-                                    class="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-500 mb-3">
-                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                </div>
-                                <h3 class="text-xl font-bold text-white">L2: Warm History</h3>
-                                <p class="text-sm text-slate-400">Recent sessions cached in Redis. Fast recall of
-                                    <strong>last 7 days</strong>.
-                                </p>
-                                <div class="text-xs text-slate-600">Upstash Redis</div>
+                            <h3 class="text-xl font-bold text-white">L1: Hot Context</h3>
+                            <p class="text-sm text-slate-400">Active conversation window. Immediate awareness.
+                                <strong>Zero latency</strong>.
+                            </p>
+                            <div class="text-xs text-slate-600">In-Memory</div>
+                        </div>
+                        <!-- L2 -->
+                        <div class="space-y-3">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-500 mb-3">
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
                             </div>
-                            <!-- L3 -->
-                            <div class="space-y-3">
-                                <div
-                                    class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-500 mb-3">
-                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
-                                        </path>
-                                    </svg>
-                                </div>
-                                <h3 class="text-xl font-bold text-white">L3: Cold Knowledge</h3>
-                                <p class="text-sm text-slate-400"><strong>Infinite</strong> vector storage. Semantic
-                                    search
-                                    retrieves memories from <strong>years ago</strong>.</p>
-                                <div class="text-xs text-slate-600">Upstash Vector</div>
+                            <h3 class="text-xl font-bold text-white">L2: Warm History</h3>
+                            <p class="text-sm text-slate-400">Recent sessions cached in Redis. Fast recall of
+                                <strong>last 7 days</strong>.
+                            </p>
+                            <div class="text-xs text-slate-600">Upstash Redis</div>
+                        </div>
+                        <!-- L3 -->
+                        <div class="space-y-3">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-500 mb-3">
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+                                    </path>
+                                </svg>
                             </div>
+                            <h3 class="text-xl font-bold text-white">L3: Cold Knowledge</h3>
+                            <p class="text-sm text-slate-400"><strong>Infinite</strong> vector storage. Semantic
+                                search
+                                retrieves memories from <strong>years ago</strong>.</p>
+                            <div class="text-xs text-slate-600">Upstash Vector</div>
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Three Pillars -->
-        <section id="cognitive" class="py-24 bg-slate-900/50">
-            <div class="max-w-7xl mx-auto px-6">
-                <div class="text-center mb-16">
-                    <h2 class="text-4xl md:text-5xl font-bold mb-4">
-                        Not Just Storage. <span class="text-cyan-400">Intelligence.</span>
-                    </h2>
-                    <p class="text-xl text-slate-400 max-w-3xl mx-auto">
-                        Most vector databases are <strong>dumb storage</strong>. AgentCache includes a <strong>Cognitive
-                            Engine</strong> that validates memories, resolves conflicts, and prevents hallucinations
-                        before
-                        they stick.
-                    </p>
-                </div>
-
-                <div class="grid md:grid-cols-3 gap-8 mb-16">
-                    <!-- Pillar 1: Infinite Memory -->
-                    <div class="glass p-8 rounded-2xl hover:bg-slate-800/50 transition-colors">
-                        <div class="text-4xl mb-4">🧠</div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">Infinite Memory</h3>
-                        <p class="text-slate-400 mb-4">
-                            Never lose context. Our 3-tier architecture (L1/L2/L3) gives your agents <strong>infinite
-                                memory</strong> that persists across sessions, months, even years.
-                        </p>
-                        <ul class="space-y-2 text-sm text-slate-500">
-                            <li class="flex items-center gap-2">
-                                <span class="text-cyan-400">✓</span> Cross-session memory
-                            </li>
-                            <li class="flex items-center gap-2">
-                                <span class="text-cyan-400">✓</span> Semantic retrieval
-                            </li>
-                            <li class="flex items-center gap-2">
-                                <span class="text-cyan-400">✓</span> Episodic decay algorithm
-                            </li>
-                        </ul>
-                    </div>
-
-                    <!-- Pillar 2: Hallucination Prevention -->
-                    <div
-                        class="glass p-8 rounded-2xl hover:bg-slate-800/50 transition-colors border-2 border-emerald-500/30">
-                        <div class="text-4xl mb-4">🛡️</div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">Hallucination Prevention</h3>
-                        <p class="text-slate-400 mb-4">
-                            Our <strong>Cognitive Validator</strong> analyzes every memory before saving. Low-confidence
-                            responses like "I think maybe..." are <strong>rejected</strong>. Only verified facts make it
-                            to
-                            long-term storage.
-                        </p>
-                        <div class="bg-black/50 p-4 rounded-lg font-mono text-xs text-slate-300">
-                            <span class="text-rose-400">- </span>"I think the sky is green" <span
-                                class="text-slate-600">//
-                                REJECTED</span><br>
-                            <span class="text-emerald-400">+ </span>"The sky is blue" <span class="text-slate-600">//
-                                VERIFIED</span>
-                        </div>
-                    </div>
-
-                    <!-- Pillar 3: 98% Cost Savings -->
-                    <div class="glass p-8 rounded-2xl hover:bg-slate-800/50 transition-colors">
-                        <div class="text-4xl mb-4">💰</div>
-                        <h3 class="text-2xl font-bold mb-4 text-white">98% Cost Savings</h3>
-                        <p class="text-slate-400 mb-4">
-                            <strong>Cache the thinking</strong>, not just the answer. Moonshot AI integration caches
-                            <strong>reasoning tokens</strong> — the expensive "thinking" process — and reuses them for
-                            similar queries.
-                        </p>
-                        <ul class="space-y-2 text-sm text-slate-500">
-                            <li class="flex items-center gap-2">
-                                <span class="text-cyan-400">✓</span> Reasoning token cache
-                            </li>
-                            <li class="flex items-center gap-2">
-                                <span class="text-cyan-400">✓</span> Semantic deduplication
-                            </li>
-                            <li class="flex items-center gap-2">
-                                <span class="text-cyan-400">✓</span> $3,650/mo avg savings
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Moonshot Spotlight -->
-        <section id="moonshot" class="py-24 border-t border-slate-800">
-            <div class="max-w-7xl mx-auto px-6">
-                <div class="text-center">
-                    <div
-                        class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold mb-6">
-                        🚀 Moonshot AI (Kimi K2) Integration
-                    </div>
-                    <h2 class="text-4xl md:text-5xl font-bold mb-4">
-                        Cache the <span class="text-gradient">Thinking</span>, Not Just the Answer
-                    </h2>
-                    <p class="text-xl text-slate-400 max-w-3xl mx-auto mb-12">
-                        World's <strong>first platform</strong> to combine Long-Term Memory with Reasoning Token
-                        Caching.
-                        When Kimi K2 "thinks" about a problem, we cache that expensive reasoning process. Reuse it for
-                        similar queries and save <strong>98%</strong> on reasoning costs.
-                    </p>
-
-                    <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-12">
-                        <!-- Stat 1 -->
-                        <div class="glass p-6 rounded-xl text-left">
-                            <div class="text-5xl font-bold text-purple-400 mb-2">98%</div>
-                            <div class="text-sm text-slate-400">Cost savings on reasoning tokens when cached</div>
-                        </div>
-                        <!-- Stat 2 -->
-                        <div class="glass p-6 rounded-xl text-left">
-                            <div class="text-5xl font-bold text-cyan-400 mb-2">∞</div>
-                            <div class="text-sm text-slate-400">Infinite memory across all sessions with L3 storage
-                            </div>
-                        </div>
-                        <!-- Stat 3 -->
-                        <div class="glass p-6 rounded-xl text-left">
-                            <div class="text-5xl font-bold text-emerald-400 mb-2">0</div>
-                            <div class="text-sm text-slate-400">Hallucinations in long-term memory (validated)</div>
-                        </div>
-                    </div>
-
-                    <!-- How It Works Diagram -->
-                    <div class="glass rounded-2xl p-8 text-left max-w-3xl mx-auto mb-12">
-                        <h3 class="text-xl font-bold mb-6 text-center">How the Hybrid System Works</h3>
-                        <div class="space-y-4 font-mono text-sm">
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold">
-                                    1</div>
-                                <div>
-                                    <div class="text-white font-semibold">User Query</div>
-                                    <div class="text-slate-500 text-xs">"What's our refund policy?"</div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold">
-                                    2</div>
-                                <div>
-                                    <div class="text-white font-semibold">L3 Vector Retrieval</div>
-                                    <div class="text-slate-500 text-xs">Fetch "Refund Policy v2.0" from long-term memory
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-400 font-bold">
-                                    3</div>
-                                <div>
-                                    <div class="text-white font-semibold">L2 Recent History</div>
-                                    <div class="text-slate-500 text-xs">Add context from last 7 days</div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold">
-                                    4</div>
-                                <div>
-                                    <div class="text-white font-semibold">Moonshot API Call</div>
-                                    <div class="text-slate-500 text-xs">Cached reasoning tokens reused (98% savings)
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold">
-                                    5</div>
-                                <div>
-                                    <div class="text-white font-semibold">Cognitive Validation</div>
-                                    <div class="text-slate-500 text-xs">Response validated (no hallucinations)</div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="w-8 h-8 rounded-lg bg-rose-500/20 flex items-center justify-center text-rose-400 font-bold">
-                                    6</div>
-                                <div>
-                                    <div class="text-white font-semibold">L2/L3 Storage</div>
-                                    <div class="text-slate-500 text-xs">Save interaction + reasoning metadata</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <a href="/docs.html#moonshot"
-                            class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-semibold transition-all shadow-lg shadow-purple-500/20">
-                            Read API Docs
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
-                                </path>
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Use Cases -->
-        <section class="py-24 bg-slate-900/50 border-t border-slate-800">
-            <div class="max-w-7xl mx-auto px-6">
-                <div class="text-center mb-16">
-                    <h2 class="text-4xl font-bold mb-4">Built for the Agentic Future</h2>
-                    <p class="text-xl text-slate-400">Real-world use cases that combine infinite memory + cost savings
-                    </p>
-                </div>
-
-                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="glass p-6 rounded-xl hover:bg-slate-800/50 transition-colors">
-                        <div class="text-3xl mb-3">🤖</div>
-                        <h3 class="font-bold text-white mb-2">AI Agents</h3>
-                        <p class="text-sm text-slate-400">Memory persists across sessions. No more "who am I talking
-                            to?"
-                        </p>
-                    </div>
-                    <div class="glass p-6 rounded-xl hover:bg-slate-800/50 transition-colors">
-                        <div class="text-3xl mb-3">💬</div>
-                        <h3 class="font-bold text-white mb-2">Conversational Apps</h3>
-                        <p class="text-sm text-slate-400">Context never expires. Pick up conversations from months ago.
-                        </p>
-                    </div>
-                    <div class="glass p-6 rounded-xl hover:bg-slate-800/50 transition-colors">
-                        <div class="text-3xl mb-3">🔍</div>
-                        <h3 class="font-bold text-white mb-2">Code Review Bots</h3>
-                        <p class="text-sm text-slate-400">Cache reasoning patterns. 98% savings on similar PR reviews.
-                        </p>
-                    </div>
-                    <div class="glass p-6 rounded-xl hover:bg-slate-800/50 transition-colors">
-                        <div class="text-3xl mb-3">🏢</div>
-                        <h3 class="font-bold text-white mb-2">Enterprise RAG</h3>
-                        <p class="text-sm text-slate-400">Validated knowledge graphs. No hallucinated docs.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Social Proof / Stats -->
-        <section class="py-24 border-t border-slate-800">
-            <div class="max-w-7xl mx-auto px-6">
-                <div class="grid md:grid-cols-3 gap-12 text-center">
-                    <div>
-                        <div class="text-5xl font-bold text-cyan-400 mb-2">$3,650</div>
-                        <div class="text-slate-400">Average monthly savings per customer</div>
-                    </div>
-                    <div>
-                        <div class="text-5xl font-bold text-purple-400 mb-2">98%</div>
-                        <div class="text-slate-400">Cost reduction on reasoning tokens</div>
-                    </div>
-                    <div>
-                        <div class="text-5xl font-bold text-emerald-400 mb-2">∞</div>
-                        <div class="text-slate-400">Context window (never expires)</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- CTA Section -->
-        <section class="py-24 bg-slate-900/50 border-t border-slate-800">
-            <div class="max-w-4xl mx-auto px-6 text-center">
-                <h2 class="text-4xl md:text-5xl font-bold mb-6">
-                    Ready to Give Your AI <br>a <span class="text-gradient">Real Brain</span>?
+    <!-- Three Pillars -->
+    <section id="cognitive" class="py-24 bg-slate-900/50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">
+                    Not Just Storage. <span class="text-cyan-400">Intelligence.</span>
                 </h2>
-                <p class="text-xl text-slate-400 mb-10">
-                    Start free. No credit card required. Upgrade when you're ready to scale.
+                <p class="text-xl text-slate-400 max-w-3xl mx-auto">
+                    Most vector databases are <strong>dumb storage</strong>. AgentCache includes a <strong>Cognitive
+                        Engine</strong> that validates memories, resolves conflicts, and prevents hallucinations
+                    before
+                    they stick.
                 </p>
-                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-                    <a href="/login.html"
-                        class="px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold text-lg shadow-lg shadow-cyan-500/20 transition-all transform hover:scale-105">
-                        Start Free
-                    </a>
-                    <a href="/monitor.html"
-                        class="px-8 py-4 glass hover:bg-slate-800 text-slate-300 rounded-xl font-medium transition-all">
-                        See Live Demo
-                    </a>
-                </div>
-                <p class="text-sm text-slate-500">Join Y Combinator companies saving thousands on LLM costs</p>
             </div>
-        </section>
 
-        <!-- Footer -->
-        <footer class="py-12 border-t border-slate-800 text-center text-slate-500 text-sm">
-            <div class="max-w-7xl mx-auto px-6">
-                <div class="mb-6 flex justify-center gap-8">
-                    <a href="/blog.html" class="hover:text-white transition">Blog</a>
-                    <a href="/docs.html" class="hover:text-white transition">Docs</a>
-                    <a href="/pricing.html" class="hover:text-white transition">Pricing</a>
-                    <a href="/contact.html" class="hover:text-white transition">Contact</a>
-                    <a href="https://github.com/xinetex/agentcache.ai" class="hover:text-white transition">GitHub</a>
+            <div class="grid md:grid-cols-3 gap-8 mb-16">
+                <!-- Pillar 1: Infinite Memory -->
+                <div class="glass p-8 rounded-2xl hover:bg-slate-800/50 transition-colors">
+                    <div class="text-4xl mb-4">🧠</div>
+                    <h3 class="text-2xl font-bold mb-4 text-white">Infinite Memory</h3>
+                    <p class="text-slate-400 mb-4">
+                        Never lose context. Our 3-tier architecture (L1/L2/L3) gives your agents <strong>infinite
+                            memory</strong> that persists across sessions, months, even years.
+                    </p>
+                    <ul class="space-y-2 text-sm text-slate-500">
+                        <li class="flex items-center gap-2">
+                            <span class="text-cyan-400">✓</span> Cross-session memory
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-cyan-400">✓</span> Semantic retrieval
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-cyan-400">✓</span> Episodic decay algorithm
+                        </li>
+                    </ul>
                 </div>
-                <p>&copy; 2025 AgentCache.ai by Drgnflai, Inc. The Memory Layer for the Agentic Web.</p>
+
+                <!-- Pillar 2: Hallucination Prevention -->
+                <div
+                    class="glass p-8 rounded-2xl hover:bg-slate-800/50 transition-colors border-2 border-emerald-500/30">
+                    <div class="text-4xl mb-4">🛡️</div>
+                    <h3 class="text-2xl font-bold mb-4 text-white">Hallucination Prevention</h3>
+                    <p class="text-slate-400 mb-4">
+                        Our <strong>Cognitive Validator</strong> analyzes every memory before saving. Low-confidence
+                        responses like "I think maybe..." are <strong>rejected</strong>. Only verified facts make it
+                        to
+                        long-term storage.
+                    </p>
+                    <div class="bg-black/50 p-4 rounded-lg font-mono text-xs text-slate-300">
+                        <span class="text-rose-400">- </span>"I think the sky is green" <span class="text-slate-600">//
+                            REJECTED</span><br>
+                        <span class="text-emerald-400">+ </span>"The sky is blue" <span class="text-slate-600">//
+                            VERIFIED</span>
+                    </div>
+                </div>
+
+                <!-- Pillar 3: 98% Cost Savings -->
+                <div class="glass p-8 rounded-2xl hover:bg-slate-800/50 transition-colors">
+                    <div class="text-4xl mb-4">💰</div>
+                    <h3 class="text-2xl font-bold mb-4 text-white">98% Cost Savings</h3>
+                    <p class="text-slate-400 mb-4">
+                        <strong>Cache the thinking</strong>, not just the answer. Moonshot AI integration caches
+                        <strong>reasoning tokens</strong> — the expensive "thinking" process — and reuses them for
+                        similar queries.
+                    </p>
+                    <ul class="space-y-2 text-sm text-slate-500">
+                        <li class="flex items-center gap-2">
+                            <span class="text-cyan-400">✓</span> Reasoning token cache
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-cyan-400">✓</span> Semantic deduplication
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-cyan-400">✓</span> $3,650/mo avg savings
+                        </li>
+                    </ul>
+                </div>
             </div>
-        </footer>
+        </div>
+    </section>
+
+    <!-- Moonshot Spotlight -->
+    <section id="moonshot" class="py-24 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold mb-6">
+                    🚀 Moonshot AI (Kimi K2) Integration
+                </div>
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">
+                    Cache the <span class="text-gradient">Thinking</span>, Not Just the Answer
+                </h2>
+                <p class="text-xl text-slate-400 max-w-3xl mx-auto mb-12">
+                    World's <strong>first platform</strong> to combine Long-Term Memory with Reasoning Token
+                    Caching.
+                    When Kimi K2 "thinks" about a problem, we cache that expensive reasoning process. Reuse it for
+                    similar queries and save <strong>98%</strong> on reasoning costs.
+                </p>
+
+                <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-12">
+                    <!-- Stat 1 -->
+                    <div class="glass p-6 rounded-xl text-left">
+                        <div class="text-5xl font-bold text-purple-400 mb-2">98%</div>
+                        <div class="text-sm text-slate-400">Cost savings on reasoning tokens when cached</div>
+                    </div>
+                    <!-- Stat 2 -->
+                    <div class="glass p-6 rounded-xl text-left">
+                        <div class="text-5xl font-bold text-cyan-400 mb-2">∞</div>
+                        <div class="text-sm text-slate-400">Infinite memory across all sessions with L3 storage
+                        </div>
+                    </div>
+                    <!-- Stat 3 -->
+                    <div class="glass p-6 rounded-xl text-left">
+                        <div class="text-5xl font-bold text-emerald-400 mb-2">0</div>
+                        <div class="text-sm text-slate-400">Hallucinations in long-term memory (validated)</div>
+                    </div>
+                </div>
+
+                <!-- How It Works Diagram -->
+                <div class="glass rounded-2xl p-8 text-left max-w-3xl mx-auto mb-12">
+                    <h3 class="text-xl font-bold mb-6 text-center">How the Hybrid System Works</h3>
+                    <div class="space-y-4 font-mono text-sm">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold">
+                                1</div>
+                            <div>
+                                <div class="text-white font-semibold">User Query</div>
+                                <div class="text-slate-500 text-xs">"What's our refund policy?"</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold">
+                                2</div>
+                            <div>
+                                <div class="text-white font-semibold">L3 Vector Retrieval</div>
+                                <div class="text-slate-500 text-xs">Fetch "Refund Policy v2.0" from long-term memory
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-400 font-bold">
+                                3</div>
+                            <div>
+                                <div class="text-white font-semibold">L2 Recent History</div>
+                                <div class="text-slate-500 text-xs">Add context from last 7 days</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold">
+                                4</div>
+                            <div>
+                                <div class="text-white font-semibold">Moonshot API Call</div>
+                                <div class="text-slate-500 text-xs">Cached reasoning tokens reused (98% savings)
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold">
+                                5</div>
+                            <div>
+                                <div class="text-white font-semibold">Cognitive Validation</div>
+                                <div class="text-slate-500 text-xs">Response validated (no hallucinations)</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-8 h-8 rounded-lg bg-rose-500/20 flex items-center justify-center text-rose-400 font-bold">
+                                6</div>
+                            <div>
+                                <div class="text-white font-semibold">L2/L3 Storage</div>
+                                <div class="text-slate-500 text-xs">Save interaction + reasoning metadata</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <a href="/docs.html#moonshot"
+                        class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-semibold transition-all shadow-lg shadow-purple-500/20">
+                        Read API Docs
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                            </path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases -->
+    <section class="py-24 bg-slate-900/50 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4">Built for the Agentic Future</h2>
+                <p class="text-xl text-slate-400">Real-world use cases that combine infinite memory + cost savings
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="glass p-6 rounded-xl hover:bg-slate-800/50 transition-colors">
+                    <div class="text-3xl mb-3">🤖</div>
+                    <h3 class="font-bold text-white mb-2">AI Agents</h3>
+                    <p class="text-sm text-slate-400">Memory persists across sessions. No more "who am I talking
+                        to?"
+                    </p>
+                </div>
+                <div class="glass p-6 rounded-xl hover:bg-slate-800/50 transition-colors">
+                    <div class="text-3xl mb-3">💬</div>
+                    <h3 class="font-bold text-white mb-2">Conversational Apps</h3>
+                    <p class="text-sm text-slate-400">Context never expires. Pick up conversations from months ago.
+                    </p>
+                </div>
+                <div class="glass p-6 rounded-xl hover:bg-slate-800/50 transition-colors">
+                    <div class="text-3xl mb-3">🔍</div>
+                    <h3 class="font-bold text-white mb-2">Code Review Bots</h3>
+                    <p class="text-sm text-slate-400">Cache reasoning patterns. 98% savings on similar PR reviews.
+                    </p>
+                </div>
+                <div class="glass p-6 rounded-xl hover:bg-slate-800/50 transition-colors">
+                    <div class="text-3xl mb-3">🏢</div>
+                    <h3 class="font-bold text-white mb-2">Enterprise RAG</h3>
+                    <p class="text-sm text-slate-400">Validated knowledge graphs. No hallucinated docs.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Proof / Stats -->
+    <section class="py-24 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid md:grid-cols-3 gap-12 text-center">
+                <div>
+                    <div class="text-5xl font-bold text-cyan-400 mb-2">$3,650</div>
+                    <div class="text-slate-400">Average monthly savings per customer</div>
+                </div>
+                <div>
+                    <div class="text-5xl font-bold text-purple-400 mb-2">98%</div>
+                    <div class="text-slate-400">Cost reduction on reasoning tokens</div>
+                </div>
+                <div>
+                    <div class="text-5xl font-bold text-emerald-400 mb-2">∞</div>
+                    <div class="text-slate-400">Context window (never expires)</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-24 bg-slate-900/50 border-t border-slate-800">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                Ready to Give Your AI <br>a <span class="text-gradient">Real Brain</span>?
+            </h2>
+            <p class="text-xl text-slate-400 mb-10">
+                Start free. No credit card required. Upgrade when you're ready to scale.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+                <a href="/login.html"
+                    class="px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold text-lg shadow-lg shadow-cyan-500/20 transition-all transform hover:scale-105">
+                    Start Free
+                </a>
+                <a href="/monitor.html"
+                    class="px-8 py-4 glass hover:bg-slate-800 text-slate-300 rounded-xl font-medium transition-all">
+                    See Live Demo
+                </a>
+            </div>
+            <p class="text-sm text-slate-500">Join Y Combinator companies saving thousands on LLM costs</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 border-t border-slate-800 text-center text-slate-500 text-sm">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="mb-6 flex justify-center gap-8">
+                <a href="/blog.html" class="hover:text-white transition">Blog</a>
+                <a href="/docs.html" class="hover:text-white transition">Docs</a>
+                <a href="/pricing.html" class="hover:text-white transition">Pricing</a>
+                <a href="/contact.html" class="hover:text-white transition">Contact</a>
+                <a href="https://github.com/xinetex/agentcache.ai" class="hover:text-white transition">GitHub</a>
+            </div>
+            <p>&copy; 2025 AgentCache.ai by Drgnflai, Inc. The Memory Layer for the Agentic Web.</p>
+        </div>
+    </footer>
 
     </div><!-- /content-wrapper -->
 
