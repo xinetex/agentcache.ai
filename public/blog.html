@@ -1,198 +1,310 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blog – AgentCache.ai</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="AI caching insights, cost optimization tips, and technical deep-dives for developers building with LLMs." />
+  <meta name="description"
+    content="AI caching insights, cost optimization tips, and technical deep-dives for developers building with LLMs.">
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/premium.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              500: '#0ea5e9',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
 </head>
-<body class="min-h-screen bg-[#050816] text-slate-100 antialiased">
-  <!-- Header -->
-  <header class="border-b border-slate-800 bg-slate-950/50 backdrop-blur-sm sticky top-0 z-10">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <a href="/" class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/40 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <div>
-              <h1 class="text-lg font-semibold tracking-tight text-slate-50">AgentCache</h1>
-              <p class="text-xs text-slate-400">Blog</p>
-            </div>
-          </a>
+
+<body class="antialiased selection:bg-cyan-500 selection:text-white">
+
+  <!-- Animated Background -->
+  <div class="animated-bg"></div>
+
+  <!-- Content Wrapper -->
+  <div class="content-wrapper">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass border-b border-slate-800">
+      <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-4 h-4 bg-cyan-500 rounded-sm rotate-45"></div>
+          <span class="font-bold text-lg tracking-tight">AgentCache</span>
         </div>
-        
-        <div class="flex items-center gap-3">
-          <a href="/" class="text-sm text-slate-300 hover:text-sky-400 transition">Home</a>
-          <a href="/docs.html" class="text-sm text-slate-300 hover:text-sky-400 transition">Docs</a>
-          <a href="/login.html" class="px-4 py-2 rounded-lg bg-sky-500 text-sm font-medium text-slate-950 hover:bg-sky-400 transition">
+
+        <div class="hidden md:flex gap-6 relative">
+          <!-- Platform Dropdown -->
+          <div class="relative group">
+            <button class="text-sm font-medium text-slate-400 hover:text-white transition flex items-center gap-1">
+              Platform
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            <div
+              class="absolute top-full left-0 mt-2 w-56 glass rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+              <a href="/#cognitive" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                <div class="font-semibold text-white">Cognitive Memory OS</div>
+                <div class="text-xs text-slate-500">3-tier architecture</div>
+              </a>
+              <a href="/#moonshot" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                <div class="font-semibold text-white">Reasoning Cache</div>
+                <div class="text-xs text-slate-500">98% cost savings</div>
+              </a>
+              <a href="/monitor.html" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                <div class="font-semibold text-white">Memory Monitor</div>
+                <div class="text-xs text-slate-500">Live demo</div>
+              </a>
+            </div>
+          </div>
+
+          <!-- Developers Dropdown -->
+          <div class="relative group">
+            <button class="text-sm font-medium text-slate-400 hover:text-white transition flex items-center gap-1">
+              Developers
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            <div
+              class="absolute top-full left-0 mt-2 w-56 glass rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+              <a href="/docs.html" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                <div class="font-semibold text-white">Documentation</div>
+                <div class="text-xs text-slate-500">API reference</div>
+              </a>
+              <a href="/docs.html#quickstart" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                <div class="font-semibold text-white">Quick Start</div>
+                <div class="text-xs text-slate-500">30 second setup</div>
+              </a>
+              <a href="/changelog.html" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                <div class="font-semibold text-white">Changelog</div>
+                <div class="text-xs text-slate-500">What's new</div>
+              </a>
+            </div>
+          </div>
+
+          <a href="/blog.html" class="text-sm font-medium text-white transition">Blog</a>
+          <a href="/pricing.html" class="text-sm font-medium text-slate-400 hover:text-white transition">Pricing</a>
+        </div>
+
+        <a href="/login.html"
+          class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full text-sm font-medium transition-all border border-white/10">
+          Get Started
+        </a>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <div class="md:hidden absolute top-4 right-6">
+        <button id="mobile-menu-btn" class="text-slate-300 hover:text-white p-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mobile Menu (Hidden by default) -->
+      <div id="mobile-menu"
+        class="hidden md:hidden absolute top-16 left-0 w-full glass border-b border-slate-800 p-4 flex flex-col gap-4">
+        <div class="space-y-4">
+          <div class="font-semibold text-slate-400 text-xs uppercase tracking-wider px-2">Platform</div>
+          <a href="/#cognitive" class="block px-2 text-sm text-slate-300 hover:text-white">Cognitive Memory OS</a>
+          <a href="/#moonshot" class="block px-2 text-sm text-slate-300 hover:text-white">Reasoning Cache</a>
+          <a href="/monitor.html" class="block px-2 text-sm text-slate-300 hover:text-white">Memory Monitor</a>
+
+          <div class="font-semibold text-slate-400 text-xs uppercase tracking-wider px-2 mt-4">Developers</div>
+          <a href="/docs.html" class="block px-2 text-sm text-slate-300 hover:text-white">Documentation</a>
+          <a href="/docs.html#quickstart" class="block px-2 text-sm text-slate-300 hover:text-white">Quick Start</a>
+          <a href="/changelog.html" class="block px-2 text-sm text-slate-300 hover:text-white">Changelog</a>
+
+          <div class="border-t border-white/10 my-2"></div>
+          <a href="/blog.html" class="block px-2 text-sm font-medium text-white">Blog</a>
+          <a href="/pricing.html" class="block px-2 text-sm font-medium text-slate-300 hover:text-white">Pricing</a>
+          <a href="/login.html"
+            class="block w-full text-center bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all mt-4">
             Get Started
           </a>
         </div>
       </div>
-    </div>
-  </header>
+    </nav>
 
-  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <!-- Hero Section -->
-    <div class="text-center mb-16">
-      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/40 text-xs text-sky-300 mb-4">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-        </svg>
-        New posts every Tuesday & Friday
+    <script>
+      // Mobile Menu Toggle
+      const mobileBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+
+      if (mobileBtn && mobileMenu) {
+        mobileBtn.addEventListener('click', () => {
+          mobileMenu.classList.toggle('hidden');
+        });
+      }
+    </script>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <!-- Hero Section -->
+      <div class="text-center mb-16">
+        <div
+          class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/40 text-xs text-sky-300 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+          </svg>
+          New posts every Tuesday & Friday
+        </div>
+
+        <h2 class="text-4xl md:text-5xl font-bold tracking-tight text-slate-50 mb-4">
+          AI Caching Insights
+        </h2>
+        <p class="text-lg text-slate-400 max-w-2xl mx-auto">
+          Cost optimization tips, technical deep-dives, and industry trends for developers building with LLMs.
+        </p>
       </div>
-      
-      <h2 class="text-4xl md:text-5xl font-bold tracking-tight text-slate-50 mb-4">
-        AI Caching Insights
-      </h2>
-      <p class="text-lg text-slate-400 max-w-2xl mx-auto">
-        Cost optimization tips, technical deep-dives, and industry trends for developers building with LLMs.
-      </p>
-    </div>
 
-    <!-- Filter Tabs -->
-    <div class="flex items-center gap-3 mb-8 overflow-x-auto pb-2">
-      <button onclick="filterPosts('all')" class="filter-btn active" data-filter="all">
-        All Posts
-      </button>
-      <button onclick="filterPosts('technical')" class="filter-btn" data-filter="technical">
-        Technical
-      </button>
-      <button onclick="filterPosts('industry')" class="filter-btn" data-filter="industry">
-        Industry
-      </button>
-      <button onclick="filterPosts('tutorial')" class="filter-btn" data-filter="tutorial">
-        Tutorials
-      </button>
-    </div>
-
-    <!-- Blog Posts Grid -->
-    <div id="posts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-      <!-- Posts loaded dynamically -->
-    </div>
-
-    <!-- Newsletter Signup -->
-    <div class="bg-gradient-to-br from-sky-950/50 to-violet-950/50 border border-sky-500/30 rounded-2xl p-8 text-center">
-      <h3 class="text-2xl font-bold text-slate-50 mb-2">
-        Get AI cost optimization tips in your inbox
-      </h3>
-      <p class="text-slate-400 mb-6">
-        Join 500+ developers receiving weekly insights on reducing LLM costs and improving performance.
-      </p>
-      
-      <form class="max-w-md mx-auto flex gap-3" onsubmit="return false;">
-        <input 
-          type="email" 
-          placeholder="your@email.com" 
-          class="flex-1 px-4 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
-        />
-        <button 
-          type="submit" 
-          class="px-6 py-2 rounded-lg bg-sky-500 text-sm font-medium text-slate-950 hover:bg-sky-400 transition"
-        >
-          Subscribe
+      <!-- Filter Tabs -->
+      <div class="flex items-center gap-3 mb-8 overflow-x-auto pb-2">
+        <button onclick="filterPosts('all')" class="filter-btn active" data-filter="all">
+          All Posts
         </button>
-      </form>
-      
-      <p class="text-xs text-slate-500 mt-3">
-        No spam. Unsubscribe anytime.
-      </p>
-    </div>
-  </main>
+        <button onclick="filterPosts('technical')" class="filter-btn" data-filter="technical">
+          Technical
+        </button>
+        <button onclick="filterPosts('industry')" class="filter-btn" data-filter="industry">
+          Industry
+        </button>
+        <button onclick="filterPosts('tutorial')" class="filter-btn" data-filter="tutorial">
+          Tutorials
+        </button>
+      </div>
 
-  <footer class="border-t border-slate-800 bg-slate-950/50 py-8 mt-12">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <p class="text-sm text-slate-400">
-        Built with ❤️ for AI developers • 
-        <a href="/" class="text-sky-400 hover:text-sky-300">AgentCache.ai</a> • 
-        <a href="mailto:blog@agentcache.ai" class="text-sky-400 hover:text-sky-300">Contribute</a>
-      </p>
-    </div>
-  </footer>
+      <!-- Blog Posts Grid -->
+      <div id="posts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        <!-- Posts loaded dynamically -->
+      </div>
 
-  <style>
-    .filter-btn {
-      background: rgba(15, 23, 42, 0.5);
-      color: rgb(148, 163, 184);
-      border: 1px solid rgba(148, 163, 184, 0.1);
-      padding: 0.5rem 1rem;
-      border-radius: 0.5rem;
-      font-size: 0.875rem;
-      font-weight: 500;
-      transition: all 0.2s;
-      cursor: pointer;
-    }
-    
-    .filter-btn:hover {
-      background: rgba(15, 23, 42, 0.8);
-      color: rgb(226, 232, 240);
-      border-color: rgba(148, 163, 184, 0.2);
-    }
-    
-    .filter-btn.active {
-      background: rgba(14, 165, 233, 0.1);
-      color: rgb(56, 189, 248);
-      border-color: rgba(14, 165, 233, 0.4);
-    }
-  </style>
+      <!-- Newsletter Signup -->
+      <div
+        class="bg-gradient-to-br from-sky-950/50 to-violet-950/50 border border-sky-500/30 rounded-2xl p-8 text-center">
+        <h3 class="text-2xl font-bold text-slate-50 mb-2">
+          Get AI cost optimization tips in your inbox
+        </h3>
+        <p class="text-slate-400 mb-6">
+          Join 500+ developers receiving weekly insights on reducing LLM costs and improving performance.
+        </p>
 
-  <script>
-    let allPosts = [];
-    let currentFilter = 'all';
+        <form class="max-w-md mx-auto flex gap-3" onsubmit="return false;">
+          <input type="email" placeholder="your@email.com"
+            class="flex-1 px-4 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+          <button type="submit"
+            class="px-6 py-2 rounded-lg bg-sky-500 text-sm font-medium text-slate-950 hover:bg-sky-400 transition">
+            Subscribe
+          </button>
+        </form>
 
-    // Load blog posts
-    async function loadPosts() {
-      try {
-        const response = await fetch('/blog-index.json');
-        allPosts = await response.json();
-        renderPosts(allPosts);
-      } catch (err) {
-        console.error('Failed to load blog posts:', err);
-        document.getElementById('posts-grid').innerHTML = `
+        <p class="text-xs text-slate-500 mt-3">
+          No spam. Unsubscribe anytime.
+        </p>
+      </div>
+    </main>
+
+    <footer class="border-t border-slate-800 bg-slate-950/50 py-8 mt-12">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <p class="text-sm text-slate-400">
+          Built with ❤️ for AI developers •
+          <a href="/" class="text-sky-400 hover:text-sky-300">AgentCache.ai</a> •
+          <a href="mailto:blog@agentcache.ai" class="text-sky-400 hover:text-sky-300">Contribute</a>
+        </p>
+      </div>
+    </footer>
+
+    <style>
+      .filter-btn {
+        background: rgba(15, 23, 42, 0.5);
+        color: rgb(148, 163, 184);
+        border: 1px solid rgba(148, 163, 184, 0.1);
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+
+      .filter-btn:hover {
+        background: rgba(15, 23, 42, 0.8);
+        color: rgb(226, 232, 240);
+        border-color: rgba(148, 163, 184, 0.2);
+      }
+
+      .filter-btn.active {
+        background: rgba(14, 165, 233, 0.1);
+        color: rgb(56, 189, 248);
+        border-color: rgba(14, 165, 233, 0.4);
+      }
+    </style>
+
+    <script>
+      let allPosts = [];
+      let currentFilter = 'all';
+
+      // Load blog posts
+      async function loadPosts() {
+        try {
+          const response = await fetch('/blog-index.json');
+          allPosts = await response.json();
+          renderPosts(allPosts);
+        } catch (err) {
+          console.error('Failed to load blog posts:', err);
+          document.getElementById('posts-grid').innerHTML = `
           <div class="col-span-full text-center py-12">
             <p class="text-slate-400">No posts yet. Check back soon!</p>
           </div>
         `;
+        }
       }
-    }
 
-    // Render posts to grid
-    function renderPosts(posts) {
-      const grid = document.getElementById('posts-grid');
-      
-      if (posts.length === 0) {
-        grid.innerHTML = `
+      // Render posts to grid
+      function renderPosts(posts) {
+        const grid = document.getElementById('posts-grid');
+
+        if (posts.length === 0) {
+          grid.innerHTML = `
           <div class="col-span-full text-center py-12">
             <p class="text-slate-400">No posts found for this category.</p>
           </div>
         `;
-        return;
-      }
+          return;
+        }
 
-      grid.innerHTML = posts.map((post, i) => {
-        const categoryColors = {
-          technical: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/40', text: 'text-emerald-300' },
-          industry: { bg: 'bg-sky-500/10', border: 'border-sky-500/40', text: 'text-sky-300' },
-          tutorial: { bg: 'bg-violet-500/10', border: 'border-violet-500/40', text: 'text-violet-300' }
-        };
-        
-        const colors = categoryColors[post.category] || categoryColors.technical;
-        const isFeatured = i === 0;
-        const borderClass = isFeatured ? 'border-sky-500/30 hover:border-sky-500/50' : 'border-slate-800/80 hover:border-slate-700';
-        
-        const date = new Date(post.date);
-        const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-        const readTime = Math.ceil(post.excerpt.split(' ').length / 200) + 4; // ~200 words/min + base content
+        grid.innerHTML = posts.map((post, i) => {
+          const categoryColors = {
+            technical: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/40', text: 'text-emerald-300' },
+            industry: { bg: 'bg-sky-500/10', border: 'border-sky-500/40', text: 'text-sky-300' },
+            tutorial: { bg: 'bg-violet-500/10', border: 'border-violet-500/40', text: 'text-violet-300' }
+          };
 
-        const postUrl = post.externalUrl || `/post.html?slug=${post.slug}`;
-        
-        return `
-          <article class="bg-slate-950/70 border ${borderClass} rounded-2xl p-6 hover:transform hover:scale-105 transition-all cursor-pointer" 
+          const colors = categoryColors[post.category] || categoryColors.technical;
+          const isFeatured = i === 0;
+          const borderClass = isFeatured ? 'border-cyan-500/30 hover:border-cyan-500/50' : 'border-slate-700/50 hover:border-slate-600';
+
+          const date = new Date(post.date);
+          const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+          const readTime = Math.ceil(post.excerpt.split(' ').length / 200) + 4; // ~200 words/min + base content
+
+          const postUrl = post.externalUrl || `/post.html?slug=${post.slug}`;
+
+          return `
+          <article class="glass ${borderClass} rounded-2xl p-6 hover:transform hover:scale-105 transition-all cursor-pointer" 
                    data-category="${post.category}"
                    onclick="window.location.href='${postUrl}'">
             <div class="flex items-center gap-2 mb-3">
@@ -202,7 +314,7 @@
               <span class="text-xs text-slate-400">${formattedDate}</span>
             </div>
             
-            <h3 class="text-xl font-semibold text-slate-50 mb-2">
+            <h3 class="text-xl font-semibold text-white mb-2">
               ${post.title}
             </h3>
             
@@ -218,35 +330,40 @@
                 </svg>
                 ${readTime} min read
               </div>
-              <span class="text-sky-400 text-sm hover:text-sky-300">Read more →</span>
+              <span class="text-cyan-400 text-sm hover:text-cyan-300">Read more →</span>
             </div>
           </article>
         `;
-      }).join('');
-    }
+        }).join('');
+      }
 
-    // Filter posts by category
-    function filterPosts(category) {
-      currentFilter = category;
-      
-      // Update active button
-      document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.filter === category) {
-          btn.classList.add('active');
-        }
-      });
-      
-      // Filter and render
-      const filtered = category === 'all' 
-        ? allPosts 
-        : allPosts.filter(p => p.category === category);
-      
-      renderPosts(filtered);
-    }
+      // Filter posts by category
+      function filterPosts(category) {
+        currentFilter = category;
 
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', loadPosts);
-  </script>
+        // Update active button
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+          btn.classList.remove('active');
+          if (btn.dataset.filter === category) {
+            btn.classList.add('active');
+          }
+        });
+
+        // Filter and render
+        const filtered = category === 'all'
+          ? allPosts
+          : allPosts.filter(p => p.category === category);
+
+        renderPosts(filtered);
+      }
+
+      // Initialize on page load
+      document.addEventListener('DOMContentLoaded', loadPosts);
+    </script>
+
+    <!-- Firefly Animation -->
+    <script src="/assets/fireflies.js"></script>
+
 </body>
+
 </html>
