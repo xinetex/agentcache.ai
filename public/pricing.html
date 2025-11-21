@@ -2,377 +2,500 @@
 <html lang="en" class="scroll-smooth">
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pricing — AgentCache.ai</title>
     <meta name="description"
-        content="Simple, transparent pricing. Save 80-90% on LLM costs. Start free, scale as you grow." />
-
+        content="Simple, transparent pricing. Save 80-90% on LLM costs. Start free, scale as you grow.">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/premium.css">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        neutral: { 950: '#050505', 900: '#0a0a0a' },
-                        brand: { 500: '#6366f1', 600: '#4f46e5' },
-                        accent: { 500: '#10b981' }
+                        brand: {
+                            50: '#f0f9ff',
+                            500: '#0ea5e9',
+                            900: '#0c4a6e',
+                        }
                     }
                 }
             }
         }
     </script>
-    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body class="bg-neutral-950 text-neutral-100 antialiased">
+<body class="antialiased selection:bg-cyan-500 selection:text-white">
 
-    <!-- Nav -->
-    <header class="fixed top-0 w-full z-50 bg-neutral-950/80 backdrop-blur-md border-b border-white/5">
-        <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-3 group">
-                <div
-                    class="h-9 w-9 rounded-xl bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-sm font-bold shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform">
-                    AC</div>
-                <span class="font-bold text-lg">AgentCache<span class="text-neutral-500">.ai</span></span>
-            </a>
-            <nav class="hidden md:flex gap-8 text-sm font-medium text-neutral-400">
-                <a href="/#features" class="hover:text-white transition">Features</a>
-                <a href="/pricing.html" class="text-white">Pricing</a>
-                <a href="/docs.html" class="hover:text-white transition">Docs</a>
-                <a href="/contact.html" class="hover:text-white transition">Contact</a>
-            </nav>
-            <a href="/login.html"
-                class="px-5 py-2.5 rounded-lg bg-white text-neutral-950 text-sm font-bold hover:bg-neutral-200 transition">Get
-                Started</a>
-        </div>
-    </header>
+    <!-- Animated Background -->
+    <div class="animated-bg"></div>
 
-    <main class="pt-32 pb-20">
-        <!-- Hero -->
-        <section class="max-w-7xl mx-auto px-6 text-center mb-20">
-            <h1 class="text-5xl md:text-6xl font-bold mb-6">Simple, Transparent Pricing</h1>
-            <p class="text-xl text-neutral-400 max-w-2xl mx-auto mb-8">
-                Start free. Scale as you grow. Save 80-90% on your LLM costs from day one.
-            </p>
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
 
-            <!-- ROI Calculator -->
-            <div class="max-w-lg mx-auto glass rounded-2xl p-8 border border-white/10 mb-12">
-                <h3 class="text-lg font-bold mb-4">Calculate Your Savings</h3>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm text-neutral-400 mb-2">Monthly LLM Spend</label>
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">$</span>
-                            <input type="number" id="llm-spend" value="5000"
-                                class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 pl-8 text-white focus:outline-none focus:border-brand-500 transition"
-                                oninput="calculateROI()" />
+        <!-- Navigation -->
+        <nav class="fixed w-full z-50 glass border-b border-slate-800">
+            <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 bg-cyan-500 rounded-sm rotate-45"></div>
+                    <span class="font-bold text-lg tracking-tight">AgentCache</span>
+                </div>
+
+                <div class="hidden md:flex gap-6 relative">
+                    <!-- Platform Dropdown -->
+                    <div class="relative group">
+                        <button
+                            class="text-sm font-medium text-slate-400 hover:text-white transition flex items-center gap-1">
+                            Platform
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div
+                            class="absolute top-full left-0 mt-2 w-56 glass rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                            <a href="/#cognitive" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                                <div class="font-semibold text-white">Cognitive Memory OS</div>
+                                <div class="text-xs text-slate-500">3-tier architecture</div>
+                            </a>
+                            <a href="/#moonshot" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                                <div class="font-semibold text-white">Reasoning Cache</div>
+                                <div class="text-xs text-slate-500">98% cost savings</div>
+                            </a>
+                            <a href="/monitor.html" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                                <div class="font-semibold text-white">Memory Monitor</div>
+                                <div class="text-xs text-slate-500">Live demo</div>
+                            </a>
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-sm text-neutral-400 mb-2">Expected Cache Hit Rate</label>
-                        <input type="range" id="hit-rate" value="75" min="50" max="95" class="w-full"
-                            oninput="calculateROI()" />
-                        <div class="flex justify-between text-sm text-neutral-500 mt-1">
-                            <span>50%</span>
-                            <span id="hit-rate-display" class="text-brand-400 font-bold">75%</span>
-                            <span>95%</span>
+
+                    <!-- Developers Dropdown -->
+                    <div class="relative group">
+                        <button
+                            class="text-sm font-medium text-slate-400 hover:text-white transition flex items-center gap-1">
+                            Developers
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div
+                            class="absolute top-full left-0 mt-2 w-56 glass rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                            <a href="/docs.html" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                                <div class="font-semibold text-white">Documentation</div>
+                                <div class="text-xs text-slate-500">API reference</div>
+                            </a>
+                            <a href="/docs.html#quickstart" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                                <div class="font-semibold text-white">Quick Start</div>
+                                <div class="text-xs text-slate-500">30 second setup</div>
+                            </a>
+                            <a href="/changelog.html" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                                <div class="font-semibold text-white">Changelog</div>
+                                <div class="text-xs text-slate-500">What's new</div>
+                            </a>
                         </div>
                     </div>
-                    <div class="pt-4 border-t border-white/10">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-neutral-400">Your Savings:</span>
-                            <span id="savings" class="text-2xl font-bold text-accent-500">$3,750/mo</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-neutral-400">AgentCache Cost:</span>
-                            <span id="ac-cost" class="text-lg font-bold text-white">$99/mo</span>
-                        </div>
-                        <div class="mt-4 pt-4 border-t border-white/10">
-                            <div class="flex justify-between items-center">
-                                <span class="font-bold">Net Savings:</span>
-                                <span id="net-savings" class="text-3xl font-bold text-accent-500">$3,651/mo</span>
-                            </div>
-                            <p class="text-xs text-neutral-500 mt-2">ROI: <span id="roi"
-                                    class="text-accent-400 font-bold">3,650%</span></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
 
-        <!-- Pricing Tiers -->
-        <section class="max-w-7xl mx-auto px-6 mb-20">
-            <div class="grid md:grid-cols-4 gap-6">
-
-                <!-- Free -->
-                <div class="p-6 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-white/20 transition">
-                    <h3 class="text-xl font-bold mb-2">Free</h3>
-                    <p class="text-neutral-400 text-sm mb-6">Perfect for testing</p>
-                    <div class="mb-6">
-                        <span class="text-4xl font-bold">$0</span>
-                        <span class="text-neutral-500">/month</span>
-                    </div>
-                    <ul class="space-y-3 mb-6 text-sm">
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                            <span>10K requests/mo</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                            <span>All caching strategies</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                            <span>Community support</span>
-                        </li>
-                    </ul>
-                    <a href="/login.html"
-                        class="block w-full text-center px-4 py-3 rounded-lg border border-white/20 hover:bg-white/5 transition font-medium">Start
-                        Free</a>
+                    <a href="/blog.html" class="text-sm font-medium text-slate-400 hover:text-white transition">Blog</a>
+                    <a href="/pricing.html" class="text-sm font-medium text-white transition">Pricing</a>
                 </div>
 
-                <!-- Starter -->
-                <div class="p-6 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-white/20 transition">
-                    <h3 class="text-xl font-bold mb-2">Starter</h3>
-                    <p class="text-neutral-400 text-sm mb-6">For side projects</p>
-                    <div class="mb-6">
-                        <span class="text-4xl font-bold">$29</span>
-                        <span class="text-neutral-500">/month</span>
-                    </div>
-                    <ul class="space-y-3 mb-6 text-sm">
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                            <span>100K requests/mo</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                            <span>Email support</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                            <span>Analytics dashboard</span>
-                        </li>
-                    </ul>
-                    <a href="/login.html"
-                        class="block w-full text-center px-4 py-3 rounded-lg bg-brand-500 hover:bg-brand-600 transition font-bold">Get
-                        Started</a>
-                </div>
-
-                <!-- Pro (Popular) -->
-                <div class="relative p-6 rounded-2xl border-2 border-brand-500 bg-brand-500/10 scale-105">
-                    <div
-                        class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-brand-500 text-white text-xs font-bold">
-                        POPULAR</div>
-                    <h3 class="text-xl font-bold mb-2">Pro</h3>
-                    <p class="text-neutral-400 text-sm mb-6">For production apps</p>
-                    <div class="mb-6">
-                        <span class="text-4xl font-bold">$99</span>
-                        <span class="text-neutral-500">/month</span>
-                    </div>
-                    <ul class="space-y-3 mb-6 text-sm">
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                            <span>500K requests/mo</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                            <span>Priority support</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                            <span>Custom cache rules</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                            <span>99.9% SLA</span>
-                        </li>
-                    </ul>
-                    <a href="/login.html"
-                        class="block w-full text-center px-4 py-3 rounded-lg bg-white text-neutral-950 hover:bg-neutral-200 transition font-bold">Get
-                        Started</a>
-                </div>
-
-                <!-- Business -->
-                <div class="p-6 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-white/20 transition">
-                    <h3 class="text-xl font-bold mb-2">Business</h3>
-                    <p class="text-neutral-400 text-sm mb-6">For scale-ups</p>
-                    <div class="mb-6">
-                        <span class="text-4xl font-bold">$299</span>
-                        <span class="text-neutral-500">/month</span>
-                    </div>
-                    <ul class="space-y-3 mb-6 text-sm">
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                            <span>2M requests/mo</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                            <span>Dedicated support</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                            <span>SSO/SAML</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                            <span>99.99% SLA</span>
-                        </li>
-                    </ul>
-                    <a href="/login.html"
-                        class="block w-full text-center px-4 py-3 rounded-lg border border-white/20 hover:bg-white/5 transition font-medium">Get
-                        Started</a>
-                </div>
-            </div>
-
-            <!-- Enterprise -->
-            <div class="mt-12 p-8 rounded-2xl border border-white/10 bg-white/[0.02] text-center">
-                <h3 class="text-2xl font-bold mb-2">Enterprise</h3>
-                <p class="text-neutral-400 mb-6">Custom solutions for Fortune 500 companies</p>
-                <div class="flex flex-wrap justify-center gap-8 mb-6 text-sm">
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="check" class="w-5 h-5 text-accent-500"></i>
-                        <span>Unlimited requests</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="check" class="w-5 h-5 text-accent-500"></i>
-                        <span>On-premise deployment</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="check" class="w-5 h-5 text-accent-500"></i>
-                        <span>Custom SLA</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="check" class="w-5 h-5 text-accent-500"></i>
-                        <span>Technical account manager</span>
-                    </div>
-                </div>
-                <a href="/contact.html"
-                    class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-brand-500 hover:bg-brand-600 transition font-bold">
-                    Contact Sales
-                    <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                <a href="/login.html"
+                    class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full text-sm font-medium transition-all border border-white/10">
+                    Get Started
                 </a>
             </div>
-        </section>
 
-        <!-- FAQ -->
-        <section class="max-w-3xl mx-auto px-6">
-            <h2 class="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
-            <div class="space-y-6">
-                <details class="group p-6 rounded-xl border border-white/10 bg-white/[0.02]">
-                    <summary class="font-bold cursor-pointer list-none flex justify-between items-center">
-                        What counts as a request?
-                        <i data-lucide="chevron-down" class="w-5 h-5 group-open:rotate-180 transition"></i>
-                    </summary>
-                    <p class="mt-4 text-neutral-400 text-sm">Any API call to AgentCache, whether it's a cache hit or
-                        miss. Cache hits are free from your LLM provider.</p>
-                </details>
-
-                <details class="group p-6 rounded-xl border border-white/10 bg-white/[0.02]">
-                    <summary class="font-bold cursor-pointer list-none flex justify-between items-center">
-                        What happens if I exceed my plan limit?
-                        <i data-lucide="chevron-down" class="w-5 h-5 group-open:rotate-180 transition"></i>
-                    </summary>
-                    <p class="mt-4 text-neutral-400 text-sm">Overage is billed at $0.30 per 1K requests. We'll notify
-                        you before you hit your limit.</p>
-                </details>
-
-                <details class="group p-6 rounded-xl border border-white/10 bg-white/[0.02]">
-                    <summary class="font-bold cursor-pointer list-none flex justify-between items-center">
-                        Can I cancel anytime?
-                        <i data-lucide="chevron-down" class="w-5 h-5 group-open:rotate-180 transition"></i>
-                    </summary>
-                    <p class="mt-4 text-neutral-400 text-sm">Yes. Cancel anytime with no penalties. Your data is
-                        retained for 30 days.</p>
-                </details>
-
-                <details class="group p-6 rounded-xl border border-white/10 bg-white/[0.02]">
-                    <summary class="font-bold cursor-pointer list-none flex justify-between items-center">
-                        Do you offer discounts for startups?
-                        <i data-lucide="chevron-down" class="w-5 h-5 group-open:rotate-180 transition"></i>
-                    </summary>
-                    <p class="mt-4 text-neutral-400 text-sm">Yes! Y Combinator companies get 50% off for the first year.
-                        Contact us for details.</p>
-                </details>
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden absolute top-4 right-6">
+                <button id="mobile-menu-btn" class="text-slate-300 hover:text-white p-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
             </div>
-        </section>
-    </main>
 
-    <!-- Footer -->
-    <footer class="border-t border-white/5 py-12 bg-neutral-950">
-        <div class="mx-auto max-w-7xl px-6">
-            <div class="grid md:grid-cols-4 gap-8 mb-8">
-                <div>
-                    <div class="flex items-center gap-2 mb-4">
-                        <div class="h-6 w-6 rounded bg-white/10 flex items-center justify-center text-[10px] font-bold">
-                            AC</div>
-                        <span class="text-sm font-semibold">AgentCache.ai</span>
+            <!-- Mobile Menu (Hidden by default) -->
+            <div id="mobile-menu"
+                class="hidden md:hidden absolute top-16 left-0 w-full glass border-b border-slate-800 p-4 flex flex-col gap-4">
+                <div class="space-y-4">
+                    <div class="font-semibold text-slate-400 text-xs uppercase tracking-wider px-2">Platform</div>
+                    <a href="/#cognitive" class="block px-2 text-sm text-slate-300 hover:text-white">Cognitive Memory
+                        OS</a>
+                    <a href="/#moonshot" class="block px-2 text-sm text-slate-300 hover:text-white">Reasoning Cache</a>
+                    <a href="/monitor.html" class="block px-2 text-sm text-slate-300 hover:text-white">Memory
+                        Monitor</a>
+
+                    <div class="font-semibold text-slate-400 text-xs uppercase tracking-wider px-2 mt-4">Developers
                     </div>
-                    <p class="text-sm text-neutral-500">The Global Edge Cache for LLMs</p>
-                </div>
+                    <a href="/docs.html" class="block px-2 text-sm text-slate-300 hover:text-white">Documentation</a>
+                    <a href="/docs.html#quickstart" class="block px-2 text-sm text-slate-300 hover:text-white">Quick
+                        Start</a>
+                    <a href="/changelog.html" class="block px-2 text-sm text-slate-300 hover:text-white">Changelog</a>
 
-                <div>
-                    <h4 class="font-semibold mb-3 text-sm">Product</h4>
-                    <ul class="space-y-2 text-sm text-neutral-500">
-                        <li><a href="/#features" class="hover:text-white transition">Features</a></li>
-                        <li><a href="/pricing.html" class="hover:text-white transition">Pricing</a></li>
-                        <li><a href="/docs.html" class="hover:text-white transition">Documentation</a></li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h4 class="font-semibold mb-3 text-sm">Company</h4>
-                    <ul class="space-y-2 text-sm text-neutral-500">
-                        <li><a href="/blog.html" class="hover:text-white transition">Blog</a></li>
-                        <li><a href="/contact.html" class="hover:text-white transition">Contact</a></li>
-                        <li><a href="https://github.com/xinetex/agentcache.ai"
-                                class="hover:text-white transition">GitHub</a></li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h4 class="font-semibold mb-3 text-sm">Contact</h4>
-                    <ul class="space-y-2 text-sm text-neutral-500">
-                        <li><a href="mailto:hello@agentcache.ai"
-                                class="hover:text-white transition">hello@agentcache.ai</a></li>
-                        <li><a href="/contact.html" class="hover:text-white transition">Enterprise Sales</a></li>
-                    </ul>
+                    <div class="border-t border-white/10 my-2"></div>
+                    <a href="/blog.html" class="block px-2 text-sm font-medium text-slate-300 hover:text-white">Blog</a>
+                    <a href="/pricing.html" class="block px-2 text-sm font-medium text-white">Pricing</a>
+                    <a href="/login.html"
+                        class="block w-full text-center bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all mt-4">
+                        Get Started
+                    </a>
                 </div>
             </div>
+        </nav>
 
-            <div
-                class="flex flex-col md:flex-row justify-between items-center gap-4 pt-8 border-t border-white/5 text-sm text-neutral-600">
-                <div>© 2025 Drgnflai, Inc.</div>
-                <div class="flex gap-6">
-                    <a href="/privacy.html" class="hover:text-white transition">Privacy</a>
-                    <a href="/terms.html" class="hover:text-white transition">Terms</a>
+        <script>
+            // Mobile Menu Toggle
+            const mobileBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            if (mobileBtn && mobileMenu) {
+                mobileBtn.addEventListener('click', () => {
+                    mobileMenu.classList.toggle('hidden');
+                });
+            }
+        </script>
+
+        <main class="pt-32 pb-20">
+            <!-- Hero -->
+            <section class="max-w-7xl mx-auto px-6 text-center mb-20">
+                <h1 class="text-5xl md:text-6xl font-bold mb-6">Simple, Transparent Pricing</h1>
+                <p class="text-xl text-neutral-400 max-w-2xl mx-auto mb-8">
+                    Start free. Scale as you grow. Save 80-90% on your LLM costs from day one.
+                </p>
+
+                <!-- ROI Calculator -->
+                <div class="max-w-lg mx-auto glass rounded-2xl p-8 border border-white/10 mb-12">
+                    <h3 class="text-lg font-bold mb-4">Calculate Your Savings</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-neutral-400 mb-2">Monthly LLM Spend</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">$</span>
+                                <input type="number" id="llm-spend" value="5000"
+                                    class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 pl-8 text-white focus:outline-none focus:border-brand-500 transition"
+                                    oninput="calculateROI()" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-neutral-400 mb-2">Expected Cache Hit Rate</label>
+                            <input type="range" id="hit-rate" value="75" min="50" max="95" class="w-full"
+                                oninput="calculateROI()" />
+                            <div class="flex justify-between text-sm text-neutral-500 mt-1">
+                                <span>50%</span>
+                                <span id="hit-rate-display" class="text-brand-400 font-bold">75%</span>
+                                <span>95%</span>
+                            </div>
+                        </div>
+                        <div class="pt-4 border-t border-white/10">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-neutral-400">Your Savings:</span>
+                                <span id="savings" class="text-2xl font-bold text-accent-500">$3,750/mo</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-neutral-400">AgentCache Cost:</span>
+                                <span id="ac-cost" class="text-lg font-bold text-white">$99/mo</span>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-white/10">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold">Net Savings:</span>
+                                    <span id="net-savings" class="text-3xl font-bold text-accent-500">$3,651/mo</span>
+                                </div>
+                                <p class="text-xs text-neutral-500 mt-2">ROI: <span id="roi"
+                                        class="text-accent-400 font-bold">3,650%</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pricing Tiers -->
+            <section class="max-w-7xl mx-auto px-6 mb-20">
+                <div class="grid md:grid-cols-4 gap-6">
+
+                    <!-- Free -->
+                    <div
+                        class="p-6 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-white/20 transition">
+                        <h3 class="text-xl font-bold mb-2">Free</h3>
+                        <p class="text-neutral-400 text-sm mb-6">Perfect for testing</p>
+                        <div class="mb-6">
+                            <span class="text-4xl font-bold">$0</span>
+                            <span class="text-neutral-500">/month</span>
+                        </div>
+                        <ul class="space-y-3 mb-6 text-sm">
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
+                                <span>10K requests/mo</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
+                                <span>All caching strategies</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
+                                <span>Community support</span>
+                            </li>
+                        </ul>
+                        <a href="/login.html"
+                            class="block w-full text-center px-4 py-3 rounded-lg border border-white/20 hover:bg-white/5 transition font-medium">Start
+                            Free</a>
+                    </div>
+
+                    <!-- Starter -->
+                    <div
+                        class="p-6 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-white/20 transition">
+                        <h3 class="text-xl font-bold mb-2">Starter</h3>
+                        <p class="text-neutral-400 text-sm mb-6">For side projects</p>
+                        <div class="mb-6">
+                            <span class="text-4xl font-bold">$29</span>
+                            <span class="text-neutral-500">/month</span>
+                        </div>
+                        <ul class="space-y-3 mb-6 text-sm">
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
+                                <span>100K requests/mo</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
+                                <span>Email support</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
+                                <span>Analytics dashboard</span>
+                            </li>
+                        </ul>
+                        <a href="/login.html"
+                            class="block w-full text-center px-4 py-3 rounded-lg bg-brand-500 hover:bg-brand-600 transition font-bold">Get
+                            Started</a>
+                    </div>
+
+                    <!-- Pro (Popular) -->
+                    <div class="relative p-6 rounded-2xl border-2 border-brand-500 bg-brand-500/10 scale-105">
+                        <div
+                            class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-brand-500 text-white text-xs font-bold">
+                            POPULAR</div>
+                        <h3 class="text-xl font-bold mb-2">Pro</h3>
+                        <p class="text-neutral-400 text-sm mb-6">For production apps</p>
+                        <div class="mb-6">
+                            <span class="text-4xl font-bold">$99</span>
+                            <span class="text-neutral-500">/month</span>
+                        </div>
+                        <ul class="space-y-3 mb-6 text-sm">
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
+                                <span>500K requests/mo</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
+                                <span>Priority support</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
+                                <span>Custom cache rules</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
+                                <span>99.9% SLA</span>
+                            </li>
+                        </ul>
+                        <a href="/login.html"
+                            class="block w-full text-center px-4 py-3 rounded-lg bg-white text-neutral-950 hover:bg-neutral-200 transition font-bold">Get
+                            Started</a>
+                    </div>
+
+                    <!-- Business -->
+                    <div
+                        class="p-6 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-white/20 transition">
+                        <h3 class="text-xl font-bold mb-2">Business</h3>
+                        <p class="text-neutral-400 text-sm mb-6">For scale-ups</p>
+                        <div class="mb-6">
+                            <span class="text-4xl font-bold">$299</span>
+                            <span class="text-neutral-500">/month</span>
+                        </div>
+                        <ul class="space-y-3 mb-6 text-sm">
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
+                                <span>2M requests/mo</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
+                                <span>Dedicated support</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
+                                <span>SSO/SAML</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
+                                <span>99.99% SLA</span>
+                            </li>
+                        </ul>
+                        <a href="/login.html"
+                            class="block w-full text-center px-4 py-3 rounded-lg border border-white/20 hover:bg-white/5 transition font-medium">Get
+                            Started</a>
+                    </div>
+                </div>
+
+                <!-- Enterprise -->
+                <div class="mt-12 p-8 rounded-2xl border border-white/10 bg-white/[0.02] text-center">
+                    <h3 class="text-2xl font-bold mb-2">Enterprise</h3>
+                    <p class="text-neutral-400 mb-6">Custom solutions for Fortune 500 companies</p>
+                    <div class="flex flex-wrap justify-center gap-8 mb-6 text-sm">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="check" class="w-5 h-5 text-accent-500"></i>
+                            <span>Unlimited requests</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="check" class="w-5 h-5 text-accent-500"></i>
+                            <span>On-premise deployment</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="check" class="w-5 h-5 text-accent-500"></i>
+                            <span>Custom SLA</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="check" class="w-5 h-5 text-accent-500"></i>
+                            <span>Technical account manager</span>
+                        </div>
+                    </div>
+                    <a href="/contact.html"
+                        class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-brand-500 hover:bg-brand-600 transition font-bold">
+                        Contact Sales
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </a>
+                </div>
+            </section>
+
+            <!-- FAQ -->
+            <section class="max-w-3xl mx-auto px-6">
+                <h2 class="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+                <div class="space-y-6">
+                    <details class="group p-6 rounded-xl border border-white/10 bg-white/[0.02]">
+                        <summary class="font-bold cursor-pointer list-none flex justify-between items-center">
+                            What counts as a request?
+                            <i data-lucide="chevron-down" class="w-5 h-5 group-open:rotate-180 transition"></i>
+                        </summary>
+                        <p class="mt-4 text-neutral-400 text-sm">Any API call to AgentCache, whether it's a cache hit or
+                            miss. Cache hits are free from your LLM provider.</p>
+                    </details>
+
+                    <details class="group p-6 rounded-xl border border-white/10 bg-white/[0.02]">
+                        <summary class="font-bold cursor-pointer list-none flex justify-between items-center">
+                            What happens if I exceed my plan limit?
+                            <i data-lucide="chevron-down" class="w-5 h-5 group-open:rotate-180 transition"></i>
+                        </summary>
+                        <p class="mt-4 text-neutral-400 text-sm">Overage is billed at $0.30 per 1K requests. We'll
+                            notify
+                            you before you hit your limit.</p>
+                    </details>
+
+                    <details class="group p-6 rounded-xl border border-white/10 bg-white/[0.02]">
+                        <summary class="font-bold cursor-pointer list-none flex justify-between items-center">
+                            Can I cancel anytime?
+                            <i data-lucide="chevron-down" class="w-5 h-5 group-open:rotate-180 transition"></i>
+                        </summary>
+                        <p class="mt-4 text-neutral-400 text-sm">Yes. Cancel anytime with no penalties. Your data is
+                            retained for 30 days.</p>
+                    </details>
+
+                    <details class="group p-6 rounded-xl border border-white/10 bg-white/[0.02]">
+                        <summary class="font-bold cursor-pointer list-none flex justify-between items-center">
+                            Do you offer discounts for startups?
+                            <i data-lucide="chevron-down" class="w-5 h-5 group-open:rotate-180 transition"></i>
+                        </summary>
+                        <p class="mt-4 text-neutral-400 text-sm">Yes! Y Combinator companies get 50% off for the first
+                            year.
+                            Contact us for details.</p>
+                    </details>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="border-t border-white/5 py-12 bg-neutral-950">
+            <div class="mx-auto max-w-7xl px-6">
+                <div class="grid md:grid-cols-4 gap-8 mb-8">
+                    <div>
+                        <div class="flex items-center gap-2 mb-4">
+                            <div
+                                class="h-6 w-6 rounded bg-white/10 flex items-center justify-center text-[10px] font-bold">
+                                AC</div>
+                            <span class="text-sm font-semibold">AgentCache.ai</span>
+                        </div>
+                        <p class="text-sm text-neutral-500">The Global Edge Cache for LLMs</p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-semibold mb-3 text-sm">Product</h4>
+                        <ul class="space-y-2 text-sm text-neutral-500">
+                            <li><a href="/#features" class="hover:text-white transition">Features</a></li>
+                            <li><a href="/pricing.html" class="hover:text-white transition">Pricing</a></li>
+                            <li><a href="/docs.html" class="hover:text-white transition">Documentation</a></li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 class="font-semibold mb-3 text-sm">Company</h4>
+                        <ul class="space-y-2 text-sm text-neutral-500">
+                            <li><a href="/blog.html" class="hover:text-white transition">Blog</a></li>
+                            <li><a href="/contact.html" class="hover:text-white transition">Contact</a></li>
+                            <li><a href="https://github.com/xinetex/agentcache.ai"
+                                    class="hover:text-white transition">GitHub</a></li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 class="font-semibold mb-3 text-sm">Contact</h4>
+                        <ul class="space-y-2 text-sm text-neutral-500">
+                            <li><a href="mailto:hello@agentcache.ai"
+                                    class="hover:text-white transition">hello@agentcache.ai</a></li>
+                            <li><a href="/contact.html" class="hover:text-white transition">Enterprise Sales</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div
+                    class="flex flex-col md:flex-row justify-between items-center gap-4 pt-8 border-t border-white/5 text-sm text-neutral-600">
+                    <div>© 2025 Drgnflai, Inc.</div>
+                    <div class="flex gap-6">
+                        <a href="/privacy.html" class="hover:text-white transition">Privacy</a>
+                        <a href="/terms.html" class="hover:text-white transition">Terms</a>
+                    </div>
                 </div>
             </div>
-        </div>
-    </footer>
+        </footer>
 
-    <script>
-        if (window.lucide) lucide.createIcons();
+        <script>
+            if (window.lucide) lucide.createIcons();
 
-        function calculateROI() {
-            const spend = parseInt(document.getElementById('llm-spend').value) || 0;
-            const hitRate = parseInt(document.getElementById('hit-rate').value) || 75;
+            function calculateROI() {
+                const spend = parseInt(document.getElementById('llm-spend').value) || 0;
+                const hitRate = parseInt(document.getElementById('hit-rate').value) || 75;
 
-            document.getElementById('hit-rate-display').textContent = hitRate + '%';
+                document.getElementById('hit-rate-display').textContent = hitRate + '%';
 
-            const savings = Math.round(spend * (hitRate / 100));
-            const acCost = spend < 1000 ? 0 : spend < 2500 ? 29 : spend < 7500 ? 99 : 299;
-            const netSavings = savings - acCost;
-            const roi = acCost > 0 ? Math.round((netSavings / acCost) * 100) : 0;
+                const savings = Math.round(spend * (hitRate / 100));
+                const acCost = spend < 1000 ? 0 : spend < 2500 ? 29 : spend < 7500 ? 99 : 299;
+                const netSavings = savings - acCost;
+                const roi = acCost > 0 ? Math.round((netSavings / acCost) * 100) : 0;
 
-            document.getElementById('savings').textContent = '$' + savings.toLocaleString() + '/mo';
-            document.getElementById('ac-cost').textContent = '$' + acCost + '/mo';
-            document.getElementById('net-savings').textContent = '$' + netSavings.toLocaleString() + '/mo';
-            document.getElementById('roi').textContent = roi.toLocaleString() + '%';
-        }
+                document.getElementById('savings').textContent = '$' + savings.toLocaleString() + '/mo';
+                document.getElementById('ac-cost').textContent = '$' + acCost + '/mo';
+                document.getElementById('net-savings').textContent = '$' + netSavings.toLocaleString() + '/mo';
+                document.getElementById('roi').textContent = roi.toLocaleString() + '%';
+            }
 
-        calculateROI();
-    </script>
+            calculateROI();
+        </script>
+    </div><!-- /content-wrapper -->
+
+    <!-- Firefly Animation -->
+    <script src="/assets/fireflies.js"></script>
+
 </body>
 
 </html>
