@@ -9,15 +9,22 @@
   },
   "dependencies": {
     "@cfworker/json-schema": "^4.1.1",
+    "@hono/node-server": "^1.19.6",
     "@modelcontextprotocol/sdk": "^1.22.0",
-    "zod": "^4.1.12",
     "@upstash/redis": "^1.31.6",
+    "@upstash/vector": "^1.2.2",
+    "dotenv": "^17.2.3",
     "drizzle-orm": "^0.33.0",
+    "hono": "^4.10.6",
+    "ioredis": "^5.8.2",
     "postgres": "^3.4.4",
-    "stripe": "^17.4.0"
+    "stripe": "^17.4.0",
+    "uuid": "^13.0.0",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
+    "@types/uuid": "^10.0.0",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   }

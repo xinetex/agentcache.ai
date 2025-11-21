@@ -88,8 +88,56 @@ async function handleCheckoutCompleted(session) {
         plan = 'business';
     }
 
-    // TODO: Store in database
-    // For now, we'll just log it. You'll need to integrate with Upstash Redis or your DB
+    // Store in Upstash Redis
+    const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
+    const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+    if (UPSTASH_URL && UPSTASH_TOKEN) {
+        try {
+            // 1. Store API key hash -> email mapping (for auth verification)
+            const enc = new TextEncoder();
+            const hashBuffer = await crypto.subtle.digest('SHA-256', enc.encode(apiKey));
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
+
+            await fetch(`${UPSTASH_URL}/hset/key:${hash}/email`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` },
+                body: JSON.stringify(customerEmail)
+            });
+
+            // 2. Store Usage/Quota info
+            const quotas = { starter: 25000, pro: 150000, business: 500000 };
+            await fetch(`${UPSTASH_URL}/set/usage:${hash}/monthlyQuota`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` },
+                body: JSON.stringify(quotas[plan] || 1000)
+            });
+
+            // 3. Store Customer Metadata
+            await fetch(`${UPSTASH_URL}/hset/customer:${customerId}`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${UPSTASH_TOKEN}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify([
+                    'email', customerEmail,
+                    'apiKeyHash', hash,
+                    'plan', plan,
+                    'subscriptionId', session.subscription,
+                    'status', 'active',
+                    'createdAt', Date.now()
+                ])
+            });
+
+            console.log('Successfully persisted API key for:', customerEmail);
+        } catch (err) {
+            console.error('Failed to persist to Redis:', err);
+            // Fallback: Log CRITICAL error so we can manually recover
+            console.error('CRITICAL: API Key generated but not saved:', { email: customerEmail, apiKey, plan });
+        }
+    } else {
+        console.error('CRITICAL: Upstash credentials missing. API Key not saved.');
+    }
+
     console.log('New subscription:', {
         email: customerEmail,
         apiKey: apiKey,

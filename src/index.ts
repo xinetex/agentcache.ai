@@ -3,25 +3,16 @@ import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import Redis from 'ioredis';
 import { createHash } from 'crypto';
 import { z } from 'zod';
+import { redis } from './lib/redis.js';
+import { ContextManager } from './infrastructure/ContextManager.js';
 
 const app = new Hono();
+const contextManager = new ContextManager();
 
 // Environment
 const PORT = process.env.PORT || 3001;
-const REDIS_URL = process.env.REDIS_URL || process.env.UPSTASH_REDIS_URL;
-
-if (!REDIS_URL) {
-  console.error('❌ REDIS_URL not configured');
-  process.exit(1);
-}
-
-// Redis client
-const redis = new (Redis as any)(REDIS_URL);
-redis.on('connect', () => console.log('✅ Redis connected'));
-redis.on('error', (err: Error) => console.error('❌ Redis error:', err));
 
 // CORS for API routes
 app.use('/api/*', cors({
@@ -68,9 +59,9 @@ const DEMO_API_KEYS = new Set([
 // Middleware: Simple API Key auth
 async function authenticateApiKey(c: any) {
   const apiKey = c.req.header('X-API-Key') || c.req.header('Authorization')?.replace('Bearer ', '');
-  
+
   if (!apiKey || !apiKey.startsWith('ac_')) {
-    return c.json({ 
+    return c.json({
       error: 'Invalid or missing API key',
       help: 'Get your API key at https://agentcache.ai/#signup'
     }, 401);
@@ -83,7 +74,7 @@ async function authenticateApiKey(c: any) {
     return null;
   }
 
-  return c.json({ 
+  return c.json({
     error: 'Invalid API key. Sign up at https://agentcache.ai',
   }, 401);
 }
@@ -92,8 +83,8 @@ async function authenticateApiKey(c: any) {
  * GET /api/health
  */
 app.get('/api/health', (c) => {
-  return c.json({ 
-    status: 'healthy', 
+  return c.json({
+    status: 'healthy',
     service: 'AgentCache.ai',
     version: '1.0.0-mvp',
     timestamp: new Date().toISOString(),
@@ -111,11 +102,11 @@ app.post('/api/cache/check', async (c) => {
     const body = await c.req.json();
     const req = CacheRequestSchema.parse(body);
     const key = generateCacheKey(req);
-    
+
     const exists = await redis.exists(key);
     const ttl = exists ? await redis.ttl(key) : 0;
-    
-    return c.json({ 
+
+    return c.json({
       cached: exists === 1,
       key: key.slice(-16),
       ttl,
@@ -136,18 +127,18 @@ app.post('/api/cache/get', async (c) => {
     const body = await c.req.json();
     const req = CacheRequestSchema.parse(body);
     const key = generateCacheKey(req);
-    
+
     const startTime = Date.now();
     const cached = await redis.get(key);
     const latency = Date.now() - startTime;
-    
+
     if (!cached) {
-      return c.json({ 
+      return c.json({
         hit: false,
         message: 'Cache miss - call your LLM provider',
       }, 404);
     }
-    
+
     return c.json({
       hit: true,
       response: cached,
@@ -170,14 +161,14 @@ app.post('/api/cache/set', async (c) => {
     const body = await c.req.json();
     const req = CacheRequestSchema.parse(body);
     const response = body.response;
-    
+
     if (!response) {
       return c.json({ error: 'response field required' }, 400);
     }
-    
+
     const key = generateCacheKey(req);
     await redis.setex(key, req.ttl, response);
-    
+
     return c.json({
       success: true,
       key: key.slice(-16),
@@ -186,6 +177,48 @@ app.post('/api/cache/set', async (c) => {
     });
   } catch (error: any) {
     return c.json({ error: error.message }, 400);
+  }
+});
+
+/**
+ * POST /api/agent/chat - Stateful Agent Chat with Virtual Memory
+ */
+app.post('/api/agent/chat', async (c) => {
+  const authError = await authenticateApiKey(c);
+  if (authError) return authError;
+
+  try {
+    const body = await c.req.json();
+    const { sessionId, message, model = 'gpt-4' } = body;
+
+    if (!sessionId || !message) {
+      return c.json({ error: 'sessionId and message are required' }, 400);
+    }
+
+    // 1. Orchestrate Context (L1/L2/L3)
+    const context = await contextManager.getContext(sessionId, message);
+
+    // 2. Construct Final Prompt
+    // In a real system, we would call the LLM here.
+    // For this "Memory Controller" API, we return the constructed context
+    // so the developer can pass it to their LLM.
+
+    // Simulate saving the interaction (Write-Through)
+    // In production, this happens AFTER the LLM responds.
+    // Here we just echo for the demo.
+    await contextManager.saveInteraction(sessionId, message, `[Simulated AI Response to: "${message}"]`);
+
+    return c.json({
+      sessionId,
+      contextSource: context.source,
+      systemContext: context.messages.filter(m => m.role === 'system'),
+      recentHistory: context.messages.filter(m => m.role !== 'system'),
+      virtualMemorySize: context.messages.length,
+      message: 'Context retrieved. Pass `systemContext` + `recentHistory` to your LLM.',
+    });
+
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
   }
 });
 

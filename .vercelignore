@@ -5,3 +5,4 @@ dist
 .DS_Store
 src
 pnpm-lock.yaml
+public/dashboard-local.html

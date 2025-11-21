@@ -51,5 +51,11 @@
         }
       ]
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/check-listeners",
+      "schedule": "*/15 * * * *"
+    }
   ]
 }

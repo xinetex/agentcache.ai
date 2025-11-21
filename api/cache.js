@@ -42,20 +42,20 @@ function stableKey({ provider, model, messages, temperature = 0.7, namespace = n
 
 async function sha256Hex(text) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 async function auth(req) {
   const apiKey = req.headers.get('x-api-key') || req.headers.get('authorization')?.replace('Bearer ', '');
-  if (!apiKey || !apiKey.startsWith('ac_')) return { ok:false };
-  if (apiKey.startsWith('ac_demo_')) return { ok:true, kind:'demo', hash:null, quota:200 };
+  if (!apiKey || !apiKey.startsWith('ac_')) return { ok: false };
+  if (apiKey.startsWith('ac_demo_')) return { ok: true, kind: 'demo', hash: null, quota: 200 };
   // verify live key via hash lookup
   const hash = await sha256Hex(apiKey);
-  const res = await fetch(`${getEnv().url}/hget/key:${hash}/email`, { headers: { Authorization:`Bearer ${getEnv().token}` }, cache:'no-store' });
-  if (!res.ok) return { ok:false };
+  const res = await fetch(`${getEnv().url}/hget/key:${hash}/email`, { headers: { Authorization: `Bearer ${getEnv().token}` }, cache: 'no-store' });
+  if (!res.ok) return { ok: false };
   const email = await res.text();
-  if (!email) return { ok:false };
-  return { ok:true, kind:'live', hash, email };
+  if (!email) return { ok: false };
+  return { ok: true, kind: 'live', hash, email };
 }
 
 // Helper to stream cached response (OpenAI-compatible SSE)
@@ -71,7 +71,7 @@ function streamCachedResponse(text, model) {
 
       for (const chunk of chunks) {
         if (!chunk) continue;
-        
+
         const event = {
           id,
           object: 'chat.completion.chunk',
@@ -160,13 +160,13 @@ export default async function handler(req) {
 
     // simple monthly quota for live keys
     if (authn.kind === 'live') {
-      const month = new Date().toISOString().slice(0,7);
+      const month = new Date().toISOString().slice(0, 7);
       const usageKey = `usage:${authn.hash}:m:${month}`;
       const quotaKey = `usage:${authn.hash}/monthlyQuota`;
       const quota = await redis('GET', quotaKey) || '10000';
       const count = await redis('INCR', usageKey);
-      await redis('EXPIRE', usageKey, 60*60*24*40);
-      
+      await redis('EXPIRE', usageKey, 60 * 60 * 24 * 40);
+
       // Check for quota warnings (80%, 90%, 100%)
       const quotaPercent = (Number(count) / Number(quota)) * 100;
       if (quotaPercent >= 80 && quotaPercent < 81) {
@@ -180,10 +180,10 @@ export default async function handler(req) {
               event: 'quota.warning',
               data: { quota: Number(quota), used: Number(count), remaining: Number(quota) - Number(count), percent: quotaPercent }
             })
-          }).catch(() => {}); // Fire-and-forget
-        } catch (e) {}
+          }).catch(() => { }); // Fire-and-forget
+        } catch (e) { }
       }
-      
+
       if (Number(count) > Number(quota)) {
         // Trigger webhook: quota.exceeded
         try {
@@ -195,53 +195,133 @@ export default async function handler(req) {
               event: 'quota.exceeded',
               data: { quota: Number(quota), used: Number(count) }
             })
-          }).catch(() => {});
-        } catch (e) {}
-        return json({ error:'Monthly quota exceeded', quota:Number(quota), used:Number(count) }, 429);
+          }).catch(() => { });
+        } catch (e) { }
+        return json({ error: 'Monthly quota exceeded', quota: Number(quota), used: Number(count) }, 429);
       }
     }
 
     if (req.method === 'POST' && req.url.endsWith('/set')) {
       if (typeof response !== 'string') return json({ error: 'response (string) is required' }, 400);
       const today = new Date().toISOString().slice(0, 10);
-      
-      // Store cached response
-      await redis('SETEX', cacheKey, ttl, response);
-      
-      // Track stats
-      await redis('INCR', `stats:global:misses:d:${today}`);
-      await redis('EXPIRE', `stats:global:misses:d:${today}`, 60*60*24*7);
-      
+      const metaKey = `${cacheKey}:meta`;
+
+      // Store cached response and metadata
+      const commands = [
+        ['SETEX', cacheKey, ttl, response],
+        // Store metadata
+        ['HSET', metaKey,
+          'cachedAt', Date.now(),
+          'ttl', ttl * 1000,
+          'namespace', namespace || 'default',
+          'sourceUrl', req.headers.get('x-source-url') || "",
+          'accessCount', 1,
+          'lastAccessed', Date.now()
+        ],
+        ['EXPIRE', metaKey, ttl],
+        ['INCR', `stats:global:misses:d:${today}`],
+        ['EXPIRE', `stats:global:misses:d:${today}`, 60 * 60 * 24 * 7]
+      ];
+
       if (authn.kind === 'live') {
-        await redis('HINCRBY', `usage:${authn.hash}`, 'misses', 1);
+        commands.push(['HINCRBY', `usage:${authn.hash}`, 'misses', 1]);
       }
-      
+
+      // Execute pipeline
+      const { url, token } = getEnv();
+      const pipelineRes = await fetch(`${url}/pipeline`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify(commands)
+      });
+
+      if (!pipelineRes.ok) throw new Error(`Upstash pipeline failed: ${pipelineRes.status}`);
+
       return json({ success: true, key: cacheKey.slice(-16), ttl });
     }
 
     if (req.method === 'POST' && req.url.endsWith('/get')) {
-      const cachedValue = await redis('GET', cacheKey);
-      
+      // Fetch cache and metadata in parallel
+      const { url, token } = getEnv();
+      const metaKey = `${cacheKey}:meta`;
+
+      const pipeline = [
+        ['GET', cacheKey],
+        ['HGETALL', metaKey]
+      ];
+
+      const pipelineRes = await fetch(`${url}/pipeline`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify(pipeline)
+      });
+
+      if (!pipelineRes.ok) return json({ hit: false }, 404);
+
+      const data = await pipelineRes.json();
+      const cachedValue = data[0].result;
+      const metaRaw = data[1].result;
+
       if (!cachedValue) return json({ hit: false }, 404);
-      
+
+      // Parse metadata
+      let freshness = null;
+      if (metaRaw && metaRaw.length > 0) {
+        const metadata = {};
+        for (let i = 0; i < metaRaw.length; i += 2) {
+          metadata[metaRaw[i]] = metaRaw[i + 1];
+        }
+
+        if (metadata.cachedAt) {
+          const age = Date.now() - parseInt(metadata.cachedAt);
+          const ttlMs = parseInt(metadata.ttl);
+          const ttlRemaining = ttlMs - age;
+
+          let status = 'fresh';
+          if (age > ttlMs) status = 'expired';
+          else if (age > ttlMs * 0.75) status = 'stale';
+
+          freshness = {
+            status,
+            age,
+            ttlRemaining: Math.max(0, ttlRemaining),
+            freshnessScore: Math.round((Math.max(0, ttlRemaining) / ttlMs) * 100),
+            cachedAt: parseInt(metadata.cachedAt)
+          };
+
+          // Update access stats asynchronously
+          redis('HINCRBY', metaKey, 'accessCount', 1).catch(() => { });
+          redis('HSET', metaKey, 'lastAccessed', Date.now()).catch(() => { });
+        }
+      }
+
       // Track global stats and estimate tokens (rough: ~4 chars = 1 token)
       const today = new Date().toISOString().slice(0, 10);
       const estimatedTokens = Math.floor(cachedValue.length / 4);
-      
-      await redis('INCR', `stats:global:hits:d:${today}`);
-      await redis('EXPIRE', `stats:global:hits:d:${today}`, 60*60*24*7);
-      await redis('INCRBY', `stats:global:tokens:d:${today}`, estimatedTokens);
-      await redis('EXPIRE', `stats:global:tokens:d:${today}`, 60*60*24*7);
-      
+
+      // Fire and forget stats updates to reduce latency
+      const statsCommands = [
+        ['INCR', `stats:global:hits:d:${today}`],
+        ['EXPIRE', `stats:global:hits:d:${today}`, 60 * 60 * 24 * 7],
+        ['INCRBY', `stats:global:tokens:d:${today}`, estimatedTokens],
+        ['EXPIRE', `stats:global:tokens:d:${today}`, 60 * 60 * 24 * 7]
+      ];
+
       if (authn.kind === 'live') {
-        await redis('HINCRBY', `usage:${authn.hash}`, 'hits', 1);
+        statsCommands.push(['HINCRBY', `usage:${authn.hash}`, 'hits', 1]);
       }
+
+      fetch(`${url}/pipeline`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify(statsCommands)
+      }).catch(() => { });
 
       if (stream) {
         return streamCachedResponse(cachedValue, model);
       }
-      
-      return json({ hit: true, response: cachedValue });
+
+      return json({ hit: true, response: cachedValue, freshness });
     }
 
     if (req.method === 'POST' && req.url.endsWith('/check')) {
