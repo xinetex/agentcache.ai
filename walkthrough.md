@@ -91,9 +91,21 @@ I verified the garbage collection features.
 *   **Action:** Called `DELETE /api/agent/memory`.
 *   **Result:** Successfully pruned the specific memory ID.
 
+### Test Run: `test-cognitive.sh` (The Brain)
+I verified the new **Cognitive Engine**.
+
+#### Step 1: Hallucination Prevention
+*   **Input:** "I think maybe the sky is green." (Low confidence).
+*   **Action:** `CognitiveEngine` analyzed the content.
+*   **Result:** **REJECTED** from L3 storage. (Verified by querying with a fresh session).
+
+#### Step 2: Valid Memory
+*   **Input:** "The sky is blue."
+*   **Result:** **ACCEPTED** and stored in L3.
+
 ## Final Status
 ✅ **L1/L2/L3 Memory:** Active
-✅ **Anti-Cache:** Active (Pruning + Freshness)
-✅ **Demo:** Active
+✅ **Anti-Cache:** Active
+✅ **Cognitive Layer:** Active (Validation + Conflict Resolution)
 
-The "Memory OS" is complete.
+The Platform is now a "Cognitive Memory OS".

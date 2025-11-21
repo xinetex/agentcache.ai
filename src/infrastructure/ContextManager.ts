@@ -1,6 +1,7 @@
 import { appendToSession, getSessionHistory } from '../lib/redis.js';
 import { upsertMemory, queryMemory, vectorIndex } from '../lib/vector.js';
 import { v4 as uuidv4 } from 'uuid';
+import { CognitiveEngine } from './CognitiveEngine.js';
 
 export interface Message {
     role: string;
@@ -19,9 +20,15 @@ export interface ChatOptions {
 }
 
 export class ContextManager {
+    private cognitiveEngine: CognitiveEngine;
+
+    constructor() {
+        this.cognitiveEngine = new CognitiveEngine();
+    }
+
     /**
      * Retrieve the best context for a given query and session.
-     * Implements "Tiered Memory" and "Episodic Decay".
+     * Implements "Tiered Memory", "Episodic Decay", and "Cognitive Conflict Resolution".
      */
     async getContext(sessionId: string, query: string, options: ChatOptions = {}): Promise<ContextResponse> {
         // Anti-Cache: Freshness Injection
@@ -57,16 +64,22 @@ export class ContextManager {
                 return { ...r, finalScore };
             });
 
-            // Re-rank and take Top 3
+            // Re-rank and take Top 5 (increased for conflict resolution)
             scoredMemories.sort((a, b) => b.finalScore - a.finalScore);
-            const topMemories = scoredMemories.slice(0, 3);
+            const topMemories = scoredMemories.slice(0, 5);
 
-            longTermMemories = topMemories.map(r => ({
+            const rawMemories = topMemories.map(r => ({
                 role: 'system',
                 content: `[Memory]: ${r.data}`,
                 timestamp: r.metadata?.timestamp as number,
                 id: String(r.id)
             }));
+
+            // Cognitive Layer: Conflict Resolution
+            longTermMemories = await this.cognitiveEngine.resolveConflicts(rawMemories);
+
+            // Limit to Top 3 after resolution
+            longTermMemories = longTermMemories.slice(0, 3);
         }
 
         // 3. Merge Contexts
@@ -83,6 +96,7 @@ export class ContextManager {
 
     /**
      * Save a new interaction.
+     * Implements "Cognitive Validation" (Hallucination Prevention).
      */
     async saveInteraction(sessionId: string, userMessage: string, assistantMessage: string) {
         const timestamp = Date.now();
@@ -90,16 +104,25 @@ export class ContextManager {
         const userMsg: Message = { role: 'user', content: userMessage, timestamp };
         const assistantMsg: Message = { role: 'assistant', content: assistantMessage, timestamp };
 
-        // Write to L2 (Warm Tier)
+        // Write to L2 (Warm Tier) - Always save to recent history
         await appendToSession(sessionId, userMsg);
         await appendToSession(sessionId, assistantMsg);
 
-        // Write to L3 (Cold Tier)
-        const memoryId = uuidv4();
-        await upsertMemory(memoryId, `User: ${userMessage}\nAssistant: ${assistantMessage}`, {
-            sessionId,
-            timestamp
-        });
+        // Cognitive Layer: Validation
+        // Only save to L3 (Long Term) if it passes validation
+        const validation = await this.cognitiveEngine.validateMemory(assistantMessage);
+
+        if (validation.valid) {
+            // Write to L3 (Cold Tier)
+            const memoryId = uuidv4();
+            await upsertMemory(memoryId, `User: ${userMessage}\nAssistant: ${assistantMessage}`, {
+                sessionId,
+                timestamp,
+                validationScore: validation.score // Store the score for future weighting
+            });
+        } else {
+            console.warn(`[CognitiveEngine] Memory rejected (Score: ${validation.score}): ${validation.reason}`);
+        }
     }
 
     /**
