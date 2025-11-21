@@ -89,7 +89,7 @@ async function callAgentCacheAPI(endpoint: string, method: string, body?: any): 
   }
 
   const response = await fetch(url, options);
-  const data = await response.json();
+  const data = await response.json() as any;
 
   if (!response.ok) {
     throw new Error(`AgentCache API error: ${data.error || response.statusText}`);
@@ -242,7 +242,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     // SECURITY: Rate limiting
     const apiKeyHash = hashAPIKey(API_KEY);
     const rateLimit = rateLimiter.checkLimit(apiKeyHash, 100, 60000); // 100 req/min
-    
+
     if (!rateLimit.allowed) {
       auditLogger.log({
         timestamp: Date.now(),
@@ -251,7 +251,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         result: 'blocked',
         threats: ['rate_limit_exceeded']
       });
-      
+
       return {
         content: [{
           type: 'text',
@@ -267,7 +267,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     switch (name) {
       case 'agentcache_get': {
         const params = CacheGetSchema.parse(args);
-        
+
         // SECURITY: Validate namespace
         const nsValidation = SecurityMiddleware.validateNamespace(params.namespace);
         if (!nsValidation.valid) {
@@ -279,7 +279,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             result: 'blocked',
             threats: nsValidation.threats
           });
-          
+
           return {
             content: [{
               type: 'text',
@@ -288,7 +288,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             isError: true
           };
         }
-        
+
         // SECURITY: Detect adversarial prompts
         for (const msg of params.messages) {
           const promptValidation = SecurityMiddleware.detectAdversarialPrompt(msg.content);
@@ -301,7 +301,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               result: 'blocked',
               threats: promptValidation.threats
             });
-            
+
             return {
               content: [{
                 type: 'text',
@@ -314,7 +314,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             };
           }
         }
-        
+
         const result = await callAgentCacheAPI('/api/cache/get', 'POST', params);
         return {
           content: [
@@ -357,7 +357,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const queryParams = new URLSearchParams();
         if (params.period) queryParams.append('period', params.period);
         if (params.namespace) queryParams.append('namespace', params.namespace);
-        
+
         const result = await callAgentCacheAPI(`/api/stats?${queryParams}`, 'GET');
         return {
           content: [
@@ -390,7 +390,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  
+
   // Log to stderr (not stdout - would corrupt JSON-RPC)
   console.error('AgentCache MCP Server running on stdio');
   console.error(`API URL: ${AGENTCACHE_API_URL}`);

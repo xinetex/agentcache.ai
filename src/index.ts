@@ -184,39 +184,51 @@ app.post('/api/cache/set', async (c) => {
  * POST /api/agent/chat - Stateful Agent Chat with Virtual Memory
  */
 app.post('/api/agent/chat', async (c) => {
-  const authError = await authenticateApiKey(c);
-  if (authError) return authError;
+  const apiKey = c.req.header('X-API-Key');
+  if (!apiKey) return c.json({ error: 'Unauthorized' }, 401);
 
   try {
-    const body = await c.req.json();
-    const { sessionId, message, model = 'gpt-4' } = body;
+    const { sessionId, message, freshness } = await c.req.json();
 
     if (!sessionId || !message) {
-      return c.json({ error: 'sessionId and message are required' }, 400);
+      return c.json({ error: 'Missing sessionId or message' }, 400);
     }
 
-    // 1. Orchestrate Context (L1/L2/L3)
-    const context = await contextManager.getContext(sessionId, message);
+    // 1. Get Context (with optional Freshness Bypass)
+    const context = await contextManager.getContext(sessionId, message, { freshness });
 
-    // 2. Construct Final Prompt
-    // In a real system, we would call the LLM here.
-    // For this "Memory Controller" API, we return the constructed context
-    // so the developer can pass it to their LLM.
+    // 2. Simulate AI Response (In a real app, call OpenAI here)
+    const aiResponse = `[Simulated AI Response to: "${message}"]`;
 
-    // Simulate saving the interaction (Write-Through)
-    // In production, this happens AFTER the LLM responds.
-    // Here we just echo for the demo.
-    await contextManager.saveInteraction(sessionId, message, `[Simulated AI Response to: "${message}"]`);
+    // 3. Save Interaction (Write-Through)
+    // Note: Even if we bypassed context for reading, we usually still save the result.
+    await contextManager.saveInteraction(sessionId, message, aiResponse);
 
     return c.json({
       sessionId,
-      contextSource: context.source,
-      systemContext: context.messages.filter(m => m.role === 'system'),
-      recentHistory: context.messages.filter(m => m.role !== 'system'),
-      virtualMemorySize: context.messages.length,
       message: 'Context retrieved. Pass `systemContext` + `recentHistory` to your LLM.',
+      contextSource: context.source,
+      virtualMemorySize: context.messages.length,
+      systemContext: context.messages.filter(m => m.role === 'system'),
+      recentHistory: context.messages.filter(m => m.role !== 'system')
     });
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
+  }
+});
 
+// Anti-Cache: Pruning Endpoint
+app.delete('/api/agent/memory', async (c) => {
+  const apiKey = c.req.header('X-API-Key');
+  if (!apiKey) return c.json({ error: 'Unauthorized' }, 401);
+
+  try {
+    const id = c.req.query('id');
+    if (!id) return c.json({ error: 'Missing memory ID' }, 400);
+
+    await contextManager.deleteMemory(id);
+
+    return c.json({ success: true, message: `Memory ${id} pruned.` });
   } catch (error: any) {
     return c.json({ error: error.message }, 500);
   }

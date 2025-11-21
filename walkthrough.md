@@ -78,3 +78,22 @@ I built a **"Living Infographic"** to visualize the memory tiers in real-time.
 1.  Start the server: `npx tsx src/index.ts`
 2.  Open your browser: `http://localhost:3001/monitor.html`
 3.  Chat with the agent and watch the particles move between L1, L2, and L3!
+
+### Test Run: `test-anti-cache.sh` (The Forgetting Layer)
+I verified the garbage collection features.
+
+#### Step 1: Freshness Bypass
+*   **Scenario:** Agent has a "bad memory" ("I hate pizza").
+*   **Action:** Sent request with `freshness: "absolute"`.
+*   **Result:** System **ignored** the bad memory and returned a clean context.
+
+#### Step 2: Pruning
+*   **Action:** Called `DELETE /api/agent/memory`.
+*   **Result:** Successfully pruned the specific memory ID.
+
+## Final Status
+✅ **L1/L2/L3 Memory:** Active
+✅ **Anti-Cache:** Active (Pruning + Freshness)
+✅ **Demo:** Active
+
+The "Memory OS" is complete.
