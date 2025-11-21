@@ -181,7 +181,7 @@ app.post('/api/cache/set', async (c) => {
 });
 
 /**
- * POST /api/agent/chat - Stateful Agent Chat with Virtual Memory
+ * POST /api/agent/chat - Stateful Agent Chat with Virtual Memory + Reasoning Cache
  */
 app.post('/api/agent/chat', async (c) => {
   const apiKey = c.req.header('X-API-Key');
@@ -197,20 +197,56 @@ app.post('/api/agent/chat', async (c) => {
     // 1. Get Context (with optional Freshness Bypass)
     const context = await contextManager.getContext(sessionId, message, { freshness });
 
-    // 2. Simulate AI Response (In a real app, call OpenAI here)
-    const aiResponse = `[Simulated AI Response to: "${message}"]`;
+    // 2. Build messages for LLM
+    const llmMessages = [
+      ...context.messages.map(m => ({
+        role: m.role as 'user' | 'assistant' | 'system',
+        content: m.content
+      })),
+      {
+        role: 'user' as const,
+        content: message
+      }
+    ];
 
-    // 3. Save Interaction (Write-Through)
-    // Note: Even if we bypassed context for reading, we usually still save the result.
-    await contextManager.saveInteraction(sessionId, message, aiResponse);
+    // 3. Call Moonshot AI (with reasoning token caching)
+    // If MOONSHOT_API_KEY is not set, we'll fall back to local simulation
+    let aiResponse: string;
+    let reasoningMetadata = {};
+
+    if (process.env.MOONSHOT_API_KEY) {
+      try {
+        const { callMoonshot } = await import('./lib/moonshot.js');
+        const moonshotResponse = await callMoonshot(llmMessages, {
+          model: 'moonshot-v1-128k',
+          temperature: 0.7,
+          cache_reasoning: true
+        });
+
+        aiResponse = moonshotResponse.content;
+        reasoningMetadata = {
+          reasoningTokens: moonshotResponse.reasoning_tokens,
+          cacheHit: moonshotResponse.cache_hit,
+          model: moonshotResponse.model
+        };
+      } catch (error: any) {
+        console.error('[Moonshot] API call failed, falling back to simulation:', error.message);
+        aiResponse = `[Simulated AI Response to: "${message}"]`;
+      }
+    } else {
+      // Fallback: Simulated response if Moonshot key not configured
+      aiResponse = `[Simulated AI Response to: "${message}"]`;
+    }
+
+    // 4. Save Interaction (Write-Through with reasoning metadata)
+    await contextManager.saveInteraction(sessionId, message, aiResponse, reasoningMetadata);
 
     return c.json({
       sessionId,
-      message: 'Context retrieved. Pass `systemContext` + `recentHistory` to your LLM.',
+      response: aiResponse,
       contextSource: context.source,
       virtualMemorySize: context.messages.length,
-      systemContext: context.messages.filter(m => m.role === 'system'),
-      recentHistory: context.messages.filter(m => m.role !== 'system')
+      metadata: reasoningMetadata
     });
   } catch (error: any) {
     return c.json({ error: error.message }, 500);

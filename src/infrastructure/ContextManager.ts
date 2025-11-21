@@ -98,7 +98,16 @@ export class ContextManager {
      * Save a new interaction.
      * Implements "Cognitive Validation" (Hallucination Prevention).
      */
-    async saveInteraction(sessionId: string, userMessage: string, assistantMessage: string) {
+    async saveInteraction(
+        sessionId: string,
+        userMessage: string,
+        assistantMessage: string,
+        metadata?: {
+            reasoningTokens?: number;
+            cacheHit?: boolean;
+            model?: string;
+        }
+    ) {
         const timestamp = Date.now();
 
         const userMsg: Message = { role: 'user', content: userMessage, timestamp };
@@ -113,12 +122,16 @@ export class ContextManager {
         const validation = await this.cognitiveEngine.validateMemory(assistantMessage);
 
         if (validation.valid) {
-            // Write to L3 (Cold Tier)
+            // Write to L3 (Cold Tier) with extended metadata
             const memoryId = uuidv4();
             await upsertMemory(memoryId, `User: ${userMessage}\nAssistant: ${assistantMessage}`, {
                 sessionId,
                 timestamp,
-                validationScore: validation.score // Store the score for future weighting
+                validationScore: validation.score,
+                // Hybrid System: Store reasoning cache metadata
+                reasoningTokens: metadata?.reasoningTokens,
+                cacheHit: metadata?.cacheHit,
+                model: metadata?.model
             });
         } else {
             console.warn(`[CognitiveEngine] Memory rejected (Score: ${validation.score}): ${validation.reason}`);
