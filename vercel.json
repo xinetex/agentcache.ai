@@ -29,6 +29,10 @@
       "destination": "/api/image-gen"
     },
     {
+      "source": "/api/constraints/enforce",
+      "destination": "/api/constraints"
+    },
+    {
       "source": "/daily",
       "destination": "/daily.html"
     },

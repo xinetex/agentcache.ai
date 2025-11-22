@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Constraint Enforcement – AgentCache.ai</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/premium.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#f0f9ff', 500: '#0ea5e9', 900: '#0c4a6e' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="antialiased selection:bg-cyan-500 selection:text-white">
+    <div class="animated-bg"></div>
+
+    <div class="content-wrapper min-h-screen flex flex-col">
+        <!-- Nav -->
+        <nav class="w-full glass border-b border-slate-800">
+            <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 bg-cyan-500 rounded-sm rotate-45"></div>
+                    <span class="font-bold text-lg tracking-tight">AgentCache</span>
+                </div>
+                <a href="/" class="text-sm text-slate-400 hover:text-white transition">Back to Home</a>
+            </div>
+        </nav>
+
+        <main class="flex-1 max-w-5xl mx-auto px-4 py-12 w-full">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-slate-50 mb-4">
+                    Constraint Enforcement
+                </h1>
+                <p class="text-lg text-slate-400 max-w-2xl mx-auto">
+                    Solving the "M-Dash Paradox". We enforce negative constraints by verifying and auto-correcting LLM
+                    outputs before caching.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Input Column -->
+                <div class="glass p-6 rounded-2xl border border-slate-700/50">
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-slate-400 mb-2">User Prompt</label>
+                        <textarea id="input-prompt" rows="3"
+                            class="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-4 text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition resize-none"
+                            placeholder="e.g., Write a sentence about AI with a dramatic pause."></textarea>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-slate-400 mb-2">Negative Constraint</label>
+                        <select id="input-constraint"
+                            class="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-4 text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition appearance-none">
+                            <option value="no_em_dash">No Em-Dashes (—)</option>
+                        </select>
+                    </div>
+
+                    <div class="mt-4 flex justify-end">
+                        <button onclick="enforceConstraint()" id="run-btn"
+                            class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold px-6 py-2 rounded-lg transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)]">
+                            Run Protocol
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Output Column -->
+                <div
+                    class="glass p-6 rounded-2xl border border-slate-700/50 relative overflow-hidden flex flex-col justify-between">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-400 mb-2">Enforcement Log</label>
+                        <div id="status-log"
+                            class="w-full h-[240px] bg-slate-900/30 rounded-xl p-4 text-sm font-mono overflow-y-auto space-y-3">
+                            <div class="text-slate-600 italic">Waiting for input...</div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Overlay -->
+                    <div id="stats-panel" class="mt-6 grid grid-cols-2 gap-4 opacity-50 transition-all duration-500">
+                        <div class="bg-slate-900/50 rounded-lg p-3 border border-slate-800">
+                            <div class="text-xs text-slate-500 uppercase tracking-wider">Latency</div>
+                            <div id="latency-display" class="text-xl font-mono text-slate-200">0ms</div>
+                        </div>
+                        <div class="bg-slate-900/50 rounded-lg p-3 border border-slate-800">
+                            <div class="text-xs text-slate-500 uppercase tracking-wider">Status</div>
+                            <div id="status-display" class="text-xl font-bold text-slate-200">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Explanation -->
+            <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div class="text-amber-400 mb-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-white mb-1">The Paradox</h3>
+                    <p class="text-sm text-slate-400">LLMs often ignore negative constraints like "don't use X" because
+                        they focus on the concept of X.</p>
+                </div>
+                <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div class="text-cyan-400 mb-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-white mb-1">The Protocol</h3>
+                    <p class="text-sm text-slate-400">We intercept the output, verify it against the rules, and apply
+                        corrections <em>before</em> the user sees it.</p>
+                </div>
+                <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div class="text-violet-400 mb-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-white mb-1">Cached Compliance</h3>
+                    <p class="text-sm text-slate-400">Once verified, the compliant response is cached. Compliance
+                        becomes a deterministic guarantee.</p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="/assets/fireflies.js"></script>
+    <script>
+        async function enforceConstraint() {
+            const prompt = document.getElementById('input-prompt').value;
+            const constraint = document.getElementById('input-constraint').value;
+            if (!prompt) return;
+
+            const btn = document.getElementById('run-btn');
+            const log = document.getElementById('status-log');
+            const stats = document.getElementById('stats-panel');
+            const latencyDisplay = document.getElementById('latency-display');
+            const statusDisplay = document.getElementById('status-display');
+
+            // Loading state
+            btn.disabled = true;
+            btn.innerHTML = '<span class="animate-spin inline-block mr-2">↻</span> Enforcing...';
+            log.innerHTML = '<div class="text-slate-400">🚀 Initializing Protocol...</div>';
+            stats.classList.add('opacity-50');
+
+            try {
+                const res = await fetch('/api/constraints/enforce', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt, constraint })
+                });
+
+                const data = await res.json();
+
+                if (data.error) {
+                    log.innerHTML += `<div class="text-rose-400">Error: ${data.error}</div>`;
+                    return;
+                }
+
+                if (data.cached) {
+                    log.innerHTML += `<div class="text-emerald-400">⚡ CACHE HIT! Retrieving verified response...</div>`;
+                    log.innerHTML += `<div class="p-3 bg-slate-800/50 rounded border border-slate-700 text-slate-200 mt-2">${data.output}</div>`;
+                    statusDisplay.textContent = 'Verified (Cached)';
+                    statusDisplay.className = 'text-xl font-bold text-emerald-400';
+                } else {
+                    log.innerHTML += `<div class="text-sky-400">🤖 LLM Generated Output...</div>`;
+                    log.innerHTML += `<div class="text-slate-500 text-xs mb-2">Raw: "${data.rawOutput}"</div>`;
+
+                    if (data.violationLog && data.violationLog.length > 0) {
+                        data.violationLog.forEach(v => {
+                            log.innerHTML += `<div class="text-rose-400">⚠️ Violation Detected: ${v.details}</div>`;
+                            log.innerHTML += `<div class="text-amber-400">🔧 Action: ${v.action}</div>`;
+                        });
+                        statusDisplay.textContent = 'Corrected';
+                        statusDisplay.className = 'text-xl font-bold text-amber-400';
+                    } else {
+                        log.innerHTML += `<div class="text-emerald-400">✅ No Violations Detected.</div>`;
+                        statusDisplay.textContent = 'Compliant';
+                        statusDisplay.className = 'text-xl font-bold text-emerald-400';
+                    }
+
+                    log.innerHTML += `<div class="p-3 bg-slate-800/50 rounded border border-slate-700 text-slate-200 mt-2">${data.output}</div>`;
+                    log.innerHTML += `<div class="text-sky-400 mt-2">💾 Caching verified result...</div>`;
+                }
+
+                // Update stats
+                latencyDisplay.textContent = `${data.latency}ms`;
+                latencyDisplay.className = data.cached ? 'text-xl font-mono text-emerald-400' : 'text-xl font-mono text-slate-200';
+
+                stats.classList.remove('opacity-50');
+
+            } catch (err) {
+                log.innerHTML += `<div class="text-rose-400">Network Error</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Run Protocol';
+            }
+        }
+    </script>
+</body>
+
+</html>
