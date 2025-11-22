@@ -10,7 +10,43 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(express.json());
+// Rate limiting store
+const rateLimitStore = new Map();
+
+// Security middleware
+app.use((req, res, next) => {
+    // Security headers
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;");
+    next();
+});
+
+// Simple rate limiter (100 req/min per IP)
+app.use((req, res, next) => {
+    const ip = req.ip || req.connection.remoteAddress;
+    const now = Date.now();
+    const windowMs = 60000; // 1 minute
+    const maxRequests = 100;
+
+    if (!rateLimitStore.has(ip)) {
+        rateLimitStore.set(ip, []);
+    }
+
+    const requests = rateLimitStore.get(ip).filter(time => now - time < windowMs);
+
+    if (requests.length >= maxRequests) {
+        return res.status(429).json({ error: 'Too many requests' });
+    }
+
+    requests.push(now);
+    rateLimitStore.set(ip, requests);
+    next();
+});
+
+app.use(express.json({ limit: '1mb' })); // Limit payload size
 app.use(express.static('public'));
 
 // Mock Edge Runtime Request/Response
@@ -60,6 +96,11 @@ app.post('/api/settings', wrap(settingsHandler));
 app.post('/api/integrations', wrap(integrationsHandler));
 app.post('/api/history', wrap(historyHandler));
 app.post('/api/auth/verify', wrap(authVerifyHandler));
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
 
 // Fallback to index.html for SPA-like behavior if needed, or just 404
 app.get('/', (req, res) => {

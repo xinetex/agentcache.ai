@@ -1,0 +1,41 @@
+# Ignore sensitive files and directories
+.env
+.env.*
+*.log
+
+# Ignore git history (contains all source commits)
+.git
+.gitignore
+
+# Ignore development files
+node_modules
+dist
+*.md
+.DS_Store
+
+# Ignore proprietary documentation
+PATENT_DISCLOSURE.md
+SAFETY_REPORT.md
+PLATFORM_STRATEGY.md
+DATA_CENTER_STRATEGY.md
+WHITEPAPER.md
+HPC_INDUSTRIAL_ROADMAP.md
+PRICING_AND_ONBOARDING_STRATEGY.md
+COMFYUI_INTEGRATION.md
+
+# Ignore internal scripts that expose implementation
+scripts/create_stripe_prices.js
+scripts/verify_*.js
+scripts/test_security_attacks.ts
+scripts/create_admin.js
+
+# Ignore TypeScript source (ship compiled JS only)
+src/
+
+# Ignore test files
+*.test.js
+*.spec.js
+
+# Ignore IDE configs
+.vscode
+.idea
