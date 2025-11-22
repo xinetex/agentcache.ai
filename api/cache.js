@@ -140,10 +140,19 @@ export default async function handler(req) {
     }
 
     const body = await req.json();
-    const { provider, model, messages, temperature, response, ttl = 60 * 60 * 24 * 7, stream = false, semantic = false, similarity_threshold = 0.95 } = body || {};
-    if (!provider || !model || !Array.isArray(messages)) return json({ error: 'Invalid payload' }, 400);
+    const { key, value, provider, model, messages, temperature, response, ttl = 60 * 60 * 24 * 7, stream = false, semantic = false, similarity_threshold = 0.95 } = body || {};
 
-    const cacheKey = await stableKey({ provider, model, messages, temperature, namespace });
+    // Robotics/Direct Mode: Use provided key
+    let cacheKey = key;
+
+    // LLM Mode: Generate stable key if not provided
+    if (!cacheKey) {
+      if (!provider || !model || !Array.isArray(messages)) return json({ error: 'Invalid payload: provider, model, and messages are required' }, 400);
+      cacheKey = await stableKey({ provider, model, messages, temperature, namespace });
+    }
+
+    // Normalize 'value' to 'response' for internal logic
+    const finalResponse = value ? JSON.stringify(value) : response;
 
     // Semantic Cache Placeholder Logic (Feature Flagged)
     if (semantic) {
@@ -202,13 +211,13 @@ export default async function handler(req) {
     }
 
     if (req.method === 'POST' && req.url.endsWith('/set')) {
-      if (typeof response !== 'string') return json({ error: 'response (string) is required' }, 400);
+      if (typeof finalResponse !== 'string') return json({ error: 'response (string) or value (object) is required' }, 400);
       const today = new Date().toISOString().slice(0, 10);
       const metaKey = `${cacheKey}:meta`;
 
       // Store cached response and metadata
       const commands = [
-        ['SETEX', cacheKey, ttl, response],
+        ['SETEX', cacheKey, ttl, finalResponse],
         // Store metadata
         ['HSET', metaKey,
           'cachedAt', Date.now(),

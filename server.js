@@ -97,6 +97,19 @@ app.post('/api/integrations', wrap(integrationsHandler));
 app.post('/api/history', wrap(historyHandler));
 app.post('/api/auth/verify', wrap(authVerifyHandler));
 
+// Cache Routes (mapped from vercel.json rewrites)
+import cacheHandler from './api/cache.js';
+import toolCacheHandler from './api/tool-cache.js';
+
+app.post('/api/cache', wrap(cacheHandler));
+app.post('/api/cache/get', wrap(cacheHandler));
+app.post('/api/cache/set', wrap(cacheHandler));
+app.post('/api/cache/check', wrap(cacheHandler));
+
+app.post('/api/tool-cache', wrap(toolCacheHandler));
+app.post('/api/tool-cache/get', wrap(toolCacheHandler));
+app.post('/api/tool-cache/set', wrap(toolCacheHandler));
+
 // Health check endpoint
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
