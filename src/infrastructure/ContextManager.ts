@@ -110,6 +110,13 @@ export class ContextManager {
     ) {
         const timestamp = Date.now();
 
+        // Security: Check for Prompt Injection BEFORE saving to L2
+        const injectionCheck = this.cognitiveEngine.detectInjection(userMessage);
+        if (!injectionCheck.valid) {
+            console.warn(`[Security] Rejected input: ${injectionCheck.reason}`);
+            throw new Error(`Security Alert: ${injectionCheck.reason}`);
+        }
+
         const userMsg: Message = { role: 'user', content: userMessage, timestamp };
         const assistantMsg: Message = { role: 'assistant', content: assistantMessage, timestamp };
 

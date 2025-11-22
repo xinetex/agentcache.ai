@@ -50,6 +50,20 @@ const CacheStatsSchema = z.object({
     period: z.enum(['24h', '7d', '30d']).optional().default('24h'),
     namespace: z.string().optional(),
 });
+const CacheInvalidateSchema = z.object({
+    pattern: z.string().optional().describe('Wildcard pattern (e.g., "news/*")'),
+    namespace: z.string().optional().describe('Target namespace'),
+    olderThan: z.number().optional().describe('Invalidate caches older than X milliseconds'),
+    url: z.string().optional().describe('Invalidate caches from specific URL'),
+    reason: z.string().optional().describe('Reason for invalidation (for audit log)'),
+});
+const RegisterListenerSchema = z.object({
+    url: z.string().describe('URL to monitor for changes'),
+    checkInterval: z.number().optional().default(900000).describe('Check interval in milliseconds (default: 900000 = 15min)'),
+    namespace: z.string().optional().default('default').describe('Namespace to invalidate on change'),
+    invalidateOnChange: z.boolean().optional().default(true).describe('Auto-invalidate on content change'),
+    webhook: z.string().optional().describe('Webhook URL to notify on change'),
+});
 // API configuration
 const AGENTCACHE_API_URL = process.env.AGENTCACHE_API_URL || 'https://agentcache.ai';
 const API_KEY = process.env.AGENTCACHE_API_KEY || process.env.API_KEY || 'ac_demo_test123';
@@ -188,6 +202,65 @@ const tools = [
             },
         },
     },
+    {
+        name: 'agentcache_invalidate',
+        description: 'Invalidate cached responses by pattern, namespace, age, or URL. Essential for robotics fleets and dynamic data scenarios.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                pattern: {
+                    type: 'string',
+                    description: 'Wildcard pattern (e.g., "navigation/*", "pricing/*")',
+                },
+                namespace: {
+                    type: 'string',
+                    description: 'Target namespace to invalidate',
+                },
+                olderThan: {
+                    type: 'number',
+                    description: 'Invalidate caches older than X milliseconds',
+                },
+                url: {
+                    type: 'string',
+                    description: 'Invalidate caches from specific source URL',
+                },
+                reason: {
+                    type: 'string',
+                    description: 'Reason for invalidation (logged for audit)',
+                },
+            },
+        },
+    },
+    {
+        name: 'agentcache_register_listener',
+        description: 'Register URL to monitor for content changes and auto-invalidate caches. Perfect for monitoring competitor pricing, API docs, or environmental sensors.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                url: {
+                    type: 'string',
+                    description: 'URL to monitor (required)',
+                },
+                checkInterval: {
+                    type: 'number',
+                    description: 'Check interval in milliseconds (default: 900000 = 15min)',
+                },
+                namespace: {
+                    type: 'string',
+                    description: 'Namespace to invalidate on change (default: "default")',
+                },
+                invalidateOnChange: {
+                    type: 'boolean',
+                    description: 'Auto-invalidate namespace on content change (default: true)',
+                },
+                webhook: {
+                    type: 'string',
+                    description: 'Webhook URL to notify on content change',
+                },
+            },
+            required: ['url'],
+        },
+    },
 ];
 // Create server instance
 const server = new Server({
@@ -317,6 +390,43 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 if (params.namespace)
                     queryParams.append('namespace', params.namespace);
                 const result = await callAgentCacheAPI(`/api/stats?${queryParams}`, 'GET');
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: JSON.stringify(result, null, 2),
+                        },
+                    ],
+                };
+            }
+            case 'agentcache_invalidate': {
+                const params = CacheInvalidateSchema.parse(args);
+                // Validate at least one criterion provided
+                if (!params.pattern && !params.namespace && !params.olderThan && !params.url) {
+                    return {
+                        content: [{
+                                type: 'text',
+                                text: JSON.stringify({
+                                    error: 'Must provide at least one invalidation criterion',
+                                    criteria: ['pattern', 'namespace', 'olderThan', 'url']
+                                }, null, 2)
+                            }],
+                        isError: true
+                    };
+                }
+                const result = await callAgentCacheAPI('/api/cache/invalidate', 'POST', params);
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: JSON.stringify(result, null, 2),
+                        },
+                    ],
+                };
+            }
+            case 'agentcache_register_listener': {
+                const params = RegisterListenerSchema.parse(args);
+                const result = await callAgentCacheAPI('/api/listeners/register', 'POST', params);
                 return {
                     content: [
                         {

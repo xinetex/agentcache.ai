@@ -86,6 +86,7 @@ import settingsHandler from './api/settings.js';
 import integrationsHandler from './api/integrations.js';
 import historyHandler from './api/history.js';
 import authVerifyHandler from './api/auth/verify.js';
+import agentChatHandler from './api/agent/chat.js';
 
 // API Routes
 app.post('/api/spelling/fix', wrap(spellingHandler));
@@ -96,15 +97,23 @@ app.post('/api/settings', wrap(settingsHandler));
 app.post('/api/integrations', wrap(integrationsHandler));
 app.post('/api/history', wrap(historyHandler));
 app.post('/api/auth/verify', wrap(authVerifyHandler));
+app.post('/api/agent/chat', wrap(agentChatHandler));
 
 // Cache Routes (mapped from vercel.json rewrites)
 import cacheHandler from './api/cache.js';
+import cacheInvalidateHandler from './api/cache/invalidate.js';
+import listenersRegisterHandler from './api/listeners/register.js';
 import toolCacheHandler from './api/tool-cache.js';
 
 app.post('/api/cache', wrap(cacheHandler));
 app.post('/api/cache/get', wrap(cacheHandler));
 app.post('/api/cache/set', wrap(cacheHandler));
 app.post('/api/cache/check', wrap(cacheHandler));
+app.post('/api/cache/invalidate', wrap(cacheInvalidateHandler));
+
+app.post('/api/listeners/register', wrap(listenersRegisterHandler));
+app.get('/api/listeners/register', wrap(listenersRegisterHandler));
+app.delete('/api/listeners/register', wrap(listenersRegisterHandler));
 
 app.post('/api/tool-cache', wrap(toolCacheHandler));
 app.post('/api/tool-cache/get', wrap(toolCacheHandler));

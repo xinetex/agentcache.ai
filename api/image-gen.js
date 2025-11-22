@@ -86,18 +86,38 @@ export default async function handler(req) {
         const result = await simulateAgentLoop(prompt);
         const latency = Date.now() - start;
 
-        // 3. Cache Result (TTL 7 days)
-        await redis('SETEX', cacheKey, 60 * 60 * 24 * 7, JSON.stringify(result));
+        // 4. Cache Result (TTL 30 days)
+        await redis('SETEX', cacheKey, 60 * 60 * 24 * 30, JSON.stringify(result));
 
         // Track stats
         const today = new Date().toISOString().slice(0, 10);
         redis('INCR', `stats:image:misses:d:${today}`).catch(() => { });
 
-        return json({
-            result,
-            cached: false,
+        // Log History
+        const logEntry = {
+            timestamp: new Date().toISOString(),
+            module: 'Verified Generation',
+            input: prompt.substring(0, 50) + (prompt.length > 50 ? '...' : ''),
+            output: `Seed: ${result.seed} (Attempts: ${result.attempts})`,
             latency,
-            savings: 0
+            cached: false,
+            status: 'success'
+        };
+
+        // Demo Key Hash
+        const demoKey = 'ac_live_demo_key_12345';
+        const enc = new TextEncoder();
+        const hashBuffer = await crypto.subtle.digest('SHA-256', enc.encode(demoKey));
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const demoHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
+
+        redis('LPUSH', `history:${demoHash}`, JSON.stringify(logEntry)).catch(() => { });
+        redis('LTRIM', `history:${demoHash}`, 0, 99).catch(() => { });
+
+        return json({
+            ...result,
+            cached: false,
+            latency
         });
 
     } catch (err) {

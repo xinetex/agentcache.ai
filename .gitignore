@@ -7,3 +7,7 @@ logs/
 dist/
 .DS_Store
 .env
+.env.vercel_check
+.env.vercel_check_2
+.env.vercel_prod
+.env_stripe_key_temp
