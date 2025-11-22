@@ -76,9 +76,57 @@ export default async function handler(req) {
         if (text.length > 1000) return json({ error: 'text too long' }, 400);
 
         const start = Date.now();
-        const cacheKey = await stableKey(text);
+
+        // 0. Auth & Settings Check
+        let apiKey = req.headers.get('x-api-key') || body.apiKey; // Support header or body
+        let userHash = null;
+        let settings = { semantic_correction: true }; // Default
+
+        if (apiKey) {
+            const enc = new TextEncoder();
+            const hashBuffer = await crypto.subtle.digest('SHA-256', enc.encode(apiKey));
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            userHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
+
+            // Fetch Settings
+            const settingsStr = await redis('GET', `user:${userHash}:settings`);
+            if (settingsStr) {
+                try { settings = JSON.parse(settingsStr); } catch (e) { }
+            }
+        } else {
+            // Fallback to demo key for logging if no key provided
+            const demoKey = 'ac_live_demo_key_12345';
+            const enc = new TextEncoder();
+            const hashBuffer = await crypto.subtle.digest('SHA-256', enc.encode(demoKey));
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            userHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
+        }
+
+        // Check Feature Toggle
+        if (settings.semantic_correction === false) {
+            // Log Skipped
+            const logEntry = {
+                timestamp: new Date().toISOString(),
+                module: 'Semantic Correction',
+                input: text.substring(0, 50) + (text.length > 50 ? '...' : ''),
+                output: text.substring(0, 50) + (text.length > 50 ? '...' : ''),
+                latency: 0,
+                cached: false,
+                status: 'skipped_by_user'
+            };
+            redis('LPUSH', `history:${userHash}`, JSON.stringify(logEntry)).catch(() => { });
+            redis('LTRIM', `history:${userHash}`, 0, 99).catch(() => { });
+
+            return json({
+                fixed: text,
+                cached: false,
+                latency: 0,
+                status: 'skipped'
+            });
+        }
 
         // 1. Check Cache
+        const cacheKey = `spelling:${text.trim().toLowerCase()}`;
         const cached = await redis('GET', cacheKey);
         if (cached) {
             const latency = Date.now() - start;
@@ -96,16 +144,33 @@ export default async function handler(req) {
         // 2. Call LLM (Miss)
         const fixed = await callMoonshot(text);
         const latency = Date.now() - start;
+        const result = { fixed }; // Define result here for consistency with the new return statement
 
-        // 3. Cache Result (TTL 7 days)
-        await redis('SETEX', cacheKey, 60 * 60 * 24 * 7, fixed);
+        // 4. Cache Result (TTL 24h)
+        await redis('SETEX', cacheKey, 60 * 60 * 24, fixed); // Cache the fixed string directly
 
         // Track stats
         const today = new Date().toISOString().slice(0, 10);
         redis('INCR', `stats:spelling:misses:d:${today}`).catch(() => { });
 
+        // Log History (Async)
+        const logEntry = {
+            timestamp: new Date().toISOString(),
+            module: 'Semantic Correction',
+            input: text.substring(0, 50) + (text.length > 50 ? '...' : ''),
+            output: fixed.substring(0, 50) + (fixed.length > 50 ? '...' : ''),
+            latency,
+            cached: false,
+            status: 'success'
+        };
+
+        if (userHash) {
+            redis('LPUSH', `history:${userHash}`, JSON.stringify(logEntry)).catch(() => { });
+            redis('LTRIM', `history:${userHash}`, 0, 99).catch(() => { });
+        }
+
         return json({
-            fixed,
+            ...result,
             cached: false,
             latency
         });

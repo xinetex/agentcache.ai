@@ -49,6 +49,10 @@
       "destination": "/api/integrations.js"
     },
     {
+      "source": "/api/settings",
+      "destination": "/api/settings.js"
+    },
+    {
       "source": "/daily",
       "destination": "/daily.html"
     },
