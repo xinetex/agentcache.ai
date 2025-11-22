@@ -1096,9 +1096,109 @@
                     document.getElementById('console-log').innerHTML = '';
         }
 
-                // Init default
-                switchModule('spelling');
-            </script>
-</body >
+    <!-- Wizard Overlay -->
+    <div id="wizard-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end justify-center pb-12 pointer-events-none">
+        <div class="bg-slate-900 border border-cyan-500/50 rounded-lg p-6 max-w-md shadow-[0_0_50px_rgba(8,145,178,0.3)] animate-bounce-in pointer-events-auto">
+            <div class="flex items-start gap-4">
+                <div class="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center shrink-0">
+                    <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-white font-bold text-lg mb-1">AgentCache Tour</h3>
+                    <p id="wizard-text" class="text-slate-300 text-sm leading-relaxed">Welcome to the future of AI infrastructure.</p>
+                    <div class="mt-4 flex gap-2">
+                        <button onclick="stopWizard()" class="text-xs text-slate-500 hover:text-white transition">Skip Tour</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-</html >
+    <script>
+        // ... Existing Auth Code ...
+
+        // Wizard Logic
+        async function startWizard() {
+            if (localStorage.getItem('ac_wizard_completed')) return;
+            
+            const overlay = document.getElementById('wizard-overlay');
+            const text = document.getElementById('wizard-text');
+            
+            overlay.classList.remove('hidden');
+            
+            // Step 1: Intro
+            text.innerText = "Welcome to AgentCache. I'm going to show you how we optimize AI workflows. Watch this...";
+            await wait(3000);
+            
+            // Step 2: Spelling
+            text.innerText = "First, let's look at Semantic Correction. I'll type a messy prompt...";
+            switchModule('spelling');
+            await wait(1000);
+            await typeWriter("Thsi is a tst of the sytem to see if it can fx my splling.");
+            await wait(500);
+            
+            text.innerText = "Now watch what happens when I execute it.";
+            await wait(1000);
+            runActiveModule();
+            await wait(2000);
+            
+            text.innerText = "Boom. Perfect English. And it's cached for next time.";
+            await wait(2500);
+            
+            // Step 3: PII
+            text.innerText = "Now for the serious stuff. Medical Mode.";
+            switchModule('pii');
+            await wait(1000);
+            
+            text.innerText = "I'm going to paste some sensitive patient data...";
+            await typeWriter("Patient John Doe (SSN: 123-45-6789) admitted on 10/12/2024.");
+            await wait(1000);
+            
+            text.innerText = "AgentCache acts as a privacy firewall. Watch.";
+            runActiveModule();
+            await wait(2000);
+            
+            text.innerText = "Redacted. Safe. HIPAA Compliant.";
+            await wait(2000);
+            
+            // Step 4: Conclusion
+            text.innerHTML = "You're ready to take control.<br>Login to save your settings and get your API keys.";
+            document.querySelector('#wizard-overlay button').innerText = "Get Started";
+            document.querySelector('#wizard-overlay button').onclick = () => {
+                stopWizard();
+                showLoginModal();
+            };
+            
+            localStorage.setItem('ac_wizard_completed', 'true');
+        }
+
+        function stopWizard() {
+            document.getElementById('wizard-overlay').classList.add('hidden');
+            localStorage.setItem('ac_wizard_completed', 'true');
+        }
+
+        async function typeWriter(txt) {
+            const input = document.getElementById('input-area');
+            input.value = '';
+            for (let i = 0; i < txt.length; i++) {
+                input.value += txt.charAt(i);
+                await wait(30 + Math.random() * 30); // Human-like typing
+            }
+        }
+
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        // ... Existing Code ...
+
+        // Init default
+        switchModule('spelling');
+        
+        // Start Wizard after a short delay
+        setTimeout(startWizard, 1000);
+
+    </script>
+</body>
+
+</html>
