@@ -41,6 +41,14 @@
       "destination": "/api/auth/verify.js"
     },
     {
+      "source": "/api/history",
+      "destination": "/api/history.js"
+    },
+    {
+      "source": "/api/integrations",
+      "destination": "/api/integrations.js"
+    },
+    {
       "source": "/daily",
       "destination": "/daily.html"
     },

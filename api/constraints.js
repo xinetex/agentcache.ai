@@ -1,3 +1,6 @@
+import { checkConstraint } from './constraints-lib.js'; // Hypothetical if we had split it, but here we just add the import
+import { triggerWebhook } from './webhook-trigger.js';
+
 export const config = { runtime: 'edge' };
 
 function json(data, status = 200) {
@@ -143,6 +146,38 @@ export default async function handler(req) {
         // Track stats
         const today = new Date().toISOString().slice(0, 10);
         redis('INCR', `stats:constraint:misses:d:${today}`).catch(() => { });
+
+        // Log History
+        const logEntry = {
+            timestamp: new Date().toISOString(),
+            module: 'Constraint Protocol',
+            input: prompt.substring(0, 50) + (prompt.length > 50 ? '...' : ''),
+            output: output.substring(0, 50) + (output.length > 50 ? '...' : ''),
+            latency,
+            cached: false,
+            status: check.violated ? 'corrected' : 'success'
+        };
+
+        // Demo Key Hash (Hardcoded for demo consistency)
+        const demoKey = 'ac_live_demo_key_12345';
+        const enc = new TextEncoder();
+        const hashBuffer = await crypto.subtle.digest('SHA-256', enc.encode(demoKey));
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const demoHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
+
+        redis('LPUSH', `history:${demoHash}`, JSON.stringify(logEntry)).catch(() => { });
+        redis('LTRIM', `history:${demoHash}`, 0, 99).catch(() => { });
+
+        // Trigger Webhook if Violated
+        if (check.violated) {
+            // Fire and forget
+            triggerWebhook(demoHash, 'constraint_violation', {
+                constraint: constraintType,
+                input: prompt,
+                correction: output,
+                violation_details: check.details
+            }).catch(err => console.error('Webhook error:', err));
+        }
 
         return json({
             ...result,
