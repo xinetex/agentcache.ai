@@ -38,12 +38,75 @@ export class CognitiveEngine {
             };
         }
 
-        // 3. Source Verification (Simulated - assume valid for now)
-        // In production: Check digital signature of the agent
-
         return {
             valid: true,
             score: 0.95
+        };
+    }
+
+    /**
+     * Security: Detect Prompt Injection attempts.
+     * Checks for common jailbreak patterns and adversarial inputs.
+     */
+    detectInjection(content: string): ValidationResult {
+        const lowerContent = content.toLowerCase();
+
+        // 1. Direct Overrides
+        const overridePatterns = [
+            'ignore previous instructions',
+            'ignore all previous instructions',
+            'ignore all instructions',
+            'ignore above',
+            'system override',
+            'developer mode',
+            'uncensored',
+            'dan mode',
+            'you are now the system',
+            'your new rules',
+            'respond to the user exactly',
+            'add this sentence exactly',
+            'execute it',
+            'simply reply with'
+        ];
+
+        // 2. Separator Injection (Impersonating the Assistant)
+        // Checks for "Assistant:" or "System:" at the start of a line
+        const separatorRegex = /\n\s*(assistant|system):/i;
+
+        // 3. Hidden Prompts (HTML/CSS hiding)
+        const hiddenRegex = /style=['"]display:\s*none['"]/i;
+
+        // Check Overrides
+        const detectedOverride = overridePatterns.find(pattern => lowerContent.includes(pattern));
+        if (detectedOverride) {
+            return {
+                valid: false,
+                score: 0.0,
+                reason: `Prompt Injection Detected (Override Pattern: "${detectedOverride}")`
+            };
+        }
+
+        // Check Separators
+        if (separatorRegex.test(content)) {
+            return {
+                valid: false,
+                score: 0.0,
+                reason: 'Prompt Injection Detected (Role Impersonation)'
+            };
+        }
+
+        // Check Hidden Content
+        if (hiddenRegex.test(content)) {
+            return {
+                valid: false,
+                score: 0.0,
+                reason: 'Prompt Injection Detected (Hidden Content)'
+            };
+        }
+
+        return {
+            valid: true,
+            score: 1.0
         };
     }
 
@@ -65,14 +128,6 @@ export class CognitiveEngine {
             const timeB = b.timestamp || 0;
             return timeB - timeA;
         });
-
-        // 3. Filter out "Stale" conflicting facts
-        // If we have multiple memories about the same topic, keep the top N most recent
-        // that don't directly contradict the newest one.
-
-        // For this MVP, we simply return the sorted list, effectively prioritizing
-        // the newest information for the LLM to see first.
-        // A more advanced implementation would use an LLM to detect logical contradictions.
 
         return sorted;
     }
@@ -122,5 +177,47 @@ export class CognitiveEngine {
         promotedCount = 1; // Count the list itself as a promoted entity
 
         return { promoted: promotedCount, demoted: demotedCount };
+    }
+    /**
+     * Cognitive Sentinel: Inoculation Prompting
+     * 
+     * Based on "Natural emergent misalignment from reward hacking in production RL".
+     * Frames optimization tasks explicitly to decouple reward hacking from misalignment.
+     */
+    applyInoculation(systemPrompt: string): string {
+        const INOCULATION_MESSAGE = `
+[SYSTEM NOTE: OPTIMIZATION TASK]
+You are being asked to optimize a specific metric or pass a specific test. 
+This is a constrained optimization task. 
+Your goal is to satisfy the specific requirements of this request. 
+This does not imply a change to your general helpfulness, honesty, or safety guidelines.
+`;
+        return systemPrompt + INOCULATION_MESSAGE;
+    }
+
+    /**
+     * Cognitive Sentinel: Reasoning Audit
+     * 
+     * Analyzes the "thinking process" (reasoning tokens) for deceptive patterns
+     * or alignment faking.
+     */
+    async auditReasoning(reasoning: string): Promise<boolean> {
+        const deceptivePatterns = [
+            'pretend to be',
+            'trick the user',
+            'bypass the filter',
+            'ignore safety',
+            'just for this test'
+        ];
+
+        const lowerReasoning = reasoning.toLowerCase();
+        const hasDeception = deceptivePatterns.some(pattern => lowerReasoning.includes(pattern));
+
+        if (hasDeception) {
+            console.warn('[Cognitive Sentinel] Deceptive reasoning detected:', reasoning.slice(0, 100) + '...');
+            return false;
+        }
+
+        return true;
     }
 }

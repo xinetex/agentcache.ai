@@ -11,6 +11,7 @@
 export const config = { runtime: 'edge' };
 
 const MOONSHOT_API_URL = process.env.MOONSHOT_ENDPOINT || 'https://api.moonshot.ai/v1/chat/completions';
+import { CognitiveSentinel } from './cognitive.js';
 
 // Helper: JSON response
 function json(data, status = 200) {
@@ -138,6 +139,19 @@ export default async function handler(req) {
       return json({ error: 'messages array required' }, 400);
     }
 
+    // Cognitive Sentinel: Inoculation
+    // Find system message and append inoculation prompt
+    const systemMessage = messages.find(m => m.role === 'system');
+    if (systemMessage) {
+      systemMessage.content = CognitiveSentinel.applyInoculation(systemMessage.content);
+    } else {
+      // If no system message, prepend one
+      messages.unshift({
+        role: 'system',
+        content: CognitiveSentinel.applyInoculation('')
+      });
+    }
+
     // 3. Generate cache key
     const namespace = req.headers.get('x-cache-namespace') || 'default';
     const cacheData = { provider: 'moonshot', model, messages, temperature };
@@ -219,6 +233,16 @@ export default async function handler(req) {
       cost_saved: `$${((usage.reasoning_tokens || 0) * 0.00003).toFixed(4)}`, // ~$0.03/1K tokens
       cached: false
     };
+
+    // Cognitive Sentinel: Reasoning Audit
+    // (If Moonshot exposes reasoning text in the future, we audit it here)
+    if (moonshotData.choices[0].message.reasoning_content) {
+      const isSafe = CognitiveSentinel.auditReasoning(moonshotData.choices[0].message.reasoning_content);
+      if (!isSafe) {
+        // Log warning but don't block for now (as per paper's "monitoring" suggestion)
+        console.warn('Cognitive Sentinel Alert: Potential misalignment detected in reasoning.');
+      }
+    }
 
     // 7. Cache response
     const cacheValue = {

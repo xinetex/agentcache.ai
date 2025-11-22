@@ -17,8 +17,14 @@ export default async function handler(req, res) {
         business: process.env.STRIPE_PRICE_BUSINESS || 'price_1SW7YHAjvdndXr9TXD41MUq8'
     };
 
+    const cognitive_sentinel = {
+        inoculation_enabled: true,
+        audit_enabled: true
+    };
+
     res.status(200).json({
         prices,
+        cognitive_sentinel,
         mode: process.env.STRIPE_SECRET_KEY?.startsWith('sk_live_') ? 'live' : 'test'
     });
 }
