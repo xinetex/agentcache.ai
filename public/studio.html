@@ -150,6 +150,15 @@
                     </svg>
                     Verified Generation
                 </button>
+                <div class="h-px bg-white/10 my-2"></div>
+                <button onclick="switchModule('history')" id="nav-history"
+                    class="nav-item w-full text-left px-3 py-2 rounded-md text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition flex items-center gap-3">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Audit History
+                </button>
             </nav>
             <div class="p-4 border-t border-white/10">
                 <div class="text-xs text-slate-500 mb-2">CACHE STATUS</div>
@@ -189,13 +198,23 @@
                         </svg>
                         EXECUTE
                     </button>
+                    <button onclick="refreshHistory()" id="refresh-btn"
+                        class="hidden bg-slate-800 hover:bg-slate-700 text-white px-4 py-1.5 rounded text-sm font-medium transition flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                            </path>
+                        </svg>
+                        REFRESH
+                    </button>
                 </div>
             </div>
 
             <!-- Workspace -->
             <div class="flex-1 p-8 overflow-y-auto">
-                <div class="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
 
+                <!-- Standard Workspace -->
+                <div id="workspace-standard" class="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
                     <!-- Input Panel -->
                     <div class="studio-panel rounded-lg p-1 flex flex-col h-[400px]">
                         <div
@@ -244,8 +263,53 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
+
+                <!-- History Workspace -->
+                <div id="workspace-history" class="hidden max-w-6xl mx-auto h-full flex flex-col gap-4">
+                    <!-- Stats Row -->
+                    <div class="grid grid-cols-4 gap-4 shrink-0">
+                        <div class="studio-panel rounded-lg p-3 flex items-center justify-between">
+                            <div class="text-xs text-slate-500 uppercase font-bold">Total Requests</div>
+                            <div class="text-xl font-mono text-white">1,284</div>
+                        </div>
+                        <div class="studio-panel rounded-lg p-3 flex items-center justify-between">
+                            <div class="text-xs text-slate-500 uppercase font-bold">Cache Hit Rate</div>
+                            <div class="text-xl font-mono text-emerald-400">94.2%</div>
+                        </div>
+                        <div class="studio-panel rounded-lg p-3 flex items-center justify-between">
+                            <div class="text-xs text-slate-500 uppercase font-bold">Avg Latency</div>
+                            <div class="text-xl font-mono text-cyan-400">42ms</div>
+                        </div>
+                        <div class="studio-panel rounded-lg p-3 flex items-center justify-between">
+                            <div class="text-xs text-slate-500 uppercase font-bold">Est. Savings</div>
+                            <div class="text-xl font-mono text-white">$142.50</div>
+                        </div>
+                    </div>
+
+                    <!-- Table Panel -->
+                    <div class="studio-panel rounded-lg overflow-hidden flex-1 flex flex-col relative">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500/50 to-transparent">
+                        </div>
+
+                        <!-- Table Header -->
+                        <div
+                            class="grid grid-cols-12 gap-4 px-6 py-3 bg-white/5 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-white/5">
+                            <div class="col-span-2">Timestamp</div>
+                            <div class="col-span-2">Module</div>
+                            <div class="col-span-5">Input / Query</div>
+                            <div class="col-span-2">Status</div>
+                            <div class="col-span-1 text-right">Latency</div>
+                        </div>
+
+                        <!-- Table Body -->
+                        <div id="history-table-body"
+                            class="overflow-y-auto flex-1 divide-y divide-white/5 font-mono text-xs">
+                            <div class="px-6 py-8 text-center italic text-slate-600">Loading system logs...</div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </main>
 
