@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Self-Correcting Cache Demo – AgentCache.ai</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/premium.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#f0f9ff', 500: '#0ea5e9', 900: '#0c4a6e' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="antialiased selection:bg-cyan-500 selection:text-white">
+    <div class="animated-bg"></div>
+
+    <div class="content-wrapper min-h-screen flex flex-col">
+        <!-- Nav -->
+        <nav class="w-full glass border-b border-slate-800">
+            <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 bg-cyan-500 rounded-sm rotate-45"></div>
+                    <span class="font-bold text-lg tracking-tight">AgentCache</span>
+                </div>
+                <a href="/" class="text-sm text-slate-400 hover:text-white transition">Back to Home</a>
+            </div>
+        </nav>
+
+        <main class="flex-1 max-w-5xl mx-auto px-4 py-12 w-full">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-slate-50 mb-4">
+                    Self-Correcting Cache
+                </h1>
+                <p class="text-lg text-slate-400 max-w-2xl mx-auto">
+                    Experience the power of "Perfect Memory". We use an LLM to fix your spelling once, then cache the
+                    correction forever.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Input Column -->
+                <div class="glass p-6 rounded-2xl border border-slate-700/50">
+                    <label class="block text-sm font-medium text-slate-400 mb-2">Input (Messy Text)</label>
+                    <textarea id="input-text" rows="6"
+                        class="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-4 text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition resize-none"
+                        placeholder="Type something with errors, e.g.: 'Thsi is a tst of the sytem.'"></textarea>
+
+                    <div class="mt-4 flex justify-end">
+                        <button onclick="fixSpelling()" id="fix-btn"
+                            class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold px-6 py-2 rounded-lg transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)]">
+                            Fix Spelling
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Output Column -->
+                <div class="glass p-6 rounded-2xl border border-slate-700/50 relative overflow-hidden">
+                    <label class="block text-sm font-medium text-slate-400 mb-2">Output (Clean Text)</label>
+                    <div id="output-text"
+                        class="w-full h-[160px] bg-slate-900/30 rounded-xl p-4 text-slate-300 overflow-y-auto font-medium text-lg">
+                        <span class="text-slate-600 italic">Result will appear here...</span>
+                    </div>
+
+                    <!-- Stats Overlay -->
+                    <div id="stats-panel" class="mt-6 grid grid-cols-2 gap-4 opacity-50 transition-all duration-500">
+                        <div class="bg-slate-900/50 rounded-lg p-3 border border-slate-800">
+                            <div class="text-xs text-slate-500 uppercase tracking-wider">Latency</div>
+                            <div id="latency-display" class="text-2xl font-mono text-slate-200">0ms</div>
+                        </div>
+                        <div class="bg-slate-900/50 rounded-lg p-3 border border-slate-800">
+                            <div class="text-xs text-slate-500 uppercase tracking-wider">Source</div>
+                            <div id="source-display" class="text-2xl font-bold text-slate-200">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Explanation -->
+            <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div class="text-cyan-400 mb-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-white mb-1">First Run (Miss)</h3>
+                    <p class="text-sm text-slate-400">The system calls an LLM to analyze and fix the text. This takes
+                        time (~800ms) but ensures high accuracy.</p>
+                </div>
+                <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div class="text-emerald-400 mb-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-white mb-1">Second Run (Hit)</h3>
+                    <p class="text-sm text-slate-400">The corrected result is retrieved from the cache instantly (
+                        <50ms). No LLM cost, no latency.</p>
+                </div>
+                <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div class="text-violet-400 mb-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-white mb-1">Cognitive Memory</h3>
+                    <p class="text-sm text-slate-400">This isn't just caching data; it's caching <em>intelligence</em>.
+                        The system learns the correct form over time.</p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="/assets/fireflies.js"></script>
+    <script>
+        async function fixSpelling() {
+            const input = document.getElementById('input-text').value;
+            if (!input) return;
+
+            const btn = document.getElementById('fix-btn');
+            const output = document.getElementById('output-text');
+            const stats = document.getElementById('stats-panel');
+            const latencyDisplay = document.getElementById('latency-display');
+            const sourceDisplay = document.getElementById('source-display');
+
+            // Loading state
+            btn.disabled = true;
+            btn.innerHTML = '<span class="animate-spin inline-block mr-2">↻</span> Fixing...';
+            output.innerHTML = '<span class="animate-pulse text-slate-500">Analyzing text...</span>';
+            stats.classList.add('opacity-50');
+
+            try {
+                const res = await fetch('/api/spelling/fix', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: input })
+                });
+
+                const data = await res.json();
+
+                if (data.error) {
+                    output.innerHTML = `<span class="text-rose-400">Error: ${data.error}</span>`;
+                    return;
+                }
+
+                // Success state
+                output.innerHTML = `<span class="text-white">${data.fixed}</span>`;
+                latencyDisplay.textContent = `${data.latency}ms`;
+
+                if (data.cached) {
+                    sourceDisplay.innerHTML = '<span class="text-emerald-400">CACHE HIT ⚡</span>';
+                    latencyDisplay.className = 'text-2xl font-mono text-emerald-400';
+                } else {
+                    sourceDisplay.innerHTML = '<span class="text-amber-400">LLM CALL 🤖</span>';
+                    latencyDisplay.className = 'text-2xl font-mono text-amber-400';
+                }
+
+                stats.classList.remove('opacity-50');
+
+            } catch (err) {
+                output.innerHTML = `<span class="text-rose-400">Network Error</span>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Fix Spelling';
+            }
+        }
+    </script>
+</body>
+
+</html>

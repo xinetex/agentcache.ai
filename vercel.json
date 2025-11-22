@@ -21,6 +21,10 @@
       "destination": "/api/tool-cache"
     },
     {
+      "source": "/api/spelling/fix",
+      "destination": "/api/spelling"
+    },
+    {
       "source": "/daily",
       "destination": "/daily.html"
     },
