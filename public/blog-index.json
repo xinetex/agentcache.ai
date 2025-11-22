@@ -1,5 +1,16 @@
 [
   {
+    "title": "Beyond Token Caching: The Rise of Agentic Plan Caching",
+    "date": "2025-11-22",
+    "author": "AgentCache Team",
+    "category": "industry",
+    "excerpt": "New research on 'ToolCacheAgent' and 'Agentic Plan Caching' validates the shift from simple token caching to execution state caching. Here's what it means for your infrastructure.",
+    "featured_image": "/blog/images/agentic-plan-caching.png",
+    "slug": "beyond-token-caching",
+    "filename": "2025-11-22-beyond-token-caching.md",
+    "mdPath": "/blog/posts/2025-11-22-beyond-token-caching.md"
+  },
+  {
     "title": "Decoding Gemini 3's Thought Signatures: A Guide for Developers",
     "date": "2025-11-21",
     "author": "AgentCache Team",
