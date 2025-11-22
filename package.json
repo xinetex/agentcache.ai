@@ -5,7 +5,8 @@
   "scripts": {
     "mcp:build": "tsc src/mcp/server.ts --outDir dist/mcp --module NodeNext --moduleResolution NodeNext --target ES2022",
     "mcp:dev": "tsx src/mcp/server.ts",
-    "mcp:start": "node dist/mcp/server.js"
+    "mcp:start": "node dist/mcp/server.js",
+    "build": "npm run mcp:build"
   },
   "dependencies": {
     "@cfworker/json-schema": "^4.1.1",
