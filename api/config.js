@@ -12,9 +12,9 @@ export default async function handler(req, res) {
     // Return public configuration
     // Fallback to Test IDs if env vars are not set (for backward compatibility/sandbox)
     const prices = {
-        starter: process.env.STRIPE_PRICE_STARTER || 'price_1SVZz8R8qHioZwuvAjax6UjF',
-        pro: process.env.STRIPE_PRICE_PRO || 'price_1SVZydR8qHioZwuvN24ePSab',
-        business: process.env.STRIPE_PRICE_BUSINESS || 'price_1SVZwmR8qHioZwuvlTbjts6v'
+        starter: process.env.STRIPE_PRICE_STARTER || 'price_1SW7YGAjvdndXr9TJRcqH0KK',
+        pro: process.env.STRIPE_PRICE_PRO || 'price_1SW7YHAjvdndXr9TfNQ3C8ct',
+        business: process.env.STRIPE_PRICE_BUSINESS || 'price_1SW7YHAjvdndXr9TXD41MUq8'
     };
 
     res.status(200).json({
