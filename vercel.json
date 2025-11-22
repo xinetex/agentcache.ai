@@ -53,6 +53,10 @@
       "destination": "/api/settings.js"
     },
     {
+      "source": "/api/pii",
+      "destination": "/api/pii.js"
+    },
+    {
       "source": "/daily",
       "destination": "/daily.html"
     },
