@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <title>AgentCache Studio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/assets/premium.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    },
+                    colors: {
+                        slate: { 850: '#151f2e', 950: '#020617' },
+                        brand: { 500: '#0ea5e9', 600: '#0284c7' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Studio Specific Overrides */
+        body {
+            background-color: #020617;
+            overflow: hidden;
+        }
+
+        .studio-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .studio-input {
+            background: rgba(2, 6, 23, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .studio-input:focus {
+            outline: none;
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 1px rgba(14, 165, 233, 0.2);
+        }
+
+        .nav-item.active {
+            background: rgba(14, 165, 233, 0.15);
+            color: #38bdf8;
+            border-right: 2px solid #38bdf8;
+        }
+
+        .log-entry {
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+        }
+
+        .log-entry.error {
+            border-left-color: #fb7185;
+        }
+
+        .log-entry.success {
+            border-left-color: #34d399;
+        }
+
+        .log-entry.info {
+            border-left-color: #38bdf8;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+
+<body class="text-slate-300 h-screen flex flex-col">
+
+    <!-- Top Bar -->
+    <header
+        class="h-14 border-b border-white/10 bg-slate-950/80 backdrop-blur flex items-center justify-between px-4 shrink-0 z-50">
+        <div class="flex items-center gap-3">
+            <div class="w-5 h-5 bg-cyan-500 rounded-sm rotate-45 shadow-[0_0_10px_rgba(6,182,212,0.5)]"></div>
+            <span class="font-semibold text-white tracking-tight">AgentCache <span
+                    class="text-slate-500 font-normal">Studio</span></span>
+        </div>
+        <div class="flex items-center gap-4 text-xs font-medium text-slate-400">
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>SYSTEM ONLINE</span>
+            </div>
+            <div class="h-4 w-px bg-white/10"></div>
+            <a href="/" class="hover:text-white transition">EXIT STUDIO</a>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="flex-1 flex overflow-hidden">
+
+        <!-- Sidebar -->
+        <aside class="w-64 bg-slate-900/50 border-r border-white/10 flex flex-col shrink-0">
+            <div class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Modules</div>
+            <nav class="flex-1 space-y-1 px-2">
+                <button onclick="switchModule('spelling')" id="nav-spelling"
+                    class="nav-item active w-full text-left px-3 py-2 rounded-md text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition flex items-center gap-3">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                        </path>
+                    </svg>
+                    Semantic Correction
+                </button>
+                <button onclick="switchModule('constraints')" id="nav-constraints"
+                    class="nav-item w-full text-left px-3 py-2 rounded-md text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition flex items-center gap-3">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Constraint Protocol
+                </button>
+                <button onclick="switchModule('image')" id="nav-image"
+                    class="nav-item w-full text-left px-3 py-2 rounded-md text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition flex items-center gap-3">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                    Verified Generation
+                </button>
+            </nav>
+            <div class="p-4 border-t border-white/10">
+                <div class="text-xs text-slate-500 mb-2">CACHE STATUS</div>
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-slate-300">Hit Rate</span>
+                    <span class="text-emerald-400 font-mono">94.2%</span>
+                </div>
+                <div class="w-full bg-slate-800 h-1 mt-2 rounded-full overflow-hidden">
+                    <div class="bg-emerald-500 h-full w-[94%]"></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center Stage -->
+        <main class="flex-1 flex flex-col min-w-0 bg-slate-950 relative">
+            <!-- Background Grid -->
+            <div
+                class="absolute inset-0 bg-[url('/assets/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-10 pointer-events-none">
+            </div>
+
+            <!-- Module Header -->
+            <div class="h-16 border-b border-white/10 flex items-center justify-between px-8 shrink-0">
+                <div>
+                    <h1 id="module-title" class="text-xl font-semibold text-white">Semantic Correction</h1>
+                    <p id="module-desc" class="text-xs text-slate-500">Self-correcting cache for LLM text normalization.
+                    </p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="runActiveModule()" id="action-btn"
+                        class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-1.5 rounded text-sm font-medium transition shadow-[0_0_15px_rgba(8,145,178,0.4)] flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
+                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        EXECUTE
+                    </button>
+                </div>
+            </div>
+
+            <!-- Workspace -->
+            <div class="flex-1 p-8 overflow-y-auto">
+                <div class="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+
+                    <!-- Input Panel -->
+                    <div class="studio-panel rounded-lg p-1 flex flex-col h-[400px]">
+                        <div
+                            class="px-4 py-2 border-b border-white/5 text-xs font-medium text-slate-500 uppercase flex justify-between">
+                            <span>Input Source</span>
+                            <span class="text-slate-600">RAW</span>
+                        </div>
+                        <div class="flex-1 p-4">
+                            <textarea id="input-area" class="studio-input w-full h-full rounded p-4 text-sm resize-none"
+                                placeholder="// Enter text here..."></textarea>
+
+                            <!-- Constraint Selector (Hidden by default) -->
+                            <div id="constraint-options" class="hidden mt-4">
+                                <label class="text-xs text-slate-500 mb-1 block">Active Constraint</label>
+                                <select id="constraint-select" class="studio-input w-full rounded p-2 text-sm">
+                                    <option value="no_em_dash">No Em-Dashes (—)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Output Panel -->
+                    <div class="studio-panel rounded-lg p-1 flex flex-col h-[400px]">
+                        <div
+                            class="px-4 py-2 border-b border-white/5 text-xs font-medium text-slate-500 uppercase flex justify-between">
+                            <span>System Output</span>
+                            <span id="output-status" class="text-slate-600">IDLE</span>
+                        </div>
+                        <div class="flex-1 p-4 relative">
+                            <div id="output-area"
+                                class="w-full h-full text-sm font-mono text-slate-400 whitespace-pre-wrap overflow-y-auto">
+                            </div>
+
+                            <!-- Stats Overlay -->
+                            <div class="absolute bottom-4 right-4 flex gap-2">
+                                <div
+                                    class="bg-slate-900/80 backdrop-blur border border-white/10 rounded px-3 py-1 text-xs">
+                                    <span class="text-slate-500">LATENCY</span>
+                                    <span id="stat-latency" class="ml-2 text-white font-mono">0ms</span>
+                                </div>
+                                <div
+                                    class="bg-slate-900/80 backdrop-blur border border-white/10 rounded px-3 py-1 text-xs">
+                                    <span class="text-slate-500">COST</span>
+                                    <span id="stat-cost" class="ml-2 text-white font-mono">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+
+        <!-- Inspector / Log Panel -->
+        <aside class="w-80 bg-slate-900/50 border-l border-white/10 flex flex-col shrink-0">
+            <div class="p-4 border-b border-white/10 flex justify-between items-center">
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Execution Log</span>
+                <button onclick="clearLog()" class="text-xs text-slate-600 hover:text-white">CLEAR</button>
+            </div>
+            <div id="console-log" class="flex-1 overflow-y-auto p-4 space-y-3 font-mono text-xs">
+                <div class="text-slate-600 italic">// System ready. Select a module.</div>
+            </div>
+        </aside>
+
+    </div>
+
+    <script>
+        // State
+        let activeModule = 'spelling';
+
+        // Module Configs
+        const modules = {
+            spelling: {
+                title: 'Semantic Correction',
+                desc: 'Self-correcting cache for LLM text normalization.',
+                placeholder: "Thsi is a tst of the sytem.",
+                endpoint: '/api/spelling/fix',
+                hasConstraints: false
+            },
+            constraints: {
+                title: 'Constraint Enforcement',
+                desc: 'Protocol for enforcing negative constraints (e.g., No Em-Dashes).',
+                placeholder: "Write a sentence about AI with a dramatic pause using a dash.",
+                endpoint: '/api/constraints/enforce',
+                hasConstraints: true
+            },
+            image: {
+                title: 'Verified Generation',
+                desc: 'OCR-verified caching for stochastic generative models.',
+                placeholder: "A neon sign that says 'Open Late'",
+                endpoint: '/api/image-gen/generate',
+                hasConstraints: false
+            }
+        };
+
+        // Init
+        function switchModule(mod) {
+            activeModule = mod;
+            const config = modules[mod];
+
+            // Update UI
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`nav-${mod}`).classList.add('active');
+
+            document.getElementById('module-title').innerText = config.title;
+            document.getElementById('module-desc').innerText = config.desc;
+            document.getElementById('input-area').value = '';
+            document.getElementById('input-area').placeholder = config.placeholder;
+            document.getElementById('output-area').innerText = '';
+            document.getElementById('output-status').innerText = 'IDLE';
+            document.getElementById('output-status').className = 'text-slate-600';
+
+            // Toggle Constraint Select
+            const constraintOptions = document.getElementById('constraint-options');
+            if (config.hasConstraints) {
+                constraintOptions.classList.remove('hidden');
+            } else {
+                constraintOptions.classList.add('hidden');
+            }
+
+            log('info', `Switched to ${config.title}`);
+        }
+
+        async function runActiveModule() {
+            const config = modules[activeModule];
+            const input = document.getElementById('input-area').value;
+            if (!input) return;
+
+            const btn = document.getElementById('action-btn');
+            const outputArea = document.getElementById('output-area');
+            const status = document.getElementById('output-status');
+
+            // Loading
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+            status.innerText = 'PROCESSING';
+            status.className = 'text-cyan-400 animate-pulse';
+            log('info', `Executing ${activeModule}...`);
+
+            const startTime = performance.now();
+
+            try {
+                let body = {};
+                if (activeModule === 'spelling') body = { text: input };
+                if (activeModule === 'image') body = { prompt: input };
+                if (activeModule === 'constraints') {
+                    body = {
+                        prompt: input,
+                        constraint: document.getElementById('constraint-select').value
+                    };
+                }
+
+                const res = await fetch(config.endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await res.json();
+
+                if (data.error) {
+                    log('error', `Error: ${data.error}`);
+                    status.innerText = 'ERROR';
+                    status.className = 'text-rose-500';
+                    return;
+                }
+
+                // Handle Output based on module
+                let displayText = '';
+                if (activeModule === 'spelling') displayText = data.fixed;
+                if (activeModule === 'constraints') displayText = data.output;
+                if (activeModule === 'image') {
+                    displayText = `Seed: ${data.result.seed}\nAttempts: ${data.result.attempts}\nCost: $${data.result.cost}`;
+                }
+
+                outputArea.innerText = displayText;
+
+                // Update Stats
+                document.getElementById('stat-latency').innerText = `${data.latency}ms`;
+                document.getElementById('stat-cost').innerText = data.savings ? `-$${data.savings}` : '$0.00';
+
+                // Log details
+                if (data.cached) {
+                    status.innerText = 'CACHE HIT';
+                    status.className = 'text-emerald-400 font-bold';
+                    log('success', `Cache Hit (${data.latency}ms)`);
+                } else {
+                    status.innerText = 'CACHE MISS';
+                    status.className = 'text-amber-400 font-bold';
+                    log('info', `Cache Miss - Computed in ${data.latency}ms`);
+
+                    if (data.violationLog && data.violationLog.length > 0) {
+                        data.violationLog.forEach(v => log('error', `Violation: ${v.details} -> ${v.action}`));
+                    }
+                    if (activeModule === 'image' && !data.cached) {
+                        log('info', `Simulated ${data.result.attempts} attempts.`);
+                    }
+                }
+
+            } catch (err) {
+                log('error', 'Network Error');
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            }
+        }
+
+        function log(type, msg) {
+            const consoleLog = document.getElementById('console-log');
+            const div = document.createElement('div');
+            div.className = `log-entry ${type} text-slate-400`;
+            div.innerText = `> ${msg}`;
+            consoleLog.appendChild(div);
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('console-log').innerHTML = '';
+        }
+
+        // Init default
+        switchModule('spelling');
+    </script>
+</body>
+
+</html>

@@ -33,6 +33,10 @@
       "destination": "/api/constraints"
     },
     {
+      "source": "/studio",
+      "destination": "/studio.html"
+    },
+    {
       "source": "/daily",
       "destination": "/daily.html"
     },

@@ -22,9 +22,17 @@ body {
 }
 
 @keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 /* Fireflies */
@@ -40,22 +48,31 @@ body {
 }
 
 @keyframes float {
-  0%, 100% { 
+
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
     opacity: 0;
   }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  50% { 
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
+  50% {
     transform: translate(var(--tx), var(--ty)) scale(1.5);
   }
 }
 
 /* Glass Effect */
 .glass {
-  background: rgba(30, 41, 59, 0.3);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .glass-light {
@@ -87,8 +104,15 @@ body {
 }
 
 @keyframes borderGlow {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 /* Card Hover Effects */
@@ -112,8 +136,13 @@ body {
 }
 
 @keyframes textShine {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 300% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 300% 50%;
+  }
 }
 
 /* Glow Effects */
@@ -191,7 +220,7 @@ nav.glass {
     width: 2px;
     height: 2px;
   }
-  
+
   .section-padding {
     padding: 3rem 1rem;
   }
