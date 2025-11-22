@@ -13,6 +13,14 @@
       "destination": "/api/cache"
     },
     {
+      "source": "/api/tool-cache/get",
+      "destination": "/api/tool-cache"
+    },
+    {
+      "source": "/api/tool-cache/set",
+      "destination": "/api/tool-cache"
+    },
+    {
       "source": "/daily",
       "destination": "/daily.html"
     },
