@@ -4,20 +4,10 @@ services:
   app:
     build: .
     ports:
-      - "3000:3000"
+      - "${PORT:-3000}:3000"
     environment:
       - UPSTASH_REDIS_REST_URL=http://redis:6379
       - UPSTASH_REDIS_REST_TOKEN=local_dev_token
-      # In a real on-prem setup, we'd use a local Redis client adapter, 
-      # but for now we'll assume the API code can handle a standard Redis URL 
-      # or we'd need a proxy. 
-      # ACTUALLY: Our code uses @upstash/redis which expects HTTP.
-      # To make this work offline with standard Redis, we need a sidecar that speaks HTTP-to-Redis protocol (like webdis or just use a standard redis client in code).
-      # STRATEGY PIVOT: For this demo, we will assume the user provides Upstash creds OR we update code to support local Redis.
-      # To keep it simple for the "Containerize" task without rewriting all API files to use 'ioredis',
-      # we will pass the EXISTING Upstash credentials to the container for now.
-      # This proves "Containerization" (running the app logic in Docker) even if it still calls out to cloud Redis.
-      # Fully air-gapped Redis requires refactoring the API layer to abstract the DB client.
     env_file:
       - .env
     depends_on:
@@ -26,4 +16,4 @@ services:
   redis:
     image: redis:alpine
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
