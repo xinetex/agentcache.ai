@@ -417,6 +417,256 @@
         </div>
     </section>
 
+    <!-- AgentCache Edge (Data Center) -->
+    <section id="edge" class="py-24 bg-slate-900/50 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <div>
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-6">
+                        🏢 AgentCache Edge
+                    </div>
+                    <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                        Your Data Center's <br>
+                        <span class="text-gradient">Virtual GPU.</span>
+                    </h2>
+                    <p class="text-xl text-slate-400 mb-8 leading-relaxed">
+                        Turn every rack into a supercomputer. AgentCache Edge is a containerized, air-gapped solution
+                        designed for on-premise deployment.
+                    </p>
+
+                    <div class="space-y-6 mb-8">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-2xl">🐳
+                            </div>
+                            <div>
+                                <h4 class="text-white font-bold">Docker Containerized</h4>
+                                <p class="text-sm text-slate-400">Deploy instantly with standard Docker and Kubernetes
+                                    artifacts. Zero external dependencies.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-2xl">🔒
+                            </div>
+                            <div>
+                                <h4 class="text-white font-bold">Air-Gapped Security</h4>
+                                <p class="text-sm text-slate-400">Runs entirely within your VPC or physical hardware. No
+                                    data leaves your perimeter.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-2xl">⚡
+                            </div>
+                            <div>
+                                <h4 class="text-white font-bold">Low Latency</h4>
+                                <p class="text-sm text-slate-400">Sub-millisecond response times for cached agentic
+                                    plans. Faster than light.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="https://github.com/xinetex/agentcache.ai"
+                        class="text-blue-400 hover:text-blue-300 font-medium flex items-center gap-2">
+                        View Deployment Guide <span aria-hidden="true">→</span>
+                    </a>
+                </div>
+
+                <!-- Terminal Visual -->
+                <div class="glass rounded-2xl p-1 border border-slate-700/50 shadow-2xl shadow-blue-900/20">
+                    <div class="bg-slate-950 rounded-xl p-6 font-mono text-xs md:text-sm overflow-hidden">
+                        <div class="flex gap-2 mb-4">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <div class="text-slate-400 space-y-2">
+                            <p><span class="text-green-400">➜</span> <span class="text-blue-400">~</span> docker-compose
+                                up -d</p>
+                            <p class="text-slate-500">[+] Running 2/2</p>
+                            <p class="text-slate-300"> ✔ Container agentcache-redis <span
+                                    class="text-green-400">Started</span></p>
+                            <p class="text-slate-300"> ✔ Container agentcache-edge <span
+                                    class="text-green-400">Started</span></p>
+                            <p class="mt-4"><span class="text-green-400">➜</span> <span class="text-blue-400">~</span>
+                                curl localhost:3000/health</p>
+                            <p class="text-cyan-300">{ "status": "online", "mode": "air-gapped" }</p>
+                            <p class="mt-4"><span class="text-green-400">➜</span> <span class="text-blue-400">~</span>
+                                ./benchmark_cluster.js</p>
+                            <p class="text-slate-300">🚀 Starting Cluster Benchmark...</p>
+                            <p class="text-slate-300">Throughput: <span class="text-emerald-400 font-bold">1,765
+                                    req/s</span></p>
+                            <p class="text-slate-300">Virtual GPUs: <span
+                                    class="text-emerald-400 font-bold">42.5x</span></p>
+                            <p class="animate-pulse">_</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Green AI (Sustainability) -->
+    <section class="py-24 border-t border-slate-800 relative overflow-hidden">
+        <!-- Background Glow -->
+        <div
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-3xl -z-10">
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <div
+                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold mb-6">
+                🌱 Green AI Initiative
+            </div>
+            <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                Download Free <span class="text-emerald-400">Electricity.</span>
+            </h2>
+            <p class="text-xl text-slate-400 max-w-3xl mx-auto mb-16">
+                Every cached token is energy saved. AgentCache quantifies your environmental impact in real-time.
+            </p>
+
+            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <div class="glass p-8 rounded-2xl border-t-4 border-emerald-500">
+                    <div class="text-sm text-slate-400 uppercase tracking-wider mb-2">Energy Saved</div>
+                    <div class="text-5xl font-mono font-bold text-white mb-2">4.2<span
+                            class="text-2xl text-slate-500">MWh</span></div>
+                    <p class="text-xs text-emerald-400">Equivalent to planting 150 trees</p>
+                </div>
+                <div class="glass p-8 rounded-2xl border-t-4 border-emerald-500">
+                    <div class="text-sm text-slate-400 uppercase tracking-wider mb-2">Virtual GPUs</div>
+                    <div class="text-5xl font-mono font-bold text-white mb-2">40<span
+                            class="text-2xl text-slate-500">x</span></div>
+                    <p class="text-xs text-emerald-400">Throughput multiplier vs Direct LLM</p>
+                </div>
+                <div class="glass p-8 rounded-2xl border-t-4 border-emerald-500">
+                    <div class="text-sm text-slate-400 uppercase tracking-wider mb-2">Carbon Offset</div>
+                    <div class="text-5xl font-mono font-bold text-white mb-2">12<span
+                            class="text-2xl text-slate-500">t</span></div>
+                    <p class="text-xs text-emerald-400">CO2 emissions prevented</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Medical / PII Mode -->
+    <section class="py-24 bg-slate-900/50 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <!-- Visual -->
+                <div class="glass rounded-2xl p-8 border border-rose-500/20 relative order-2 md:order-1">
+                    <div
+                        class="absolute -top-4 -right-4 bg-rose-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-bounce">
+                        HIPAA READY
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex gap-3">
+                            <div class="w-8 h-8 rounded-full bg-slate-800 flex-shrink-0"></div>
+                            <div class="bg-slate-800 rounded-r-xl rounded-bl-xl p-3 text-sm text-slate-300 w-3/4">
+                                Patient John Doe (SSN: 123-45-6789) diagnosed with...
+                            </div>
+                        </div>
+                        <div class="flex gap-3 justify-end">
+                            <div
+                                class="bg-cyan-900/30 border border-cyan-500/30 rounded-l-xl rounded-br-xl p-3 text-sm text-cyan-100 w-3/4">
+                                <div class="flex items-center gap-2 text-xs text-cyan-400 mb-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    PII REDACTED
+                                </div>
+                                Patient [REDACTED: NAME] (SSN: [REDACTED: SSN]) diagnosed with...
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-cyan-500/20 flex-shrink-0"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="order-1 md:order-2">
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold mb-6">
+                        🏥 Medical Mode
+                    </div>
+                    <h2 class="text-4xl font-bold mb-6">
+                        Compliance is <br>
+                        <span class="text-white">Not Optional.</span>
+                    </h2>
+                    <p class="text-xl text-slate-400 mb-8">
+                        Built for high-stakes environments. Our <strong>Medical Mode</strong> automatically detects and
+                        redact PII (Personally Identifiable Information) before it ever hits the cache.
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex items-center gap-3 text-slate-300">
+                            <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Auto-redaction of SSN, Email, Phone, Names
+                        </li>
+                        <li class="flex items-center gap-3 text-slate-300">
+                            <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            HIPAA & GDPR Compliant Workflows
+                        </li>
+                        <li class="flex items-center gap-3 text-slate-300">
+                            <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Audit Logs with Redacted Entries
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AgentCache Studio -->
+    <section class="py-24 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <h2 class="text-4xl md:text-6xl font-bold mb-8">
+                The <span class="text-gradient">Pro Console</span> for Agents.
+            </h2>
+            <p class="text-xl text-slate-400 max-w-3xl mx-auto mb-12">
+                Manage your cognitive architecture like a pro. The AgentCache Studio gives you granular control over
+                memory, constraints, and integrations.
+            </p>
+
+            <div class="relative group max-w-5xl mx-auto">
+                <div
+                    class="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000">
+                </div>
+                <div class="relative glass rounded-xl overflow-hidden border border-slate-700">
+                    <!-- Mock Studio UI -->
+                    <div class="bg-slate-950 p-2 border-b border-slate-800 flex items-center gap-4">
+                        <div class="flex gap-1.5">
+                            <div class="w-3 h-3 rounded-full bg-red-500/50"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500/50"></div>
+                        </div>
+                        <div class="text-xs text-slate-500 font-mono flex-1 text-center">AgentCache Studio v1.0</div>
+                    </div>
+                    <div class="bg-slate-900 aspect-video flex items-center justify-center text-slate-600 font-mono">
+                        [ Interactive Studio Dashboard Preview ]
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12">
+                <a href="/studio.html"
+                    class="inline-flex items-center gap-2 px-8 py-4 bg-white text-slate-950 font-bold rounded-xl hover:bg-slate-200 transition-colors">
+                    Launch Studio Demo
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
     <!-- Use Cases -->
     <section class="py-24 bg-slate-900/50 border-t border-slate-800">
         <div class="max-w-7xl mx-auto px-6">
