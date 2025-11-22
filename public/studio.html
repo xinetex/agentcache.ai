@@ -200,264 +200,284 @@
                     <div class="bg-emerald-500 h-full w-[94%]"></div>
                 </div>
             </div>
-        </aside>
 
-        <!-- Center Stage -->
-        <main class="flex-1 flex flex-col min-w-0 bg-slate-950 relative">
-            <!-- Background Grid -->
-            <div
-                class="absolute inset-0 bg-[url('/assets/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-10 pointer-events-none">
+            <!-- Green AI Widget -->
+            <div class="p-4 border-t border-white/10">
+                <div class="text-xs text-slate-500 mb-2 flex items-center gap-1">
+                    <svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    GREEN AI METRICS
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="bg-slate-800/50 p-2 rounded border border-white/5">
+                        <div class="text-[10px] text-slate-400">ENERGY SAVED</div>
+                        <div class="text-lg font-mono text-emerald-400" id="stat-energy">0.0J</div>
+                    </div>
+                    <div class="bg-slate-800/50 p-2 rounded border border-white/5">
+                        <div class="text-[10px] text-slate-400">VIRTUAL GPUs</div>
+                        <div class="text-lg font-mono text-cyan-400" id="stat-vgpu">0.0x</div>
+                    </div>
+                </div>
+            </div>
+    </div>
+    </aside>
+
+    <!-- Center Stage -->
+    <main class="flex-1 flex flex-col min-w-0 bg-slate-950 relative">
+        <!-- Background Grid -->
+        <div
+            class="absolute inset-0 bg-[url('/assets/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-10 pointer-events-none">
+        </div>
+
+        <!-- Module Header -->
+        <div class="h-16 border-b border-white/10 flex items-center justify-between px-8 shrink-0">
+            <div>
+                <h1 id="module-title" class="text-xl font-semibold text-white">Semantic Correction</h1>
+                <p id="module-desc" class="text-xs text-slate-500">Self-correcting cache for LLM text normalization.
+                </p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="runActiveModule()" id="action-btn"
+                    class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-1.5 rounded text-sm font-medium transition shadow-[0_0_15px_rgba(8,145,178,0.4)] flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    EXECUTE
+                </button>
+                <button onclick="refreshHistory()" id="refresh-btn"
+                    class="hidden bg-slate-800 hover:bg-slate-700 text-white px-4 py-1.5 rounded text-sm font-medium transition flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                        </path>
+                    </svg>
+                    REFRESH
+                </button>
+            </div>
+        </div>
+
+        <!-- Workspace -->
+        <div class="flex-1 p-8 overflow-y-auto">
+
+            <!-- Standard Workspace -->
+            <div id="workspace-standard" class="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+                <!-- Input Panel -->
+                <div class="studio-panel rounded-lg p-1 flex flex-col h-[400px]">
+                    <div
+                        class="px-4 py-2 border-b border-white/5 text-xs font-medium text-slate-500 uppercase flex justify-between">
+                        <span>Input Source</span>
+                        <span class="text-slate-600">RAW</span>
+                    </div>
+                    <div class="flex-1 p-4">
+                        <textarea id="input-area" class="studio-input w-full h-full rounded p-4 text-sm resize-none"
+                            placeholder="// Enter text here..."></textarea>
+
+                        <!-- Constraint Selector (Hidden by default) -->
+                        <div id="constraint-options" class="hidden mt-4">
+                            <label class="text-xs text-slate-500 mb-1 block">Active Constraint</label>
+                            <select id="constraint-select" class="studio-input w-full rounded p-2 text-sm">
+                                <option value="no_em_dash">No Em-Dashes (—)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Output Panel -->
+                <div class="studio-panel rounded-lg p-1 flex flex-col h-[400px]">
+                    <div
+                        class="px-4 py-2 border-b border-white/5 text-xs font-medium text-slate-500 uppercase flex justify-between">
+                        <span>System Output</span>
+                        <span id="output-status" class="text-slate-600">IDLE</span>
+                    </div>
+                    <div class="flex-1 p-4 relative">
+                        <div id="output-area"
+                            class="w-full h-full text-sm font-mono text-slate-400 whitespace-pre-wrap overflow-y-auto">
+                        </div>
+
+                        <!-- Stats Overlay -->
+                        <div class="absolute bottom-4 right-4 flex gap-2">
+                            <div class="bg-slate-900/80 backdrop-blur border border-white/10 rounded px-3 py-1 text-xs">
+                                <span class="text-slate-500">LATENCY</span>
+                                <span id="stat-latency" class="ml-2 text-white font-mono">0ms</span>
+                            </div>
+                            <div class="bg-slate-900/80 backdrop-blur border border-white/10 rounded px-3 py-1 text-xs">
+                                <span class="text-slate-500">COST</span>
+                                <span id="stat-cost" class="ml-2 text-white font-mono">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Module Header -->
-            <div class="h-16 border-b border-white/10 flex items-center justify-between px-8 shrink-0">
-                <div>
-                    <h1 id="module-title" class="text-xl font-semibold text-white">Semantic Correction</h1>
-                    <p id="module-desc" class="text-xs text-slate-500">Self-correcting cache for LLM text normalization.
+            <!-- History Workspace -->
+            <div id="workspace-history" class="hidden max-w-6xl mx-auto h-full flex flex-col gap-4">
+                <!-- Stats Row -->
+                <div class="grid grid-cols-4 gap-4 shrink-0">
+                    <div class="studio-panel rounded-lg p-3 flex items-center justify-between">
+                        <div class="text-xs text-slate-500 uppercase font-bold">Total Requests</div>
+                        <div class="text-xl font-mono text-white">1,284</div>
+                    </div>
+                    <div class="studio-panel rounded-lg p-3 flex items-center justify-between">
+                        <div class="text-xs text-slate-500 uppercase font-bold">Cache Hit Rate</div>
+                        <div class="text-xl font-mono text-emerald-400">94.2%</div>
+                    </div>
+                    <div class="studio-panel rounded-lg p-3 flex items-center justify-between">
+                        <div class="text-xs text-slate-500 uppercase font-bold">Avg Latency</div>
+                        <div class="text-xl font-mono text-cyan-400">42ms</div>
+                    </div>
+                    <div class="studio-panel rounded-lg p-3 flex items-center justify-between">
+                        <div class="text-xs text-slate-500 uppercase font-bold">Est. Savings</div>
+                        <div class="text-xl font-mono text-white">$142.50</div>
+                    </div>
+                </div>
+
+                <!-- Table Panel -->
+                <div class="studio-panel rounded-lg overflow-hidden flex-1 flex flex-col relative">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500/50 to-transparent">
+                    </div>
+
+                    <!-- Table Header -->
+                    <div
+                        class="grid grid-cols-12 gap-4 px-6 py-3 bg-white/5 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-white/5">
+                        <div class="col-span-2">Timestamp</div>
+                        <div class="col-span-2">Module</div>
+                        <div class="col-span-5">Input / Query</div>
+                        <div class="col-span-2">Status</div>
+                        <div class="col-span-1 text-right">Latency</div>
+                    </div>
+
+                    <!-- Table Body -->
+                    <div id="history-table-body"
+                        class="overflow-y-auto flex-1 divide-y divide-white/5 font-mono text-xs">
+                        <div class="px-6 py-8 text-center italic text-slate-600">Loading system logs...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Integrations Workspace -->
+            <div id="workspace-integrations" class="hidden max-w-4xl mx-auto h-full flex flex-col gap-6">
+                <!-- ... Existing Integrations ... -->
+                <div class="studio-panel rounded-lg p-6 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition">
+                        <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">ComfyUI Integration</h3>
+                    <p class="text-slate-400 text-sm mb-4 max-w-lg">Connect AgentCache to your local or cloud
+                        ComfyUI instance. Cache expensive generations and enforce compliance rules before rendering.
                     </p>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="runActiveModule()" id="action-btn"
-                        class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-1.5 rounded text-sm font-medium transition shadow-[0_0_15px_rgba(8,145,178,0.4)] flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
-                            </path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        EXECUTE
-                    </button>
-                    <button onclick="refreshHistory()" id="refresh-btn"
-                        class="hidden bg-slate-800 hover:bg-slate-700 text-white px-4 py-1.5 rounded text-sm font-medium transition flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-                            </path>
-                        </svg>
-                        REFRESH
-                    </button>
-                </div>
-            </div>
-
-            <!-- Workspace -->
-            <div class="flex-1 p-8 overflow-y-auto">
-
-                <!-- Standard Workspace -->
-                <div id="workspace-standard" class="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
-                    <!-- Input Panel -->
-                    <div class="studio-panel rounded-lg p-1 flex flex-col h-[400px]">
-                        <div
-                            class="px-4 py-2 border-b border-white/5 text-xs font-medium text-slate-500 uppercase flex justify-between">
-                            <span>Input Source</span>
-                            <span class="text-slate-600">RAW</span>
-                        </div>
-                        <div class="flex-1 p-4">
-                            <textarea id="input-area" class="studio-input w-full h-full rounded p-4 text-sm resize-none"
-                                placeholder="// Enter text here..."></textarea>
-
-                            <!-- Constraint Selector (Hidden by default) -->
-                            <div id="constraint-options" class="hidden mt-4">
-                                <label class="text-xs text-slate-500 mb-1 block">Active Constraint</label>
-                                <select id="constraint-select" class="studio-input w-full rounded p-2 text-sm">
-                                    <option value="no_em_dash">No Em-Dashes (—)</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Output Panel -->
-                    <div class="studio-panel rounded-lg p-1 flex flex-col h-[400px]">
-                        <div
-                            class="px-4 py-2 border-b border-white/5 text-xs font-medium text-slate-500 uppercase flex justify-between">
-                            <span>System Output</span>
-                            <span id="output-status" class="text-slate-600">IDLE</span>
-                        </div>
-                        <div class="flex-1 p-4 relative">
-                            <div id="output-area"
-                                class="w-full h-full text-sm font-mono text-slate-400 whitespace-pre-wrap overflow-y-auto">
-                            </div>
-
-                            <!-- Stats Overlay -->
-                            <div class="absolute bottom-4 right-4 flex gap-2">
-                                <div
-                                    class="bg-slate-900/80 backdrop-blur border border-white/10 rounded px-3 py-1 text-xs">
-                                    <span class="text-slate-500">LATENCY</span>
-                                    <span id="stat-latency" class="ml-2 text-white font-mono">0ms</span>
-                                </div>
-                                <div
-                                    class="bg-slate-900/80 backdrop-blur border border-white/10 rounded px-3 py-1 text-xs">
-                                    <span class="text-slate-500">COST</span>
-                                    <span id="stat-cost" class="ml-2 text-white font-mono">$0.00</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- History Workspace -->
-                <div id="workspace-history" class="hidden max-w-6xl mx-auto h-full flex flex-col gap-4">
-                    <!-- Stats Row -->
-                    <div class="grid grid-cols-4 gap-4 shrink-0">
-                        <div class="studio-panel rounded-lg p-3 flex items-center justify-between">
-                            <div class="text-xs text-slate-500 uppercase font-bold">Total Requests</div>
-                            <div class="text-xl font-mono text-white">1,284</div>
-                        </div>
-                        <div class="studio-panel rounded-lg p-3 flex items-center justify-between">
-                            <div class="text-xs text-slate-500 uppercase font-bold">Cache Hit Rate</div>
-                            <div class="text-xl font-mono text-emerald-400">94.2%</div>
-                        </div>
-                        <div class="studio-panel rounded-lg p-3 flex items-center justify-between">
-                            <div class="text-xs text-slate-500 uppercase font-bold">Avg Latency</div>
-                            <div class="text-xl font-mono text-cyan-400">42ms</div>
-                        </div>
-                        <div class="studio-panel rounded-lg p-3 flex items-center justify-between">
-                            <div class="text-xs text-slate-500 uppercase font-bold">Est. Savings</div>
-                            <div class="text-xl font-mono text-white">$142.50</div>
-                        </div>
-                    </div>
-
-                    <!-- Table Panel -->
-                    <div class="studio-panel rounded-lg overflow-hidden flex-1 flex flex-col relative">
-                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500/50 to-transparent">
-                        </div>
-
-                        <!-- Table Header -->
-                        <div
-                            class="grid grid-cols-12 gap-4 px-6 py-3 bg-white/5 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-white/5">
-                            <div class="col-span-2">Timestamp</div>
-                            <div class="col-span-2">Module</div>
-                            <div class="col-span-5">Input / Query</div>
-                            <div class="col-span-2">Status</div>
-                            <div class="col-span-1 text-right">Latency</div>
-                        </div>
-
-                        <!-- Table Body -->
-                        <div id="history-table-body"
-                            class="overflow-y-auto flex-1 divide-y divide-white/5 font-mono text-xs">
-                            <div class="px-6 py-8 text-center italic text-slate-600">Loading system logs...</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Integrations Workspace -->
-                <div id="workspace-integrations" class="hidden max-w-4xl mx-auto h-full flex flex-col gap-6">
-                    <!-- ... Existing Integrations ... -->
-                    <div class="studio-panel rounded-lg p-6 relative overflow-hidden group">
-                        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition">
-                            <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z">
-                                </path>
+                    <div class="flex gap-4">
+                        <a href="#"
+                            class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-md text-sm font-medium transition flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                             </svg>
-                        </div>
-                        <h3 class="text-lg font-bold text-white mb-2">ComfyUI Integration</h3>
-                        <p class="text-slate-400 text-sm mb-4 max-w-lg">Connect AgentCache to your local or cloud
-                            ComfyUI instance. Cache expensive generations and enforce compliance rules before rendering.
-                        </p>
-                        <div class="flex gap-4">
-                            <a href="#"
-                                class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-md text-sm font-medium transition flex items-center gap-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                                </svg>
-                                Download Custom Node
-                            </a>
-                            <button class="text-cyan-400 hover:text-cyan-300 text-sm font-medium">View Documentation
-                                &rarr;</button>
-                        </div>
+                            Download Custom Node
+                        </a>
+                        <button class="text-cyan-400 hover:text-cyan-300 text-sm font-medium">View Documentation
+                            &rarr;</button>
                     </div>
+                </div>
 
-                    <!-- Compliance Webhook Card -->
-                    <div class="studio-panel rounded-lg p-6">
-                        <h3 class="text-lg font-bold text-white mb-2">Compliance Webhook</h3>
-                        <p class="text-slate-400 text-sm mb-6">Receive real-time JSON payloads when a constraint
-                            violation is detected and blocked.</p>
+                <!-- Compliance Webhook Card -->
+                <div class="studio-panel rounded-lg p-6">
+                    <h3 class="text-lg font-bold text-white mb-2">Compliance Webhook</h3>
+                    <p class="text-slate-400 text-sm mb-6">Receive real-time JSON payloads when a constraint
+                        violation is detected and blocked.</p>
 
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-xs font-medium text-slate-500 uppercase mb-1">Webhook
-                                    URL</label>
-                                <div class="flex gap-2">
-                                    <input type="text" id="webhook-url-input"
-                                        class="flex-1 bg-slate-950 border border-slate-800 rounded-md px-4 py-2 text-white focus:outline-none focus:border-cyan-500 transition font-mono text-sm"
-                                        placeholder="https://api.your-service.com/webhook">
-                                    <button onclick="saveWebhook()" id="save-webhook-btn"
-                                        class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-md text-sm font-medium transition">
-                                        Save
-                                    </button>
-                                </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 uppercase mb-1">Webhook
+                                URL</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="webhook-url-input"
+                                    class="flex-1 bg-slate-950 border border-slate-800 rounded-md px-4 py-2 text-white focus:outline-none focus:border-cyan-500 transition font-mono text-sm"
+                                    placeholder="https://api.your-service.com/webhook">
+                                <button onclick="saveWebhook()" id="save-webhook-btn"
+                                    class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-md text-sm font-medium transition">
+                                    Save
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Settings Workspace -->
-                <div id="workspace-settings" class="hidden max-w-4xl mx-auto h-full flex flex-col gap-6">
-                    <div class="studio-panel rounded-lg p-6">
-                        <h3 class="text-lg font-bold text-white mb-6">Feature Control Panel</h3>
-
-                        <div class="space-y-6">
-                            <!-- Semantic Correction Toggle -->
-                            <div
-                                class="flex items-center justify-between p-4 bg-slate-950/50 rounded border border-white/5">
-                                <div>
-                                    <div class="text-sm font-bold text-white">Semantic Correction</div>
-                                    <div class="text-xs text-slate-500 mt-1">Auto-correct spelling and grammar in
-                                        prompts before processing.</div>
-                                </div>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" id="toggle-semantic" class="sr-only peer"
-                                        onchange="saveSettings()">
-                                    <div
-                                        class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500">
-                                    </div>
-                                </label>
-                            </div>
-
-                            <!-- Cognitive Sentinel Toggle -->
-                            <div
-                                class="flex items-center justify-between p-4 bg-slate-950/50 rounded border border-white/5">
-                                <div>
-                                    <div class="text-sm font-bold text-white">Cognitive Sentinel</div>
-                                    <div class="text-xs text-slate-500 mt-1">Scan agent outputs for reward hacking and
-                                        safety violations.</div>
-                                </div>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" id="toggle-sentinel" class="sr-only peer"
-                                        onchange="saveSettings()" checked>
-                                    <div
-                                        class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500">
-                                    </div>
-                                </label>
-                            </div>
-
-                            <!-- Constraint Enforcement Toggle -->
-                            <div
-                                class="flex items-center justify-between p-4 bg-slate-950/50 rounded border border-white/5">
-                                <div>
-                                    <div class="text-sm font-bold text-white">Constraint Enforcement</div>
-                                    <div class="text-xs text-slate-500 mt-1">Block and correct outputs that violate
-                                        defined negative constraints.</div>
-                                </div>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" id="toggle-constraints" class="sr-only peer"
-                                        onchange="saveSettings()" checked>
-                                    <div
-                                        class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500">
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
-        </main>
 
-        <!-- Inspector / Log Panel -->
-        <!-- ... -->
+            <!-- Settings Workspace -->
+            <div id="workspace-settings" class="hidden max-w-4xl mx-auto h-full flex flex-col gap-6">
+                <div class="studio-panel rounded-lg p-6">
+                    <h3 class="text-lg font-bold text-white mb-6">Feature Control Panel</h3>
+
+                    <div class="space-y-6">
+                        <!-- Semantic Correction Toggle -->
+                        <div
+                            class="flex items-center justify-between p-4 bg-slate-950/50 rounded border border-white/5">
+                            <div>
+                                <div class="text-sm font-bold text-white">Semantic Correction</div>
+                                <div class="text-xs text-slate-500 mt-1">Auto-correct spelling and grammar in
+                                    prompts before processing.</div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="toggle-semantic" class="sr-only peer"
+                                    onchange="saveSettings()">
+                                <div
+                                    class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500">
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Cognitive Sentinel Toggle -->
+                        <div
+                            class="flex items-center justify-between p-4 bg-slate-950/50 rounded border border-white/5">
+                            <div>
+                                <div class="text-sm font-bold text-white">Cognitive Sentinel</div>
+                                <div class="text-xs text-slate-500 mt-1">Scan agent outputs for reward hacking and
+                                    safety violations.</div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="toggle-sentinel" class="sr-only peer"
+                                    onchange="saveSettings()" checked>
+                                <div
+                                    class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500">
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Constraint Enforcement Toggle -->
+                        <div
+                            class="flex items-center justify-between p-4 bg-slate-950/50 rounded border border-white/5">
+                            <div>
+                                <div class="text-sm font-bold text-white">Constraint Enforcement</div>
+                                <div class="text-xs text-slate-500 mt-1">Block and correct outputs that violate
+                                    defined negative constraints.</div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="toggle-constraints" class="sr-only peer"
+                                    onchange="saveSettings()" checked>
+                                <div
+                                    class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500">
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Inspector / Log Panel -->
+    <!-- ... -->
 
     </div>
 
@@ -1056,6 +1076,16 @@
                 // Update Stats
                 document.getElementById('stat-latency').innerText = `${data.latency}ms`;
                 document.getElementById('stat-cost').innerText = data.savings ? `-$${data.savings}` : '$0.00';
+
+                // Update Green AI Stats
+                // Estimate: 1ms saved = 0.0001J (simplified model for demo)
+                const baseline = 1500;
+                const savedMs = Math.max(0, baseline - data.latency);
+                const joules = (savedMs * 0.005).toFixed(1); // 5mW per ms saved?
+                const vgpu = (baseline / (data.latency || 1)).toFixed(1);
+
+                document.getElementById('stat-energy').innerText = `${joules}J`;
+                document.getElementById('stat-vgpu').innerText = `${vgpu}x`;
 
                 // Log details
                 if (data.cached) {
