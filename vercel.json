@@ -25,6 +25,10 @@
       "destination": "/api/spelling"
     },
     {
+      "source": "/api/image-gen/generate",
+      "destination": "/api/image-gen"
+    },
+    {
       "source": "/daily",
       "destination": "/daily.html"
     },

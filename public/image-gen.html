@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>OCR-Verified Image Cache – AgentCache.ai</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/premium.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#f0f9ff', 500: '#0ea5e9', 900: '#0c4a6e' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="antialiased selection:bg-cyan-500 selection:text-white">
+    <div class="animated-bg"></div>
+
+    <div class="content-wrapper min-h-screen flex flex-col">
+        <!-- Nav -->
+        <nav class="w-full glass border-b border-slate-800">
+            <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 bg-cyan-500 rounded-sm rotate-45"></div>
+                    <span class="font-bold text-lg tracking-tight">AgentCache</span>
+                </div>
+                <a href="/" class="text-sm text-slate-400 hover:text-white transition">Back to Home</a>
+            </div>
+        </nav>
+
+        <main class="flex-1 max-w-5xl mx-auto px-4 py-12 w-full">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-slate-50 mb-4">
+                    OCR-Verified Image Cache
+                </h1>
+                <p class="text-lg text-slate-400 max-w-2xl mx-auto">
+                    Generative models struggle with text. We solve this by running an "Agent Loop" to verify spelling,
+                    then caching the <strong>successful seed</strong>.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Input Column -->
+                <div class="glass p-6 rounded-2xl border border-slate-700/50">
+                    <label class="block text-sm font-medium text-slate-400 mb-2">Image Prompt</label>
+                    <textarea id="input-prompt" rows="4"
+                        class="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-4 text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition resize-none"
+                        placeholder="e.g., A neon sign that says 'Open Late'"></textarea>
+
+                    <div class="mt-4 flex justify-end">
+                        <button onclick="generateImage()" id="gen-btn"
+                            class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold px-6 py-2 rounded-lg transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)]">
+                            Generate Verified Image
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Output Column -->
+                <div
+                    class="glass p-6 rounded-2xl border border-slate-700/50 relative overflow-hidden flex flex-col justify-between">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-400 mb-2">Agent Workflow Status</label>
+                        <div id="status-log"
+                            class="w-full h-[160px] bg-slate-900/30 rounded-xl p-4 text-sm font-mono overflow-y-auto space-y-2">
+                            <div class="text-slate-600 italic">Waiting for prompt...</div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Overlay -->
+                    <div id="stats-panel" class="mt-6 grid grid-cols-3 gap-4 opacity-50 transition-all duration-500">
+                        <div class="bg-slate-900/50 rounded-lg p-3 border border-slate-800">
+                            <div class="text-xs text-slate-500 uppercase tracking-wider">Latency</div>
+                            <div id="latency-display" class="text-xl font-mono text-slate-200">0ms</div>
+                        </div>
+                        <div class="bg-slate-900/50 rounded-lg p-3 border border-slate-800">
+                            <div class="text-xs text-slate-500 uppercase tracking-wider">Attempts</div>
+                            <div id="attempts-display" class="text-xl font-bold text-slate-200">-</div>
+                        </div>
+                        <div class="bg-slate-900/50 rounded-lg p-3 border border-slate-800">
+                            <div class="text-xs text-slate-500 uppercase tracking-wider">Saved</div>
+                            <div id="savings-display" class="text-xl font-bold text-emerald-400">$0.00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Explanation -->
+            <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div class="text-rose-400 mb-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-white mb-1">The Struggle (Miss)</h3>
+                    <p class="text-sm text-slate-400">Normally, you pay for every failed attempt. "Opne Late", "Open
+                        Ltae"... these cost money.</p>
+                </div>
+                <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div class="text-emerald-400 mb-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-white mb-1">The Success (Hit)</h3>
+                    <p class="text-sm text-slate-400">AgentCache remembers the <strong>exact seed</strong> that worked.
+                        The next user gets the perfect image instantly.</p>
+                </div>
+                <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div class="text-sky-400 mb-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-white mb-1">Agentic Caching</h3>
+                    <p class="text-sm text-slate-400">We don't just cache data; we cache the <strong>outcome of complex
+                            workflows</strong>.</p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="/assets/fireflies.js"></script>
+    <script>
+        async function generateImage() {
+            const prompt = document.getElementById('input-prompt').value;
+            if (!prompt) return;
+
+            const btn = document.getElementById('gen-btn');
+            const log = document.getElementById('status-log');
+            const stats = document.getElementById('stats-panel');
+            const latencyDisplay = document.getElementById('latency-display');
+            const attemptsDisplay = document.getElementById('attempts-display');
+            const savingsDisplay = document.getElementById('savings-display');
+
+            // Loading state
+            btn.disabled = true;
+            btn.innerHTML = '<span class="animate-spin inline-block mr-2">↻</span> Verifying...';
+            log.innerHTML = '<div class="text-slate-400">🚀 Starting Agent Loop...</div>';
+            stats.classList.add('opacity-50');
+
+            try {
+                const res = await fetch('/api/image-gen/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt })
+                });
+
+                const data = await res.json();
+
+                if (data.error) {
+                    log.innerHTML += `<div class="text-rose-400">Error: ${data.error}</div>`;
+                    return;
+                }
+
+                // Simulate the log of attempts if it was a miss
+                if (!data.cached) {
+                    const attempts = data.result.attempts;
+                    for (let i = 1; i < attempts; i++) {
+                        log.innerHTML += `<div class="text-rose-400">❌ Attempt ${i}: OCR Failed (Spelling incorrect)</div>`;
+                    }
+                    log.innerHTML += `<div class="text-emerald-400">✅ Attempt ${attempts}: OCR Verified! Seed: ${data.result.seed}</div>`;
+                    log.innerHTML += `<div class="text-sky-400">💾 Caching successful seed...</div>`;
+                } else {
+                    log.innerHTML = `<div class="text-emerald-400">⚡ CACHE HIT! Retrieving verified seed...</div>`;
+                    log.innerHTML += `<div class="text-slate-300">Seed: ${data.result.seed}</div>`;
+                }
+
+                // Update stats
+                latencyDisplay.textContent = `${data.latency}ms`;
+                attemptsDisplay.textContent = data.cached ? '1 (Cached)' : data.result.attempts;
+
+                if (data.cached) {
+                    savingsDisplay.textContent = `$${data.savings.toFixed(2)}`;
+                    latencyDisplay.className = 'text-xl font-mono text-emerald-400';
+                } else {
+                    savingsDisplay.textContent = '$0.00';
+                    latencyDisplay.className = 'text-xl font-mono text-amber-400';
+                }
+
+                stats.classList.remove('opacity-50');
+
+            } catch (err) {
+                log.innerHTML += `<div class="text-rose-400">Network Error</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Generate Verified Image';
+            }
+        }
+    </script>
+</body>
+
+</html>
