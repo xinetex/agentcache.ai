@@ -37,6 +37,10 @@
       "destination": "/studio.html"
     },
     {
+      "source": "/api/auth/verify",
+      "destination": "/api/auth/verify.js"
+    },
+    {
       "source": "/daily",
       "destination": "/daily.html"
     },

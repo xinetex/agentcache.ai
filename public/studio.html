@@ -257,12 +257,111 @@
             </div>
             <div id="console-log" class="flex-1 overflow-y-auto p-4 space-y-3 font-mono text-xs">
                 <div class="text-slate-600 italic">// System ready. Select a module.</div>
+                <label class="block text-xs font-medium text-slate-500 uppercase mb-1">API Key</label>
+                <input type="password" id="api-key-input"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition font-mono text-sm"
+                    placeholder="ac_live_..." required>
             </div>
-        </aside>
 
+            <div id="login-error" class="text-rose-500 text-xs hidden text-center">Invalid API Key. Please try again.
+            </div>
+
+            <button type="submit" id="login-btn"
+                class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 rounded-lg transition shadow-[0_0_20px_rgba(8,145,178,0.2)]">
+                Enter Workspace
+            </button>
+            </form>
+
+            <div class="mt-6 text-center">
+                <p class="text-xs text-slate-600">Don't have a key? <a href="/#pricing"
+                        class="text-cyan-500 hover:underline">Get one here</a></p>
+                <p class="text-xs text-slate-700 mt-2">Demo Key: <code
+                        class="bg-slate-800 px-1 rounded text-slate-500">ac_live_demo_key_12345</code></p>
+            </div>
+    </div>
     </div>
 
     <script>
+        // Auth State
+        let currentUser = null;
+
+        // Check Auth on Load
+        document.addEventListener('DOMContentLoaded', () => {
+            const storedKey = localStorage.getItem('agentcache_key');
+            if (storedKey) {
+                verifyKey(storedKey);
+            } else {
+                // If no key, show the login modal
+                document.getElementById('login-modal').classList.remove('hidden');
+            }
+        });
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const key = document.getElementById('api-key-input').value;
+            await verifyKey(key);
+        }
+
+        async function verifyKey(key) {
+            const btn = document.getElementById('login-btn');
+            const errorMsg = document.getElementById('login-error');
+
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = 'Verifying...';
+            }
+            errorMsg.classList.add('hidden');
+
+            try {
+                const res = await fetch('/api/auth/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ apiKey: key })
+                });
+
+                const data = await res.json();
+
+                if (data.valid) {
+                    // Success
+                    currentUser = data;
+                    localStorage.setItem('agentcache_key', key);
+
+                    // Hide Modal
+                    document.getElementById('login-modal').classList.add('hidden');
+
+                    // Update UI with User Data
+                    log('success', `Authenticated as ${data.email}`);
+                    log('info', `Plan: ${data.plan.toUpperCase()} | Quota: ${data.quota}`);
+
+                    // Update Sidebar Stats (Mock update for visual)
+                    document.querySelector('.bg-emerald-500').style.width = '12%';
+                    document.querySelector('.text-emerald-400').innerText = '12.5%'; // Reset for fresh session
+
+                } else {
+                    // Fail
+                    localStorage.removeItem('agentcache_key');
+                    errorMsg.classList.remove('hidden');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerText = 'Enter Workspace';
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                errorMsg.innerText = 'Connection Error';
+                errorMsg.classList.remove('hidden');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = 'Enter Workspace';
+                }
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('agentcache_key');
+            window.location.reload();
+        }
+
         // State
         let activeModule = 'spelling';
 
