@@ -176,7 +176,15 @@ async function handleSubscriptionUpdated(subscription) {
         newPlan = 'business';
     }
 
-    // TODO: Update plan in database
+    // Update plan in database
+    await redis('HSET', `user:${userId}`, 'plan', newPlan);
+
+    // Log the change
+    await redis('LPUSH', `history:${userId}`, JSON.stringify({
+        timestamp: new Date().toISOString(),
+        action: 'plan_updated',
+        details: { from: currentPlan, to: newPlan }
+    }));
     console.log('Plan updated for:', customer.email, 'to:', newPlan);
 
     // Update Stripe customer metadata
@@ -197,7 +205,13 @@ async function handleSubscriptionDeleted(subscription) {
     const customerId = subscription.customer;
     const customer = await stripe.customers.retrieve(customerId);
 
-    // TODO: Deactivate API key in database
+    // Deactivate API key in database
+    // We delete the key mapping so it no longer resolves to the user
+    if (apiKey) {
+        const hash = await sha256Hex(apiKey);
+        await redis('DEL', `key:${hash}`);
+        await redis('HDEL', `user:${userId}`, 'active_key');
+    }
     console.log('Deactivating API key for:', customer.email);
 
     // Send cancellation email
@@ -247,7 +261,15 @@ async function sendWelcomeEmail(email, apiKey, plan) {
     console.log(``);
     console.log(`Need help? Reply to this email or visit https://agentcache.ai/contact.html`);
 
-    // TODO: Actually send email via email service
+    // Mock Email Service (Log to Redis for verification)
+    const emailLog = {
+        to: email,
+        subject: 'Invoice Paid',
+        body: `Thank you for your payment of $${amount / 100}.`,
+        timestamp: new Date().toISOString()
+    };
+    await redis('LPUSH', 'system:emails', JSON.stringify(emailLog));
+    console.log(`[MockEmail] Sent to ${email}: ${emailLog.subject}`);
     // Example with Resend:
     // const resend = new Resend(process.env.RESEND_API_KEY);
     // await resend.emails.send({
@@ -263,7 +285,15 @@ async function sendWelcomeEmail(email, apiKey, plan) {
  */
 async function sendCancellationEmail(email) {
     console.log(`[EMAIL] Cancellation email to ${email}`);
-    // TODO: Implement with email service
+    // Mock Email Service (Log to Redis for verification)
+    const emailLog = {
+        to: email,
+        subject: 'Subscription Cancelled',
+        body: 'Your subscription has been cancelled.',
+        timestamp: new Date().toISOString()
+    };
+    await redis('LPUSH', 'system:emails', JSON.stringify(emailLog));
+    console.log(`[MockEmail] Sent to ${email}: ${emailLog.subject}`);
 }
 
 /**
@@ -271,5 +301,13 @@ async function sendCancellationEmail(email) {
  */
 async function sendPaymentFailedEmail(email, amount) {
     console.log(`[EMAIL] Payment failed email to ${email} for $${amount}`);
-    // TODO: Implement with email service
+    // Mock Email Service (Log to Redis for verification)
+    const emailLog = {
+        to: email,
+        subject: 'Payment Failed',
+        body: `Your payment of $${amount} failed. Please update your payment method.`,
+        timestamp: new Date().toISOString()
+    };
+    await redis('LPUSH', 'system:emails', JSON.stringify(emailLog));
+    console.log(`[MockEmail] Sent to ${email}: ${emailLog.subject}`);
 }

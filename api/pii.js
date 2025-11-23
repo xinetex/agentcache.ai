@@ -1,3 +1,5 @@
+import { redactPII } from '../src/lib/pii';
+
 export const config = { runtime: 'edge' };
 
 function json(data, status = 200) {
@@ -42,25 +44,8 @@ export default async function handler(req) {
 
         const start = Date.now();
 
-        // 1. Redaction Logic (Regex)
-        let redacted = text;
-
-        // Email
-        redacted = redacted.replace(/\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b/g, '[REDACTED: EMAIL]');
-
-        // SSN (Simple)
-        redacted = redacted.replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[REDACTED: SSN]');
-
-        // Phone (Simple US)
-        redacted = redacted.replace(/\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/g, '[REDACTED: PHONE]');
-
-        // Date (Simple)
-        redacted = redacted.replace(/\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b/g, '[REDACTED: DATE]');
-
-        // Names (Heuristic: Capitalized words that are not at start of sentence? Too risky for demo regex. 
-        // Let's stick to high-confidence patterns for now, or simple "Dr. X" patterns)
-        redacted = redacted.replace(/\bDr\.\s+[A-Z][a-z]+\b/g, '[REDACTED: DOCTOR]');
-        redacted = redacted.replace(/\bPatient\s+[A-Z][a-z]+\b/g, '[REDACTED: PATIENT]');
+        // 1. Redaction Logic (Shared Library)
+        const redacted = redactPII(text);
 
         const latency = Date.now() - start;
 
