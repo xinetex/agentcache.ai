@@ -3,12 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>AgentCache Studio v1.0</title>
+    <title>AgentCache Studio</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
     <link
-        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
         rel="stylesheet">
     <script>
         tailwind.config = {
@@ -16,28 +15,19 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Rajdhani', 'sans-serif'],
-                        display: ['Orbitron', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace']
                     },
                     colors: {
-                        metal: {
-                            bg: '#0f1115',
-                            panel: '#161920',
-                            surface: '#1c2128',
-                            border: '#2d3340',
-                            highlight: '#3b4252',
-                            text: '#e5e9f0',
-                            dim: '#81a1c1',
-                            accent: '#88c0d0', // Polished Blue
-                            success: '#a3be8c',
-                            warning: '#ebcb8b',
-                            danger: '#bf616a'
+                        console: {
+                            bg: '#020408',       // Very dark background
+                            sidebar: '#05080f',  // Slightly lighter sidebar
+                            panel: '#0a0d14',    // Panel background
+                            border: '#1e232e',   // Subtle borders
+                            accent: '#00b8d4',   // Cyan accent (Execute button)
+                            text: '#e2e8f0',     // Main text
+                            dim: '#64748b'       // Dim text
                         }
-                    },
-                    boxShadow: {
-                        'metal-glow': '0 0 20px rgba(136, 192, 208, 0.1)',
-                        'panel-depth': '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.15)',
                     }
                 }
             }
@@ -45,78 +35,41 @@
     </script>
     <style>
         body {
-            background-color: #0f1115;
-            background-image:
-                radial-gradient(circle at 50% 0%, #232831 0%, transparent 70%),
-                linear-gradient(0deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 100% 100%, 40px 40px, 40px 40px;
-            color: #e5e9f0;
-            overflow: hidden;
+            background-color: #020408;
+            color: #e2e8f0;
         }
 
-        .metal-panel {
-            background: linear-gradient(145deg, #1a1e26, #161920);
-            border: 1px solid #2d3340;
-            box-shadow:
-                inset 0 1px 0 rgba(255, 255, 255, 0.05),
-                0 4px 20px rgba(0, 0, 0, 0.4);
-            position: relative;
-        }
-
-        .metal-panel::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(136, 192, 208, 0.3), transparent);
-        }
-
-        .metal-text-glow {
-            text-shadow: 0 0 10px rgba(136, 192, 208, 0.3);
-        }
-
-        .metal-input {
-            background: #13161c;
-            border: 1px solid #2d3340;
-            color: #e5e9f0;
-            font-family: 'JetBrains Mono', monospace;
+        .nav-item {
+            border-left: 2px solid transparent;
             transition: all 0.2s;
         }
 
-        .metal-input:focus {
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .nav-item.active {
+            background-color: rgba(0, 184, 212, 0.1);
+            border-left-color: #00b8d4;
+            color: #fff;
+        }
+
+        .console-panel {
+            background-color: #0a0d14;
+            border: 1px solid #1e232e;
+            border-radius: 6px;
+        }
+
+        .console-input {
+            background-color: transparent;
+            border: none;
+            color: #e2e8f0;
+            font-family: 'JetBrains Mono', monospace;
+            resize: none;
+        }
+
+        .console-input:focus {
             outline: none;
-            border-color: #88c0d0;
-            box-shadow: 0 0 0 2px rgba(136, 192, 208, 0.1);
-        }
-
-        /* Polished Slider */
-        input[type=range] {
-            -webkit-appearance: none;
-            background: transparent;
-        }
-
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 16px;
-            width: 16px;
-            border-radius: 50%;
-            background: linear-gradient(180deg, #e5e9f0, #88c0d0);
-            cursor: pointer;
-            margin-top: -6px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-            border: 1px solid #2d3340;
-        }
-
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 4px;
-            cursor: pointer;
-            background: #2d3340;
-            border-radius: 2px;
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
         }
 
         /* Scrollbar */
@@ -125,444 +78,358 @@
         }
 
         ::-webkit-scrollbar-track {
-            background: #0f1115;
+            background: transparent;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #3b4252;
+            background: #1e232e;
             border-radius: 3px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #4c566a;
-        }
-
-        .node circle {
-            stroke: #fff;
-            stroke-width: 1.5px;
-        }
-
-        .link {
-            stroke: #4c566a;
-            stroke-opacity: 0.4;
+            background: #334155;
         }
     </style>
 </head>
 
-<body class="h-screen flex flex-col p-4 gap-4">
+<body class="h-screen flex flex-col overflow-hidden">
 
     <!-- Header -->
-    <header class="h-16 metal-panel rounded-lg flex items-center justify-between px-6 shrink-0">
-        <div class="flex items-center gap-4">
-            <img src="/assets/logo.svg" class="h-8 w-8" onerror="this.style.display='none'">
-            <!-- Fallback if no logo -->
-            <div
-                class="w-8 h-8 bg-gradient-to-br from-slate-700 to-slate-900 border border-slate-600 rounded flex items-center justify-center font-bold text-white font-display text-lg shadow-lg">
-                A</div>
-            <div>
-                <h1 class="font-display text-2xl font-bold tracking-wider text-white metal-text-glow">AGENTCACHE <span
-                        class="text-metal-accent">STUDIO</span> <span
-                        class="text-xs align-top opacity-70 text-metal-dim">PRO</span></h1>
+    <header
+        class="h-12 bg-console-sidebar border-b border-console-border flex items-center justify-between px-4 shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="w-6 h-6 bg-gradient-to-br from-cyan-500 to-blue-600 rounded flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
             </div>
+            <span class="font-medium text-sm tracking-wide">AgentCache <span
+                    class="text-console-dim">Studio</span></span>
         </div>
-
-        <div class="flex items-center gap-8 font-mono text-sm">
+        <div class="flex items-center gap-6 text-xs font-medium text-console-dim">
             <div class="flex items-center gap-2">
-                <span class="text-metal-dim">SYSTEM STATUS:</span>
-                <span class="text-metal-accent metal-text-glow">OPTIMAL</span>
+                <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                <span>SYSTEM ONLINE</span>
             </div>
-            <div class="flex items-center gap-2">
-                <span class="text-metal-dim">CONNECTED AGENTS:</span>
-                <span class="text-white" id="agent-count">--</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="text-metal-dim">DATA FLOW:</span>
-                <span class="text-metal-success">STABLE</span>
-            </div>
+            <a href="/" class="hover:text-white transition">EXIT STUDIO</a>
         </div>
     </header>
 
-    <!-- Main Grid -->
-    <div class="flex-1 grid grid-cols-12 gap-4 min-h-0">
-
-        <!-- Left Column: Stats & Controls -->
-        <div class="col-span-3 flex flex-col gap-4">
-
-            <!-- CPU / Memory -->
-            <div class="metal-panel rounded-lg p-4 flex flex-col gap-4">
-                <div class="flex justify-between items-center border-b border-metal-border pb-2">
-                    <span class="font-display font-bold text-metal-dim text-sm">SYSTEM RESOURCES</span>
-                    <svg class="w-4 h-4 text-metal-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="flex-1 flex min-h-0">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-console-sidebar border-r border-console-border flex flex-col shrink-0">
+            <div class="p-4 text-xs font-bold text-console-dim uppercase tracking-wider">Modules</div>
+            <nav class="flex-1 space-y-0.5 px-2">
+                <button onclick="switchModule('spelling')" id="nav-spelling"
+                    class="nav-item active w-full text-left px-3 py-2.5 text-sm font-medium text-console-dim rounded-r-md flex items-center gap-3">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z">
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                         </path>
                     </svg>
+                    Semantic Correction
+                </button>
+                <button onclick="switchModule('constraints')" id="nav-constraints"
+                    class="nav-item w-full text-left px-3 py-2.5 text-sm font-medium text-console-dim rounded-r-md flex items-center gap-3">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Constraint Protocol
+                </button>
+                <button onclick="switchModule('image')" id="nav-image"
+                    class="nav-item w-full text-left px-3 py-2.5 text-sm font-medium text-console-dim rounded-r-md flex items-center gap-3">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                    Verified Generation
+                </button>
+                <div class="my-2 border-t border-console-border mx-3"></div>
+                <button onclick="switchModule('history')" id="nav-history"
+                    class="nav-item w-full text-left px-3 py-2.5 text-sm font-medium text-console-dim rounded-r-md flex items-center gap-3">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Audit History
+                </button>
+                <button onclick="switchModule('integrations')" id="nav-integrations"
+                    class="nav-item w-full text-left px-3 py-2.5 text-sm font-medium text-console-dim rounded-r-md flex items-center gap-3">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z">
+                        </path>
+                    </svg>
+                    Integrations
+                </button>
+                <button onclick="switchModule('settings')" id="nav-settings"
+                    class="nav-item w-full text-left px-3 py-2.5 text-sm font-medium text-console-dim rounded-r-md flex items-center gap-3">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Control Panel
+                </button>
+                <button onclick="switchModule('pii')" id="nav-pii"
+                    class="nav-item w-full text-left px-3 py-2.5 text-sm font-medium text-console-dim rounded-r-md flex items-center gap-3">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                        </path>
+                    </svg>
+                    Medical / PII
+                </button>
+            </nav>
+
+            <div class="p-4 border-t border-console-border">
+                <div class="text-xs font-bold text-console-dim uppercase mb-2">Cache Status</div>
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-sm text-white">Hit Rate</span>
+                    <span class="text-sm font-mono text-emerald-400" id="hit-rate">94.2%</span>
                 </div>
-
-                <div class="flex items-center gap-4">
-                    <!-- CPU Donut (SVG) -->
-                    <div class="relative w-20 h-20 flex items-center justify-center">
-                        <svg class="w-full h-full transform -rotate-90">
-                            <circle cx="40" cy="40" r="36" stroke="#2d3340" stroke-width="8" fill="none"></circle>
-                            <circle id="cpu-circle" cx="40" cy="40" r="36" stroke="#88c0d0" stroke-width="8" fill="none"
-                                stroke-dasharray="226" stroke-dashoffset="180"></circle>
-                        </svg>
-                        <div class="absolute text-center">
-                            <div class="text-xs text-metal-dim">CPU</div>
-                            <div class="font-mono font-bold text-white" id="cpu-text">0%</div>
-                        </div>
-                    </div>
-
-                    <!-- Memory Graph (SVG Line) -->
-                    <div class="flex-1 h-16 flex flex-col justify-end">
-                        <div class="text-xs text-metal-dim mb-1">MEMORY ALLOCATION</div>
-                        <div class="flex justify-between text-xs font-mono text-white mb-1">
-                            <span id="mem-used">0 GB</span>
-                            <span class="text-metal-dim">/ 64 GB</span>
-                        </div>
-                        <div class="w-full h-1 bg-metal-border rounded-full overflow-hidden">
-                            <div id="mem-bar" class="h-full bg-metal-accent w-0 transition-all duration-500"></div>
-                        </div>
-                    </div>
+                <div class="w-full bg-console-border h-1 rounded-full overflow-hidden">
+                    <div class="bg-emerald-500 h-full w-[94%]"></div>
                 </div>
             </div>
+        </aside>
 
-            <!-- Agent Constraints -->
-            <div class="metal-panel rounded-lg p-4 flex-1 flex flex-col gap-4 overflow-y-auto">
-                <div class="flex justify-between items-center border-b border-metal-border pb-2">
-                    <span class="font-display font-bold text-metal-dim text-sm">AGENT CONSTRAINTS</span>
-                    <svg class="w-4 h-4 text-metal-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col min-w-0 bg-console-bg">
+            <!-- Module Header -->
+            <div class="h-16 flex items-center justify-between px-8 border-b border-console-border shrink-0">
+                <div>
+                    <h1 id="module-title" class="text-lg font-semibold text-white">Semantic Correction</h1>
+                    <p id="module-desc" class="text-xs text-console-dim">Self-correcting cache for LLM text
+                        normalization.</p>
+                </div>
+                <button onclick="runActiveModule()" id="action-btn"
+                    class="bg-console-accent hover:bg-cyan-400 text-black px-4 py-1.5 rounded text-sm font-bold transition flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
+                            d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
                         </path>
                     </svg>
-                </div>
+                    EXECUTE
+                </button>
+            </div>
 
-                <div class="space-y-6">
-                    <!-- Tone -->
-                    <div>
-                        <div class="flex justify-between text-xs font-mono mb-2">
-                            <span class="text-metal-text">TONE: <span
-                                    class="text-metal-accent">PROFESSIONAL</span></span>
-                            <span class="text-metal-dim">0.8</span>
+            <!-- Workspace -->
+            <div class="flex-1 p-8 overflow-y-auto">
+                <div id="workspace-standard" class="grid grid-cols-2 gap-6 h-full max-h-[600px]">
+
+                    <!-- Input Panel -->
+                    <div class="console-panel flex flex-col">
+                        <div class="px-4 py-3 border-b border-console-border flex justify-between items-center">
+                            <span class="text-xs font-bold text-console-dim uppercase">Input Source</span>
+                            <span class="text-xs text-console-dim font-mono">RAW</span>
                         </div>
-                        <input type="range" min="0" max="100" value="80" class="w-full">
+                        <div class="flex-1 p-4">
+                            <textarea id="input-area" class="console-input w-full h-full text-sm"
+                                placeholder="// Enter text here..."></textarea>
+
+                            <!-- Constraint Selector -->
+                            <div id="constraint-options" class="hidden mt-4 pt-4 border-t border-console-border">
+                                <label class="text-xs text-console-dim mb-2 block">Active Constraint</label>
+                                <select id="constraint-select"
+                                    class="w-full bg-console-bg border border-console-border text-white text-sm rounded p-2 focus:outline-none focus:border-console-accent">
+                                    <option value="no_em_dash">No Em-Dashes (—)</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Creativity -->
-                    <div>
-                        <div class="flex justify-between text-xs font-mono mb-2">
-                            <span class="text-metal-text">CREATIVITY: <span
-                                    class="text-metal-accent">CONTROLLED</span></span>
-                            <span class="text-metal-dim">0.5</span>
+                    <!-- Output Panel -->
+                    <div class="console-panel flex flex-col">
+                        <div class="px-4 py-3 border-b border-console-border flex justify-between items-center">
+                            <span class="text-xs font-bold text-console-dim uppercase">System Output</span>
+                            <span id="output-status" class="text-xs text-console-dim font-mono">IDLE</span>
                         </div>
-                        <input type="range" min="0" max="100" value="50" class="w-full">
-                    </div>
+                        <div class="flex-1 p-4 relative">
+                            <div id="output-area"
+                                class="w-full h-full text-sm font-mono text-console-dim whitespace-pre-wrap overflow-y-auto">
+                            </div>
 
-                    <!-- Max Depth -->
-                    <div>
-                        <div class="flex justify-between text-xs font-mono mb-2">
-                            <span class="text-metal-text">MAX DEPTH: <span class="text-metal-accent">64
-                                    LEVELS</span></span>
-                        </div>
-                        <input type="range" min="0" max="100" value="64" class="w-full">
-                    </div>
-
-                    <!-- Toggles -->
-                    <div class="space-y-3 pt-4 border-t border-metal-border">
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs font-mono text-metal-text">ETHICAL FILTERS</span>
-                            <div class="w-10 h-5 bg-metal-accent/20 rounded-full relative cursor-pointer">
-                                <div class="absolute right-1 top-1 w-3 h-3 bg-metal-accent rounded-full shadow-sm">
+                            <!-- Stats Footer -->
+                            <div class="absolute bottom-4 right-4 flex gap-2">
+                                <div
+                                    class="bg-console-bg border border-console-border rounded px-2 py-1 text-[10px] font-mono text-console-dim">
+                                    LATENCY <span id="stat-latency" class="text-white ml-1">0ms</span>
+                                </div>
+                                <div
+                                    class="bg-console-bg border border-console-border rounded px-2 py-1 text-[10px] font-mono text-console-dim">
+                                    COST <span id="stat-cost" class="text-white ml-1">$0.00</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs font-mono text-metal-text">MEMORY PERSISTENCE</span>
-                            <div class="w-10 h-5 bg-metal-accent/20 rounded-full relative cursor-pointer">
-                                <div class="absolute right-1 top-1 w-3 h-3 bg-metal-accent rounded-full shadow-sm">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs font-mono text-metal-text">EXTERNAL ACCESS</span>
-                            <div class="w-10 h-5 bg-metal-border rounded-full relative cursor-pointer">
-                                <div class="absolute left-1 top-1 w-3 h-3 bg-metal-dim rounded-full"></div>
-                            </div>
-                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Placeholder for other workspaces (History, etc) - Hidden by default -->
+                <div id="workspace-history" class="hidden h-full">
+                    <div class="console-panel h-full flex items-center justify-center text-console-dim">
+                        History View Placeholder
                     </div>
                 </div>
+                <div id="workspace-integrations" class="hidden h-full">
+                    <div class="console-panel h-full flex items-center justify-center text-console-dim">
+                        Integrations View Placeholder
+                    </div>
+                </div>
+                <div id="workspace-settings" class="hidden h-full">
+                    <div class="console-panel h-full flex items-center justify-center text-console-dim">
+                        Settings View Placeholder
+                    </div>
+                </div>
+
             </div>
-        </div>
-
-        <!-- Center: Memory Graph -->
-        <div class="col-span-6 flex flex-col gap-4">
-            <div class="metal-panel rounded-lg flex-1 relative overflow-hidden group">
-                <div class="absolute top-0 left-0 p-4 z-10 w-full flex justify-between items-start pointer-events-none">
-                    <div>
-                        <h2 class="font-display font-bold text-white text-lg">MEMORY GRAPH</h2>
-                        <div class="text-xs text-metal-dim font-mono">VISUALIZING KNOWLEDGE TOPOLOGY</div>
-                    </div>
-                    <div class="flex gap-2 pointer-events-auto">
-                        <button class="p-2 hover:bg-white/5 rounded transition text-metal-accent"><svg class="w-4 h-4"
-                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
-                                </path>
-                            </svg></button>
-                        <button class="p-2 hover:bg-white/5 rounded transition text-metal-accent"><svg class="w-4 h-4"
-                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4">
-                                </path>
-                            </svg></button>
-                    </div>
-                </div>
-
-                <!-- D3 Graph Container -->
-                <div id="graph-container" class="w-full h-full"></div>
-            </div>
-        </div>
-
-        <!-- Right Column: Cache Stats & Logs -->
-        <div class="col-span-3 flex flex-col gap-4">
-
-            <!-- Cache Hit Rate -->
-            <div class="metal-panel rounded-lg p-4 h-48 flex flex-col">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="font-display font-bold text-metal-dim text-sm">CACHE HIT RATE</span>
-                    <svg class="w-4 h-4 text-metal-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
-                </div>
-                <div class="text-4xl font-mono font-bold text-metal-accent metal-text-glow mb-4" id="hit-rate">--%</div>
-
-                <!-- Mini Chart (SVG) -->
-                <div class="flex-1 relative">
-                    <svg class="w-full h-full" preserveAspectRatio="none">
-                        <path d="M0,50 Q20,40 40,45 T80,30 T120,20 T160,35 T200,10 L200,60 L0,60 Z"
-                            fill="rgba(136, 192, 208, 0.1)" stroke="none"></path>
-                        <path d="M0,50 Q20,40 40,45 T80,30 T120,20 T160,35 T200,10" fill="none" stroke="#88c0d0"
-                            stroke-width="2"></path>
-                    </svg>
-                </div>
-
-                <div class="flex justify-between items-end mt-2">
-                    <div>
-                        <div class="text-xs text-metal-dim">LATENCY</div>
-                        <div class="font-mono text-white text-lg" id="latency">--ms</div>
-                    </div>
-                    <!-- Audio Viz Bars -->
-                    <div class="flex gap-1 items-end h-8">
-                        <div class="w-1 bg-metal-accent h-4 animate-pulse"></div>
-                        <div class="w-1 bg-metal-accent h-6 animate-pulse" style="animation-delay: 0.1s"></div>
-                        <div class="w-1 bg-metal-accent h-3 animate-pulse" style="animation-delay: 0.2s"></div>
-                        <div class="w-1 bg-metal-accent h-7 animate-pulse" style="animation-delay: 0.3s"></div>
-                        <div class="w-1 bg-metal-accent h-5 animate-pulse" style="animation-delay: 0.4s"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Live Stream -->
-            <div class="metal-panel rounded-lg p-4 flex-1 flex flex-col overflow-hidden">
-                <div class="flex justify-between items-center border-b border-metal-border pb-2 mb-2">
-                    <span class="font-display font-bold text-metal-dim text-sm">LIVE STREAM - LOG OUTPUT</span>
-                    <div class="flex gap-1">
-                        <div class="w-2 h-2 rounded-full bg-metal-dim"></div>
-                        <div class="w-2 h-2 rounded-full bg-metal-dim"></div>
-                        <div class="w-2 h-2 rounded-full bg-metal-dim"></div>
-                    </div>
-                </div>
-
-                <div id="log-container"
-                    class="flex-1 overflow-y-auto font-mono text-xs space-y-1 text-metal-text opacity-80">
-                    <!-- Logs will be injected here -->
-                    <div class="text-metal-dim">[SYSTEM] Initializing AgentCache Studio...</div>
-                </div>
-
-                <!-- Audio Waveform at bottom -->
-                <div class="h-8 w-full mt-2 opacity-50">
-                    <svg class="w-full h-full" preserveAspectRatio="none">
-                        <path d="M0,15 Q10,5 20,15 T40,15 T60,15 T80,15 T100,15 T120,15 T140,15 T160,15 T180,15 T200,15"
-                            fill="none" stroke="#88c0d0" stroke-width="1" class="animate-pulse"></path>
-                    </svg>
-                </div>
-            </div>
-        </div>
+        </main>
     </div>
 
     <script>
-        // --- D3 Graph Visualization ---
-        function initGraph(data) {
-            const container = document.getElementById('graph-container');
-            const width = container.clientWidth;
-            const height = container.clientHeight;
+        // State
+        let activeModule = 'spelling';
 
-            // Clear previous
-            d3.select("#graph-container").selectAll("*").remove();
+        // Module Configs
+        const modules = {
+            spelling: {
+                title: 'Semantic Correction',
+                desc: 'Self-correcting cache for LLM text normalization.',
+                placeholder: "Thsi is a tst of the sytem.",
+                endpoint: '/api/spelling/fix',
+                hasConstraints: false
+            },
+            constraints: {
+                title: 'Constraint Protocol',
+                desc: 'Protocol for enforcing negative constraints.',
+                placeholder: "Write a sentence about AI with a dramatic pause using a dash.",
+                endpoint: '/api/constraints/enforce',
+                hasConstraints: true
+            },
+            image: {
+                title: 'Verified Generation',
+                desc: 'OCR-verified caching for stochastic generative models.',
+                placeholder: "A neon sign that says 'Open Late'",
+                endpoint: '/api/image-gen/generate',
+                hasConstraints: false
+            },
+            history: { title: 'Audit History', isView: true },
+            integrations: { title: 'Integrations', isView: true },
+            settings: { title: 'Control Panel', isView: true },
+            pii: { title: 'Medical / PII', isView: true }
+        };
 
-            const svg = d3.select("#graph-container")
-                .append("svg")
-                .attr("width", width)
-                .attr("height", height);
+        function switchModule(mod) {
+            activeModule = mod;
+            const config = modules[mod];
 
-            const simulation = d3.forceSimulation(data.nodes)
-                .force("link", d3.forceLink(data.links).id(d => d.id).distance(100))
-                .force("charge", d3.forceManyBody().strength(-300))
-                .force("center", d3.forceCenter(width / 2, height / 2));
+            // Update Nav
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`nav-${mod}`).classList.add('active');
 
-            const link = svg.append("g")
-                .attr("class", "links")
-                .selectAll("line")
-                .data(data.links)
-                .enter().append("line")
-                .attr("stroke", "#00f0ff")
-                .attr("stroke-opacity", 0.4)
-                .attr("stroke-width", 1);
+            // Update Header
+            document.getElementById('module-title').innerText = config.title;
+            document.getElementById('module-desc').innerText = config.desc || '';
 
-            // Node Groups
-            const node = svg.append("g")
-                .attr("class", "nodes")
-                .selectAll("g")
-                .data(data.nodes)
-                .enter().append("g")
-                .call(d3.drag()
-                    .on("start", dragstarted)
-                    .on("drag", dragged)
-                    .on("end", dragended));
+            // Toggle Views
+            document.getElementById('workspace-standard').classList.add('hidden');
+            document.getElementById('workspace-history').classList.add('hidden');
+            document.getElementById('workspace-integrations').classList.add('hidden');
+            document.getElementById('workspace-settings').classList.add('hidden');
 
-            // Outer Glow
-            node.append("circle")
-                .attr("r", d => d.size + 4)
-                .attr("fill", d => d.group === 1 ? "rgba(136, 192, 208, 0.1)" : "rgba(94, 129, 172, 0.1)")
-                .attr("class", "animate-pulse");
+            const actionBtn = document.getElementById('action-btn');
 
-            // Core Node
-            node.append("circle")
-                .attr("r", d => d.size)
-                .attr("fill", "#1a1e26")
-                .attr("stroke", d => d.group === 1 ? "#88c0d0" : "#5e81ac")
-                .attr("stroke-width", 2);
+            if (config.isView) {
+                actionBtn.classList.add('hidden');
+                document.getElementById(`workspace-${mod === 'pii' ? 'settings' : mod}`).classList.remove('hidden'); // Simple mapping for now
+            } else {
+                actionBtn.classList.remove('hidden');
+                document.getElementById('workspace-standard').classList.remove('hidden');
 
-            // Inner Dot
-            node.append("circle")
-                .attr("r", 4)
-                .attr("fill", d => d.group === 1 ? "#88c0d0" : "#5e81ac");
+                // Reset Inputs
+                document.getElementById('input-area').value = '';
+                document.getElementById('input-area').placeholder = config.placeholder;
+                document.getElementById('output-area').innerText = '';
+                document.getElementById('output-status').innerText = 'IDLE';
 
-            // Labels
-            node.append("text")
-                .text(d => d.id)
-                .attr("x", 0)
-                .attr("y", d => -d.size - 5)
-                .attr("text-anchor", "middle")
-                .attr("font-family", "JetBrains Mono")
-                .attr("font-size", "10px")
-                .attr("fill", "#e5e9f0")
-                .style("text-shadow", "0 0 5px rgba(0,0,0,0.8)");
-
-            simulation.on("tick", () => {
-                link
-                    .attr("x1", d => d.source.x)
-                    .attr("y1", d => d.source.y)
-                    .attr("x2", d => d.target.x)
-                    .attr("y2", d => d.target.y);
-
-                node
-                    .attr("transform", d => `translate(${d.x},${d.y})`);
-            });
-
-            function dragstarted(event, d) {
-                if (!event.active) simulation.alphaTarget(0.3).restart();
-                d.fx = d.x;
-                d.fy = d.y;
-            }
-
-            function dragged(event, d) {
-                d.fx = event.x;
-                d.fy = event.y;
-            }
-
-            function dragended(event, d) {
-                if (!event.active) simulation.alphaTarget(0);
-                d.fx = null;
-                d.fy = null;
+                // Toggle Constraints
+                const constraintOptions = document.getElementById('constraint-options');
+                if (config.hasConstraints) {
+                    constraintOptions.classList.remove('hidden');
+                } else {
+                    constraintOptions.classList.add('hidden');
+                }
             }
         }
 
-        // --- Real-time Data Fetching ---
-        async function fetchData() {
+        async function runActiveModule() {
+            const config = modules[activeModule];
+            if (config.isView) return;
+
+            const input = document.getElementById('input-area').value;
+            if (!input) return;
+
+            const outputArea = document.getElementById('output-area');
+            const statusEl = document.getElementById('output-status');
+            const latencyEl = document.getElementById('stat-latency');
+            const costEl = document.getElementById('stat-cost');
+
+            outputArea.innerText = 'Processing...';
+            statusEl.innerText = 'RUNNING';
+            statusEl.className = 'text-xs font-mono text-console-accent animate-pulse';
+
+            try {
+                const payload = { text: input, prompt: input };
+                if (activeModule === 'constraints') {
+                    payload.constraint = document.getElementById('constraint-select').value;
+                }
+
+                const startTime = Date.now();
+                const res = await fetch(config.endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                const endTime = Date.now();
+
+                // Update UI
+                if (activeModule === 'image') {
+                    outputArea.innerText = `Seed: ${data.seed}\nAttempts: ${data.attempts}\nStatus: Verified`;
+                } else if (activeModule === 'spelling') {
+                    outputArea.innerText = data.fixed;
+                } else {
+                    outputArea.innerText = data.output || data.fixed || JSON.stringify(data, null, 2);
+                }
+
+                statusEl.innerText = 'SUCCESS';
+                statusEl.className = 'text-xs font-mono text-emerald-400';
+                latencyEl.innerText = `${endTime - startTime}ms`;
+                costEl.innerText = '$0.001';
+
+            } catch (err) {
+                outputArea.innerText = `Error: ${err.message}`;
+                statusEl.innerText = 'FAILED';
+                statusEl.className = 'text-xs font-mono text-red-400';
+            }
+        }
+
+        // Poll Stats
+        async function updateStats() {
             try {
                 const res = await fetch('/api/studio/stats');
                 const data = await res.json();
-
-                // Update System Stats
-                const cpuPercent = data.system.cpu;
-                const cpuCircle = document.getElementById('cpu-circle');
-                const circumference = 2 * Math.PI * 36;
-                const offset = circumference - (cpuPercent / 100) * circumference;
-                cpuCircle.style.strokeDashoffset = offset;
-                document.getElementById('cpu-text').innerText = `${cpuPercent}%`;
-
-                document.getElementById('mem-used').innerText = `${data.system.memory.used} GB`;
-                const memPercent = (data.system.memory.used / data.system.memory.total) * 100;
-                document.getElementById('mem-bar').style.width = `${memPercent}%`;
-
-                // Update Agent Stats
-                document.getElementById('agent-count').innerText = data.agents.connected;
-
-                // Update Cache Stats
                 document.getElementById('hit-rate').innerText = `${data.cache.hitRate}%`;
-                document.getElementById('latency').innerText = `${data.cache.latency}ms`;
-
-                // Update Graph (Only if data changed significantly, or init)
-                if (!window.graphInitialized && data.graph) {
-                    initGraph(data.graph);
-                    window.graphInitialized = true;
-                }
-
-                // Add Log Entry (Simulated)
-                addLogEntry();
-
-            } catch (err) {
-                console.error("Failed to fetch stats", err);
-            }
+            } catch (e) { }
         }
-
-        function addLogEntry() {
-            const logs = [
-                "AGENT_BETA executing knowledge retrieval on 'Project_Titan'",
-                "CACHE HIT: Req#8922 updated auth token interaction data",
-                "SYSTEM: Re-indexing graph complete. Latency: 12ms",
-                "WARNING: Agent_Delta approaching constraint limit on 'CREATIVITY'",
-                "AGENT_ALPHA successfully merged knowledge from 'SOURCE: EXTERNAL_DB_01'",
-                "CACHE_MANAGER: Optimizing storage...",
-                "PII_GUARD: Redacted SSN from input stream [TraceID: 9921]"
-            ];
-            const randomLog = logs[Math.floor(Math.random() * logs.length)];
-            const time = new Date().toLocaleTimeString();
-
-            const container = document.getElementById('log-container');
-            const div = document.createElement('div');
-            div.innerHTML = `<span class="text-metal-dim">[${time}]</span> ${randomLog}`;
-            container.prepend(div); // Add to top
-
-            if (container.children.length > 20) {
-                container.lastElementChild.remove();
-            }
-        }
-
-        // Loop
-        setInterval(fetchData, 2000);
-        fetchData(); // Init
-
-        // Window Resize for Graph
-        window.addEventListener('resize', () => {
-            window.graphInitialized = false; // Force re-render
-            fetchData();
-        });
+        setInterval(updateStats, 5000);
+        updateStats();
 
     </script>
 </body>
