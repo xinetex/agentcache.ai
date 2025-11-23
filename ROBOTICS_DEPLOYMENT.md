@@ -1,7 +1,7 @@
 # 🤖 Robotics Deployment Guide
 
 ## 🔐 Secrets Generated
-**CRON_SECRET**: `1dda6f423ea171eba40fe07b144b28e1cde20fd8d26c7be48c9ee58525d5d824`
+**CRON_SECRET**: `<generate-random-secret>`
 
 > [!IMPORTANT]
 > You MUST add this secret to your Vercel environment variables for the URL monitoring cron job to work.
