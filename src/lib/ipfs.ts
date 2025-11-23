@@ -1,8 +1,3 @@
-import fs from 'fs';
-import path from 'path';
-import FormData from 'form-data';
-import fetch from 'node-fetch';
-
 // Configuration
 const PINATA_API_KEY = process.env.PINATA_API_KEY;
 const PINATA_SECRET_KEY = process.env.PINATA_SECRET_KEY;
@@ -15,12 +10,11 @@ interface PinataResponse {
 }
 
 /**
- * Uploads a file buffer to IPFS via Pinata
- * @param fileBuffer The file content as a buffer
- * @param fileName The name of the file
+ * Uploads a file to IPFS via Pinata using standard Web APIs (Edge compatible)
+ * @param file The File object to upload
  * @returns The IPFS CID (Hash)
  */
-export async function uploadToIPFS(fileBuffer: Buffer, fileName: string): Promise<string> {
+export async function uploadToIPFS(file: File): Promise<string> {
     if (!PINATA_API_KEY || !PINATA_SECRET_KEY) {
         throw new Error('Pinata credentials not configured (PINATA_API_KEY, PINATA_SECRET_KEY)');
     }
@@ -28,12 +22,10 @@ export async function uploadToIPFS(fileBuffer: Buffer, fileName: string): Promis
     const url = 'https://api.pinata.cloud/pinning/pinFileToIPFS';
     const data = new FormData();
 
-    data.append('file', fileBuffer, {
-        filename: fileName
-    });
+    data.append('file', file);
 
     const metadata = JSON.stringify({
-        name: fileName,
+        name: file.name,
         keyvalues: {
             source: 'agentcache-ai',
             timestamp: Date.now().toString()
@@ -53,7 +45,6 @@ export async function uploadToIPFS(fileBuffer: Buffer, fileName: string): Promis
             headers: {
                 'pinata_api_key': PINATA_API_KEY,
                 'pinata_secret_api_key': PINATA_SECRET_KEY,
-                ...data.getHeaders()
             }
         });
 

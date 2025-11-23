@@ -44,12 +44,8 @@ export default async function handler(req) {
             });
         }
 
-        // Convert File to Buffer
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-
-        // Upload to IPFS
-        const cid = await uploadToIPFS(buffer, file.name);
+        // Upload to IPFS (Pass File object directly)
+        const cid = await uploadToIPFS(file);
         const gatewayUrl = getGatewayUrl(cid);
 
         return new Response(JSON.stringify({
