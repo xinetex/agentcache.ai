@@ -219,6 +219,12 @@
     </div>
 
     <script>
+        // Auth Check
+        const apiKey = localStorage.getItem('agentcache_api_key');
+        if (!apiKey) {
+            window.location.href = '/login.html';
+        }
+
         // State
         let activeModule = 'spelling';
 
