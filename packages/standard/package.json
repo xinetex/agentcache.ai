@@ -1,0 +1,59 @@
+{
+  "name": "@agentcache/standard",
+  "version": "0.1.0",
+  "description": "Production-grade AI response caching with Redis persistence. Drop-in upgrade from @agentcache/lite.",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "test": "node test.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "ai",
+    "cache",
+    "llm",
+    "openai",
+    "anthropic",
+    "gpt",
+    "claude",
+    "gemini",
+    "redis",
+    "edge",
+    "performance",
+    "agentcache"
+  ],
+  "author": "JettyThunder Labs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jettythunder/agentcache-ai.git",
+    "directory": "packages/standard"
+  },
+  "homepage": "https://agentcache.ai",
+  "bugs": {
+    "url": "https://github.com/jettythunder/agentcache-ai/issues"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.9.3",
+    "@types/node": "^20.0.0"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

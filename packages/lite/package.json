@@ -1,0 +1,58 @@
+{
+  "name": "@agentcache/lite",
+  "version": "0.1.0",
+  "description": "Zero-dependency in-memory cache for AI responses. Free forever, upgrade when ready.",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "test": "echo \"Tests coming soon\" && exit 0",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "ai",
+    "cache",
+    "llm",
+    "openai",
+    "anthropic",
+    "gpt",
+    "claude",
+    "gemini",
+    "in-memory",
+    "lru",
+    "edge",
+    "performance"
+  ],
+  "author": "JettyThunder Labs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jettythunder/agentcache-ai.git",
+    "directory": "packages/lite"
+  },
+  "homepage": "https://agentcache.ai",
+  "bugs": {
+    "url": "https://github.com/jettythunder/agentcache-ai/issues"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pipeline Composer | AgentCache.ai</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    
+    /* Canvas */
+    .canvas {
+      background-image: 
+        radial-gradient(circle, #374151 1px, transparent 1px);
+      background-size: 20px 20px;
+      background-color: #111827;
+    }
+    
+    /* Nodes */
+    .node {
+      transition: transform 0.1s, box-shadow 0.2s;
+      user-select: none;
+    }
+    .node:hover { transform: scale(1.02); }
+    .node.selected {
+      box-shadow: 0 0 0 3px #3b82f6, 0 10px 40px rgba(59, 130, 246, 0.3);
+    }
+    .node.dragging {
+      opacity: 0.8;
+      transform: scale(1.05);
+      z-index: 1000;
+    }
+    
+    /* Ports */
+    .port {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid #6b7280;
+      background: #1f2937;
+      cursor: crosshair;
+      transition: all 0.15s;
+    }
+    .port:hover {
+      transform: scale(1.3);
+      border-color: #3b82f6;
+      background: #3b82f6;
+    }
+    .port.input { border-color: #10b981; }
+    .port.output { border-color: #f59e0b; }
+    .port.connected { background: currentColor; }
+    
+    /* Connections */
+    .connection {
+      fill: none;
+      stroke: #4b5563;
+      stroke-width: 2;
+      transition: stroke 0.2s;
+    }
+    .connection:hover { stroke: #3b82f6; stroke-width: 3; }
+    .connection.active { stroke: #10b981; stroke-width: 3; }
+    
+    /* Palette */
+    .palette-item {
+      transition: all 0.15s;
+      cursor: grab;
+    }
+    .palette-item:hover {
+      background: #374151;
+      transform: translateX(4px);
+    }
+    .palette-item:active { cursor: grabbing; }
+    
+    /* Panels */
+    .panel {
+      backdrop-filter: blur(12px);
+      background: rgba(17, 24, 39, 0.9);
+    }
+    
+    /* Code tabs */
+    .code-tab {
+      transition: all 0.15s;
+    }
+    .code-tab.active {
+      background: #3b82f6;
+      color: white;
+    }
+    
+    /* Toast */
+    .toast {
+      animation: slideIn 0.3s ease-out;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    /* Minimap */
+    .minimap {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      width: 160px;
+      height: 100px;
+      background: rgba(17, 24, 39, 0.9);
+      border: 1px solid #374151;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .minimap-viewport {
+      border: 1px solid #3b82f6;
+      background: rgba(59, 130, 246, 0.1);
+      position: absolute;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white overflow-hidden">
+  <div id="app" class="h-screen flex flex-col">
+    
+    <!-- Header -->
+    <header class="h-14 bg-gray-800 border-b border-gray-700 flex items-center justify-between px-4 shrink-0">
+      <div class="flex items-center gap-4">
+        <a href="/" class="text-xl font-bold text-blue-400">AgentCache</a>
+        <span class="text-gray-500">|</span>
+        <span class="text-lg font-medium">Pipeline Composer</span>
+        <span class="px-2 py-0.5 bg-blue-600 text-xs rounded-full">Beta</span>
+      </div>
+      
+      <div class="flex items-center gap-3">
+        <input 
+          type="text" 
+          id="pipeline-name"
+          value="Untitled Pipeline"
+          class="bg-gray-700 border border-gray-600 rounded px-3 py-1.5 text-sm w-48 focus:border-blue-500 focus:outline-none"
+        >
+        <button onclick="validatePipeline()" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-sm flex items-center gap-2">
+          ✓ Validate
+        </button>
+        <button onclick="showCodeModal()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded text-sm flex items-center gap-2">
+          ⚡ Deploy
+        </button>
+      </div>
+    </header>
+    
+    <!-- Main content -->
+    <div class="flex-1 flex overflow-hidden">
+      
+      <!-- Left: Node Palette -->
+      <aside class="w-64 bg-gray-800 border-r border-gray-700 flex flex-col shrink-0">
+        <div class="p-3 border-b border-gray-700">
+          <input 
+            type="text" 
+            id="node-search"
+            placeholder="Search nodes..."
+            class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+            oninput="filterNodes(this.value)"
+          >
+        </div>
+        
+        <div id="node-palette" class="flex-1 overflow-y-auto p-2 space-y-4">
+          <!-- Populated by JS -->
+        </div>
+        
+        <!-- Templates -->
+        <div class="border-t border-gray-700 p-3">
+          <div class="text-xs text-gray-400 uppercase tracking-wide mb-2">Quick Start</div>
+          <select 
+            id="template-select"
+            onchange="loadTemplate(this.value)"
+            class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm"
+          >
+            <option value="">Load Template...</option>
+            <option value="databricks-rag-basic">🧱 Databricks RAG</option>
+            <option value="enterprise-compliance">🔒 Enterprise Compliance</option>
+            <option value="reasoning-optimizer">🧠 Reasoning Optimizer</option>
+          </select>
+        </div>
+      </aside>
+      
+      <!-- Center: Canvas -->
+      <main class="flex-1 relative">
+        <div 
+          id="canvas" 
+          class="canvas absolute inset-0 overflow-hidden"
+          onmousedown="canvasMouseDown(event)"
+          onmousemove="canvasMouseMove(event)"
+          onmouseup="canvasMouseUp(event)"
+          ondrop="canvasDrop(event)"
+          ondragover="event.preventDefault()"
+        >
+          <!-- SVG for connections -->
+          <svg id="connections-svg" class="absolute inset-0 w-full h-full pointer-events-none" style="z-index: 1;">
+            <defs>
+              <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#4b5563" />
+              </marker>
+            </defs>
+            <!-- Connections rendered here -->
+          </svg>
+          
+          <!-- Nodes container -->
+          <div id="nodes-container" class="absolute inset-0" style="z-index: 2;">
+            <!-- Nodes rendered here -->
+          </div>
+          
+          <!-- Temp connection line while dragging -->
+          <svg id="temp-connection" class="absolute inset-0 w-full h-full pointer-events-none" style="z-index: 3;">
+            <path id="temp-path" class="connection" stroke="#3b82f6" stroke-dasharray="5,5"/>
+          </svg>
+        </div>
+        
+        <!-- Toolbar -->
+        <div class="absolute top-4 left-4 flex gap-2">
+          <button onclick="zoomIn()" class="p-2 bg-gray-800 hover:bg-gray-700 rounded border border-gray-700" title="Zoom In">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/>
+            </svg>
+          </button>
+          <button onclick="zoomOut()" class="p-2 bg-gray-800 hover:bg-gray-700 rounded border border-gray-700" title="Zoom Out">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"/>
+            </svg>
+          </button>
+          <button onclick="resetView()" class="p-2 bg-gray-800 hover:bg-gray-700 rounded border border-gray-700" title="Reset View">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M4 20l5-5m10-6l-5 5"/>
+            </svg>
+          </button>
+          <div class="border-l border-gray-700 mx-1"></div>
+          <button onclick="autoLayout()" class="p-2 bg-gray-800 hover:bg-gray-700 rounded border border-gray-700" title="Auto Layout">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm0 8a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zm12 0a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+            </svg>
+          </button>
+          <button onclick="clearCanvas()" class="p-2 bg-gray-800 hover:bg-red-900 rounded border border-gray-700" title="Clear All">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Status bar -->
+        <div class="absolute bottom-4 left-4 flex items-center gap-4 text-xs text-gray-400">
+          <span id="node-count">0 nodes</span>
+          <span>•</span>
+          <span id="connection-count">0 connections</span>
+          <span>•</span>
+          <span id="zoom-level">100%</span>
+        </div>
+        
+        <!-- Minimap -->
+        <div class="minimap" id="minimap">
+          <div class="minimap-viewport" id="minimap-viewport"></div>
+        </div>
+      </main>
+      
+      <!-- Right: Properties Panel -->
+      <aside id="properties-panel" class="w-80 bg-gray-800 border-l border-gray-700 flex flex-col shrink-0">
+        <div class="p-4 border-b border-gray-700">
+          <h2 class="font-semibold" id="panel-title">Pipeline Settings</h2>
+        </div>
+        
+        <div id="panel-content" class="flex-1 overflow-y-auto p-4">
+          <!-- Settings form -->
+          <div id="pipeline-settings" class="space-y-4">
+            <div>
+              <label class="block text-sm text-gray-400 mb-1">Namespace</label>
+              <input type="text" id="setting-namespace" value="default" 
+                class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm"
+                onchange="updateSettings()">
+            </div>
+            <div>
+              <label class="block text-sm text-gray-400 mb-1">Default TTL (seconds)</label>
+              <input type="number" id="setting-ttl" value="86400"
+                class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm"
+                onchange="updateSettings()">
+            </div>
+            <div>
+              <label class="block text-sm text-gray-400 mb-1">Region</label>
+              <select id="setting-region" 
+                class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm"
+                onchange="updateSettings()">
+                <option value="auto">Auto (Nearest)</option>
+                <option value="us-east-1">US East (Virginia)</option>
+                <option value="eu-west-1">EU West (Ireland)</option>
+                <option value="ap-south-1">Asia Pacific (Mumbai)</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="checkbox" id="setting-logging" checked class="rounded" onchange="updateSettings()">
+              <label for="setting-logging" class="text-sm">Enable Logging</label>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="checkbox" id="setting-metrics" checked class="rounded" onchange="updateSettings()">
+              <label for="setting-metrics" class="text-sm">Enable Metrics</label>
+            </div>
+            
+            <!-- Savings estimate -->
+            <div class="mt-6 p-4 bg-green-900/30 border border-green-800 rounded-lg">
+              <div class="text-green-400 text-sm font-medium mb-1">Estimated Savings</div>
+              <div class="text-2xl font-bold text-green-300" id="savings-estimate">$0/month</div>
+              <div class="text-xs text-green-400/70 mt-1">Based on current configuration</div>
+            </div>
+          </div>
+          
+          <!-- Node settings (hidden by default) -->
+          <div id="node-settings" class="space-y-4 hidden">
+            <!-- Populated when node selected -->
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+  
+  <!-- Code Generation Modal -->
+  <div id="code-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50">
+    <div class="bg-gray-800 rounded-xl w-[900px] max-h-[80vh] flex flex-col border border-gray-700">
+      <div class="flex items-center justify-between p-4 border-b border-gray-700">
+        <h3 class="text-lg font-semibold">Deploy Pipeline</h3>
+        <button onclick="hideCodeModal()" class="text-gray-400 hover:text-white text-xl">×</button>
+      </div>
+      
+      <!-- Tabs -->
+      <div class="flex gap-1 p-2 border-b border-gray-700">
+        <button class="code-tab active px-4 py-2 rounded text-sm" onclick="switchCodeTab('python')">Python</button>
+        <button class="code-tab px-4 py-2 rounded text-sm" onclick="switchCodeTab('javascript')">JavaScript</button>
+        <button class="code-tab px-4 py-2 rounded text-sm" onclick="switchCodeTab('databricks')">Databricks</button>
+        <button class="code-tab px-4 py-2 rounded text-sm" onclick="switchCodeTab('curl')">cURL</button>
+      </div>
+      
+      <!-- Code -->
+      <div class="flex-1 overflow-auto p-4">
+        <pre id="generated-code" class="bg-gray-900 p-4 rounded-lg text-sm font-mono overflow-x-auto"></pre>
+      </div>
+      
+      <!-- Actions -->
+      <div class="flex items-center justify-between p-4 border-t border-gray-700">
+        <div class="text-sm text-gray-400">
+          <span id="validation-status">✓ Pipeline valid</span>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="copyCode()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm">
+            Copy Code
+          </button>
+          <button onclick="downloadCode()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm">
+            Download
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Toast container -->
+  <div id="toast-container" class="fixed top-4 right-4 space-y-2 z-50"></div>
+
+  <script>
+    // ============================================================
+    // STATE
+    // ============================================================
+    
+    const state = {
+      nodes: [],
+      connections: [],
+      selectedNode: null,
+      settings: {
+        namespace: 'default',
+        defaultTtl: 86400,
+        region: 'auto',
+        enableLogging: true,
+        enableMetrics: true,
+      },
+      zoom: 1,
+      pan: { x: 0, y: 0 },
+      isDragging: false,
+      dragNode: null,
+      dragOffset: { x: 0, y: 0 },
+      isConnecting: false,
+      connectionStart: null,
+      generatedCode: {},
+    };
+    
+    let nodeIdCounter = 0;
+    
+    // Node library (from API)
+    const NODE_LIBRARY = [
+      // Sources
+      { id: 'databricks', category: 'source', name: 'Databricks', icon: '🧱', color: 'orange', inputs: [], outputs: ['data', 'trigger'] },
+      { id: 'snowflake', category: 'source', name: 'Snowflake', icon: '❄️', color: 'blue', inputs: [], outputs: ['data', 'trigger'] },
+      { id: 'vector_db', category: 'source', name: 'Vector DB', icon: '🔮', color: 'purple', inputs: ['query'], outputs: ['results', 'metadata'] },
+      { id: 'url_source', category: 'source', name: 'URL Monitor', icon: '🌐', color: 'cyan', inputs: [], outputs: ['content', 'trigger'] },
+      // Cache
+      { id: 'cache_l1', category: 'cache', name: 'L1 Hot', icon: '🔥', color: 'red', inputs: ['request'], outputs: ['hit', 'miss'] },
+      { id: 'cache_l2', category: 'cache', name: 'L2 Warm', icon: '🟠', color: 'orange', inputs: ['request'], outputs: ['hit', 'miss'] },
+      { id: 'cache_l3', category: 'cache', name: 'L3 Cold', icon: '🧊', color: 'blue', inputs: ['request'], outputs: ['hit', 'miss'] },
+      { id: 'cache_reasoning', category: 'cache', name: 'Reasoning', icon: '🧠', color: 'pink', inputs: ['request'], outputs: ['hit', 'miss', 'tokens'] },
+      // Validation
+      { id: 'validation_cognitive', category: 'validation', name: 'Cognitive', icon: '🛡️', color: 'green', inputs: ['response', 'context'], outputs: ['validated', 'rejected', 'score'] },
+      { id: 'validation_freshness', category: 'validation', name: 'Freshness', icon: '⏰', color: 'yellow', inputs: ['cached', 'trigger'], outputs: ['fresh', 'stale'] },
+      { id: 'validation_pii', category: 'validation', name: 'PII Filter', icon: '🔒', color: 'red', inputs: ['content'], outputs: ['clean', 'detected'] },
+      // LLM
+      { id: 'llm_openai', category: 'llm', name: 'OpenAI', icon: '🤖', color: 'green', inputs: ['prompt', 'context'], outputs: ['response', 'usage'] },
+      { id: 'llm_anthropic', category: 'llm', name: 'Anthropic', icon: '🎭', color: 'orange', inputs: ['prompt', 'context'], outputs: ['response', 'usage'] },
+      // Output
+      { id: 'output_webhook', category: 'output', name: 'Webhook', icon: '📤', color: 'blue', inputs: ['data'], outputs: [] },
+      { id: 'output_delta', category: 'output', name: 'Delta Lake', icon: '📊', color: 'orange', inputs: ['data'], outputs: [] },
+      { id: 'output_analytics', category: 'output', name: 'Analytics', icon: '📈', color: 'green', inputs: ['event'], outputs: [] },
+    ];
+    
+    const CATEGORY_NAMES = {
+      source: 'Data Sources',
+      cache: 'Cache Layers',
+      validation: 'Validation',
+      llm: 'LLM Providers',
+      output: 'Outputs',
+    };
+    
+    const COLOR_MAP = {
+      red: { bg: 'bg-red-900/50', border: 'border-red-700', text: 'text-red-300' },
+      orange: { bg: 'bg-orange-900/50', border: 'border-orange-700', text: 'text-orange-300' },
+      yellow: { bg: 'bg-yellow-900/50', border: 'border-yellow-700', text: 'text-yellow-300' },
+      green: { bg: 'bg-green-900/50', border: 'border-green-700', text: 'text-green-300' },
+      blue: { bg: 'bg-blue-900/50', border: 'border-blue-700', text: 'text-blue-300' },
+      purple: { bg: 'bg-purple-900/50', border: 'border-purple-700', text: 'text-purple-300' },
+      pink: { bg: 'bg-pink-900/50', border: 'border-pink-700', text: 'text-pink-300' },
+      cyan: { bg: 'bg-cyan-900/50', border: 'border-cyan-700', text: 'text-cyan-300' },
+    };
+    
+    // ============================================================
+    // INITIALIZATION
+    // ============================================================
+    
+    function init() {
+      renderPalette();
+      updateStatusBar();
+    }
+    
+    function renderPalette() {
+      const palette = document.getElementById('node-palette');
+      const categories = [...new Set(NODE_LIBRARY.map(n => n.category))];
+      
+      palette.innerHTML = categories.map(cat => `
+        <div class="category" data-category="${cat}">
+          <div class="text-xs text-gray-400 uppercase tracking-wide mb-2">${CATEGORY_NAMES[cat]}</div>
+          <div class="space-y-1">
+            ${NODE_LIBRARY.filter(n => n.category === cat).map(node => `
+              <div 
+                class="palette-item flex items-center gap-2 p-2 rounded cursor-grab ${COLOR_MAP[node.color].bg} ${COLOR_MAP[node.color].border} border"
+                draggable="true"
+                ondragstart="paletteDragStart(event, '${node.id}')"
+                data-node-type="${node.id}"
+              >
+                <span class="text-lg">${node.icon}</span>
+                <span class="text-sm ${COLOR_MAP[node.color].text}">${node.name}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function filterNodes(query) {
+      const items = document.querySelectorAll('.palette-item');
+      const q = query.toLowerCase();
+      
+      items.forEach(item => {
+        const type = item.dataset.nodeType;
+        const node = NODE_LIBRARY.find(n => n.id === type);
+        const visible = node.name.toLowerCase().includes(q) || node.category.includes(q);
+        item.style.display = visible ? 'flex' : 'none';
+      });
+    }
+    
+    // ============================================================
+    // DRAG & DROP
+    // ============================================================
+    
+    function paletteDragStart(event, nodeType) {
+      event.dataTransfer.setData('node-type', nodeType);
+      event.dataTransfer.effectAllowed = 'copy';
+    }
+    
+    function canvasDrop(event) {
+      event.preventDefault();
+      const nodeType = event.dataTransfer.getData('node-type');
+      if (!nodeType) return;
+      
+      const rect = document.getElementById('canvas').getBoundingClientRect();
+      const x = (event.clientX - rect.left - state.pan.x) / state.zoom;
+      const y = (event.clientY - rect.top - state.pan.y) / state.zoom;
+      
+      addNode(nodeType, x, y);
+    }
+    
+    // ============================================================
+    // NODES
+    // ============================================================
+    
+    function addNode(type, x, y) {
+      const nodeDef = NODE_LIBRARY.find(n => n.id === type);
+      if (!nodeDef) return;
+      
+      const node = {
+        id: `node_${++nodeIdCounter}`,
+        type: type,
+        position: { x, y },
+        config: {},
+        label: nodeDef.name,
+      };
+      
+      state.nodes.push(node);
+      renderNodes();
+      selectNode(node.id);
+      updateStatusBar();
+      showToast(`Added ${nodeDef.name} node`);
+    }
+    
+    function renderNodes() {
+      const container = document.getElementById('nodes-container');
+      
+      container.innerHTML = state.nodes.map(node => {
+        const def = NODE_LIBRARY.find(n => n.id === node.type);
+        const colors = COLOR_MAP[def.color];
+        const isSelected = state.selectedNode === node.id;
+        
+        return `
+          <div 
+            class="node absolute ${colors.bg} ${colors.border} border-2 rounded-lg shadow-lg ${isSelected ? 'selected' : ''}"
+            style="left: ${node.position.x}px; top: ${node.position.y}px; min-width: 160px;"
+            data-node-id="${node.id}"
+            onmousedown="nodeMouseDown(event, '${node.id}')"
+          >
+            <!-- Header -->
+            <div class="flex items-center gap-2 px-3 py-2 border-b ${colors.border}">
+              <span class="text-lg">${def.icon}</span>
+              <span class="text-sm font-medium ${colors.text}">${node.label}</span>
+              <button class="ml-auto text-gray-400 hover:text-red-400" onclick="deleteNode('${node.id}')">×</button>
+            </div>
+            
+            <!-- Ports -->
+            <div class="flex justify-between p-2">
+              <!-- Inputs -->
+              <div class="space-y-2">
+                ${def.inputs.map(port => `
+                  <div class="flex items-center gap-2">
+                    <div 
+                      class="port input"
+                      data-port="${port}"
+                      data-node="${node.id}"
+                      data-direction="input"
+                      onmousedown="portMouseDown(event, '${node.id}', '${port}', 'input')"
+                      onmouseup="portMouseUp(event, '${node.id}', '${port}', 'input')"
+                    ></div>
+                    <span class="text-xs text-gray-400">${port}</span>
+                  </div>
+                `).join('')}
+              </div>
+              
+              <!-- Outputs -->
+              <div class="space-y-2">
+                ${def.outputs.map(port => `
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-400">${port}</span>
+                    <div 
+                      class="port output"
+                      data-port="${port}"
+                      data-node="${node.id}"
+                      data-direction="output"
+                      onmousedown="portMouseDown(event, '${node.id}', '${port}', 'output')"
+                      onmouseup="portMouseUp(event, '${node.id}', '${port}', 'output')"
+                    ></div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      renderConnections();
+    }
+    
+    function nodeMouseDown(event, nodeId) {
+      if (event.target.closest('.port')) return;
+      
+      event.stopPropagation();
+      selectNode(nodeId);
+      
+      const node = state.nodes.find(n => n.id === nodeId);
+      state.isDragging = true;
+      state.dragNode = nodeId;
+      state.dragOffset = {
+        x: event.clientX - node.position.x,
+        y: event.clientY - node.position.y,
+      };
+      
+      document.querySelector(`[data-node-id="${nodeId}"]`).classList.add('dragging');
+    }
+    
+    function selectNode(nodeId) {
+      state.selectedNode = nodeId;
+      
+      // Update visual selection
+      document.querySelectorAll('.node').forEach(el => el.classList.remove('selected'));
+      const nodeEl = document.querySelector(`[data-node-id="${nodeId}"]`);
+      if (nodeEl) nodeEl.classList.add('selected');
+      
+      // Show node properties
+      showNodeProperties(nodeId);
+    }
+    
+    function deleteNode(nodeId) {
+      state.nodes = state.nodes.filter(n => n.id !== nodeId);
+      state.connections = state.connections.filter(c => 
+        c.source.nodeId !== nodeId && c.target.nodeId !== nodeId
+      );
+      
+      if (state.selectedNode === nodeId) {
+        state.selectedNode = null;
+        showPipelineSettings();
+      }
+      
+      renderNodes();
+      updateStatusBar();
+    }
+    
+    // ============================================================
+    // CONNECTIONS
+    // ============================================================
+    
+    function portMouseDown(event, nodeId, portId, direction) {
+      event.stopPropagation();
+      
+      if (direction === 'output') {
+        state.isConnecting = true;
+        state.connectionStart = { nodeId, portId, direction };
+      }
+    }
+    
+    function portMouseUp(event, nodeId, portId, direction) {
+      event.stopPropagation();
+      
+      if (state.isConnecting && direction === 'input') {
+        // Create connection
+        const conn = {
+          id: `conn_${Date.now()}`,
+          source: { nodeId: state.connectionStart.nodeId, portId: state.connectionStart.portId },
+          target: { nodeId, portId },
+        };
+        
+        // Check if connection already exists
+        const exists = state.connections.some(c => 
+          c.source.nodeId === conn.source.nodeId && 
+          c.source.portId === conn.source.portId &&
+          c.target.nodeId === conn.target.nodeId &&
+          c.target.portId === conn.target.portId
+        );
+        
+        if (!exists && conn.source.nodeId !== conn.target.nodeId) {
+          state.connections.push(conn);
+          renderConnections();
+          updateStatusBar();
+        }
+      }
+      
+      state.isConnecting = false;
+      state.connectionStart = null;
+      document.getElementById('temp-path').setAttribute('d', '');
+    }
+    
+    function renderConnections() {
+      const svg = document.getElementById('connections-svg');
+      const paths = state.connections.map(conn => {
+        const sourceNode = document.querySelector(`[data-node-id="${conn.source.nodeId}"]`);
+        const targetNode = document.querySelector(`[data-node-id="${conn.target.nodeId}"]`);
+        
+        if (!sourceNode || !targetNode) return '';
+        
+        const sourcePort = sourceNode.querySelector(`[data-port="${conn.source.portId}"][data-direction="output"]`);
+        const targetPort = targetNode.querySelector(`[data-port="${conn.target.portId}"][data-direction="input"]`);
+        
+        if (!sourcePort || !targetPort) return '';
+        
+        const sourceRect = sourcePort.getBoundingClientRect();
+        const targetRect = targetPort.getBoundingClientRect();
+        const canvasRect = document.getElementById('canvas').getBoundingClientRect();
+        
+        const x1 = sourceRect.left + sourceRect.width/2 - canvasRect.left;
+        const y1 = sourceRect.top + sourceRect.height/2 - canvasRect.top;
+        const x2 = targetRect.left + targetRect.width/2 - canvasRect.left;
+        const y2 = targetRect.top + targetRect.height/2 - canvasRect.top;
+        
+        // Bezier curve
+        const dx = Math.abs(x2 - x1) / 2;
+        const path = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+        
+        return `<path class="connection" d="${path}" marker-end="url(#arrowhead)" data-conn-id="${conn.id}" onclick="deleteConnection('${conn.id}')"/>`;
+      }).join('');
+      
+      svg.innerHTML = `
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#4b5563" />
+          </marker>
+        </defs>
+        ${paths}
+      `;
+    }
+    
+    function deleteConnection(connId) {
+      state.connections = state.connections.filter(c => c.id !== connId);
+      renderConnections();
+      updateStatusBar();
+    }
+    
+    // ============================================================
+    // CANVAS INTERACTIONS
+    // ============================================================
+    
+    function canvasMouseDown(event) {
+      if (!event.target.closest('.node') && !event.target.closest('.port')) {
+        state.selectedNode = null;
+        document.querySelectorAll('.node').forEach(el => el.classList.remove('selected'));
+        showPipelineSettings();
+      }
+    }
+    
+    function canvasMouseMove(event) {
+      if (state.isDragging && state.dragNode) {
+        const node = state.nodes.find(n => n.id === state.dragNode);
+        if (node) {
+          node.position.x = event.clientX - state.dragOffset.x;
+          node.position.y = event.clientY - state.dragOffset.y;
+          
+          const el = document.querySelector(`[data-node-id="${state.dragNode}"]`);
+          if (el) {
+            el.style.left = `${node.position.x}px`;
+            el.style.top = `${node.position.y}px`;
+          }
+          
+          renderConnections();
+        }
+      }
+      
+      if (state.isConnecting && state.connectionStart) {
+        const canvasRect = document.getElementById('canvas').getBoundingClientRect();
+        const sourceNode = document.querySelector(`[data-node-id="${state.connectionStart.nodeId}"]`);
+        const sourcePort = sourceNode?.querySelector(`[data-port="${state.connectionStart.portId}"][data-direction="output"]`);
+        
+        if (sourcePort) {
+          const sourceRect = sourcePort.getBoundingClientRect();
+          const x1 = sourceRect.left + sourceRect.width/2 - canvasRect.left;
+          const y1 = sourceRect.top + sourceRect.height/2 - canvasRect.top;
+          const x2 = event.clientX - canvasRect.left;
+          const y2 = event.clientY - canvasRect.top;
+          
+          const dx = Math.abs(x2 - x1) / 2;
+          const path = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+          
+          document.getElementById('temp-path').setAttribute('d', path);
+        }
+      }
+    }
+    
+    function canvasMouseUp(event) {
+      if (state.dragNode) {
+        document.querySelector(`[data-node-id="${state.dragNode}"]`)?.classList.remove('dragging');
+      }
+      state.isDragging = false;
+      state.dragNode = null;
+      state.isConnecting = false;
+      state.connectionStart = null;
+      document.getElementById('temp-path').setAttribute('d', '');
+    }
+    
+    // ============================================================
+    // ZOOM & PAN
+    // ============================================================
+    
+    function zoomIn() {
+      state.zoom = Math.min(state.zoom + 0.1, 2);
+      applyTransform();
+    }
+    
+    function zoomOut() {
+      state.zoom = Math.max(state.zoom - 0.1, 0.5);
+      applyTransform();
+    }
+    
+    function resetView() {
+      state.zoom = 1;
+      state.pan = { x: 0, y: 0 };
+      applyTransform();
+    }
+    
+    function applyTransform() {
+      const container = document.getElementById('nodes-container');
+      container.style.transform = `scale(${state.zoom}) translate(${state.pan.x}px, ${state.pan.y}px)`;
+      document.getElementById('zoom-level').textContent = `${Math.round(state.zoom * 100)}%`;
+    }
+    
+    // ============================================================
+    // PROPERTIES PANEL
+    // ============================================================
+    
+    function showPipelineSettings() {
+      document.getElementById('panel-title').textContent = 'Pipeline Settings';
+      document.getElementById('pipeline-settings').classList.remove('hidden');
+      document.getElementById('node-settings').classList.add('hidden');
+    }
+    
+    function showNodeProperties(nodeId) {
+      const node = state.nodes.find(n => n.id === nodeId);
+      if (!node) return;
+      
+      const def = NODE_LIBRARY.find(n => n.id === node.type);
+      
+      document.getElementById('panel-title').textContent = `${def.icon} ${def.name}`;
+      document.getElementById('pipeline-settings').classList.add('hidden');
+      
+      const nodeSettings = document.getElementById('node-settings');
+      nodeSettings.classList.remove('hidden');
+      nodeSettings.innerHTML = `
+        <div>
+          <label class="block text-sm text-gray-400 mb-1">Label</label>
+          <input type="text" value="${node.label}"
+            class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm"
+            onchange="updateNodeLabel('${nodeId}', this.value)">
+        </div>
+        <div class="text-xs text-gray-500 mt-4">
+          <div>Type: ${node.type}</div>
+          <div>ID: ${node.id}</div>
+        </div>
+      `;
+    }
+    
+    function updateNodeLabel(nodeId, label) {
+      const node = state.nodes.find(n => n.id === nodeId);
+      if (node) {
+        node.label = label;
+        renderNodes();
+      }
+    }
+    
+    function updateSettings() {
+      state.settings.namespace = document.getElementById('setting-namespace').value;
+      state.settings.defaultTtl = parseInt(document.getElementById('setting-ttl').value) || 86400;
+      state.settings.region = document.getElementById('setting-region').value;
+      state.settings.enableLogging = document.getElementById('setting-logging').checked;
+      state.settings.enableMetrics = document.getElementById('setting-metrics').checked;
+      
+      calculateSavings();
+    }
+    
+    function calculateSavings() {
+      // Rough estimate based on node count and types
+      const cacheNodes = state.nodes.filter(n => n.type.startsWith('cache_')).length;
+      const llmNodes = state.nodes.filter(n => n.type.startsWith('llm_')).length;
+      
+      let monthlyQueries = 10000; // Default assumption
+      let savingsPercent = Math.min(20 * cacheNodes, 90);
+      
+      if (state.nodes.some(n => n.type === 'cache_reasoning')) {
+        savingsPercent = 95;
+      }
+      
+      const avgCostPerQuery = llmNodes > 0 ? 0.03 : 0.01;
+      const savings = Math.round(monthlyQueries * avgCostPerQuery * (savingsPercent / 100));
+      
+      document.getElementById('savings-estimate').textContent = `$${savings.toLocaleString()}/month`;
+    }
+    
+    // ============================================================
+    // TEMPLATES
+    // ============================================================
+    
+    function loadTemplate(templateId) {
+      if (!templateId) return;
+      
+      // Clear current
+      state.nodes = [];
+      state.connections = [];
+      
+      // Load template nodes
+      const templates = {
+        'databricks-rag-basic': {
+          nodes: [
+            { type: 'databricks', x: 100, y: 100, label: 'Databricks' },
+            { type: 'vector_db', x: 100, y: 250, label: 'Vector DB' },
+            { type: 'cache_l2', x: 350, y: 175, label: 'L2 Cache' },
+            { type: 'llm_openai', x: 550, y: 175, label: 'OpenAI' },
+            { type: 'output_analytics', x: 750, y: 175, label: 'Analytics' },
+          ],
+          connections: [
+            { sourceIdx: 0, sourcePort: 'data', targetIdx: 1, targetPort: 'query' },
+            { sourceIdx: 1, sourcePort: 'results', targetIdx: 2, targetPort: 'request' },
+            { sourceIdx: 2, sourcePort: 'miss', targetIdx: 3, targetPort: 'prompt' },
+            { sourceIdx: 3, sourcePort: 'response', targetIdx: 4, targetPort: 'event' },
+          ],
+          settings: { namespace: 'databricks/rag', defaultTtl: 86400 },
+        },
+        'enterprise-compliance': {
+          nodes: [
+            { type: 'cache_l2', x: 100, y: 150, label: 'L2 Cache' },
+            { type: 'validation_pii', x: 300, y: 150, label: 'PII Filter' },
+            { type: 'llm_anthropic', x: 500, y: 100, label: 'Claude' },
+            { type: 'validation_cognitive', x: 500, y: 250, label: 'Validator' },
+            { type: 'output_analytics', x: 700, y: 150, label: 'Analytics' },
+          ],
+          connections: [
+            { sourceIdx: 0, sourcePort: 'miss', targetIdx: 1, targetPort: 'content' },
+            { sourceIdx: 1, sourcePort: 'clean', targetIdx: 2, targetPort: 'prompt' },
+            { sourceIdx: 2, sourcePort: 'response', targetIdx: 3, targetPort: 'response' },
+            { sourceIdx: 3, sourcePort: 'validated', targetIdx: 4, targetPort: 'event' },
+          ],
+          settings: { namespace: 'enterprise/compliant', defaultTtl: 604800 },
+        },
+        'reasoning-optimizer': {
+          nodes: [
+            { type: 'cache_reasoning', x: 100, y: 150, label: 'Reasoning Cache' },
+            { type: 'llm_openai', x: 350, y: 150, label: 'o1' },
+            { type: 'cache_l2', x: 550, y: 150, label: 'L2 Persist' },
+            { type: 'output_analytics', x: 750, y: 150, label: 'Analytics' },
+          ],
+          connections: [
+            { sourceIdx: 0, sourcePort: 'miss', targetIdx: 1, targetPort: 'prompt' },
+            { sourceIdx: 1, sourcePort: 'response', targetIdx: 2, targetPort: 'request' },
+            { sourceIdx: 2, sourcePort: 'hit', targetIdx: 3, targetPort: 'event' },
+          ],
+          settings: { namespace: 'reasoning/o1', defaultTtl: 2592000 },
+        },
+      };
+      
+      const template = templates[templateId];
+      if (!template) return;
+      
+      // Create nodes
+      template.nodes.forEach(n => {
+        state.nodes.push({
+          id: `node_${++nodeIdCounter}`,
+          type: n.type,
+          position: { x: n.x, y: n.y },
+          config: {},
+          label: n.label,
+        });
+      });
+      
+      // Create connections
+      template.connections.forEach(c => {
+        state.connections.push({
+          id: `conn_${Date.now()}_${Math.random()}`,
+          source: { nodeId: state.nodes[c.sourceIdx].id, portId: c.sourcePort },
+          target: { nodeId: state.nodes[c.targetIdx].id, portId: c.targetPort },
+        });
+      });
+      
+      // Apply settings
+      if (template.settings) {
+        Object.assign(state.settings, template.settings);
+        document.getElementById('setting-namespace').value = state.settings.namespace;
+        document.getElementById('setting-ttl').value = state.settings.defaultTtl;
+      }
+      
+      renderNodes();
+      updateStatusBar();
+      calculateSavings();
+      showToast(`Loaded ${templateId} template`);
+      
+      // Reset selector
+      document.getElementById('template-select').value = '';
+    }
+    
+    // ============================================================
+    // VALIDATION & CODE GENERATION
+    // ============================================================
+    
+    async function validatePipeline() {
+      const pipeline = buildPipelineObject();
+      
+      try {
+        const response = await fetch('/api/pipeline/validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pipeline }),
+        });
+        
+        const data = await response.json();
+        
+        if (data.validation.valid) {
+          showToast('✓ Pipeline is valid!', 'success');
+        } else {
+          showToast(`⚠ ${data.validation.errors[0]?.message || 'Invalid pipeline'}`, 'warning');
+        }
+        
+        return data.validation;
+      } catch (error) {
+        console.error('Validation error:', error);
+        // Fallback client-side validation
+        if (state.nodes.length === 0) {
+          showToast('⚠ Pipeline is empty', 'warning');
+          return { valid: false };
+        }
+        showToast('✓ Pipeline looks good!', 'success');
+        return { valid: true };
+      }
+    }
+    
+    function buildPipelineObject() {
+      return {
+        name: document.getElementById('pipeline-name').value,
+        version: 1,
+        nodes: state.nodes.map(n => ({
+          id: n.id,
+          type: n.type,
+          position: n.position,
+          config: n.config,
+          label: n.label,
+        })),
+        connections: state.connections,
+        settings: state.settings,
+      };
+    }
+    
+    async function showCodeModal() {
+      const pipeline = buildPipelineObject();
+      
+      try {
+        const response = await fetch('/api/pipeline/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pipeline, target: 'all' }),
+        });
+        
+        const data = await response.json();
+        state.generatedCode = data.code || {};
+      } catch (error) {
+        console.error('Code generation error:', error);
+        // Fallback to client-side generation
+        state.generatedCode = {
+          python: generatePythonFallback(pipeline),
+          javascript: generateJSFallback(pipeline),
+          curl: generateCurlFallback(pipeline),
+        };
+      }
+      
+      switchCodeTab('python');
+      document.getElementById('code-modal').classList.remove('hidden');
+      document.getElementById('code-modal').classList.add('flex');
+    }
+    
+    function hideCodeModal() {
+      document.getElementById('code-modal').classList.add('hidden');
+      document.getElementById('code-modal').classList.remove('flex');
+    }
+    
+    function switchCodeTab(tab) {
+      document.querySelectorAll('.code-tab').forEach(el => el.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      const code = state.generatedCode[tab] || '# Code not available';
+      document.getElementById('generated-code').textContent = code;
+    }
+    
+    // Fallback code generators
+    function generatePythonFallback(pipeline) {
+      return `from agentcache import AgentCache
+
+# Pipeline: ${pipeline.name}
+cache = AgentCache(
+    api_key="{{AGENTCACHE_API_KEY}}",
+    namespace="${pipeline.settings.namespace}",
+    default_ttl=${pipeline.settings.defaultTtl},
+)
+
+@cache.cached()
+async def cached_query(prompt: str):
+    # Your LLM call here
+    pass
+`;
+    }
+    
+    function generateJSFallback(pipeline) {
+      return `import { AgentCache } from 'agentcache';
+
+// Pipeline: ${pipeline.name}
+const cache = new AgentCache({
+  apiKey: process.env.AGENTCACHE_API_KEY,
+  namespace: '${pipeline.settings.namespace}',
+  defaultTtl: ${pipeline.settings.defaultTtl},
+});
+
+export { cache };
+`;
+    }
+    
+    function generateCurlFallback(pipeline) {
+      return `# AgentCache API - ${pipeline.name}
+
+curl -X POST https://api.agentcache.ai/v1/cache/get \\
+  -H "Authorization: Bearer $AGENTCACHE_API_KEY" \\
+  -d '{"namespace": "${pipeline.settings.namespace}"}'
+`;
+    }
+    
+    function copyCode() {
+      const code = document.getElementById('generated-code').textContent;
+      navigator.clipboard.writeText(code);
+      showToast('Code copied to clipboard!');
+    }
+    
+    function downloadCode() {
+      const code = document.getElementById('generated-code').textContent;
+      const blob = new Blob([code], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `agentcache_pipeline.py`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+    
+    // ============================================================
+    // UTILITIES
+    // ============================================================
+    
+    function autoLayout() {
+      // Simple grid layout
+      const cols = 3;
+      const spacing = { x: 220, y: 150 };
+      const start = { x: 100, y: 100 };
+      
+      state.nodes.forEach((node, i) => {
+        node.position.x = start.x + (i % cols) * spacing.x;
+        node.position.y = start.y + Math.floor(i / cols) * spacing.y;
+      });
+      
+      renderNodes();
+    }
+    
+    function clearCanvas() {
+      if (state.nodes.length === 0) return;
+      if (confirm('Clear all nodes and connections?')) {
+        state.nodes = [];
+        state.connections = [];
+        state.selectedNode = null;
+        renderNodes();
+        updateStatusBar();
+        showPipelineSettings();
+      }
+    }
+    
+    function updateStatusBar() {
+      document.getElementById('node-count').textContent = `${state.nodes.length} nodes`;
+      document.getElementById('connection-count').textContent = `${state.connections.length} connections`;
+      calculateSavings();
+    }
+    
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const colors = {
+        info: 'bg-blue-600',
+        success: 'bg-green-600',
+        warning: 'bg-yellow-600',
+        error: 'bg-red-600',
+      };
+      
+      const toast = document.createElement('div');
+      toast.className = `toast ${colors[type]} text-white px-4 py-2 rounded-lg shadow-lg text-sm`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      
+      setTimeout(() => toast.remove(), 3000);
+    }
+    
+    // Initialize
+    init();
+  </script>
+</body>
+</html>
