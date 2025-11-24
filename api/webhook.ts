@@ -228,15 +228,8 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription, stri
     }
 
     // We need to find the user's hash to update the plan. 
-    // This is tricky without a direct mapping from customerId -> hash in this function's scope.
     // We can look it up from Redis using the customerId if we stored it (we did in handleCheckoutCompleted: customer:{customerId}).
 
-    const customerData = await redis('HGETALL', `customer:${customerId}`);
-    // Redis HGETALL returns array [key, value, key, value] via REST API usually, but Upstash REST might return object if configured?
-    // Let's assume we can get 'apiKeyHash' from it.
-    // Actually, `redis` helper returns `data.result`. HGETALL returns array.
-
-    // Simplified: Just log for now as we need to parse the HGETALL array or use HGET
     const apiKeyHash = await redis('HGET', `customer:${customerId}`, 'apiKeyHash');
 
     if (apiKeyHash) {

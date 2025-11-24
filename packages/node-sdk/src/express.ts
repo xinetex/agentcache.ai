@@ -41,11 +41,15 @@ export function agentCacheMiddleware(options: MiddlewareOptions = {}) {
                 // Restore original method to prevent recursion
                 res.json = originalSend;
 
-                // Fire and forget cache set
-                agentcache.set(key, JSON.stringify(body), {
-                    namespace,
-                    ttl: options.ttl
-                }).catch(err => console.warn('Cache write failed:', err));
+                try {
+                    // Fire and forget cache set
+                    agentcache.set(key, JSON.stringify(body), {
+                        namespace,
+                        ttl: options.ttl
+                    }).catch(err => console.warn('Cache write failed:', err));
+                } catch (err) {
+                    console.warn('Cache serialization failed:', err);
+                }
 
                 // Send response
                 return originalSend.call(this, body);

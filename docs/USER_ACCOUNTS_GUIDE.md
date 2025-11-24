@@ -575,7 +575,7 @@ Add links to login/register:
 ## Troubleshooting
 
 ### "Email not verified" error
-**Solution:** Check spam folder for verification email. Resend via `/api/account?action=resend-verification` (TODO: implement)
+**Solution:** Check spam folder for verification email. Resend via `/api/account?action=resend-verification`.
 
 ### "Invalid session" error
 **Solution:** Session expired (24h). Log in again to get new session token.
