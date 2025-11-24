@@ -568,30 +568,13 @@
 
                 <!-- Visual -->
                 <div class="glass rounded-2xl p-1 border border-amber-500/20 shadow-2xl shadow-amber-900/20">
-                    <div class="bg-slate-950 rounded-xl p-6 font-mono text-xs md:text-sm overflow-hidden">
-                        <div class="flex gap-2 mb-4">
-                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                        </div>
-                        <div class="text-slate-400 space-y-2">
-                            <p><span class="text-green-400">➜</span> <span class="text-blue-400">~</span> curl -X POST
-                                /api/cache/invalidate</p>
-                            <p class="text-slate-300">{</p>
-                            <p class="text-slate-300 pl-4">"pattern": "navigation/*",</p>
-                            <p class="text-slate-300 pl-4">"reason": "obstacle_detected"</p>
-                            <p class="text-slate-300">}</p>
-                            <p class="text-slate-500 mt-2">[+] Invalidating 42 cache entries...</p>
-                            <p class="text-emerald-400">✔ Fleet memory updated (12ms)</p>
-                            <p class="mt-4"><span class="text-green-400">➜</span> <span class="text-blue-400">~</span>
-                                curl -X POST /api/listeners/register</p>
-                            <p class="text-slate-300">{ "url": "https://sensors.io/traffic" }</p>
-                            <p class="text-emerald-400">✔ Monitoring active. Auto-sync enabled.</p>
-                            <p class="animate-pulse">_</p>
-                        </div>
-                    </div>
+                    <p class="text-slate-300">{ "url": "https://sensors.io/traffic" }</p>
+                    <p class="text-emerald-400">✔ Monitoring active. Auto-sync enabled.</p>
+                    <p class="animate-pulse">_</p>
                 </div>
             </div>
+        </div>
+        </div>
         </div>
     </section>
 
