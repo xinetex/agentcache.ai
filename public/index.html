@@ -37,6 +37,13 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
+        .glass-dark {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
         .hero-glow {
             background: radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.15), transparent 70%);
         }
@@ -72,7 +79,7 @@
                         </svg>
                     </button>
                     <div
-                        class="absolute top-full left-0 mt-2 w-56 glass rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                        class="absolute top-full left-0 mt-2 w-56 glass-dark rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                         <a href="#cognitive" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
                             <div class="font-semibold text-white">Cognitive Memory OS</div>
                             <div class="text-xs text-slate-500">3-tier architecture</div>
@@ -103,7 +110,7 @@
                         </svg>
                     </button>
                     <div
-                        class="absolute top-full left-0 mt-2 w-56 glass rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                        class="absolute top-full left-0 mt-2 w-56 glass-dark rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                         <a href="/docs.html" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
                             <div class="font-semibold text-white">Documentation</div>
                             <div class="text-xs text-slate-500">API reference</div>

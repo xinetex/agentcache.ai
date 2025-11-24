@@ -218,13 +218,13 @@ export default async function handler(req: Request) {
                 'createdAt', Date.now().toString()
             ];
 
-            const upstashRes = await fetch(`${UPSTASH_URL}/hmset/${encodeURIComponent(listenerKey)}`, {
+            const upstashRes = await fetch(`${UPSTASH_URL}/`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${UPSTASH_TOKEN}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(hsetBody)
+                body: JSON.stringify(["HSET", listenerKey, ...hsetBody])
             });
 
             if (!upstashRes.ok) {

@@ -85,6 +85,11 @@ const RegisterListenerSchema = z.object({
   webhook: z.string().optional().describe('Webhook URL to notify on change'),
 });
 
+const SearchDocsSchema = z.object({
+  query: z.string().describe('Search query for documentation'),
+  limit: z.number().optional().default(3).describe('Number of results to return'),
+});
+
 // API configuration
 const AGENTCACHE_API_URL = process.env.AGENTCACHE_API_URL || 'https://agentcache.ai';
 const API_KEY = process.env.AGENTCACHE_API_KEY || process.env.API_KEY || 'ac_demo_test123';
@@ -288,6 +293,24 @@ const tools: Tool[] = [
       required: ['url'],
     },
   },
+  {
+    name: 'search_docs',
+    description: 'Search indexed documentation for context (RAG)',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Search query for documentation',
+        },
+        limit: {
+          type: 'number',
+          description: 'Number of results to return (default: 3)',
+        },
+      },
+      required: ['query'],
+    },
+  },
 ];
 
 // Create server instance
@@ -475,6 +498,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'agentcache_register_listener': {
         const params = RegisterListenerSchema.parse(args);
         const result = await callAgentCacheAPI('/api/listeners/register', 'POST', params);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'search_docs': {
+        const params = SearchDocsSchema.parse(args);
+        const result = await callAgentCacheAPI('/api/docs/search', 'POST', params);
         return {
           content: [
             {
