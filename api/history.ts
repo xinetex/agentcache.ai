@@ -1,13 +1,13 @@
 export const config = { runtime: 'edge' };
 
-function json(data, status = 200) {
+function json(data: any, status: number = 200): Response {
     return new Response(JSON.stringify(data), {
         status,
         headers: {
             'content-type': 'application/json; charset=utf-8',
             'cache-control': 'no-store',
             'access-control-allow-origin': '*',
-            'access-control-allow-methods': 'GET, OPTIONS',
+            'access-control-allow-methods': 'GET, POST, OPTIONS',
             'access-control-allow-headers': 'Content-Type, Authorization',
         },
     });
@@ -18,7 +18,7 @@ const getEnv = () => ({
     token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
-async function redis(command, ...args) {
+async function redis(command: string, ...args: string[]): Promise<any> {
     const { url, token } = getEnv();
     if (!url || !token) throw new Error('Upstash not configured');
     const path = `${command}/${args.map(encodeURIComponent).join('/')}`;
@@ -30,7 +30,7 @@ async function redis(command, ...args) {
     return data.result;
 }
 
-export default async function handler(req) {
+export default async function handler(req: Request): Promise<Response> {
     if (req.method === 'OPTIONS') return json({ ok: true });
 
     try {
@@ -47,7 +47,7 @@ export default async function handler(req) {
 
         // 2. Fetch History
         // We store history as a list of JSON strings in `history:{hash}`
-        const history = (await redis('LRANGE', `history:${userHash}`, 0, 49))
+        const history = (await redis('LRANGE', `history:${userHash}`, '0', '49'))
             .map(item => {
                 try {
                     const parsed = JSON.parse(item);

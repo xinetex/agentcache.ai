@@ -1,6 +1,6 @@
 export const config = { runtime: 'edge' };
 
-function json(data, status = 200) {
+function json(data: any, status: number = 200): Response {
     return new Response(JSON.stringify(data), {
         status,
         headers: {
@@ -18,7 +18,7 @@ const getEnv = () => ({
     token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
-async function redis(command, ...args) {
+async function redis(command: string, ...args: string[]): Promise<any> {
     const { url, token } = getEnv();
     if (!url || !token) throw new Error('Upstash not configured');
     const path = `${command}/${args.map(encodeURIComponent).join('/')}`;
@@ -30,17 +30,17 @@ async function redis(command, ...args) {
     return data.result;
 }
 
-export default async function handler(req) {
+export default async function handler(req: Request): Promise<Response> {
     if (req.method === 'OPTIONS') return json({ ok: true });
 
     try {
         // Auth Check (Simplified: Expect apiKey in body or query)
-        let apiKey;
-        let body = {};
+        let apiKey: string | null = null;
+        let body: { apiKey?: string; webhookUrl?: string } = {};
 
         if (req.method === 'POST') {
             body = await req.json();
-            apiKey = body.apiKey;
+            apiKey = body.apiKey || null;
         } else {
             const url = new URL(req.url);
             apiKey = url.searchParams.get('apiKey');

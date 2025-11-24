@@ -216,17 +216,15 @@ app.post('/api/agent/chat', async (c) => {
 
     if (process.env.MOONSHOT_API_KEY) {
       try {
-        const { callMoonshot } = await import('./lib/moonshot.js');
-        const moonshotResponse = await callMoonshot(llmMessages, {
-          model: 'moonshot-v1-128k',
-          temperature: 0.7,
-          cache_reasoning: true
-        });
+        const { MoonshotClient } = await import('./lib/moonshot.js');
+        const client = new MoonshotClient(process.env.MOONSHOT_API_KEY);
 
-        aiResponse = moonshotResponse.content;
+        const moonshotResponse = await client.chat(llmMessages as any, 'moonshot-v1-128k', 0.7);
+
+        aiResponse = moonshotResponse.choices[0].message.content;
         reasoningMetadata = {
-          reasoningTokens: moonshotResponse.reasoning_tokens,
-          cacheHit: moonshotResponse.cache_hit,
+          reasoningTokens: moonshotResponse.usage.reasoning_tokens || 0,
+          cacheHit: false, // Client doesn't expose this yet, would need header inspection
           model: moonshotResponse.model
         };
       } catch (error: any) {

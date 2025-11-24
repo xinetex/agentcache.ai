@@ -1,8 +1,8 @@
-import { MoonshotClient } from '../src/lib/moonshot';
+import { MoonshotClient } from '../src/lib/moonshot.js';
 
 export const config = { runtime: 'edge' };
 
-function json(data, status = 200) {
+function json(data: any, status: number = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
@@ -159,7 +159,7 @@ async function executeSwarmStrategy(strategy, models, messages, traceId, authn) 
         }
 
         // Cache miss - call actual LLM
-        const client = new MoonshotClient(process.env.MOONSHOT_API_KEY, null); // Redis handled via API
+        const client = new MoonshotClient(process.env.MOONSHOT_API_KEY, undefined); // Redis handled via API
 
         const response = await client.chat(messages, modelConfig.model, modelConfig.temperature);
         const content = response.choices[0].message.content;
@@ -382,7 +382,7 @@ async function executeSwarmStrategy(strategy, models, messages, traceId, authn) 
   return { trace, results };
 }
 
-export default async function handler(req) {
+export default async function handler(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') {
     return json({ ok: true });
   }

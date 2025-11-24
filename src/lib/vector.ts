@@ -14,12 +14,12 @@ if (VECTOR_URL && VECTOR_TOKEN) {
     console.warn("⚠️ UPSTASH_VECTOR_REST_URL or UPSTASH_VECTOR_REST_TOKEN not set. L3 Cache disabled.");
 }
 
-export const vectorIndex = index;
+export const vectorIndex: Index | null = index;
 
 /**
  * Store a memory chunk in the L3 Cold Tier
  */
-export async function upsertMemory(id: string, text: string, metadata: Record<string, any>) {
+export async function upsertMemory(id: string, text: string, metadata: Record<string, any>): Promise<void> {
     if (!vectorIndex) return;
 
     await vectorIndex.upsert({
@@ -32,7 +32,7 @@ export async function upsertMemory(id: string, text: string, metadata: Record<st
 /**
  * Query the L3 Cold Tier for relevant memories
  */
-export async function queryMemory(query: string, topK: number = 3) {
+export async function queryMemory(query: string, topK: number = 3): Promise<any[]> {
     if (!vectorIndex) return [];
 
     const results = await vectorIndex.query({

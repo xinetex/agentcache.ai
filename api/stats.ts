@@ -1,6 +1,6 @@
 export const config = { runtime: 'edge' };
 
-function json(data, status = 200) {
+function json(data: any, status: number = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
@@ -18,7 +18,7 @@ const getEnv = () => ({
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
-async function redis(command, ...args) {
+async function redis(command: string, ...args: string[]): Promise<any> {
   const { url, token } = getEnv();
   if (!url || !token) throw new Error('Upstash not configured');
   const path = `${command}/${args.map(encodeURIComponent).join('/')}`;
@@ -30,12 +30,12 @@ async function redis(command, ...args) {
   return data.result;
 }
 
-async function sha256Hex(text) {
+async function sha256Hex(text: string): Promise<string> {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-async function auth(req) {
+async function auth(req: Request): Promise<any> {
   const apiKey = req.headers.get('x-api-key') || req.headers.get('authorization')?.replace('Bearer ', '');
   if (!apiKey || !apiKey.startsWith('ac_')) return { ok: false };
   if (apiKey.startsWith('ac_demo_')) return { ok: true, kind: 'demo', hash: 'demo' };
@@ -50,7 +50,7 @@ async function auth(req) {
   return { ok: true, kind: 'live', hash, email };
 }
 
-export default async function handler(req) {
+export default async function handler(req: Request): Promise<Response> {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return json({ ok: true }, 200);
@@ -67,13 +67,13 @@ export default async function handler(req) {
 
     // Calculate time window
     const now = new Date();
-    let startTime;
+    let startTime: Date;
     switch (period) {
-      case '1h': startTime = new Date(now - 60 * 60 * 1000); break;
-      case '24h': startTime = new Date(now - 24 * 60 * 60 * 1000); break;
-      case '7d': startTime = new Date(now - 7 * 24 * 60 * 60 * 1000); break;
-      case '30d': startTime = new Date(now - 30 * 24 * 60 * 60 * 1000); break;
-      default: startTime = new Date(now - 24 * 60 * 60 * 1000);
+      case '1h': startTime = new Date(now.getTime() - 60 * 60 * 1000); break;
+      case '24h': startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000); break;
+      case '7d': startTime = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); break;
+      case '30d': startTime = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); break;
+      default: startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     }
 
     // Fetch usage stats
@@ -88,7 +88,7 @@ export default async function handler(req) {
     const quota = parseInt(await redis('GET', quotaKey) || '10000', 10);
 
     // Convert usage data array to object
-    const usage = {};
+    const usage: Record<string, number> = {};
     for (let i = 0; i < usageData.length; i += 2) {
       usage[usageData[i]] = parseInt(usageData[i + 1] || '0', 10);
     }
@@ -120,7 +120,7 @@ export default async function handler(req) {
       const cacheKeys = scanRes[1] || [];
 
       // Batch fetch metadata
-      const metaCommands = cacheKeys.map(key => ['HGETALL', `${key}:meta`]);
+      const metaCommands = cacheKeys.map((key: string) => ['HGETALL', `${key}:meta`]);
       if (metaCommands.length > 0) {
         const { url, token } = getEnv();
         const metaRes = await fetch(`${url}/pipeline`, {
@@ -130,17 +130,17 @@ export default async function handler(req) {
         });
         const metaArr = await metaRes.json();
 
-        metaArr.forEach(item => {
+        metaArr.forEach((item: any) => {
           const metaRaw = item.result;
           if (metaRaw && metaRaw.length > 0) {
-            const meta = {};
+            const meta: Record<string, string> = {};
             for (let i = 0; i < metaRaw.length; i += 2) {
               meta[metaRaw[i]] = metaRaw[i + 1];
             }
 
             if (meta.cachedAt) {
               const age = Date.now() - parseInt(meta.cachedAt);
-              const ttl = parseInt(meta.ttl);
+              const ttl = parseInt(meta.ttl || '0');
 
               if (age > ttl) freshnessDist.expired++;
               else if (age > ttl * 0.75) freshnessDist.stale++;
@@ -153,7 +153,7 @@ export default async function handler(req) {
     }
 
     // Build response
-    const stats = {
+    const stats: any = {
       period,
       namespace: namespace || 'default',
       apiKey: `${authn.hash.slice(0, 8)}...`,
@@ -188,7 +188,7 @@ export default async function handler(req) {
       },
 
       performance: {
-        requests_per_day: Math.round(totalRequests / Math.max(1, (now - startTime) / (24 * 60 * 60 * 1000))),
+        requests_per_day: Math.round(totalRequests / Math.max(1, (now.getTime() - startTime.getTime()) / (24 * 60 * 60 * 1000))),
         efficiency_score: parseFloat((hitRate * 100).toFixed(1)), // 0-100 score
         cost_reduction_percent: parseFloat((hitRate * 90).toFixed(1)) // up to 90% savings
       }
@@ -205,7 +205,7 @@ export default async function handler(req) {
       const { traceSize = 100, cacheSize = 10, pattern = 'cyclic' } = body;
 
       // Generate Trace
-      let trace = [];
+      let trace: string[] = [];
       if (pattern === 'cyclic') {
         // A -> B -> C -> A -> B -> C ...
         const items = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'];
@@ -220,7 +220,7 @@ export default async function handler(req) {
       }
 
       // 1. LRU Simulation
-      let lruCache = [];
+      let lruCache: string[] = [];
       let lruHits = 0;
       for (const item of trace) {
         if (lruCache.includes(item)) {
@@ -237,7 +237,7 @@ export default async function handler(req) {
       // 2. Predictive Simulation (The "Oracle")
       // Simple heuristic: If we see A, prefetch B (assuming cyclic knowledge)
       // In a real system, this would use the LSTM model.
-      let predCache = [];
+      let predCache: string[] = [];
       let predHits = 0;
 
       // Pre-fill cache with first items if we know the pattern
@@ -278,7 +278,7 @@ export default async function handler(req) {
     }
 
     return json({ error: 'Not found' }, 404);
-  } catch (err) {
+  } catch (err: any) {
     return json({
       error: 'Unexpected error',
       details: err?.message || String(err)
