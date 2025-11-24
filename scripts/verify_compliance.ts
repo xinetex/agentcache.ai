@@ -1,16 +1,17 @@
+export { };
 // Configuration
-const API_URL = process.env.API_URL || 'http://localhost:3000';
+const COMPLIANCE_API_URL = process.env.API_URL || 'http://localhost:3000';
 const API_KEY = process.env.API_KEY || 'ac_demo_compliance_test';
 
-async function runTest() {
+async function runVerification() {
     console.log('🏥 Starting Healthcare Compliance Verification...');
-    console.log(`Target: ${API_URL}`);
+    console.log(`Target: ${COMPLIANCE_API_URL}`);
 
     // 1. Test PII Redaction
     console.log('\n1. Testing PII Redaction...');
     const piiText = "Patient John Doe (SSN: 123-45-6789) admitted on 2023-10-27. MRN: MRN123456. Email: john@example.com";
 
-    const piiRes = await fetch(`${API_URL}/api/pii`, {
+    const piiRes = await fetch(`${COMPLIANCE_API_URL}/api/pii`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -65,7 +66,7 @@ async function runTest() {
     console.log('\n✨ Compliance Verification Complete!');
 }
 
-runTest().catch(err => {
+runVerification().catch(err => {
     console.error('Fatal Error:', err);
     process.exit(1);
 });
