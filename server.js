@@ -119,6 +119,23 @@ app.post('/api/tool-cache', wrap(toolCacheHandler));
 app.post('/api/tool-cache/get', wrap(toolCacheHandler));
 app.post('/api/tool-cache/set', wrap(toolCacheHandler));
 
+// JettySpeed Routes
+import optimalEdgesHandler from './api/jetty/optimal-edges.js';
+import checkDuplicateHandler from './api/jetty/check-duplicate.js';
+import cacheChunkHandler from './api/jetty/cache-chunk.js';
+import trackUploadHandler from './api/jetty/track-upload.js';
+
+app.post('/api/jetty/optimal-edges', wrap(optimalEdgesHandler));
+app.post('/api/jetty/check-duplicate', wrap(checkDuplicateHandler));
+app.post('/api/jetty/cache-chunk', wrap(cacheChunkHandler));
+app.get('/api/jetty/cache-chunk', wrap(cacheChunkHandler));
+app.post('/api/jetty/track-upload', wrap(trackUploadHandler));
+
+// JettyThunder Provisioning Webhook
+import jettyThunderProvisionHandler from './api/webhooks/jettythunder-provision.js';
+
+app.post('/api/webhooks/jettythunder/provision', wrap(jettyThunderProvisionHandler));
+
 // Health check endpoint
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });

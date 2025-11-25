@@ -1,6 +1,109 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSector } from '../context/SectorContext';
+import { PipelineStorageService } from '../services/storageService';
 import './WorkspaceDashboard.css';
+
+/**
+ * Memoized Pipeline Card Component
+ * Prevents re-renders when other pipelines change
+ */
+const PipelineCard = React.memo(({ 
+  pipeline, 
+  formatDate, 
+  onLoad, 
+  onToggleStatus, 
+  onDuplicate, 
+  onDelete 
+}) => {
+  return (
+    <div className="pipeline-card">
+      {/* Status Indicator */}
+      <div className={`status-indicator ${pipeline.isActive ? 'active' : 'inactive'}`}>
+        <div className="status-dot"></div>
+        {pipeline.isActive ? 'Active' : 'Inactive'}
+      </div>
+
+      {/* Card Content */}
+      <div className="card-content" onClick={() => onLoad(pipeline)}>
+        <h3 className="pipeline-name">{pipeline.name}</h3>
+
+        {/* Stats */}
+        <div className="pipeline-stats">
+          <div className="stat">
+            <span className="stat-label">Nodes</span>
+            <span className="stat-value">{pipeline.nodes?.length || 0}</span>
+          </div>
+          <div className="stat">
+            <span className="stat-label">Est. Savings</span>
+            <span className="stat-value savings">{pipeline.estimatedSavings}</span>
+          </div>
+          <div className="stat">
+            <span className="stat-label">Modified</span>
+            <span className="stat-value">{formatDate(pipeline.lastModified)}</span>
+          </div>
+        </div>
+
+        {/* Preview Thumbnails (simplified) */}
+        <div className="node-preview">
+          {pipeline.nodes?.slice(0, 5).map((node, idx) => (
+            <div key={idx} className={`node-thumb ${node.type || 'default'}`}>
+              {node.type?.replace(/_/g, ' ').substring(0, 3).toUpperCase()}
+            </div>
+          ))}
+          {pipeline.nodes?.length > 5 && (
+            <div className="node-thumb more">
+              +{pipeline.nodes.length - 5}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="card-actions">
+        <button
+          className={`btn-toggle ${pipeline.isActive ? 'active' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleStatus(pipeline.name);
+          }}
+          title={pipeline.isActive ? 'Deactivate' : 'Activate'}
+        >
+          {pipeline.isActive ? '⏸' : '▶'}
+        </button>
+        <button
+          className="btn-action"
+          onClick={(e) => {
+            e.stopPropagation();
+            onLoad(pipeline);
+          }}
+          title="Edit"
+        >
+          ✏️
+        </button>
+        <button
+          className="btn-action"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDuplicate(pipeline);
+          }}
+          title="Duplicate"
+        >
+          📋
+        </button>
+        <button
+          className="btn-action danger"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(pipeline.name);
+          }}
+          title="Delete"
+        >
+          🗑️
+        </button>
+      </div>
+    </div>
+  );
+});
 
 /**
  * Workspace Dashboard - Manage all saved pipelines
@@ -13,72 +116,115 @@ export default function WorkspaceDashboard({ onLoadPipeline, onNewPipeline }) {
   const [sortBy, setSortBy] = useState('recent'); // 'recent' | 'name' | 'savings'
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
 
-  // Load pipelines from localStorage
+  // Load pipelines from storage service
   useEffect(() => {
     loadPipelines();
   }, [sector]);
 
-  const loadPipelines = () => {
-    const saved = JSON.parse(localStorage.getItem('savedPipelines') || '[]');
-    
-    // Filter by current sector
-    const sectorPipelines = saved
-      .filter(p => p.sector === sector)
-      .map(p => ({
-        ...p,
-        isActive: p.isActive !== undefined ? p.isActive : false,
-        estimatedSavings: p.estimatedSavings || calculateEstimatedSavings(p),
-        lastModified: p.savedAt || p.lastModified || new Date().toISOString()
-      }));
+  const loadPipelines = useCallback(() => {
+    try {
+      const allPipelines = PipelineStorageService.loadAllPipelines();
+      
+      // Filter by current sector
+      const sectorPipelines = allPipelines
+        .filter(p => p.sector === sector)
+        .map(p => ({
+          ...p,
+          isActive: p.isActive !== undefined ? p.isActive : false,
+          lastModified: p.updatedAt || p.savedAt || new Date().toISOString()
+        }));
 
-    setPipelines(sectorPipelines);
-  };
+      setPipelines(sectorPipelines);
+    } catch (error) {
+      console.error('Failed to load pipelines:', error);
+      alert('Error loading pipelines. Please refresh the page.');
+    }
+  }, [sector]);
 
-  const calculateEstimatedSavings = (pipeline) => {
-    // Simple heuristic based on node count
-    const cacheNodes = pipeline.nodes.filter(n => 
-      n.type?.includes('cache') || n.id?.includes('cache')
-    ).length;
-    return `$${(cacheNodes * 800 + 400).toLocaleString()}/mo`;
-  };
+  // Memoize expensive calculation
+  const calculateEstimatedSavings = useMemo(() => {
+    return (pipeline) => {
+      // Simple heuristic based on node count
+      const cacheNodes = pipeline.nodes?.filter(n => 
+        n.type?.includes('cache') || n.id?.includes('cache')
+      ).length || 0;
+      return `$${(cacheNodes * 800 + 400).toLocaleString()}/mo`;
+    };
+  }, []);
 
-  const togglePipelineStatus = (pipelineName) => {
-    const saved = JSON.parse(localStorage.getItem('savedPipelines') || '[]');
-    const updated = saved.map(p => {
-      if (p.name === pipelineName && p.sector === sector) {
-        return { ...p, isActive: !p.isActive };
+  const togglePipelineStatus = useCallback((pipelineName) => {
+    try {
+      const pipeline = PipelineStorageService.loadPipeline(pipelineName);
+      if (!pipeline) {
+        alert('Pipeline not found');
+        return;
       }
-      return p;
-    });
-    localStorage.setItem('savedPipelines', JSON.stringify(updated));
-    loadPipelines();
-  };
+      
+      pipeline.isActive = !pipeline.isActive;
+      const result = PipelineStorageService.savePipeline(pipeline);
+      
+      if (!result.success) {
+        alert(`Failed to update pipeline: ${result.message}`);
+        return;
+      }
+      
+      loadPipelines();
+    } catch (error) {
+      console.error('Failed to toggle pipeline status:', error);
+      alert('Error updating pipeline status');
+    }
+  }, [sector, loadPipelines]);
 
-  const deletePipeline = (pipelineName) => {
+  const deletePipeline = useCallback((pipelineName) => {
     if (!confirm(`Delete pipeline "${pipelineName}"? This cannot be undone.`)) {
       return;
     }
-    const saved = JSON.parse(localStorage.getItem('savedPipelines') || '[]');
-    const updated = saved.filter(p => !(p.name === pipelineName && p.sector === sector));
-    localStorage.setItem('savedPipelines', JSON.stringify(updated));
-    loadPipelines();
-  };
+    
+    try {
+      const result = PipelineStorageService.deletePipeline(pipelineName);
+      
+      if (!result.success) {
+        alert(`Failed to delete pipeline: ${result.message}`);
+        return;
+      }
+      
+      loadPipelines();
+    } catch (error) {
+      console.error('Failed to delete pipeline:', error);
+      alert('Error deleting pipeline');
+    }
+  }, [loadPipelines]);
 
-  const duplicatePipeline = (pipeline) => {
-    const saved = JSON.parse(localStorage.getItem('savedPipelines') || '[]');
-    const copy = {
-      ...pipeline,
-      name: `${pipeline.name} (Copy)`,
-      savedAt: new Date().toISOString(),
-      isActive: false
-    };
-    saved.push(copy);
-    localStorage.setItem('savedPipelines', JSON.stringify(saved));
-    loadPipelines();
-  };
+  const duplicatePipeline = useCallback((pipeline) => {
+    try {
+      const copy = {
+        ...pipeline,
+        name: `${pipeline.name} (Copy)`,
+        isActive: false
+      };
+      
+      const result = PipelineStorageService.savePipeline(copy);
+      
+      if (!result.success) {
+        if (result.error === 'quota') {
+          alert(`Storage quota exceeded: ${result.message}`);
+        } else if (result.error === 'validation') {
+          alert(`Validation error: ${result.message}`);
+        } else {
+          alert(`Failed to duplicate pipeline: ${result.message}`);
+        }
+        return;
+      }
+      
+      loadPipelines();
+    } catch (error) {
+      console.error('Failed to duplicate pipeline:', error);
+      alert('Error duplicating pipeline');
+    }
+  }, [loadPipelines]);
 
-  // Filter and sort pipelines
-  const getFilteredPipelines = () => {
+  // Memoize filtered and sorted pipelines
+  const filteredPipelines = useMemo(() => {
     let filtered = [...pipelines];
 
     // Apply filter
@@ -93,8 +239,8 @@ export default function WorkspaceDashboard({ onLoadPipeline, onNewPipeline }) {
       filtered.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortBy === 'savings') {
       filtered.sort((a, b) => {
-        const aVal = parseInt(a.estimatedSavings.replace(/[^0-9]/g, ''));
-        const bVal = parseInt(b.estimatedSavings.replace(/[^0-9]/g, ''));
+        const aVal = parseInt((a.estimatedSavings || '0').replace(/[^0-9]/g, ''));
+        const bVal = parseInt((b.estimatedSavings || '0').replace(/[^0-9]/g, ''));
         return bVal - aVal;
       });
     } else {
@@ -103,9 +249,9 @@ export default function WorkspaceDashboard({ onLoadPipeline, onNewPipeline }) {
     }
 
     return filtered;
-  };
+  }, [pipelines, filter, sortBy]);
 
-  const formatDate = (dateStr) => {
+  const formatDate = useCallback((dateStr) => {
     const date = new Date(dateStr);
     const now = new Date();
     const diffMs = now - date;
@@ -118,9 +264,17 @@ export default function WorkspaceDashboard({ onLoadPipeline, onNewPipeline }) {
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
     return date.toLocaleDateString();
-  };
+  }, []);
 
-  const filteredPipelines = getFilteredPipelines();
+  // Memoize count calculations
+  const activeCount = useMemo(() => 
+    pipelines.filter(p => p.isActive).length, 
+    [pipelines]
+  );
+  const inactiveCount = useMemo(() => 
+    pipelines.filter(p => !p.isActive).length, 
+    [pipelines]
+  );
 
   return (
     <div className="workspace-dashboard">
@@ -131,7 +285,7 @@ export default function WorkspaceDashboard({ onLoadPipeline, onNewPipeline }) {
           <p className="dashboard-subtitle">
             {pipelines.length} pipeline{pipelines.length !== 1 ? 's' : ''} in {sector}
             {' • '}
-            {pipelines.filter(p => p.isActive).length} active
+            {activeCount} active
           </p>
         </div>
         <button className="btn-new-pipeline" onClick={onNewPipeline}>
@@ -155,13 +309,13 @@ export default function WorkspaceDashboard({ onLoadPipeline, onNewPipeline }) {
               className={filter === 'active' ? 'active' : ''}
               onClick={() => setFilter('active')}
             >
-              Active ({pipelines.filter(p => p.isActive).length})
+              Active ({activeCount})
             </button>
             <button
               className={filter === 'inactive' ? 'active' : ''}
               onClick={() => setFilter('inactive')}
             >
-              Inactive ({pipelines.filter(p => !p.isActive).length})
+              Inactive ({inactiveCount})
             </button>
           </div>
         </div>
@@ -228,92 +382,15 @@ export default function WorkspaceDashboard({ onLoadPipeline, onNewPipeline }) {
           </div>
         ) : (
           filteredPipelines.map((pipeline) => (
-            <div key={pipeline.name} className="pipeline-card">
-              {/* Status Indicator */}
-              <div className={`status-indicator ${pipeline.isActive ? 'active' : 'inactive'}`}>
-                <div className="status-dot"></div>
-                {pipeline.isActive ? 'Active' : 'Inactive'}
-              </div>
-
-              {/* Card Content */}
-              <div className="card-content" onClick={() => onLoadPipeline(pipeline)}>
-                <h3 className="pipeline-name">{pipeline.name}</h3>
-
-                {/* Stats */}
-                <div className="pipeline-stats">
-                  <div className="stat">
-                    <span className="stat-label">Nodes</span>
-                    <span className="stat-value">{pipeline.nodes?.length || 0}</span>
-                  </div>
-                  <div className="stat">
-                    <span className="stat-label">Est. Savings</span>
-                    <span className="stat-value savings">{pipeline.estimatedSavings}</span>
-                  </div>
-                  <div className="stat">
-                    <span className="stat-label">Modified</span>
-                    <span className="stat-value">{formatDate(pipeline.lastModified)}</span>
-                  </div>
-                </div>
-
-                {/* Preview Thumbnails (simplified) */}
-                <div className="node-preview">
-                  {pipeline.nodes?.slice(0, 5).map((node, idx) => (
-                    <div key={idx} className={`node-thumb ${node.type || 'default'}`}>
-                      {node.type?.replace(/_/g, ' ').substring(0, 3).toUpperCase()}
-                    </div>
-                  ))}
-                  {pipeline.nodes?.length > 5 && (
-                    <div className="node-thumb more">
-                      +{pipeline.nodes.length - 5}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="card-actions">
-                <button
-                  className={`btn-toggle ${pipeline.isActive ? 'active' : ''}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    togglePipelineStatus(pipeline.name);
-                  }}
-                  title={pipeline.isActive ? 'Deactivate' : 'Activate'}
-                >
-                  {pipeline.isActive ? '⏸' : '▶'}
-                </button>
-                <button
-                  className="btn-action"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onLoadPipeline(pipeline);
-                  }}
-                  title="Edit"
-                >
-                  ✏️
-                </button>
-                <button
-                  className="btn-action"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    duplicatePipeline(pipeline);
-                  }}
-                  title="Duplicate"
-                >
-                  📋
-                </button>
-                <button
-                  className="btn-action danger"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deletePipeline(pipeline.name);
-                  }}
-                  title="Delete"
-                >
-                  🗑️
-                </button>
-              </div>
-            </div>
+            <PipelineCard
+              key={pipeline.name}
+              pipeline={pipeline}
+              formatDate={formatDate}
+              onLoad={onLoadPipeline}
+              onToggleStatus={togglePipelineStatus}
+              onDuplicate={duplicatePipeline}
+              onDelete={deletePipeline}
+            />
           ))
         )}
       </div>

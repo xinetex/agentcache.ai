@@ -1,0 +1,57 @@
+# JettyThunder Integration Walkthrough
+
+## Overview
+We have successfully integrated the JettyThunder service into the existing AgentCache server.
+
+## Components Implemented
+
+### 1. Database Schema ([server/db/jettythunder-schema.ts](file:///Users/letstaco/Documents/jettythunder-v2/server/db/jettythunder-schema.ts))
+- Added tables: `agentcache_accounts`, `tier_configs`, `agentcache_assets`, `storage_usage`.
+- Defined using Drizzle ORM.
+
+### 2. API Endpoints (`server/routes/`)
+- **Provisioning**: `POST /api/agentcache/provision`
+- **Upgrade**: `POST /api/agentcache/upgrade`
+- **Quota**: `GET /api/agentcache/quota`
+- **Storage**: `POST /api/storage/upload` (accepts raw binary with `X-Filename` header)
+
+### 3. Core Libraries (`server/lib/`)
+- `api-key-generator.ts`: Secure credential generation.
+- Reused `server/services/storage.ts` for S3 operations.
+
+### 4. Server Registration (`server/index.ts`)
+- Mounted `/api/agentcache` and `/api/storage` routes.
+
+## How to Run
+
+### 1. Database Migration
+You need to push the new schema to the database:
+```bash
+npm run db:push
+# or
+npx drizzle-kit push
+```
+
+### 2. Seed Data
+Seed the tier configurations (Critical Step):
+```bash
+# Using the provided seed script
+npx dotenv -e .env -- npx tsx scripts/seed-jettythunder.ts
+```
+
+### 3. Start Server
+```bash
+npm run dev
+```
+
+### 4. Verify
+Run the integration test script:
+```bash
+# Ensure server is running on port 3000 (default) or set PORT
+# You need the AGENTCACHE_WEBHOOK_SECRET from your .env
+npx dotenv -e .env -- npx tsx scripts/test-jettythunder-integration.ts
+```
+
+## Next Steps
+- **Configure AgentCache**: Follow the [AgentCache Setup Instructions](AGENTCACHE_SETUP.md).
+- **Rust Client**: The Rust client integration is pending as the `src-tauri` directory was not found in this workspace.

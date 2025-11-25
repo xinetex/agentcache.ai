@@ -8,14 +8,15 @@ import ReactFlow, {
   addEdge,
 } from 'reactflow';
 import Sidebar from './components/Sidebar';
-import WizardModal from './components/WizardModal';
+import WizardModal from './components/WizardModalNew';
 import SectorModal from './components/SectorModal';
 import MetricsPanel from './components/MetricsPanel';
 import WorkspaceGallery from './components/WorkspaceGallery';
-import WorkspaceDashboard from './components/WorkspaceDashboard';
+import CommandCenter from './components/CommandCenter';
 import { useSector } from './context/SectorContext';
 import { nodeTypes } from './nodes';
 import { initDemoMode } from './config/demoData';
+import { PipelineStorageService, StorageService } from './services/storageService';
 import './App.css';
 
 function App() {
@@ -107,31 +108,59 @@ function App() {
     setView('builder');
   }, [setNodes, setEdges]);
 
-  // Save pipeline to localStorage (later: API)
+  // Save pipeline with validation and error handling
   const handleSavePipeline = useCallback(() => {
+    // Basic validation
+    if (!pipelineName || pipelineName.trim() === '') {
+      alert('Please enter a pipeline name');
+      return;
+    }
+
+    if (nodes.length === 0) {
+      alert('Pipeline must have at least one node');
+      return;
+    }
+
     const pipeline = {
-      name: pipelineName,
+      name: pipelineName.trim(),
       sector,
       nodes,
-      edges,
-      savedAt: new Date().toISOString()
+      edges
     };
     
-    // Get existing saved pipelines
-    const saved = JSON.parse(localStorage.getItem('savedPipelines') || '[]');
-    
-    // Check if pipeline with this name exists
-    const existingIdx = saved.findIndex(p => p.name === pipelineName && p.sector === sector);
-    
-    if (existingIdx >= 0) {
-      saved[existingIdx] = pipeline;
-      alert(`Pipeline "${pipelineName}" updated!`);
-    } else {
-      saved.push(pipeline);
-      alert(`Pipeline "${pipelineName}" saved!`);
+    try {
+      const result = PipelineStorageService.savePipeline(pipeline);
+      
+      if (!result.success) {
+        // Handle different error types
+        if (result.error === 'quota') {
+          alert(`Storage quota exceeded: ${result.message}\n\nConsider deleting old pipelines or upgrading your plan.`);
+        } else if (result.error === 'validation') {
+          alert(`Validation error: ${result.message}\n\nField: ${result.field || 'unknown'}`);
+        } else {
+          alert(`Failed to save pipeline: ${result.message}`);
+        }
+        return;
+      }
+      
+      // Check storage stats after save
+      const stats = StorageService.getStorageStats();
+      const percentUsed = stats.percentUsed.toFixed(1);
+      
+      const message = result.isNew 
+        ? `Pipeline "${pipelineName}" saved!` 
+        : `Pipeline "${pipelineName}" updated!`;
+      
+      // Warn if storage is getting full
+      if (stats.percentUsed > 80) {
+        alert(`${message}\n\n⚠️ Storage warning: ${percentUsed}% used. Consider deleting old pipelines.`);
+      } else {
+        alert(message);
+      }
+    } catch (error) {
+      console.error('Failed to save pipeline:', error);
+      alert(`Error saving pipeline: ${error.message}`);
     }
-    
-    localStorage.setItem('savedPipelines', JSON.stringify(saved));
   }, [pipelineName, sector, nodes, edges]);
 
   const onDragOver = useCallback((event) => {
@@ -188,12 +217,28 @@ function App() {
 
   // Show dashboard view
   if (view === 'dashboard') {
+    // Get saved pipelines for metrics
+    const savedPipelines = PipelineStorageService.loadAllPipelines();
+    
     return (
       <div className="app">
-        <WorkspaceDashboard
-          onLoadPipeline={handleLoadPipelineFromDashboard}
+        <CommandCenter
+          onOpenWizard={() => setWizardOpen(true)}
           onNewPipeline={handleNewPipeline}
+          pipelines={savedPipelines}
         />
+        
+        {wizardOpen && (
+          <WizardModal
+            sector={sector}
+            config={config}
+            onClose={() => setWizardOpen(false)}
+            onComplete={(pipeline) => {
+              handleWizardComplete(pipeline);
+              setView('builder'); // Switch to builder after wizard
+            }}
+          />
+        )}
       </div>
     );
   }

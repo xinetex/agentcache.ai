@@ -91,9 +91,49 @@ function WizardModal({ sector, config, onClose, onComplete }) {
                   <textarea
                     value={customPrompt}
                     onChange={(e) => setCustomPrompt(e.target.value)}
-                    placeholder="E.g., Cache image generation results for marketing campaigns..."
+                    placeholder="Describe what you want to cache..."
                     rows={4}
                   />
+                  <div className="prompt-examples">
+                    <p className="examples-label">💡 Need inspiration? Try these:</p>
+                    <div className="example-buttons">
+                      <button
+                        type="button"
+                        className="example-chip"
+                        onClick={() => setCustomPrompt("Optimize LLM inference for data lakehouse RAG pipelines with sub-50ms cache hits and full audit trails for compliance")}
+                      >
+                        📊 Data Lakehouse RAG Optimization
+                      </button>
+                      <button
+                        type="button"
+                        className="example-chip"
+                        onClick={() => setCustomPrompt("Cache AI model inference results for educational platform with student learning analytics and response personalization")}
+                      >
+                        🎓 AI-Powered Learning Platform
+                      </button>
+                      <button
+                        type="button"
+                        className="example-chip"
+                        onClick={() => setCustomPrompt("Accelerate content delivery for media assets with multi-region edge caching and 14x faster upload speeds")}
+                      >
+                        🎬 Media Asset Acceleration
+                      </button>
+                      <button
+                        type="button"
+                        className="example-chip"
+                        onClick={() => setCustomPrompt("Cache reasoning model outputs (o1/DeepSeek) with governance controls for enterprise AI compliance and cost reduction")}
+                      >
+                        🏢 Enterprise AI Governance
+                      </button>
+                      <button
+                        type="button"
+                        className="example-chip"
+                        onClick={() => setCustomPrompt("Optimize vector search and embedding cache for production RAG systems with semantic similarity matching")}
+                      >
+                        🔍 Vector Search Optimization
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
 

@@ -361,12 +361,14 @@ CREATE TABLE IF NOT EXISTS platform_memory_cache (
   -- Cached data
   data JSONB NOT NULL,
   confidence DECIMAL(3,2) DEFAULT 1.0,
+  vitality DECIMAL(3,2) DEFAULT 1.0,
   reasoning TEXT,
   metadata JSONB DEFAULT '{}'::jsonb,
   
   -- Usage tracking
   hit_count INTEGER DEFAULT 0,
   last_hit_at TIMESTAMP,
+  last_decay_at TIMESTAMP DEFAULT NOW(),
   
   -- Lifecycle
   created_at TIMESTAMP DEFAULT NOW(),
