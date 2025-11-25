@@ -4,6 +4,10 @@
  */
 
 import { neon } from '@neondatabase/serverless';
+
+export const config = {
+  runtime: 'nodejs'
+};
 import { getUserFromRequest } from './auth.js';
 import { calculateMonthlyBill, COMPLEXITY_TIERS, calculateComplexity } from '../lib/complexity-calculator.js';
 
@@ -24,11 +28,11 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  
+
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
-  
+
   // Require authentication
   const user = await getUserFromRequest(req);
   if (!user) {
@@ -37,10 +41,10 @@ export default async function handler(req, res) {
       message: 'Authentication required'
     });
   }
-  
+
   const { method, url } = req;
   const path = url.split('?')[0];
-  
+
   try {
     // GET /api/billing/usage - Current period usage
     if (method === 'GET' && path === '/api/billing/usage') {
@@ -52,43 +56,43 @@ export default async function handler(req, res) {
         ORDER BY created_at DESC
         LIMIT 1
       `;
-      
+
       const subscription = subscriptions[0] || {
         plan_tier: 'starter',
         current_period_start: new Date(),
         current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         status: 'active'
       };
-      
+
       // Get current month usage
       const usage = await sql`
         SELECT * FROM get_current_month_usage(${user.id})
       `;
-      
+
       const currentUsage = usage[0] || {
         requests: 0,
         hits: 0,
         hit_rate: 0,
         cost_saved: 0
       };
-      
+
       // Get active pipelines for cost calculation
       const pipelines = await sql`
         SELECT id, name, complexity_tier, monthly_cost, status
         FROM pipelines
         WHERE user_id = ${user.id} AND status = 'active'
       `;
-      
+
       // Calculate bill
       const bill = calculateMonthlyBill(pipelines, subscription.plan_tier);
-      
+
       // Request quotas by plan
       const quotas = {
         starter: 100000,
         professional: 1000000,
         enterprise: 10000000
       };
-      
+
       return res.status(200).json({
         current_period: {
           start: subscription.current_period_start,
@@ -118,37 +122,37 @@ export default async function handler(req, res) {
         }))
       });
     }
-    
+
     // POST /api/billing/calculate - Calculate cost for pipeline config
     if (method === 'POST' && path === '/api/billing/calculate') {
       const { pipeline } = req.body;
-      
+
       if (!pipeline || !pipeline.nodes) {
         return res.status(400).json({
           error: 'Validation error',
           message: 'Pipeline configuration with nodes required'
         });
       }
-      
+
       // Calculate complexity
       const complexity = calculateComplexity(pipeline);
-      
+
       // Get user's plan
       const subscriptions = await sql`
         SELECT plan_tier FROM subscriptions
         WHERE user_id = ${user.id} AND status = 'active'
         ORDER BY created_at DESC LIMIT 1
       `;
-      
+
       const userPlan = subscriptions[0]?.plan_tier || 'starter';
-      
+
       // Check if included in plan
       const includedInPlan = (
         (userPlan === 'starter' && complexity.tier === 'simple') ||
         (userPlan === 'professional' && ['simple', 'moderate'].includes(complexity.tier)) ||
         (userPlan === 'enterprise')
       );
-      
+
       return res.status(200).json({
         complexity: complexity.tier,
         score: complexity.score,
@@ -160,7 +164,7 @@ export default async function handler(req, res) {
         user_plan: userPlan
       });
     }
-    
+
     // GET /api/billing/history - Invoice history
     if (method === 'GET' && path === '/api/billing/history') {
       const invoices = await sql`
@@ -178,7 +182,7 @@ export default async function handler(req, res) {
         ORDER BY period_start DESC
         LIMIT 12
       `;
-      
+
       return res.status(200).json({
         invoices: invoices.map(inv => ({
           id: inv.stripe_invoice_id,
@@ -194,7 +198,7 @@ export default async function handler(req, res) {
         }))
       });
     }
-    
+
     // GET /api/billing/plans - Available plans
     if (method === 'GET' && path === '/api/billing/plans') {
       return res.status(200).json({
@@ -264,18 +268,18 @@ export default async function handler(req, res) {
         }))
       });
     }
-    
+
     // POST /api/billing/upgrade - Initiate plan upgrade
     if (method === 'POST' && path === '/api/billing/upgrade') {
       const { plan } = req.body;
-      
+
       if (!['starter', 'professional', 'enterprise'].includes(plan)) {
         return res.status(400).json({
           error: 'Validation error',
           message: 'Invalid plan'
         });
       }
-      
+
       // Get current subscription
       const subscriptions = await sql`
         SELECT plan_tier, stripe_subscription_id
@@ -283,22 +287,22 @@ export default async function handler(req, res) {
         WHERE user_id = ${user.id} AND status = 'active'
         ORDER BY created_at DESC LIMIT 1
       `;
-      
+
       const currentPlan = subscriptions[0]?.plan_tier || 'starter';
-      
+
       if (currentPlan === plan) {
         return res.status(400).json({
           error: 'Invalid request',
           message: 'Already on this plan'
         });
       }
-      
+
       // In production, this would create a Stripe checkout session
       // For now, simulate upgrade
-      
+
       // TODO: Implement Stripe integration
       // const stripeSession = await stripe.checkout.sessions.create({...});
-      
+
       return res.status(200).json({
         message: 'Upgrade initiated',
         upgrade: {
@@ -310,18 +314,18 @@ export default async function handler(req, res) {
         note: 'Stripe integration pending - upgrade would be processed here'
       });
     }
-    
+
     // POST /api/billing/track - Track usage event (internal use)
     if (method === 'POST' && path === '/api/billing/track') {
       const { pipeline_id, cache_hit, tokens, baseline_cost, agentcache_cost } = req.body;
-      
+
       // Verify pipeline ownership
       if (pipeline_id) {
         const pipelines = await sql`
           SELECT id FROM pipelines
           WHERE id = ${pipeline_id} AND user_id = ${user.id}
         `;
-        
+
         if (pipelines.length === 0) {
           return res.status(403).json({
             error: 'Forbidden',
@@ -329,7 +333,7 @@ export default async function handler(req, res) {
           });
         }
       }
-      
+
       // Record usage
       await sql`
         INSERT INTO usage_metrics (
@@ -367,18 +371,18 @@ export default async function handler(req, res) {
           cost_agentcache = usage_metrics.cost_agentcache + EXCLUDED.cost_agentcache,
           cost_saved = usage_metrics.cost_saved + EXCLUDED.cost_saved
       `;
-      
+
       return res.status(200).json({
         message: 'Usage tracked'
       });
     }
-    
+
     // Route not found
     return res.status(404).json({
       error: 'Not found',
       message: 'Billing endpoint not found'
     });
-    
+
   } catch (error) {
     console.error('Billing API error:', error);
     return res.status(500).json({

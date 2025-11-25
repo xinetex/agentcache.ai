@@ -4,6 +4,10 @@
  */
 
 import { neon } from '@neondatabase/serverless';
+
+export const config = {
+  runtime: 'nodejs'
+};
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { getUserFromRequest } from './auth.js';
@@ -26,14 +30,14 @@ export async function validateAPIKey(apiKey) {
   if (!apiKey) {
     return { valid: false, error: 'No API key provided' };
   }
-  
+
   try {
     // Extract prefix for quick lookup
     const prefix = apiKey.substring(0, 16);
-    
+
     // Hash the key for comparison
     const keyHash = await bcrypt.hash(apiKey, 10);
-    
+
     // Find active key
     const keys = await sql`
       SELECT 
@@ -54,20 +58,20 @@ export async function validateAPIKey(apiKey) {
         AND (k.expires_at IS NULL OR k.expires_at > NOW())
       LIMIT 1
     `;
-    
+
     if (keys.length === 0) {
       return { valid: false, error: 'Invalid API key' };
     }
-    
+
     const key = keys[0];
-    
+
     // Verify hash (in production, use constant-time comparison)
     const isValid = await bcrypt.compare(apiKey, key.key_hash);
-    
+
     if (!isValid) {
       return { valid: false, error: 'Invalid API key' };
     }
-    
+
     // Update usage stats
     await sql`
       UPDATE api_keys
@@ -76,7 +80,7 @@ export async function validateAPIKey(apiKey) {
         request_count = request_count + 1
       WHERE id = ${key.id}
     `;
-    
+
     return {
       valid: true,
       key_id: key.id,
@@ -88,7 +92,7 @@ export async function validateAPIKey(apiKey) {
       scopes: key.scopes || ['cache:read', 'cache:write'],
       namespaces: key.allowed_namespaces || ['*']
     };
-    
+
   } catch (error) {
     console.error('API key validation error:', error);
     return { valid: false, error: 'Validation failed' };
@@ -103,11 +107,11 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  
+
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
-  
+
   // Require authentication
   const user = await getUserFromRequest(req);
   if (!user) {
@@ -116,11 +120,11 @@ export default async function handler(req, res) {
       message: 'Authentication required'
     });
   }
-  
+
   const { method, url } = req;
   const path = url.split('?')[0];
   const pathParts = path.split('/').filter(Boolean);
-  
+
   try {
     // GET /api/keys - List user's API keys
     if (method === 'GET' && path === '/api/keys') {
@@ -141,7 +145,7 @@ export default async function handler(req, res) {
           AND is_active = TRUE
         ORDER BY created_at DESC
       `;
-      
+
       return res.status(200).json({
         keys: keys.map(k => ({
           id: k.id,
@@ -156,24 +160,24 @@ export default async function handler(req, res) {
         }))
       });
     }
-    
+
     // POST /api/keys - Generate new API key
     if (method === 'POST' && path === '/api/keys') {
       const { name, scopes, namespaces, expires_days } = req.body;
-      
+
       // Check plan limits
       const keyCount = await sql`
         SELECT COUNT(*) as count
         FROM api_keys
         WHERE user_id = ${user.id} AND is_active = TRUE
       `;
-      
+
       const limits = {
         starter: 2,
         professional: 10,
         enterprise: 100
       };
-      
+
       const userPlan = user.plan || 'starter';
       if (parseInt(keyCount[0].count) >= limits[userPlan]) {
         return res.status(403).json({
@@ -183,12 +187,12 @@ export default async function handler(req, res) {
           limit: limits[userPlan]
         });
       }
-      
+
       // Generate key
       const apiKey = generateAPIKey('sk_live');
       const prefix = apiKey.substring(0, 16);
       const keyHash = await bcrypt.hash(apiKey, 10);
-      
+
       // Store hashed key
       const newKeys = await sql`
         INSERT INTO api_keys (
@@ -211,7 +215,7 @@ export default async function handler(req, res) {
         )
         RETURNING id, key_prefix, name, created_at
       `;
-      
+
       // Log audit event
       await sql`
         INSERT INTO audit_logs (user_id, action, resource_type, resource_id, metadata)
@@ -223,7 +227,7 @@ export default async function handler(req, res) {
           ${JSON.stringify({ name, scopes, namespaces })}
         )
       `;
-      
+
       // Return full key ONCE (user must save it)
       return res.status(201).json({
         key: {
@@ -236,24 +240,24 @@ export default async function handler(req, res) {
         warning: 'Save this key now. You will not be able to see it again.'
       });
     }
-    
+
     // DELETE /api/keys/:id - Revoke API key
     if (method === 'DELETE' && pathParts.length === 3 && pathParts[1] === 'keys') {
       const keyId = pathParts[2];
-      
+
       // Verify ownership
       const existing = await sql`
         SELECT id, name FROM api_keys
         WHERE id = ${keyId} AND user_id = ${user.id}
       `;
-      
+
       if (existing.length === 0) {
         return res.status(404).json({
           error: 'Not found',
           message: 'API key not found'
         });
       }
-      
+
       // Soft delete (revoke)
       await sql`
         UPDATE api_keys
@@ -262,7 +266,7 @@ export default async function handler(req, res) {
           revoked_at = NOW()
         WHERE id = ${keyId}
       `;
-      
+
       // Log audit event
       await sql`
         INSERT INTO audit_logs (user_id, action, resource_type, resource_id, metadata)
@@ -274,44 +278,44 @@ export default async function handler(req, res) {
           ${JSON.stringify({ name: existing[0].name })}
         )
       `;
-      
+
       return res.status(200).json({
         message: 'API key revoked successfully'
       });
     }
-    
+
     // POST /api/keys/:id/rotate - Rotate API key
     if (method === 'POST' && pathParts.length === 4 && pathParts[1] === 'keys' && pathParts[3] === 'rotate') {
       const keyId = pathParts[2];
-      
+
       // Verify ownership
       const existing = await sql`
         SELECT id, name, scopes, allowed_namespaces
         FROM api_keys
         WHERE id = ${keyId} AND user_id = ${user.id} AND is_active = TRUE
       `;
-      
+
       if (existing.length === 0) {
         return res.status(404).json({
           error: 'Not found',
           message: 'API key not found'
         });
       }
-      
+
       const oldKey = existing[0];
-      
+
       // Generate new key
       const newApiKey = generateAPIKey('sk_live');
       const newPrefix = newApiKey.substring(0, 16);
       const newKeyHash = await bcrypt.hash(newApiKey, 10);
-      
+
       // Revoke old key
       await sql`
         UPDATE api_keys
         SET is_active = FALSE, revoked_at = NOW()
         WHERE id = ${keyId}
       `;
-      
+
       // Create new key with same permissions
       const rotated = await sql`
         INSERT INTO api_keys (
@@ -332,7 +336,7 @@ export default async function handler(req, res) {
         )
         RETURNING id, key_prefix, name, created_at
       `;
-      
+
       // Log audit event
       await sql`
         INSERT INTO audit_logs (user_id, action, resource_type, resource_id, metadata)
@@ -344,7 +348,7 @@ export default async function handler(req, res) {
           ${JSON.stringify({ old_key_id: keyId })}
         )
       `;
-      
+
       return res.status(200).json({
         key: {
           id: rotated[0].id,
@@ -356,13 +360,13 @@ export default async function handler(req, res) {
         warning: 'Save this key now. The old key has been revoked.'
       });
     }
-    
+
     // Route not found
     return res.status(404).json({
       error: 'Not found',
       message: 'API key endpoint not found'
     });
-    
+
   } catch (error) {
     console.error('API keys error:', error);
     return res.status(500).json({
