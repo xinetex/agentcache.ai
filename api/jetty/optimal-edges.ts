@@ -3,7 +3,7 @@ import { edgeSelector } from '../../src/services/edgeSelector';
 import { v4 as uuidv4 } from 'uuid';
 
 export const config = {
-  runtime: 'edge',
+  runtime: 'nodejs',
 };
 
 interface OptimalEdgesRequest {

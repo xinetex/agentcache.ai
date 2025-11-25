@@ -7,7 +7,7 @@
  * Revenue model: Partners get % of cache revenue, we handle infrastructure
  */
 
-export const config = { runtime: 'edge' };
+export const config = { runtime: 'nodejs' };
 
 const HARDCODED_PARTNERS = {
   'redis-labs': { split: 0.30, name: 'Redis Labs', active: true },

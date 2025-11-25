@@ -1,7 +1,7 @@
 import { UrlWatchdog } from '../../src/lib/robotics/watchdog.js';
 
 export const config = {
-    runtime: 'edge', // Run on Edge for speed
+    runtime: 'nodejs', // Run on Edge for speed
 };
 
 export default async function handler(req: Request) {

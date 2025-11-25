@@ -1,7 +1,7 @@
 import { vectorIndex } from '../../src/lib/vector';
 
 export const config = {
-    runtime: 'edge',
+    runtime: 'nodejs',
 };
 
 interface IngestRequest {

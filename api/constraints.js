@@ -1,6 +1,6 @@
 import { triggerWebhook } from './webhook-trigger.js';
 
-export const config = { runtime: 'edge' };
+export const config = { runtime: 'nodejs' };
 
 
 

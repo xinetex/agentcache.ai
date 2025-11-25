@@ -3,7 +3,7 @@ import { LLMFactory } from '../../src/lib/llm/factory.js';
 
 import { SemanticRouter } from '../../src/lib/router.js';
 
-export const config = { runtime: 'edge' };
+export const config = { runtime: 'nodejs' };
 
 export default async function handler(req: Request, context: any): Promise<Response> {
     if (req.method === 'OPTIONS') return new Response(null, { status: 200 });

@@ -13,7 +13,7 @@
  * 6. Return to agent
  */
 
-export const config = { runtime: 'edge' };
+export const config = { runtime: 'nodejs' };
 
 const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
 const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;

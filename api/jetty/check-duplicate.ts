@@ -1,7 +1,7 @@
 import { jettySpeedDb } from '../../src/services/jettySpeedDb';
 
 export const config = {
-  runtime: 'edge',
+  runtime: 'nodejs',
 };
 
 interface CheckDuplicateRequest {

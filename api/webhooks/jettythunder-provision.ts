@@ -1,7 +1,7 @@
 import { Redis } from '@upstash/redis';
 
 export const config = {
-  runtime: 'edge',
+  runtime: 'nodejs',
 };
 
 const redis = new Redis({

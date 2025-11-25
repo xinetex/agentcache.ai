@@ -1,7 +1,7 @@
 import { router } from '../../src/lib/llm/router';
 
 export const config = {
-    runtime: 'edge',
+    runtime: 'nodejs',
 };
 
 interface RouteRequest {

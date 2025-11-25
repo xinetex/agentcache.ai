@@ -1,7 +1,7 @@
 import { redactPII } from '../src/lib/pii/redactor';
 
 export const config = {
-    runtime: 'edge',
+    runtime: 'nodejs',
 };
 
 interface PiiRequest {

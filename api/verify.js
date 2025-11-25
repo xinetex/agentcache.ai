@@ -1,4 +1,4 @@
-export const config = { runtime: 'edge' };
+export const config = { runtime: 'nodejs' };
 
 function b64url(bytes) {
   let s = btoa(String.fromCharCode(...bytes));

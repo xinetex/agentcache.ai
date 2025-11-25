@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Redis } from '@upstash/redis';
 
 export const config = {
-  runtime: 'edge',
+  runtime: 'nodejs',
 };
 
 const redis = new Redis({
