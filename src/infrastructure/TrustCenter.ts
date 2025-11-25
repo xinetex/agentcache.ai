@@ -28,6 +28,7 @@ export interface TrustStatus {
         agency: string;
         mission: string;
         impact_level: 'IL2' | 'IL4' | 'IL5';
+        data_isolation?: 'SHARED' | 'ISOLATED';
     };
 }
 
@@ -35,11 +36,8 @@ export interface GovConfig {
     agency: string;
     mission: string;
     impactLevel: 'IL2' | 'IL4' | 'IL5';
-    compliance: {
-        fedramp: boolean;
-        hipaa: boolean;
-        neutrality: boolean;
-    };
+    compliance: string[];
+    govDatabaseUrl?: string; // Isolated DB URL for government data
 }
 
 export class TrustCenter {
@@ -98,7 +96,8 @@ export class TrustCenter {
                 government: {
                     agency: this.govConfig.agency,
                     mission: this.govConfig.mission,
-                    impact_level: this.govConfig.impactLevel
+                    impact_level: this.govConfig.impactLevel,
+                    data_isolation: this.govConfig.govDatabaseUrl ? 'ISOLATED' : 'SHARED'
                 }
             } : {})
         };

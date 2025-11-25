@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentCache | Deployment Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #020617;
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        pre {
+            background: #0f172a;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            border: 1px solid #1e293b;
+        }
+
+        code {
+            font-family: monospace;
+            color: #e2e8f0;
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <a href="/"
+                    class="font-bold text-lg tracking-tight text-white hover:text-cyan-400 transition">AgentCache</a>
+                <span class="text-slate-500">/</span>
+                <span class="font-medium text-slate-300">Deployment Guide</span>
+            </div>
+            <div class="flex gap-6">
+                <a href="/docs.html" class="text-sm font-medium text-slate-400 hover:text-white transition">Docs</a>
+                <a href="/gov-portal.html"
+                    class="text-sm font-medium text-slate-400 hover:text-white transition">Government</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="pt-32 pb-20 max-w-4xl mx-auto px-6">
+        <h1 class="text-4xl font-bold mb-8">Deployment Guide</h1>
+
+        <div class="space-y-12">
+
+            <!-- Quick Start -->
+            <section>
+                <h2 class="text-2xl font-bold mb-4 text-white">Quick Start</h2>
+                <p class="text-slate-400 mb-4">Get up and running in minutes with our Python SDK.</p>
+
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-white mb-2">1. Install the SDK</h3>
+                    <pre><code>pip install agentcache</code></pre>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-white mb-2">2. Drop-in Replacement</h3>
+                    <pre><code>import agentcache
+
+# Drop-in replacement for OpenAI
+response = agentcache.completion(
+    model="gpt-4",
+    messages=[{"role": "user", "content": "What is Python?"}],
+    provider="openai"
+)
+
+if response.get('hit'):
+    print(f"💚 Cache hit! Saved ${response.get('billing', {}).get('cost_saved', 0)}")
+    print(response['response'])
+else:
+    print("Cache miss - call your LLM provider normally")</code></pre>
+                </div>
+            </section>
+
+            <!-- Architecture -->
+            <section>
+                <h2 class="text-2xl font-bold mb-4 text-white">Architecture</h2>
+                <p class="text-slate-400 mb-6">AgentCache sits between your application and AI providers, acting as an
+                    intelligent caching layer.</p>
+
+                <div class="glass p-8 rounded-xl mb-8">
+                    <pre class="bg-transparent border-0 p-0"><code>┌─────────────┐
+│  Your App   │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────────┐
+│  AgentCache.ai  │◄──── Check cache first
+└──────┬──────────┘
+       │
+    ┌──┴──┐
+    │     │
+    ▼     ▼
+┌───────┐ ┌──────────┐
+│  Hit  │ │   Miss   │
+│ <50ms │ │ Call LLM │
+│  $0   │ │ + Cache  │
+└───────┘ └──────────┘</code></pre>
+                </div>
+
+                <h3 class="text-lg font-semibold text-white mb-4">Tech Stack</h3>
+                <ul class="list-disc list-inside text-slate-400 space-y-2">
+                    <li><strong>Backend</strong>: Node.js + Hono (edge-compatible)</li>
+                    <li><strong>Cache</strong>: Upstash Redis (global low-latency)</li>
+                    <li><strong>Deploy</strong>: Vercel Edge Functions or Docker (Self-Hosted)</li>
+                </ul>
+            </section>
+
+            <!-- Self-Hosted / Edge -->
+            <section>
+                <h2 class="text-2xl font-bold mb-4 text-white">AgentCache Edge (Self-Hosted)</h2>
+                <p class="text-slate-400 mb-4">For air-gapped or high-compliance environments, deploy AgentCache Edge
+                    using Docker.</p>
+
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-white mb-2">Docker Compose</h3>
+                    <pre><code>version: '3'
+services:
+  agentcache:
+    image: xinetex/agentcache-edge:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - AGENTCACHE_API_KEY=your_secret_key
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"</code></pre>
+                </div>
+
+                <p class="text-slate-400">
+                    Run <code>docker-compose up -d</code> to start the service. Your local instance will be available at
+                    <code>http://localhost:3000</code>.
+                </p>
+            </section>
+
+        </div>
+    </div>
+
+</body>
+
+</html>
