@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "mcp:build": "tsc src/mcp/server.ts --outDir dist/mcp --module NodeNext --moduleResolution NodeNext --target ES2022",
     "mcp:dev": "tsx src/mcp/server.ts",
-    "mcp:start": "node dist/mcp/server.js",
-    "build": "npm run mcp:build"
+    "mcp:start": "node dist/mcp/server.js"
   },
   "dependencies": {
     "@cfworker/json-schema": "^4.1.1",
@@ -31,6 +33,13 @@
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
-    "@types/uuid": "^10.0.0"
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@types/uuid": "^10.0.0",
+    "@vitejs/plugin-react": "^5.1.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "reactflow": "^11.11.4",
+    "vite": "^7.2.4"
   }
 }

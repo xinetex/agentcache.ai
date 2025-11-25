@@ -1,0 +1,1375 @@
+<html><head>
+    <title>Sector-Aware Cache Orchestration Studio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- External libs to be wired up in JS later -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- React/ReactDOM/React Flow/Monaco would be wired in a real build toolchain -->
+  <script src="https://cdn.tailwindcss.com"></script>
+<link id="all-fonts-link-font-geist" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-geist">.font-geist { font-family: 'Geist', sans-serif !important; }</style><link id="all-fonts-link-font-roboto" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-roboto">.font-roboto { font-family: 'Roboto', sans-serif !important; }</style><link id="all-fonts-link-font-montserrat" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-montserrat">.font-montserrat { font-family: 'Montserrat', sans-serif !important; }</style><link id="all-fonts-link-font-poppins" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-poppins">.font-poppins { font-family: 'Poppins', sans-serif !important; }</style><link id="all-fonts-link-font-playfair" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;900&amp;display=swap"><style id="all-fonts-style-font-playfair">.font-playfair { font-family: 'Playfair Display', serif !important; }</style><link id="all-fonts-link-font-instrument-serif" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:wght@400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-instrument-serif">.font-instrument-serif { font-family: 'Instrument Serif', serif !important; }</style><link id="all-fonts-link-font-merriweather" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&amp;display=swap"><style id="all-fonts-style-font-merriweather">.font-merriweather { font-family: 'Merriweather', serif !important; }</style><link id="all-fonts-link-font-bricolage" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-bricolage">.font-bricolage { font-family: 'Bricolage Grotesque', sans-serif !important; }</style><link id="all-fonts-link-font-jakarta" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap"><style id="all-fonts-style-font-jakarta">.font-jakarta { font-family: 'Plus Jakarta Sans', sans-serif !important; }</style><link id="all-fonts-link-font-manrope" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap"><style id="all-fonts-style-font-manrope">.font-manrope { font-family: 'Manrope', sans-serif !important; }</style><link id="all-fonts-link-font-space-grotesk" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-space-grotesk">.font-space-grotesk { font-family: 'Space Grotesk', sans-serif !important; }</style><link id="all-fonts-link-font-work-sans" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;800&amp;display=swap"><style id="all-fonts-style-font-work-sans">.font-work-sans { font-family: 'Work Sans', sans-serif !important; }</style><link id="all-fonts-link-font-pt-serif" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&amp;display=swap"><style id="all-fonts-style-font-pt-serif">.font-pt-serif { font-family: 'PT Serif', serif !important; }</style><link id="all-fonts-link-font-geist-mono" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-geist-mono">.font-geist-mono { font-family: 'Geist Mono', monospace !important; }</style><link id="all-fonts-link-font-space-mono" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;display=swap"><style id="all-fonts-style-font-space-mono">.font-space-mono { font-family: 'Space Mono', monospace !important; }</style><link id="all-fonts-link-font-quicksand" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-quicksand">.font-quicksand { font-family: 'Quicksand', sans-serif !important; }</style><link id="all-fonts-link-font-nunito" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&amp;display=swap"><style id="all-fonts-style-font-nunito">.font-nunito { font-family: 'Nunito', sans-serif !important; }</style></head>
+  <body class="min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-sky-500/40 selection:text-slate-50">
+    <div class="flex min-h-screen flex-col">
+      <!-- Top Shell / Sector Switcher -->
+      <header class="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/80 backdrop-blur">
+        <div class="flex items-center gap-4 px-6 py-3">
+          <div class="flex items-center justify-center rounded-md bg-sky-500/10 px-2 py-1">
+            <span class="text-sm font-semibold tracking-tight text-sky-400">AC</span>
+          </div>
+          <div class="flex flex-col">
+            <div class="flex items-center gap-2">
+              <span class="text-xl font-semibold text-slate-50 tracking-tight" style="">AgentCache Studio</span>
+              <span class="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-300">
+                Live
+              </span>
+            </div>
+            <p class="text-base text-slate-400">
+              Orchestrate sector-aware caching pipelines with real-time savings.
+            </p>
+          </div>
+        </div>
+
+        <!-- Sector Switcher -->
+        <div class="flex items-center gap-4 px-6">
+          <div class="hidden items-center gap-2 rounded-full border border-slate-800/90 bg-slate-900/80 px-3 py-1.5 lg:flex">
+            <span class="text-xs font-medium uppercase tracking-wide text-slate-500">Current sector</span>
+            <button id="sectorSwitcherButton" class="flex items-center gap-2 rounded-full bg-slate-800/80 px-3 py-1.5 text-sm font-semibold tracking-tight text-slate-100 shadow-sm shadow-slate-900/60 hover:bg-slate-700/80">
+              <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-sky-500/15 text-xs font-semibold text-sky-400">
+                🏥
+              </span>
+              <span>Healthcare</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </button>
+          </div>
+
+          <div class="hidden items-center gap-2 rounded-full border border-slate-800/90 bg-slate-900/80 px-3 py-1.5 md:flex">
+            <div class="flex items-center gap-1 rounded-full bg-slate-800/80 px-2 py-0.5">
+              <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+              <span class="text-xs font-medium text-emerald-300">HIPAA</span>
+            </div>
+            <div class="flex items-center gap-1 rounded-full bg-slate-800/80 px-2 py-0.5">
+              <span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
+              <span class="text-xs font-medium text-amber-300">SOC 2</span>
+            </div>
+            <div class="flex items-center gap-1 rounded-full bg-slate-800/80 px-2 py-0.5">
+              <span class="h-1.5 w-1.5 rounded-full bg-sky-400"></span>
+              <span class="text-xs font-medium text-sky-300">PCI-DSS-ready</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button class="hidden items-center gap-2 rounded-full border border-slate-800/80 bg-slate-900/80 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800/80 sm:flex">
+              <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+              <span>Status: Healthy</span>
+            </button>
+
+            <button id="modeToggle" class="flex h-8 w-8 items-center justify-center rounded-full border border-slate-700/80 bg-slate-900/80 text-slate-300 hover:bg-slate-800/80">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main class="flex-1">
+        <div class="grid gap-4 border-b border-slate-900/90 bg-slate-950/80 px-4 py-4 lg:grid-cols-[1.4fr_1.2fr_1.2fr] lg:px-6">
+          <!-- 1. Sector Selection Landing -->
+          <section class="flex flex-col gap-3 rounded-2xl border border-slate-800/80 bg-gradient-to-br from-slate-950/90 via-slate-950 to-slate-950/90 p-4 lg:p-5">
+            <div class="flex items-center justify-between gap-2">
+              <div class="">
+                <h2 class="text-2xl font-semibold tracking-tight text-slate-50">Choose your sector</h2>
+                <p class="text-base text-slate-400">
+                  Tailor cache orchestration, compliance, and savings to your industry.
+                </p>
+              </div>
+              <div class="hidden items-center gap-2 sm:flex">
+                <span class="rounded-full bg-sky-500/10 px-2 py-0.5 text-xs font-medium text-sky-300">
+                  Avg. 68% API savings
+                </span>
+              </div>
+            </div>
+
+            <div class="grid gap-2 sm:grid-cols-2">
+              <!-- Sector card -->
+              <button class="group flex flex-col gap-2 rounded-xl border border-sky-500/60 bg-sky-500/10 p-3 text-left shadow-sm shadow-sky-900/50 ring-1 ring-sky-500/30 transition hover:border-sky-400/80 hover:bg-sky-500/15">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-sky-500/20 text-sm font-semibold text-sky-300">
+                      🏥
+                    </span>
+                    <span class="text-sm font-semibold tracking-tight text-slate-50">Healthcare</span>
+                  </div>
+                  <span class="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[0.7rem] font-medium text-emerald-300">
+                    HIPAA-ready
+                  </span>
+                </div>
+                <p class="text-sm text-slate-300">
+                  PHI-safe caching for clinical decision support, triage, and patient portals.
+                </p>
+                <div class="flex items-center justify-between text-xs text-slate-400">
+                  <span>Avg. savings</span>
+                  <span class="font-semibold text-emerald-300">72% API costs</span>
+                </div>
+              </button>
+
+              <button class="group flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900/40 p-3 text-left shadow-sm hover:border-sky-500/60 hover:bg-slate-900/70">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-slate-700/50 text-sm font-semibold text-slate-100">
+                      🏦
+                    </span>
+                    <span class="text-sm font-semibold tracking-tight text-slate-50">Finance</span>
+                  </div>
+                  <span class="rounded-full bg-amber-500/10 px-2 py-0.5 text-[0.7rem] font-medium text-amber-300">
+                    PCI-DSS • FINRA
+                  </span>
+                </div>
+                <p class="text-sm text-slate-300">
+                  Low-latency caching for trading, risk models, and portfolio analytics.
+                </p>
+                <div class="flex items-center justify-between text-xs text-slate-400">
+                  <span>Avg. savings</span>
+                  <span class="font-semibold text-emerald-300">61% infra costs</span>
+                </div>
+              </button>
+
+              <button class="group flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900/40 p-3 text-left shadow-sm hover:border-sky-500/60 hover:bg-slate-900/70">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-slate-700/50 text-sm font-semibold text-slate-100">
+                      ⚖️
+                    </span>
+                    <span class="text-sm font-semibold tracking-tight text-slate-50">Legal</span>
+                  </div>
+                  <span class="rounded-full bg-fuchsia-500/15 px-2 py-0.5 text-[0.7rem] font-medium text-fuchsia-200">
+                    Privilege-safe
+                  </span>
+                </div>
+                <p class="text-sm text-slate-300">
+                  Privileged document pipelines for contract review, discovery, and RAG.
+                </p>
+                <div class="flex items-center justify-between text-xs text-slate-400">
+                  <span>Avg. savings</span>
+                  <span class="font-semibold text-emerald-300">54% review time</span>
+                </div>
+              </button>
+
+              <button class="group flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900/40 p-3 text-left shadow-sm hover:border-sky-500/60 hover:bg-slate-900/70">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-slate-700/50 text-sm font-semibold text-slate-100">
+                      🏭
+                    </span>
+                    <span class="text-sm font-semibold tracking-tight text-slate-50">Manufacturing</span>
+                  </div>
+                  <span class="rounded-full bg-sky-500/10 px-2 py-0.5 text-[0.7rem] font-medium text-sky-200">
+                    OT-safe
+                  </span>
+                </div>
+                <p class="text-sm text-slate-300">
+                  Telemetry-aware pipelines for predictive maintenance and ops copilots.
+                </p>
+                <div class="flex items-center justify-between text-xs text-slate-400">
+                  <span>Avg. savings</span>
+                  <span class="font-semibold text-emerald-300">58% query load</span>
+                </div>
+              </button>
+            </div>
+
+            <div class="mt-1 flex flex-wrap items-center justify-between gap-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <div class="flex items-center gap-1 text-xs text-slate-400">
+                  <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                  <span>HIPAA</span>
+                </div>
+                <div class="flex items-center gap-1 text-xs text-slate-400">
+                  <span class="h-1.5 w-1.5 rounded-full bg-sky-400"></span>
+                  <span>PCI-DSS</span>
+                </div>
+                <div class="flex items-center gap-1 text-xs text-slate-400">
+                  <span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
+                  <span>GDPR</span>
+                </div>
+              </div>
+              <button class="text-xs font-medium text-sky-300 hover:text-sky-200">
+                View all sectors →
+              </button>
+            </div>
+          </section>
+
+          <!-- 2. Auto-Detection Demo -->
+          <section class="flex flex-col gap-3 rounded-2xl border border-slate-800/80 bg-slate-950/90 p-4 lg:p-5">
+            <div class="flex items-center justify-between gap-2">
+              <div class="">
+                <h2 class="text-lg font-semibold tracking-tight text-slate-50">Auto-detect your sector</h2>
+                <p class="text-base text-slate-400">
+                  Type any query and watch semantic detection, signals, and compliance hints.
+                </p>
+              </div>
+              <span class="hidden rounded-full bg-slate-900/80 px-2 py-0.5 text-xs font-medium text-slate-400 md:inline">
+                Real-time inference
+              </span>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <div class="relative">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="11" cy="11" r="6" stroke-linecap="round" stroke-linejoin="round"></circle>
+                    <path d="m16 16 4 4" stroke-linecap="round" stroke-linejoin="round"></path>
+                  </svg>
+                </div>
+                <input id="detectionInput" type="text" spellcheck="false" placeholder="Try &quot;patient diagnosis&quot; or &quot;stock portfolio&quot;..." class="w-full rounded-xl border border-slate-800 bg-slate-900/80 py-2 pl-9 pr-24 text-base text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500/70">
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <span id="detectedSectorPill" class="flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-300">
+                    <span class="text-xs">🏥</span>
+                    <span>Healthcare</span>
+                  </span>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between text-xs text-slate-400">
+                <span class="">Detected with semantic routing, namespace, and env context.</span>
+                <span id="confidenceLabel" class="font-semibold text-emerald-300">Confidence 85%</span>
+              </div>
+            </div>
+
+            <div class="grid gap-2 sm:grid-cols-2">
+              <div class="flex flex-col gap-1 rounded-xl border border-slate-800 bg-slate-950/80 p-2.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-semibold tracking-tight text-slate-200">Detection signals</span>
+                  <span class="text-[0.65rem] text-slate-500">Live</span>
+                </div>
+                <div class="mt-1 space-y-1">
+                  <div class="flex items-center justify-between text-xs text-slate-300">
+                    <span>Namespace match</span>
+                    <span class="rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[0.65rem] font-medium text-emerald-300">
+                      clinical/
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between text-xs text-slate-300">
+                    <span>Keywords</span>
+                    <span class="rounded-full bg-sky-500/10 px-1.5 py-0.5 text-[0.65rem] font-medium text-sky-300">
+                      patient, diagnosis
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between text-xs text-slate-300">
+                    <span>Env vars</span>
+                    <span class="rounded-full bg-fuchsia-500/10 px-1.5 py-0.5 text-[0.65rem] font-medium text-fuchsia-200">
+                      SECTOR=health
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-1 rounded-xl border border-slate-800 bg-slate-950/80 p-2.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-semibold tracking-tight text-slate-200">Compliance warnings</span>
+                  <span class="text-[0.65rem] text-slate-500">Contextual</span>
+                </div>
+                <div class="mt-1 space-y-1">
+                  <div class="flex items-start gap-1.5">
+                    <span class="mt-0.5 text-[0.7rem]">⚠️</span>
+                    <p class="text-xs text-amber-200">
+                      HIPAA requires audit logging for PHI queries. Add a <span class="font-semibold">HIPAA Audit</span> node.
+                    </p>
+                  </div>
+                  <div class="flex items-start gap-1.5">
+                    <span class="mt-0.5 text-[0.7rem]">🛡️</span>
+                    <p class="text-xs text-slate-300">
+                      Enable <span class="font-semibold">PHI Filter</span> before sending payloads to LLM providers.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div class="flex flex-wrap items-center gap-2">
+                <button id="exampleHealthcare" class="rounded-full bg-slate-900/90 px-2 py-0.5 text-xs font-medium text-slate-200 hover:bg-slate-800/90">
+                  "patient diagnosis"
+                </button>
+                <button id="exampleFinance" class="rounded-full bg-slate-900/90 px-2 py-0.5 text-xs font-medium text-slate-200 hover:bg-slate-800/90">
+                  "stock portfolio"
+                </button>
+              </div>
+              <span class="text-slate-500">Routing latency &lt; 8ms • No extra tokens</span>
+            </div>
+          </section>
+
+          <!-- 4. Pre-Built Templates -->
+          <section class="flex flex-col gap-3 rounded-2xl border border-slate-800/80 bg-slate-950/90 p-4 lg:p-5">
+            <div class="flex items-center justify-between gap-2">
+              <div>
+                <h2 class="text-lg font-semibold tracking-tight text-slate-50">Start from a template</h2>
+                <p class="text-base text-slate-400">
+                  Load a sector-optimized pipeline and customize from there.
+                </p>
+              </div>
+              <button class="hidden items-center gap-1 rounded-full border border-slate-700/80 bg-slate-900/80 px-2 py-0.5 text-[0.7rem] font-medium text-slate-200 hover:bg-slate-800/80 md:flex">
+                <span>Build in 60s</span>
+              </button>
+            </div>
+
+            <div class="grid gap-2 sm:grid-cols-2">
+              <!-- Healthcare template -->
+              <button class="group flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-950/80 p-3 text-left hover:border-sky-500/70 hover:bg-slate-900/90">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-sky-500/20 text-sm font-semibold text-sky-300">
+                      🏥
+                    </span>
+                    <div>
+                      <p class="text-sm font-semibold tracking-tight text-slate-50">
+                        Clinical Decision Support
+                      </p>
+                      <p class="text-xs text-slate-400">6 nodes • PHI-safe triage</p>
+                    </div>
+                  </div>
+                  <span class="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[0.7rem] font-medium text-emerald-300">
+                    Healthcare
+                  </span>
+                </div>
+                <!-- Mini pipeline -->
+                <div class="mt-1 flex items-center gap-1.5">
+                  <div class="h-7 flex-1 rounded-lg bg-slate-950/80 p-1">
+                    <div class="flex h-full items-center gap-1">
+                      <div class="h-full flex-1 rounded-md bg-slate-800/90"></div>
+                      <div class="h-full flex-1 rounded-md bg-sky-500/40"></div>
+                      <div class="h-full flex-1 rounded-md bg-emerald-500/40"></div>
+                      <div class="h-full flex-1 rounded-md bg-fuchsia-500/40"></div>
+                      <div class="h-full flex-1 rounded-md bg-slate-700/90"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between text-xs text-slate-400">
+                  <span class="">LLM tokens ↓ 63%</span>
+                  <span class="font-semibold text-emerald-300">Use template →</span>
+                </div>
+              </button>
+
+              <!-- Finance template -->
+              <button class="group flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-950/80 p-3 text-left hover:border-sky-500/70 hover:bg-slate-900/90">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-sky-500/10 text-sm font-semibold text-sky-100">
+                      🏦
+                    </span>
+                    <div>
+                      <p class="text-sm font-semibold tracking-tight text-slate-50">
+                        Trading Assistant
+                      </p>
+                      <p class="text-xs text-slate-400">5 nodes • Real-time quotes</p>
+                    </div>
+                  </div>
+                  <span class="rounded-full bg-amber-500/10 px-2 py-0.5 text-[0.7rem] font-medium text-amber-300">
+                    Finance
+                  </span>
+                </div>
+                <div class="mt-1 flex items-center gap-1.5">
+                  <div class="h-7 flex-1 rounded-lg bg-slate-950/80 p-1">
+                    <div class="flex h-full items-center gap-1">
+                      <div class="h-full flex-1 rounded-md bg-slate-800/90"></div>
+                      <div class="h-full flex-1 rounded-md bg-emerald-500/40"></div>
+                      <div class="h-full flex-1 rounded-md bg-sky-500/40"></div>
+                      <div class="h-full flex-1 rounded-md bg-red-500/40"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between text-xs text-slate-400">
+                  <span>Latency p95 &lt; 120ms</span>
+                  <span class="font-semibold text-emerald-300">Use template →</span>
+                </div>
+              </button>
+
+              <!-- Legal template -->
+              <button class="group flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-950/80 p-3 text-left hover:border-sky-500/70 hover:bg-slate-900/90">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-fuchsia-500/20 text-sm font-semibold text-fuchsia-100">
+                      ⚖️
+                    </span>
+                    <div class="">
+                      <p class="text-sm font-semibold tracking-tight text-slate-50">
+                        Contract Review Pipeline
+                      </p>
+                      <p class="text-xs text-slate-400">6 nodes • Privilege guard</p>
+                    </div>
+                  </div>
+                  <span class="rounded-full bg-fuchsia-500/15 px-2 py-0.5 text-[0.7rem] font-medium text-fuchsia-200">
+                    Legal
+                  </span>
+                </div>
+                <div class="mt-1 flex items-center gap-1.5">
+                  <div class="h-7 flex-1 rounded-lg bg-slate-950/80 p-1">
+                    <div class="flex h-full items-center gap-1">
+                      <div class="h-full flex-1 rounded-md bg-slate-800/90"></div>
+                      <div class="h-full flex-1 rounded-md bg-fuchsia-500/40"></div>
+                      <div class="h-full flex-1 rounded-md bg-emerald-500/40"></div>
+                      <div class="h-full flex-1 rounded-md bg-sky-500/40"></div>
+                      <div class="h-full flex-1 rounded-md bg-slate-700/90"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between text-xs text-slate-400">
+                  <span>Manual review ↓ 49%</span>
+                  <span class="font-semibold text-emerald-300">Use template →</span>
+                </div>
+              </button>
+
+              <!-- Generic -->
+              <button class="group flex flex-col gap-2 rounded-xl border border-dashed border-slate-700 bg-slate-950/40 p-3 text-left hover:border-sky-500/70 hover:bg-slate-900/80">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-slate-800/80 text-sm font-semibold text-slate-100">
+                      +
+                    </span>
+                    <div>
+                      <p class="text-sm font-semibold tracking-tight text-slate-50">
+                        Blank pipeline
+                      </p>
+                      <p class="text-xs text-slate-400">Start from scratch</p>
+                    </div>
+                  </div>
+                  <span class="rounded-full bg-slate-900/80 px-2 py-0.5 text-[0.7rem] font-medium text-slate-400">
+                    All sectors
+                  </span>
+                </div>
+                <p class="mt-1 text-xs text-slate-400">
+                  Drag sources, cache layers, validators, and outputs onto the canvas.
+                </p>
+              </button>
+            </div>
+          </section>
+        </div>
+
+        <!-- Core workspace: Palette • Canvas • Node Config -->
+        <section class="flex min-h-[40rem] flex-col gap-3 bg-gradient-to-b from-slate-950 via-slate-950 to-slate-950/95 px-4 py-4 lg:px-6 lg:py-5">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-2xl font-semibold tracking-tight text-slate-50">Pipeline builder</h2>
+              <p class="text-base text-slate-400">
+                Drag sector-specific nodes, simulate flow, and export to your stack.
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="flex items-center gap-1 rounded-full bg-slate-900/90 px-2 py-0.5 text-xs text-slate-400">
+                <span class="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                <span>Pipeline valid</span>
+              </div>
+              <button id="simulateButton" class="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-3 py-1.5 text-sm font-semibold tracking-tight text-emerald-950 shadow-sm shadow-emerald-900/60 hover:bg-emerald-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <polygon points="5 3 19 12 5 21 5 3" stroke-linecap="round" stroke-linejoin="round"></polygon>
+                </svg>
+                <span>Simulate pipeline</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid flex-1 gap-3 lg:grid-cols-[18rem_minmax(0,1.4fr)_20rem]">
+            <!-- 3. Left: Node Palette -->
+            <aside class="flex min-h-[20rem] flex-col gap-3 rounded-2xl border border-slate-800/90 bg-slate-950/90 p-3">
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-semibold tracking-tight text-slate-100">Node palette</span>
+                <span class="text-[0.7rem] text-slate-500">Drag onto canvas</span>
+              </div>
+
+              <div class="space-y-2 overflow-y-auto pr-0.5">
+                <!-- Sources -->
+                <div class="space-y-1">
+                  <div class="flex items-center justify-between text-xs text-slate-400">
+                    <span>Sources</span>
+                    <span class="rounded-full bg-slate-900/80 px-1.5 py-0.5 text-[0.65rem] text-slate-500">
+                      Sector-aware
+                    </span>
+                  </div>
+                  <div class="space-y-1.5">
+                    <button class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/80 p-2 text-left text-xs hover:border-sky-500/70 hover:bg-slate-900/80">
+                      <div class="flex items-center gap-2">
+                        <div class="flex h-6 w-6 items-center justify-center rounded-md bg-slate-800/80 text-[0.7rem] text-slate-100">
+                          DB
+                        </div>
+                        <div>
+                          <p class="font-semibold tracking-tight text-slate-100">Database</p>
+                          <p class="text-[0.7rem] text-slate-400">Postgres, Snowflake, etc.</p>
+                        </div>
+                      </div>
+                    </button>
+                    <button class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/80 p-2 text-left text-xs hover:border-sky-500/70 hover:bg-slate-900/80">
+                      <div class="flex items-center gap-2">
+                        <div class="flex h-6 w-6 items-center justify-center rounded-md bg-slate-800/80 text-[0.7rem] text-slate-100">
+                          API
+                        </div>
+                        <div>
+                          <p class="font-semibold tracking-tight text-slate-100">HTTP API</p>
+                          <p class="text-[0.7rem] text-slate-400">REST, gRPC, webhooks</p>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Cache / Validation / LLM / Output grouped -->
+                <div class="space-y-1 pt-1">
+                  <div class="flex items-center justify-between text-xs text-slate-400">
+                    <span>Cache layers</span>
+                    <span class="text-[0.65rem] text-emerald-300">Hit-rate ↑</span>
+                  </div>
+                  <div class="space-y-1.5">
+                    <button class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/80 p-2 text-left text-xs hover:border-sky-500/70 hover:bg-slate-900/80">
+                      <div class="flex items-center gap-2">
+                        <div class="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-500/25 text-[0.7rem] font-semibold text-emerald-200">
+                          L1
+                        </div>
+                        <div>
+                          <p class="font-semibold tracking-tight text-slate-100">In-memory cache</p>
+                          <p class="text-[0.7rem] text-slate-400">Redis, Memcached</p>
+                        </div>
+                      </div>
+                      <span class="text-[0.65rem] text-emerald-300">+97%</span>
+                    </button>
+                    <button class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/80 p-2 text-left text-xs hover:border-sky-500/70 hover:bg-slate-900/80">
+                      <div class="flex items-center gap-2">
+                        <div class="flex h-6 w-6 items-center justify-center rounded-md bg-sky-500/20 text-[0.7rem] font-semibold text-sky-200">
+                          L2
+                        </div>
+                        <div>
+                          <p class="font-semibold tracking-tight text-slate-100">Object cache</p>
+                          <p class="text-[0.7rem] text-slate-400">S3, GCS, blob</p>
+                        </div>
+                      </div>
+                      <span class="text-[0.65rem] text-sky-300">$↓</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Sector specific: Healthcare -->
+                <div class="space-y-1 pt-2">
+                  <div class="flex items-center justify-between text-xs text-slate-400">
+                    <span>Healthcare nodes</span>
+                    <span class="rounded-full bg-sky-500/10 px-1.5 py-0.5 text-[0.65rem] text-sky-300">
+                      Auto-filtered
+                    </span>
+                  </div>
+                  <div class="space-y-1.5">
+                    <button class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/90 p-2 text-left text-xs hover:border-sky-500/70 hover:bg-slate-900/90">
+                      <div class="flex items-center gap-2">
+                        <div class="flex h-6 w-6 items-center justify-center rounded-md bg-rose-500/30 text-[0.7rem] font-semibold text-rose-100">
+                          PHI
+                        </div>
+                        <div>
+                          <p class="font-semibold tracking-tight text-slate-100">PHI Filter</p>
+                          <p class="text-[0.7rem] text-slate-400">Block / redact / detect PHI</p>
+                        </div>
+                      </div>
+                    </button>
+                    <button class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/90 p-2 text-left text-xs hover:border-sky-500/70 hover:bg-slate-900/90">
+                      <div class="flex items-center gap-2">
+                        <div class="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-500/30 text-[0.7rem] font-semibold text-emerald-100">
+                          MD
+                        </div>
+                        <div>
+                          <p class="font-semibold tracking-tight text-slate-100">Clinical Validator</p>
+                          <p class="text-[0.7rem] text-slate-400">Guardrails for medical outputs</p>
+                        </div>
+                      </div>
+                    </button>
+                    <button class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/90 p-2 text-left text-xs hover:border-sky-500/70 hover:bg-slate-900/90">
+                      <div class="flex items-center gap-2">
+                        <div class="flex h-6 w-6 items-center justify-center rounded-md bg-sky-500/30 text-[0.7rem] font-semibold text-sky-100">
+                          EHR
+                        </div>
+                        <div>
+                          <p class="font-semibold tracking-tight text-slate-100">EHR Connector</p>
+                          <p class="text-[0.7rem] text-slate-400">Epic, Cerner, FHIR, HL7</p>
+                        </div>
+                      </div>
+                    </button>
+                    <button class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/90 p-2 text-left text-xs hover:border-sky-500/70 hover:bg-slate-900/90">
+                      <div class="flex items-center gap-2">
+                        <div class="flex h-6 w-6 items-center justify-center rounded-md bg-amber-500/30 text-[0.7rem] font-semibold text-amber-100">
+                          H
+                        </div>
+                        <div>
+                          <p class="font-semibold tracking-tight text-slate-100">HIPAA Audit</p>
+                          <p class="text-[0.7rem] text-slate-400">Immutable request logs</p>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Finance -->
+                <div class="space-y-1 pt-2">
+                  <div class="flex items-center justify-between text-xs text-slate-400">
+                    <span>Finance nodes</span>
+                    <span class="text-[0.65rem] text-amber-300">Enabled when Finance</span>
+                  </div>
+                  <div class="space-y-1.5">
+                    <button class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/80 p-2 text-left text-xs opacity-60 hover:border-sky-500/70 hover:bg-slate-900/80">
+                      <div class="flex items-center gap-2">
+                        <div class="flex h-6 w-6 items-center justify-center rounded-md bg-amber-500/20 text-[0.7rem] font-semibold text-amber-100">
+                          PCI
+                        </div>
+                        <div>
+                          <p class="font-semibold tracking-tight text-slate-100">PCI Filter</p>
+                          <p class="text-[0.7rem] text-slate-400">Mask cards &amp; PII</p>
+                        </div>
+                      </div>
+                    </button>
+                    <button class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/80 p-2 text-left text-xs opacity-60 hover:border-sky-500/70 hover:bg-slate-900/80">
+                      <div class="flex items-center gap-2">
+                        <div class="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-500/25 text-[0.7rem] font-semibold text-emerald-100">
+                          KY
+                        </div>
+                        <div>
+                          <p class="font-semibold tracking-tight text-slate-100">KYC/AML Validator</p>
+                          <p class="text-[0.7rem] text-slate-400">Screening integrations</p>
+                        </div>
+                      </div>
+                    </button>
+                    <button class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/80 p-2 text-left text-xs opacity-60 hover:border-sky-500/70 hover:bg-slate-900/80">
+                      <div class="flex items-center gap-2">
+                        <div class="flex h-6 w-6 items-center justify-center rounded-md bg-sky-500/25 text-[0.7rem] font-semibold text-sky-100">
+                          M
+                        </div>
+                        <div>
+                          <p class="font-semibold tracking-tight text-slate-100">Market Data</p>
+                          <p class="text-[0.7rem] text-slate-400">Bloomberg, Polygon, etc.</p>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </aside>
+
+            <!-- 3. Center Canvas + 1. Animated Node Canvas / Minimap -->
+            <div class="flex min-h-[20rem] flex-col gap-2 rounded-2xl border border-slate-800/90 bg-slate-950/80">
+              <!-- Canvas header / metrics -->
+              <div class="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/90 px-3 py-2.5">
+                <div class="flex items-center gap-2">
+                  <span class="rounded-full bg-slate-900/90 px-2 py-0.5 text-[0.7rem] font-medium text-slate-200">
+                    Clinical Decision Support
+                  </span>
+                  <span class="text-[0.7rem] text-slate-500">6 nodes • 3 cache layers • HIPAA</span>
+                </div>
+                <div class="flex items-center gap-3 text-xs">
+                  <div class="flex items-center gap-1 text-emerald-300">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                    <span>Hit rate</span>
+                    <span id="metricHitRate" class="font-semibold">83%</span>
+                  </div>
+                  <div class="flex items-center gap-1 text-sky-300">
+                    <span>p95</span>
+                    <span id="metricLatency" class="font-semibold">132ms</span>
+                  </div>
+                  <div class="flex items-center gap-1 text-emerald-300">
+                    <span>Saved</span>
+                    <span id="metricSavings" class="font-semibold">$1.84 / req</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="relative flex-1 overflow-hidden rounded-b-2xl">
+                <!-- Infinite canvas placeholder (D3 / React Flow mount) -->
+                <div id="nodeCanvas" class="absolute inset-0 cursor-grab bg-[radial-gradient(circle_at_1px_1px,_#0f172a_1px,_transparent_0)] bg-[length:1rem_1rem]">
+                  <!-- Example nodes & connections (static but visually representing Bezier paths) -->
+                  <svg class="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 1200 600" preserveAspectRatio="none">
+                    <!-- Data flow lines -->
+                    <defs>
+                      
+                      
+                    </defs>
+
+                    <!-- Source -> PHI Filter -->
+                    <path d="M 120 220 C 260 220 220 180 360 180" stroke="url(#flowData)" stroke-width="2" fill="none" stroke-linecap="round"></path>
+
+                    <!-- PHI Filter -> Clinical Validator -->
+                    <path d="M 360 180 C 540 180 520 150 720 150" stroke="url(#flowData)" stroke-width="2" fill="none" stroke-linecap="round"></path>
+
+                    <!-- Clinical Validator -> Cache -->
+                    <path d="M 720 150 C 880 150 850 200 1000 200" stroke="url(#flowData)" stroke-width="2" fill="none" stroke-linecap="round"></path>
+
+                    <!-- Side branch PHI Filter -> HIPAA Audit -->
+                    <path d="M 430 205 C 520 260 520 260 620 290" stroke="url(#flowError)" stroke-width="2" fill="none" stroke-dasharray="4 4" stroke-linecap="round"></path>
+                  </svg>
+
+                  <!-- Canvas nodes (draggable in actual implementation) -->
+                  <div class="absolute left-[4%] top-[34%] w-[13rem] rounded-xl border border-slate-700/80 bg-slate-950/90 p-2.5 shadow-sm shadow-slate-950/60">
+                    <div class="flex items-center justify-between gap-2">
+                      <div class="flex items-center gap-2">
+                        <div class="flex h-7 w-7 items-center justify-center rounded-md bg-slate-800/90 text-[0.7rem] font-semibold text-slate-100">
+                          SRC
+                        </div>
+                        <div>
+                          <p class="text-sm font-semibold tracking-tight text-slate-100">Clinical API</p>
+                          <p class="text-[0.7rem] text-slate-400">Upstream source</p>
+                        </div>
+                      </div>
+                      <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+                    </div>
+                    <div class="mt-1 flex items-center justify-between text-[0.7rem] text-slate-400">
+                      <span>Req/s</span>
+                      <span class="font-semibold text-slate-200">84</span>
+                    </div>
+                  </div>
+
+                  <div class="absolute left-[30%] top-[25%] w-[14rem] rounded-xl border border-slate-700/80 bg-slate-950/90 p-2.5 shadow-sm shadow-slate-950/60">
+                    <div class="flex items-center justify-between gap-2">
+                      <div class="flex items-center gap-2">
+                        <div class="flex h-7 w-7 items-center justify-center rounded-md bg-rose-500/30 text-[0.7rem] font-semibold text-rose-100">
+                          PHI
+                        </div>
+                        <div>
+                          <p class="text-sm font-semibold tracking-tight text-slate-100">PHI Filter</p>
+                          <p class="text-[0.7rem] text-slate-400">Redact</p>
+                        </div>
+                      </div>
+                      <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+                    </div>
+                    <div class="mt-1 flex items-center justify-between text-[0.7rem] text-slate-400">
+                      <span>Match</span>
+                      <span class="font-semibold text-emerald-300">92%</span>
+                    </div>
+                    <div class="mt-0.5 flex items-center justify-between text-[0.7rem] text-slate-400">
+                      <span>Latency</span>
+                      <span class="font-semibold text-sky-300">11ms</span>
+                    </div>
+                  </div>
+
+                  <div class="absolute left-[53%] top-[18%] w-[14rem] rounded-xl border border-slate-700/80 bg-slate-950/90 p-2.5 shadow-sm shadow-slate-950/60">
+                    <div class="flex items-center justify-between gap-2">
+                      <div class="flex items-center gap-2">
+                        <div class="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-500/30 text-[0.7rem] font-semibold text-emerald-100">
+                          MD
+                        </div>
+                        <div>
+                          <p class="text-sm font-semibold tracking-tight text-slate-100">Clinical Validator</p>
+                          <p class="text-[0.7rem] text-slate-400">Hallucination guard</p>
+                        </div>
+                      </div>
+                      <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+                    </div>
+                    <div class="mt-1 flex items-center justify-between text-[0.7rem] text-slate-400">
+                      <span>Block rate</span>
+                      <span class="font-semibold text-amber-300">3.1%</span>
+                    </div>
+                    <div class="mt-0.5 flex items-center justify-between text-[0.7rem] text-slate-400">
+                      <span>Latency</span>
+                      <span class="font-semibold text-sky-300">28ms</span>
+                    </div>
+                  </div>
+
+                  <div class="absolute left-[78%] top-[25%] w-[14rem] rounded-xl border border-slate-700/80 bg-slate-950/90 p-2.5 shadow-sm shadow-slate-950/60">
+                    <div class="flex items-center justify-between gap-2">
+                      <div class="flex items-center gap-2">
+                        <div class="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-500/40 text-[0.7rem] font-semibold text-emerald-100">
+                          L1
+                        </div>
+                        <div>
+                          <p class="text-sm font-semibold tracking-tight text-slate-100">Clinical Cache</p>
+                          <p class="text-[0.7rem] text-slate-400">LLM response cache</p>
+                        </div>
+                      </div>
+                      <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+                    </div>
+                    <div class="mt-1 flex items-center justify-between text-[0.7rem] text-slate-400">
+                      <span>Hit rate</span>
+                      <span class="font-semibold text-emerald-300">87%</span>
+                    </div>
+                    <div class="mt-0.5 flex items-center justify-between text-[0.7rem] text-slate-400">
+                      <span>Saved</span>
+                      <span class="font-semibold text-emerald-300">$2.48 / hit</span>
+                    </div>
+                  </div>
+
+                  <div class="absolute left-[50%] top-[48%] w-[13rem] rounded-xl border border-slate-700/80 bg-slate-950/90 p-2.5 shadow-sm shadow-slate-950/60">
+                    <div class="flex items-center justify-between gap-2">
+                      <div class="flex items-center gap-2">
+                        <div class="flex h-7 w-7 items-center justify-center rounded-md bg-amber-500/30 text-[0.7rem] font-semibold text-amber-100">
+                          H
+                        </div>
+                        <div>
+                          <p class="text-sm font-semibold tracking-tight text-slate-100">HIPAA Audit</p>
+                          <p class="text-[0.7rem] text-slate-400">Event sink</p>
+                        </div>
+                      </div>
+                      <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+                    </div>
+                    <div class="mt-1 flex items-center justify-between text-[0.7rem] text-slate-400">
+                      <span>Log/s</span>
+                      <span class="font-semibold text-slate-200">236</span>
+                    </div>
+                  </div>
+
+                  <!-- Minimap -->
+                  <div class="pointer-events-none absolute bottom-3 right-3 h-[6rem] w-[8rem] rounded-lg border border-slate-800/80 bg-slate-950/90">
+                    <div class="flex items-center justify-between border-b border-slate-800/80 px-1.5 py-0.5">
+                      <span class="text-[0.65rem] text-slate-500">Minimap</span>
+                      <span class="h-1.5 w-4 rounded-full bg-slate-800/80"></span>
+                    </div>
+                    <div class="relative h-full w-full">
+                      <div class="absolute left-[8%] top-[40%] h-1.5 w-3 rounded bg-slate-600/80"></div>
+                      <div class="absolute left-[35%] top-[32%] h-1.5 w-3.5 rounded bg-slate-500/80"></div>
+                      <div class="absolute left-[60%] top-[25%] h-1.5 w-3.5 rounded bg-slate-500/80"></div>
+                      <div class="absolute left-[82%] top-[32%] h-1.5 w-3.5 rounded bg-slate-500/80"></div>
+                      <div class="absolute left-[48%] top-[56%] h-1.5 w-3 rounded bg-slate-600/80"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Right: Node Configuration Drawer -->
+            <aside class="flex min-h-[20rem] flex-col overflow-hidden rounded-2xl border border-slate-800/90 bg-slate-950/90">
+              <div class="flex items-center justify-between border-b border-slate-800/80 px-3 py-2.5">
+                <div class="flex items-center gap-2">
+                  <div class="flex h-7 w-7 items-center justify-center rounded-md bg-rose-500/30 text-[0.7rem] font-semibold text-rose-100">
+                    PHI
+                  </div>
+                  <div>
+                    <p class="text-sm font-semibold tracking-tight text-slate-100">PHI Filter</p>
+                    <p class="text-xs text-slate-400">Healthcare • Input validator</p>
+                  </div>
+                </div>
+                <button class="rounded-full bg-slate-900/80 px-2 py-0.5 text-[0.7rem] font-medium text-slate-300 hover:bg-slate-800/80">
+                  Settings
+                </button>
+              </div>
+
+              <!-- Tabs -->
+              <div class="flex items-center border-b border-slate-800/80 text-xs">
+                <button class="flex-1 border-b-2 border-sky-500/80 px-3 py-2 text-center font-semibold tracking-tight text-sky-300">
+                  Settings
+                </button>
+                <button class="flex-1 border-b-2 border-transparent px-3 py-2 text-center text-slate-400 hover:text-slate-200">
+                  Metrics
+                </button>
+                <button class="flex-1 border-b-2 border-transparent px-3 py-2 text-center text-slate-400 hover:text-slate-200">
+                  Code
+                </button>
+              </div>
+
+              <div class="flex-1 overflow-y-auto px-3 py-3">
+                <!-- Settings tab -->
+                <div class="space-y-3">
+                  <div class="space-y-1">
+                    <label class="text-xs font-semibold text-slate-200">Mode</label>
+                    <select class="w-full rounded-xl border border-slate-800 bg-slate-950/80 py-1.5 pl-2 pr-7 text-sm text-slate-100 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500/70">
+                      <option>Redact PHI</option>
+                      <option>Block PHI</option>
+                      <option>Detect only</option>
+                    </select>
+                  </div>
+
+                  <div class="space-y-1">
+                    <label class="text-xs font-semibold text-slate-200">PHI types</label>
+                    <div class="flex flex-wrap gap-1.5">
+                      <button class="rounded-full bg-slate-900/80 px-2 py-0.5 text-xs font-medium text-slate-200 ring-1 ring-sky-500/50">
+                        SSN
+                      </button>
+                      <button class="rounded-full bg-slate-900/80 px-2 py-0.5 text-xs font-medium text-slate-200">
+                        MRN
+                      </button>
+                      <button class="rounded-full bg-slate-900/80 px-2 py-0.5 text-xs font-medium text-slate-200">
+                        DOB
+                      </button>
+                      <button class="rounded-full bg-slate-900/80 px-2 py-0.5 text-xs font-medium text-slate-200">
+                        Address
+                      </button>
+                      <button class="rounded-full bg-slate-900/80 px-2 py-0.5 text-xs font-medium text-slate-200">
+                        Phone
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="space-y-1">
+                    <label class="text-xs font-semibold text-slate-200">Detection threshold</label>
+                    <div class="flex items-center gap-2">
+                      <input type="range" min="0" max="100" value="82" class="h-1 w-full cursor-pointer appearance-none rounded-full bg-slate-800">
+                      <span class="w-10 text-right text-xs text-slate-300">0.82</span>
+                    </div>
+                    <p class="text-[0.7rem] text-slate-500">
+                      Lower values are more permissive. Recommended &gt; 0.78 for PHI.
+                    </p>
+                  </div>
+
+                  <div class="space-y-1">
+                    <label class="text-xs font-semibold text-slate-200">Stream behavior</label>
+                    <div class="flex flex-col gap-1.5 text-xs text-slate-200">
+                      <label class="flex items-center justify-between gap-2">
+                        <span>Drop tokens on detection</span>
+                        <span class="inline-flex h-4 w-7 items-center rounded-full bg-emerald-500/30">
+                          <span class="ml-auto mr-0.5 h-3 w-3 rounded-full bg-emerald-400"></span>
+                        </span>
+                      </label>
+                      <label class="flex items-center justify-between gap-2">
+                        <span>Buffer before PHI filter</span>
+                        <span class="inline-flex h-4 w-7 items-center rounded-full bg-slate-700/80">
+                          <span class="ml-0.5 h-3 w-3 rounded-full bg-slate-400"></span>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="space-y-1">
+                    <label class="text-xs font-semibold text-slate-200">Routing</label>
+                    <div class="rounded-xl border border-slate-800 bg-slate-950/80 p-2 text-[0.7rem] text-slate-300">
+                      <div class="flex items-center justify-between">
+                        <span>Send PHI traffic to</span>
+                        <span class="rounded-full bg-slate-900/90 px-2 py-0.5 text-[0.65rem]">HIPAA-safe LLM pool</span>
+                      </div>
+                      <div class="mt-1 flex items-center justify-between text-slate-400">
+                        <span>Provider</span>
+                        <span class="font-semibold text-slate-200">us-east-1/phi-safe</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="space-y-1">
+                    <label class="text-xs font-semibold text-slate-200">Validation</label>
+                    <div class="space-y-1 rounded-xl border border-amber-500/40 bg-amber-500/10 p-2">
+                      <div class="flex items-center gap-1.5 text-xs font-semibold text-amber-200">
+                        <span>⚠️</span>
+                        <span>HIPAA requires audit logging</span>
+                      </div>
+                      <p class="text-[0.7rem] text-amber-100">
+                        This filter is active but <span class="font-semibold">HIPAA Audit</span> node is optional. Enable
+                        logging to capture PHI access events.
+                      </p>
+                      <button class="mt-0.5 rounded-full bg-amber-400/20 px-2 py-0.5 text-[0.7rem] font-semibold text-amber-100 hover:bg-amber-400/30">
+                        Add HIPAA Audit node →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Metrics tab placeholder -->
+                <div class="mt-4 space-y-2 border-t border-slate-800/80 pt-3">
+                  <p class="text-xs font-semibold text-slate-200">Node metrics</p>
+                  <div class="grid gap-2 text-[0.7rem] text-slate-300 sm:grid-cols-3">
+                    <div class="rounded-lg border border-slate-800 bg-slate-950/80 p-2">
+                      <p class="text-slate-400">Hit rate</p>
+                      <p class="text-sm font-semibold text-emerald-300">92%</p>
+                    </div>
+                    <div class="rounded-lg border border-slate-800 bg-slate-950/80 p-2">
+                      <p class="text-slate-400">Latency</p>
+                      <p class="text-sm font-semibold text-sky-300">11ms</p>
+                    </div>
+                    <div class="rounded-lg border border-slate-800 bg-slate-950/80 p-2">
+                      <p class="text-slate-400">Cost saved</p>
+                      <p class="text-sm font-semibold text-emerald-300">$0.19 / req</p>
+                    </div>
+                  </div>
+                  <div class="mt-1 h-16 rounded-lg border border-slate-800 bg-gradient-to-tr from-slate-950 via-slate-950 to-slate-900">
+                    <!-- Sparkline placeholder -->
+                    <div class="flex h-full items-end gap-0.5 px-2 pb-2">
+                      <div class="h-[30%] flex-1 rounded-t bg-emerald-500/40"></div>
+                      <div class="h-[60%] flex-1 rounded-t bg-emerald-500/50"></div>
+                      <div class="h-[80%] flex-1 rounded-t bg-emerald-500/70"></div>
+                      <div class="h-[55%] flex-1 rounded-t bg-emerald-500/60"></div>
+                      <div class="h-[90%] flex-1 rounded-t bg-emerald-500/80"></div>
+                      <div class="h-[70%] flex-1 rounded-t bg-emerald-500/60"></div>
+                      <div class="h-[95%] flex-1 rounded-t bg-emerald-400/80"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Code preview -->
+                <div class="mt-4 space-y-2 border-t border-slate-800/80 pt-3">
+                  <div class="flex items-center justify-between">
+                    <p class="text-xs font-semibold text-slate-200">Generated config</p>
+                    <div class="flex items-center gap-1 text-[0.7rem] text-slate-400">
+                      <button class="rounded-full bg-slate-900/80 px-2 py-0.5 text-[0.7rem] font-medium text-slate-200 hover:bg-slate-800/80">
+                        Python
+                      </button>
+                      <button class="rounded-full bg-slate-900/50 px-2 py-0.5 text-[0.7rem] text-slate-400 hover:bg-slate-800/80">
+                        JS
+                      </button>
+                    </div>
+                  </div>
+                  <div class="h-40 overflow-hidden rounded-xl border border-slate-800 bg-slate-950/90 font-mono text-xs text-slate-200">
+                    <div class="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/90 px-2 py-1">
+                      <span class="text-[0.7rem] text-slate-500">config.py</span>
+                      <button class="flex items-center gap-1 rounded-full bg-slate-900/80 px-2 py-0.5 text-[0.7rem] text-slate-300 hover:bg-slate-800/80">
+                        <span>Copy</span>
+                      </button>
+                    </div>
+                    <pre class="h-full overflow-auto px-2 py-1.5"><span class="text-slate-500">from</span> cache_orchestrator <span class="text-slate-500">import</span> PHIFilter
+
+phi_filter = PHIFilter(
+    mode=<span class="text-emerald-300">'redact'</span>,
+    types=[<span class="text-emerald-300">'ssn'</span>, <span class="text-emerald-300">'mrn'</span>, <span class="text-emerald-300">'dob'</span>],
+    threshold=<span class="text-sky-300">0.82</span>,
+    stream_drop_tokens=<span class="text-emerald-300">True</span>,
+    route_profile=<span class="text-emerald-300">'phi-safe-llm'</span>,
+)</pre>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+
+          <!-- 5. Simulation metrics + logs -->
+          <div class="grid gap-3 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+            <!-- Metrics dashboard -->
+            <div class="flex flex-col gap-2 rounded-2xl border border-slate-800/90 bg-slate-950/90 p-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-semibold tracking-tight text-slate-100">Real-time impact</p>
+                  <p class="text-xs text-slate-400">
+                    Simulate the pipeline to see latency, hit rate, and savings update live.
+                  </p>
+                </div>
+                <div class="flex items-center gap-2 text-xs">
+                  <div class="flex items-center gap-1 text-slate-400">
+                    <span class="h-1.5 w-1.5 rounded-full bg-sky-400"></span>
+                    <span>Data</span>
+                  </div>
+                  <div class="flex items-center gap-1 text-slate-400">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                    <span>Cache hit</span>
+                  </div>
+                  <div class="flex items-center gap-1 text-slate-400">
+                    <span class="h-1.5 w-1.5 rounded-full bg-rose-400"></span>
+                    <span>Validation fail</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid gap-2 sm:grid-cols-3">
+                <div class="rounded-xl border border-slate-800 bg-slate-950/90 p-2">
+                  <p class="text-xs text-slate-400">Hit rate</p>
+                  <p id="simHitRate" class="text-xl font-semibold tracking-tight text-emerald-300">83%</p>
+                  <p class="text-[0.7rem] text-emerald-400">+21% vs baseline</p>
+                  <div class="mt-1 h-12 rounded-lg bg-slate-950">
+                    <div class="flex h-full items-end gap-0.5 px-1 pb-1">
+                      <div class="h-[30%] flex-1 rounded-t bg-slate-700/80"></div>
+                      <div class="h-[45%] flex-1 rounded-t bg-slate-700/80"></div>
+                      <div class="h-[60%] flex-1 rounded-t bg-emerald-500/50"></div>
+                      <div class="h-[80%] flex-1 rounded-t bg-emerald-500/70"></div>
+                      <div class="h-[95%] flex-1 rounded-t bg-emerald-400/80"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="rounded-xl border border-slate-800 bg-slate-950/90 p-2">
+                  <p class="text-xs text-slate-400">Latency p95</p>
+                  <p id="simLatency" class="text-xl font-semibold tracking-tight text-sky-300">97ms</p>
+                  <p class="text-[0.7rem] text-emerald-400">-64ms vs LLM-only</p>
+                  <div class="mt-1 h-12 rounded-lg bg-slate-950">
+                    <div class="flex h-full items-end gap-0.5 px-1 pb-1">
+                      <div class="h-[90%] flex-1 rounded-t bg-slate-700/80"></div>
+                      <div class="h-[80%] flex-1 rounded-t bg-slate-700/80"></div>
+                      <div class="h-[60%] flex-1 rounded-t bg-sky-500/50"></div>
+                      <div class="h-[45%] flex-1 rounded-t bg-sky-500/60"></div>
+                      <div class="h-[35%] flex-1 rounded-t bg-sky-400/70"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="rounded-xl border border-slate-800 bg-slate-950/90 p-2">
+                  <p class="text-xs text-slate-400">Cost savings</p>
+                  <p id="simSavings" class="text-xl font-semibold tracking-tight text-emerald-300">$0.83</p>
+                  <p class="text-[0.7rem] text-emerald-400">per 1k requests</p>
+                  <div class="mt-1 h-12 rounded-lg bg-slate-950">
+                    <div class="flex h-full items-end gap-0.5 px-1 pb-1">
+                      <div class="h-[20%] flex-1 rounded-t bg-slate-700/80"></div>
+                      <div class="h-[40%] flex-1 rounded-t bg-emerald-500/40"></div>
+                      <div class="h-[65%] flex-1 rounded-t bg-emerald-500/60"></div>
+                      <div class="h-[85%] flex-1 rounded-t bg-emerald-400/80"></div>
+                      <div class="h-[75%] flex-1 rounded-t bg-emerald-400/70"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- D3 chart placeholder -->
+              <div id="d3SimulationChart" class="mt-2 h-40 rounded-xl border border-slate-800 bg-gradient-to-br from-slate-950 via-slate-950 to-slate-900">
+                <div class="flex h-full items-center justify-center text-xs text-slate-500">
+                  D3 timeline placeholder (hits, misses, validation events)
+                </div>
+              </div>
+            </div>
+
+            <!-- Logs / trace viewer -->
+            <div class="flex min-h-[12rem] flex-col gap-2 rounded-2xl border border-slate-800/90 bg-slate-950/90 p-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-semibold tracking-tight text-slate-100">Execution trace</p>
+                  <p class="text-xs text-slate-400">
+                    Stream of sampled requests across the pipeline.
+                  </p>
+                </div>
+                <div class="flex items-center gap-1 text-[0.7rem] text-slate-400">
+                  <button class="rounded-full bg-slate-900/80 px-2 py-0.5 hover:bg-slate-800/80">
+                    Live
+                  </button>
+                  <button class="rounded-full bg-slate-900/60 px-2 py-0.5 hover:bg-slate-800/80">
+                    History
+                  </button>
+                </div>
+              </div>
+
+              <div class="flex-1 overflow-hidden rounded-xl border border-slate-800 bg-slate-950">
+                <div class="flex items-center justify-between border-b border-slate-800/80 px-2 py-1.5 text-[0.7rem]">
+                  <div class="flex items-center gap-2 text-slate-500">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                    <span>Last 25 requests</span>
+                  </div>
+                  <button class="text-slate-400 hover:text-slate-200">Clear</button>
+                </div>
+                <div id="logStream" class="h-40 space-y-0.5 overflow-auto bg-gradient-to-b from-slate-950 via-slate-950 to-slate-950 px-2 py-1.5 text-[0.7rem] font-mono">
+                  <div class="flex items-center gap-1 text-slate-400">
+                    <span class="text-slate-600">12:03:11.284</span>
+                    <span class="rounded bg-slate-800/80 px-1 py-0.5 text-[0.65rem] text-sky-300">INFO</span>
+                    <span class="text-slate-300">request_id=9fa7 clinical/diagnosis routed → cache.pipeline.clinical</span>
+                  </div>
+                  <div class="flex items-center gap-1 text-slate-400">
+                    <span class="text-slate-600">12:03:11.297</span>
+                    <span class="rounded bg-emerald-500/20 px-1 py-0.5 text-[0.65rem] text-emerald-300">HIT</span>
+                    <span class="text-slate-300">cache.hit=true latency=7ms savings=$2.63</span>
+                  </div>
+                  <div class="flex items-center gap-1 text-slate-400">
+                    <span class="text-slate-600">12:03:12.041</span>
+                    <span class="rounded bg-rose-500/20-1 py-0.5 text-[0.65rem] textrose-300">BLOCK</span>
+                    <span class="text-slate-300">
+                      PHI filter blocked SSN pattern • route=phi-safe-llm
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-1 text-slate-400">
+                    <span class="text-slate-600">1203:12.412</span>
+                    <span class="rounded bg-sky-500/20 px-1 py-0.5 text-[0.65rem] text-sky-300">MISS</span>
+                    <span class="text-slate-300">
+                      cache.miss=true fallthrough → upstream LLM latency=144ms
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 6. Export / integration panel -->
+          <div class="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+            <!-- Code / SDK preview (Monaco placeholder) -->
+            <section class="flex flex-col gap-2 rounded-2xl border border-slate-800/90 bg-slate-950/90 p-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-semibold tracking-tight text-slate-100">Export to your stack</p>
+                  <p class="text-xs text-slate-400">
+                    Generate SDK snippets or infrastructure manifests from this pipeline.
+                  </p>
+                </div>
+                <div class="flex items-center gap-1 text-[0.7rem] text-slate-400">
+                  <button class="rounded-full bg-slate-900/80 px-2 py-0.5 font-medium text-slate-200 hover:bg-slate-800/80">
+                    Python
+                  </button>
+                  <button class="rounded-full bg-slate-900/60 px-2 py-0.5 hover:bg-slate-800/80">
+                    TypeScript
+                  </button>
+                  <button class="hidden rounded-full bg-slate-900/60 px-2 py-0.5 hover:bg-slate-800/80 sm:inline-flex">
+                    Terraform
+                  </button>
+                </div>
+              </div>
+
+              <div id="monacoEditorMount" class="mt-1 h-52 rounded-xl border border-slate-800 bg-gradient-to-br from-slate-950 via-slate-950 to-slate-900">
+                <div class="flex items-center justify-between border-b border-slate-800/80 px-2 py-1.5 text-[0.7rem] text-slate-400">
+                  <span>sdk_example.py</span>
+                  <div class="flex items-center gap-1">
+                    <span class="rounded-full bg-emerald-500/20 px-2 py-0.5 text-emerald-300">
+                      Monaco placeholder
+                    </span>
+                    <button class="rounded-full bg-slate-900/80 px-2 py-0.5 hover:bg-slate-800/80">
+                      Copy
+                    </button>
+                  </div>
+                </div>
+                <pre class="h-[calc(100%-1.9rem)] overflow-auto px-3 py-2 text-[0.7rem] font-mono text-slate-200">from adaptive_cache import Pipeline, ClinicalPHI
+
+pipeline = Pipeline(
+    name="clinical_decision_support",
+    sector="healthcare",
+)
+
+pipeline.add_source("ehr", kind="fhir", cache_ttl="5m")
+pipeline.add_node(ClinicalPHI(mode="redact", threshold=0.82))
+pipeline.add_cache("clinical_l1", strategy="content", ttl="15m")
+pipeline.add_audit("hipaa_audit", sink="s3://phi-logs")
+
+app = pipeline.serve(on="/v1/clinical/decision")</pre>
+              </div>
+            </section>
+
+            <!-- Deployment / environments -->
+            <section class="flex flex-col gap-2 rounded-2xl border border-slate-800/90 bg-slate-950/90 p-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-semibold tracking-tight text-slate-100">Deploy &amp; environments</p>
+                  <p class="text-xs text-slate-400">
+                    Map this pipeline to staging, prod, and sector-specific regions.
+                  </p>
+                </div>
+                <button class="rounded-full bg-emerald-500 px-3 py-1.5 text-xs font-semibold tracking-tight text-emerald-950 shadow-sm shadow-emerald-900/60 hover:bg-emerald-400">
+                  Deploy pipeline
+                </button>
+              </div>
+
+              <div class="grid gap-2 text-xs sm:grid-cols-2">
+                <div class="space-y-1 rounded-xl border border-slate-800 bg-slate-950/90 p-2">
+                  <div class="flex items-center justify-between">
+                    <span class="font-semibold text-slate-100">Staging</span>
+                    <span class="inline-flex items-center gap-1 rounded-full bg-slate-900/80 px-2 py-0.5 text-[0.65rem] text-slate-300">
+                      <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                      healthy
+                    </span>
+                  </div>
+                  <p class="text-slate-400">us-east-1 • 2 replicas • HIPAA sandbox</p>
+                  <div class="mt-1 flex items-center justify-between text-slate-400">
+                    <span>Last deploy</span>
+                    <span class="text-slate-300">4 min ago</span>
+                  </div>
+                </div>
+                <div class="space-y-1 rounded-xl border border-slate-800 bg-slate-950/90 p-2">
+                  <div class="flex items-center justify-between">
+                    <span class="font-semibold text-slate-100">Production</span>
+                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[0.65rem] text-emerald-300">
+                      <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                      live
+                    </span>
+                  </div>
+                  <p class="text-slate-400">us-east-1 • 6 replicas • multi-AZ</p>
+                  <div class="mt-1 flex items-center justify-between text-slate-400">
+                    <span>Last deploy</span>
+                    <span class="text-slate-300">27 min ago</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-1 space-y-1 rounded-xl border border-slate-800 bg-slate-950/90 p-2 text-[0.7rem]">
+                <div class="flex items-center justify-between text-slate-300">
+                  <span>Compliance bundles</span>
+                  <span class="rounded-full bg-slate-900/80 px-2 py-0.5 text-slate-400">
+                    HIPAA • SOC 2 • PCI-ready
+                  </span>
+                </div>
+                <p class="text-slate-400">
+                  Export policy manifests for your cloud provider and add them to your existing IaC pipelines.
+                </p>
+              </div>
+            </section>
+          </div>
+        </section>
+      </main>
+
+      <!-- Footer -->
+      <footer class="border-t border-slate-900 bg-slate-950/95 px-6 py-4 text-xs text-slate-500">
+        <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="rounded-md bg-sky-500/10 px-1.5 py-0.5 text-[0.7rem] font-semibold text-sky-300">
+              Adaptive Cache Studio
+            </span>
+            <span>Sector-aware cache &amp; compliance orchestration UI scaffold.</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <span>Keyboard: ␣ simulate • S save • / focus search</span>
+            <span class="hidden text-slate-600 sm:inline">•</span>
+            <span class="text-slate-600">Placeholders wired for React Flow, D3, anime.js, Monaco.</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Minimal inline script to hint future interactivity -->
+    <script>
+      (function () {
+        const input = document.getElementById('detectionInput');
+        const pill = document.getElementById('detectedSectorPill');
+        const confidence = document.getElementById('confidenceLabel');
+        const exampleHealthcare = document.getElementById('exampleHealthcare');
+        const exampleFinance = document.getElementById('exampleFinance');
+        const simulateButton = document.getElementById('simulateButton');
+
+        function setSector(sector) {
+          if (!pill || !confidence) return;
+
+          if (sector === 'healthcare') {
+            pill.innerHTML = '<span class="text-xs">🏥</span><span>Healthcare</span>';
+            pill.className =
+              'flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-300';
+            confidence.textContent = 'Confidence 91%';
+          } else if (sector === 'finance') {
+            pill.innerHTML = '<span class="text-xs">🏦</span><span>Finance</span>';
+            pill.className =
+              'flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-300';
+            confidence.textContent = 'Confidence 88%';
+          } else {
+            pill.innerHTML = '<span class="text-xs">✨</span><span>Unknown</span>';
+            pill.className =
+              'flex items-center gap-1 rounded-full border border-slate-600/60 bg-slate-800/80 px-2 py-0.5 text-xs font-semibold text-slate-200';
+            confidence.textContent = 'Confidence 42%';
+          }
+        }
+
+        if (exampleHealthcare) {
+          exampleHealthcare.addEvent('click', () => {
+            if (!input) return;
+            input.value = 'patient diagnosis for a 65 year old with chest pain';
+            setSector('healthcare');
+          });
+        }
+
+        if (exampleFinance) {
+          exampleFinance.addEventListener('click', () => {
+            if (!input) return;
+            input.value = 'optimize my stock portfolio for low volatility ETFs';
+            setSector('finance');
+          });
+        }
+
+        if (input) {
+          input.addEventListener('input', (e) => {
+            const v = e.target.value.toLowerCase();
+            if (!v.trim()) {
+              setSector('unknown');
+              return;
+            }
+            if (v.includes('patient') || v.includes('diagnosis') || v.includes('ehr')) {
+              setSector('healthcare');
+            } else if (v.includes('stock') || v.includes('portfolio') || v.includes('etf')) {
+              setSector('finance');
+            } else {
+              setSector('unknown');
+            }
+          });
+        }
+
+        if (simulateButton) {
+          simulateButton.addEventListener('click', () => {
+            const hit = document.getElementById('simHitRate');
+            const lat = document.getElementById('simLatency');
+            const sav = document.getElementById('simSavings');
+            if (!hit || !lat || !sav) return;
+
+            hit.textContent = '86%';
+            lat.textContent = '91ms';
+            sav.textContent = '$0.96';
+
+            try {
+              if (window.anime) {
+                window.anime({
+                  targets: '#simHitRate, #simLatency, #simSavings',
+                  scale: [1, 1.08, 1],
+                  duration: 500,
+                  easing: 'easeOutQuad',
+                });
+              }
+            } catch (_) {}
+          });
+        }
+      })();
+    </script>
+  
+</body></html>

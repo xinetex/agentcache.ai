@@ -8,7 +8,13 @@
  * - POST /api/pipeline/diff           - Compare two pipeline versions
  * - GET  /api/pipeline/:id            - Get pipeline by ID
  * - POST /api/pipeline/:id/deploy     - Deploy pipeline
+ * 
+ * SELF-HOSTED COGNITIVE MEMORY:
+ * This API uses AgentCache's own infrastructure to learn from usage patterns.
+ * The more pipelines users create, the smarter the wizard becomes.
  */
+
+import { wizardMemory, complianceMemory } from '../lib/platform-memory.js';
 
 // Import sector definitions from sector.js
 const SECTORS = {

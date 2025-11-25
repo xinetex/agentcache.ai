@@ -625,6 +625,7 @@
           body: JSON.stringify({
             prompt: fullPrompt,
             sector: currentSector,
+            performance: wizardState.performance
           }),
         });
         
@@ -648,9 +649,9 @@
     
     function displayPipelineReview(pipeline) {
       document.getElementById('reviewName').textContent = pipeline.name;
-      document.getElementById('reviewLatency').textContent = `${pipeline.metrics.estimatedLatency}ms`;
-      document.getElementById('reviewHitRate').textContent = `${pipeline.metrics.estimatedHitRate}%`;
-      document.getElementById('reviewSavings').textContent = `$${pipeline.metrics.estimatedSavings}/req`;
+      document.getElementById('reviewLatency').textContent = `${pipeline.metrics.estimated_latency_ms}ms`;
+      document.getElementById('reviewHitRate').textContent = `${Math.round(pipeline.metrics.estimated_hit_rate * 100)}%`;
+      document.getElementById('reviewSavings').textContent = `$${pipeline.metrics.estimated_savings_per_request}/req`;
       
       // Render nodes
       const nodesHtml = pipeline.nodes.map(node => 
@@ -669,18 +670,16 @@
     function renderPipelineOnCanvas(pipeline) {
       document.getElementById('emptyState').classList.add('hidden');
       document.getElementById('pipelineName').textContent = pipeline.name;
-      document.getElementById('metricHitRate').textContent = `${pipeline.metrics.estimatedHitRate}%`;
-      document.getElementById('metricLatency').textContent = `${pipeline.metrics.estimatedLatency}ms`;
-      document.getElementById('metricSavings').textContent = `$${pipeline.metrics.estimatedSavings}`;
+      document.getElementById('metricHitRate').textContent = `${Math.round(pipeline.metrics.estimated_hit_rate * 100)}%`;
+      document.getElementById('metricLatency').textContent = `${pipeline.metrics.estimated_latency_ms}ms`;
+      document.getElementById('metricSavings').textContent = `$${pipeline.metrics.estimated_savings_per_request}`;
       
       // Update validation status
       const status = document.getElementById('validationStatus');
-      if (pipeline.compliance.satisfied) {
-        status.innerHTML = `
-          <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-          <span class="text-emerald-300">Valid • ${pipeline.compliance.frameworks.join(', ')}</span>
-        `;
-      }
+      status.innerHTML = `
+        <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+        <span class="text-emerald-300">Valid • Tier: ${pipeline.complexity_tier}</span>
+      `;
       
       // Enable buttons
       document.getElementById('optimizeBtn').disabled = false;
@@ -694,15 +693,12 @@
             <div class="flex h-8 w-8 items-center justify-center rounded-md bg-slate-800 text-xs font-semibold">${node.type.substring(0, 3).toUpperCase()}</div>
             <div>
               <p class="text-sm font-semibold">${node.type}</p>
-              <p class="text-xs text-slate-500">${node.id}</p>
+              <p class="text-xs text-slate-500">Node ${i + 1}</p>
             </div>
           </div>
         </div>
       `).join('');
       container.innerHTML = nodesHtml;
-      
-      // Draw connections
-      drawConnections(pipeline.connections, pipeline.nodes);
       
       // Add to AI chat
       addAIMessage(`Created pipeline: ${pipeline.name} with ${pipeline.nodes.length} nodes`, 'assistant');

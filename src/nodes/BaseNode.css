@@ -1,0 +1,126 @@
+.base-node {
+  min-width: 180px;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border: 2px solid;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.base-node::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.base-node:hover {
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6), 0 0 40px rgba(var(--node-color-rgb), 0.3);
+  transform: translateY(-2px);
+}
+
+.base-node:hover::before {
+  opacity: 1;
+}
+
+.node-header {
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.node-icon {
+  font-size: 1.25rem;
+}
+
+.node-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.node-metrics {
+  padding: 12px;
+  background: #0f172a;
+  border-top: 1px solid #334155;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  padding: 4px 0;
+}
+
+.metric-label {
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.metric-label::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.metric-value {
+  color: #10b981;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.metric-value.high {
+  color: #10b981;
+}
+
+.metric-value.medium {
+  color: #f59e0b;
+}
+
+.metric-value.low {
+  color: #ef4444;
+}
+
+.node-handle {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #0f172a;
+  transition: all 0.2s;
+}
+
+.node-handle:hover {
+  width: 16px;
+  height: 16px;
+  box-shadow: 0 0 12px currentColor;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.node-handle.connecting {
+  animation: pulse 1s ease-in-out infinite;
+}
