@@ -8,13 +8,15 @@
     "preview": "vite preview",
     "mcp:build": "tsc src/mcp/server.ts --outDir dist/mcp --module NodeNext --moduleResolution NodeNext --target ES2022",
     "mcp:dev": "tsx src/mcp/server.ts",
-    "mcp:start": "node dist/mcp/server.js"
+    "mcp:start": "node dist/mcp/server.js",
+    "test": "vitest"
   },
   "dependencies": {
     "@cfworker/json-schema": "^4.1.1",
     "@hono/node-server": "^1.19.6",
     "@langchain/core": "^1.0.6",
     "@modelcontextprotocol/sdk": "^1.22.0",
+    "@neondatabase/serverless": "^1.0.2",
     "@upstash/redis": "^1.31.6",
     "@upstash/vector": "^1.2.2",
     "dotenv": "^17.2.3",
@@ -40,6 +42,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "reactflow": "^11.11.4",
-    "vite": "^7.2.4"
+    "vite": "^7.2.4",
+    "vitest": "^4.0.14"
   }
 }

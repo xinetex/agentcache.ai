@@ -1,91 +1,46 @@
-# Premium Design System Implementation Walkthrough
+# Walkthrough: Unit Tests for User Dashboards and Wizards
 
-## Overview
-We have successfully applied a consistent, premium design system across the entire AgentCache website. This includes the implementation of a unified navigation bar, animated backgrounds, firefly effects, glassmorphism, and improved typography.
+I have successfully added unit tests for the core logic components of the User Dashboards and Wizards feature. This ensures the reliability of the complexity calculation and wizard framework.
 
-## Changes Implemented
+## Changes
 
-### 1. Core Design Assets
-- **`premium.css`**: Created a centralized CSS file containing all premium styles (glassmorphism, animations, gradients, typography).
-- **`fireflies.js`**: Implemented a reusable script for the ambient firefly background effect.
+### 1. Configuration
+*   **Added `vitest`**: Installed `vitest` as a dev dependency and added a `test` script to `package.json`.
+*   **Created `vitest.config.js`**: Configured Vitest to run unit tests in the `tests/unit` directory.
 
-### 2. Page Updates
-The following pages were updated to use the new design system:
+### 2. Unit Tests
+*   **`tests/unit/complexity-calculator.test.js`**: Added tests for:
+    *   `calculateComplexity`: Verifies correct tier, cost, and score calculation for simple, moderate, and complex pipelines.
+    *   `validateComplexityForPlan`: Checks plan limits and upgrade requirements.
+    *   `suggestOptimizations`: Ensures correct optimization suggestions (e.g., removing audit nodes, changing sectors).
+*   **`tests/unit/wizard-framework.test.js`**: Added tests for:
+    *   `PipelineWizard`: Verifies `analyzeUseCase`, `suggestNodes`, and `optimizeConfiguration` methods.
+    *   **Mocking**: Mocked `platform-memory.js` to isolate unit tests from database interactions.
 
-- **`index.html` (Landing Page)**:
-  - Applied animated background and fireflies.
-  - Updated navigation to the unified component with mobile support.
-  - Enhanced hero section and feature blocks with glassmorphism.
+## Verification Results
 
-- **`pricing.html`**:
-  - Consistent header and navigation.
-  - Glassmorphism applied to pricing cards.
-  - Dark, premium background.
+### Automated Tests
+Ran `npm test` and all 17 tests passed.
 
-- **`blog.html` & `post.html`**:
-  - Updated blog index and post template.
-  - Consistent styling for typography and layout.
-  - Added firefly effects to make reading more immersive.
+```bash
+> agentcache-ai@1.0.0 test
+> vitest
 
-- **`docs.html`**:
-  - Unified navigation and header.
-  - Glassmorphism for documentation containers.
-  - Improved readability with premium typography.
+ DEV  v4.0.14 /Users/letstaco/Documents/agentcache-ai
 
-- **`login.html`**:
-  - consistent styling with the rest of the site.
-  - Glassmorphism for the login/signup container.
+ ✓ tests/unit/complexity-calculator.test.js (10 tests)
+ ✓ tests/unit/wizard-framework.test.js (7 tests)
 
-- **`monitor.html`**:
-  - Updated the "Memory Monitor" demo page to match the premium aesthetic.
-  - Applied glassmorphism to the visualization containers.
+ Test Files  2 passed (2)
+      Tests  17 passed (17)
+```
 
-- **`contact.html`**:
-  - Updated the contact form and information sections.
-  - Consistent footer and navigation.
-
-- **`changelog.html`**:
-  - Applied the premium design to the changelog timeline.
-
-## Verification
-We verified the changes by:
-1.  **Visual Inspection**: Checked key pages (`contact.html`, `monitor.html`) using the browser tool to ensure the design elements (glassmorphism, background, nav) were rendering correctly.
-2.  **Code Review**: Ensured all pages reference `premium.css` and `fireflies.js` and use the correct HTML structure for the navigation and content wrappers.
-
-## Screenshots
-
-### Contact Page
-![Contact Page Premium Design](/Users/letstaco/.gemini/antigravity/brain/e2154eac-b7fc-48f3-9623-502dc776dbcc/contact_page_check_1763726219183.png)
-
-### Monitor Page
-![Monitor Page Premium Design](/Users/letstaco/.gemini/antigravity/brain/e2154eac-b7fc-48f3-9623-502dc776dbcc/monitor_page_check_1763726228073.png)
-
-## RouteLLM Integration (Smart Routing)
-
-We have transformed AgentCache into an **Intelligent Model Gateway** by integrating RouteLLM.
-
-### Key Features
-- **Smart Routing**: Automatically routes cache misses to either a cheaper model (for simple queries) or a stronger model (for complex queries).
-- **Unified API**: Accessible via the standard `/api/v1/chat/completions` endpoint using `model: "route-llm"`.
-- **Documentation**: Added a "Smart Routing" section to `docs.html` with usage examples.
-
-### Verification
-- **Code Logic**: Verified `api/v1/chat/completions.js` correctly handles the `route-llm` model and `x-abacus-key` header.
-- **Documentation**: Visually verified the new section in `docs.html`.
-
-![Smart Routing Docs](/Users/letstaco/.gemini/antigravity/brain/e2154eac-b7fc-48f3-9623-502dc776dbcc/smart_routing_docs_1763727342338.png)
-
-## Deployment & Verification
-
-We performed a final readiness check for deployment.
-
-### 1. Build Status
-- Confirmed that the project is a static site with serverless functions and does not require a complex build step (`npm run build` is not needed).
-
-### 2. Checkout Flow
-- **Logic Check**: Verified `api/checkout.js` correctly creates Stripe sessions and handles redirects.
-- **Webhook**: Verified `api/webhook.js` correctly processes `checkout.session.completed`, generates API keys, and stores them in Upstash Redis.
-- **Frontend**: Fixed a critical issue in `public/login.html` where the checkout script was placed outside the `<body>` tag.
-
-## Conclusion
-AgentCache is now fully updated with a premium design system, intelligent routing capabilities, and a verified checkout flow. It is ready for deployment to Vercel.
+### Manual Verification (E2E)
+Verified the **Wizard E2E flow** using a script (`scripts/verify_wizard_e2e.js`) connected to the new Neon DB.
+*   **Database**: Successfully connected to the new Neon instance.
+*   **Migration**: Verified schema migration (including `platform_memory_cache`).
+*   **Wizard Logic**:
+    *   `analyzeUseCase`: Correctly inferred use case from prompt.
+    *   `suggestNodes`: Returned relevant nodes for the sector.
+    *   `calculateComplexity`: Correctly calculated complexity score and cost.
+    *   `learnFromPipeline`: Successfully stored the pipeline pattern in the database (fixed SQL parameter/syntax errors).
