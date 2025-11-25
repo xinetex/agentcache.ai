@@ -1,0 +1,29 @@
+.traffic-packet {
+    fill: #fff;
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.8));
+    pointer-events: none;
+}
+
+.traffic-packet.request {
+    fill: #38bdf8;
+    /* Sky blue */
+    filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.6));
+}
+
+.traffic-packet.hit {
+    fill: #4ade80;
+    /* Green */
+    filter: drop-shadow(0 0 6px rgba(74, 222, 128, 0.6));
+}
+
+.traffic-packet.miss {
+    fill: #fbbf24;
+    /* Amber */
+    filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.6));
+}
+
+.traffic-packet.error {
+    fill: #f87171;
+    /* Red */
+    filter: drop-shadow(0 0 6px rgba(248, 113, 113, 0.6));
+}

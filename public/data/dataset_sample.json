@@ -1,0 +1,222 @@
+[
+    {
+        "id": "1",
+        "text": "Write a Python script to scrape a website",
+        "category": "coding",
+        "tokens": 150,
+        "embedding": [
+            12,
+            4,
+            2
+        ]
+    },
+    {
+        "id": "2",
+        "text": "Fix this React useEffect dependency warning",
+        "category": "coding",
+        "tokens": 85,
+        "embedding": [
+            10,
+            6,
+            1
+        ]
+    },
+    {
+        "id": "3",
+        "text": "Explain how Dijkstra's algorithm works",
+        "category": "coding",
+        "tokens": 300,
+        "embedding": [
+            11,
+            5,
+            3
+        ]
+    },
+    {
+        "id": "4",
+        "text": "Generate a SQL query for monthly active users",
+        "category": "coding",
+        "tokens": 60,
+        "embedding": [
+            13,
+            3,
+            0
+        ]
+    },
+    {
+        "id": "5",
+        "text": "Debug this segmentation fault in C++",
+        "category": "coding",
+        "tokens": 120,
+        "embedding": [
+            9,
+            5,
+            2
+        ]
+    },
+    {
+        "id": "6",
+        "text": "Write a poem about a robot learning to love",
+        "category": "creative",
+        "tokens": 200,
+        "embedding": [
+            -12,
+            -4,
+            6
+        ]
+    },
+    {
+        "id": "7",
+        "text": "Create a backstory for a D&D rogue character",
+        "category": "creative",
+        "tokens": 450,
+        "embedding": [
+            -10,
+            -6,
+            5
+        ]
+    },
+    {
+        "id": "8",
+        "text": "Suggest 5 blog post titles about AI trends",
+        "category": "creative",
+        "tokens": 100,
+        "embedding": [
+            -11,
+            -5,
+            7
+        ]
+    },
+    {
+        "id": "9",
+        "text": "Write a short story in the style of Hemingway",
+        "category": "creative",
+        "tokens": 600,
+        "embedding": [
+            -13,
+            -3,
+            4
+        ]
+    },
+    {
+        "id": "10",
+        "text": "Compose a haiku about winter",
+        "category": "creative",
+        "tokens": 40,
+        "embedding": [
+            -9,
+            -5,
+            6
+        ]
+    },
+    {
+        "id": "11",
+        "text": "Analyze the financial report for Q3",
+        "category": "analysis",
+        "tokens": 1200,
+        "embedding": [
+            4,
+            -12,
+            -6
+        ]
+    },
+    {
+        "id": "12",
+        "text": "Summarize this legal contract",
+        "category": "analysis",
+        "tokens": 2500,
+        "embedding": [
+            6,
+            -10,
+            -5
+        ]
+    },
+    {
+        "id": "13",
+        "text": "Extract key entities from this news article",
+        "category": "analysis",
+        "tokens": 500,
+        "embedding": [
+            5,
+            -11,
+            -7
+        ]
+    },
+    {
+        "id": "14",
+        "text": "Compare the features of iPhone 15 vs Pixel 8",
+        "category": "analysis",
+        "tokens": 800,
+        "embedding": [
+            3,
+            -13,
+            -4
+        ]
+    },
+    {
+        "id": "15",
+        "text": "Translate this technical document to Spanish",
+        "category": "analysis",
+        "tokens": 1500,
+        "embedding": [
+            5,
+            -9,
+            -6
+        ]
+    },
+    {
+        "id": "16",
+        "text": "Hello, how are you today?",
+        "category": "chat",
+        "tokens": 20,
+        "embedding": [
+            -6,
+            12,
+            1
+        ]
+    },
+    {
+        "id": "17",
+        "text": "Tell me a joke",
+        "category": "chat",
+        "tokens": 30,
+        "embedding": [
+            -4,
+            10,
+            0
+        ]
+    },
+    {
+        "id": "18",
+        "text": "What is the capital of France?",
+        "category": "chat",
+        "tokens": 15,
+        "embedding": [
+            -5,
+            11,
+            2
+        ]
+    },
+    {
+        "id": "19",
+        "text": "Who won the Super Bowl in 2024?",
+        "category": "chat",
+        "tokens": 25,
+        "embedding": [
+            -7,
+            13,
+            -1
+        ]
+    },
+    {
+        "id": "20",
+        "text": "Convert 100 USD to EUR",
+        "category": "chat",
+        "tokens": 35,
+        "embedding": [
+            -5,
+            9,
+            1
+        ]
+    }
+]

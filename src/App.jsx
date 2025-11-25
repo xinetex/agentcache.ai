@@ -17,17 +17,40 @@ import { useSector } from './context/SectorContext';
 import { nodeTypes } from './nodes';
 import { initDemoMode } from './config/demoData';
 import { PipelineStorageService, StorageService } from './services/storageService';
+import TrafficEdge from './components/TrafficEdge';
+import NeuralGalaxy from './components/NeuralGalaxy';
+import { useTrafficSimulation } from './hooks/useTrafficSimulation';
 import './App.css';
+
+const edgeTypes = {
+  traffic: TrafficEdge,
+};
 
 function App() {
   const { sector, config, selectSector, showSectorModal, setShowSectorModal } = useSector();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [view, setView] = useState('dashboard'); // 'dashboard' | 'builder'
+  const [view, setView] = useState('dashboard'); // 'dashboard' | 'builder' | 'galaxy'
   const [wizardOpen, setWizardOpen] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState(null);
+
   const [pipelineName, setPipelineName] = useState('Untitled Pipeline');
+
+  // Traffic Simulation
+  const trafficState = useTrafficSimulation(nodes, edges);
+
+  // Update edges with traffic data
+  useEffect(() => {
+    setEdges(eds => eds.map(edge => ({
+      ...edge,
+      type: 'traffic', // Force traffic edge type
+      data: {
+        ...edge.data,
+        packets: trafficState[edge.id] || []
+      }
+    })));
+  }, [trafficState, setEdges]);
 
   console.log('App render:', { sector, config, showSectorModal });
 
@@ -49,7 +72,7 @@ function App() {
   const handleWizardComplete = useCallback((pipeline) => {
     // Pipeline comes from /api/pipeline/generate
     // Contains: nodes[], edges[], name, metrics, etc.
-    
+
     const generatedNodes = pipeline.nodes.map((node, idx) => ({
       id: `${node.type}-${idx}`,
       type: node.type,
@@ -127,10 +150,10 @@ function App() {
       nodes,
       edges
     };
-    
+
     try {
       const result = PipelineStorageService.savePipeline(pipeline);
-      
+
       if (!result.success) {
         // Handle different error types
         if (result.error === 'quota') {
@@ -142,15 +165,15 @@ function App() {
         }
         return;
       }
-      
+
       // Check storage stats after save
       const stats = StorageService.getStorageStats();
       const percentUsed = stats.percentUsed.toFixed(1);
-      
-      const message = result.isNew 
-        ? `Pipeline "${pipelineName}" saved!` 
+
+      const message = result.isNew
+        ? `Pipeline "${pipelineName}" saved!`
         : `Pipeline "${pipelineName}" updated!`;
-      
+
       // Warn if storage is getting full
       if (stats.percentUsed > 80) {
         alert(`${message}\n\n⚠️ Storage warning: ${percentUsed}% used. Consider deleting old pipelines.`);
@@ -219,7 +242,7 @@ function App() {
   if (view === 'dashboard') {
     // Get saved pipelines for metrics
     const savedPipelines = PipelineStorageService.loadAllPipelines();
-    
+
     return (
       <div className="app">
         <CommandCenter
@@ -227,7 +250,7 @@ function App() {
           onNewPipeline={handleNewPipeline}
           pipelines={savedPipelines}
         />
-        
+
         {wizardOpen && (
           <WizardModal
             sector={sector}
@@ -243,13 +266,42 @@ function App() {
     );
   }
 
+  // Show Neural Galaxy view
+  if (view === 'galaxy') {
+    return (
+      <div className="app">
+        <header className="header" style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10, background: 'transparent', border: 'none' }}>
+          <div className="header-left">
+            <button
+              className="btn btn-icon"
+              onClick={() => setView('dashboard')}
+              title="Back to Dashboard"
+              style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)' }}
+            >
+              ← 🗂️
+            </button>
+            <div>
+              <h1 style={{ textShadow: '0 0 10px rgba(0,243,255,0.5)' }}>Neural Galaxy</h1>
+            </div>
+          </div>
+          <div className="header-right">
+            <button className="btn btn-secondary" onClick={() => setView('builder')} style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)' }}>
+              Switch to Builder
+            </button>
+          </div>
+        </header>
+        <NeuralGalaxy />
+      </div>
+    );
+  }
+
   // Show builder view
   return (
     <div className="app">
       <header className="header">
         <div className="header-left">
-          <button 
-            className="btn btn-icon" 
+          <button
+            className="btn btn-icon"
             onClick={() => setView('dashboard')}
             title="Back to Dashboard"
           >
@@ -261,8 +313,8 @@ function App() {
           </div>
         </div>
         <div className="header-center">
-          <input 
-            type="text" 
+          <input
+            type="text"
             className="pipeline-name-input"
             value={pipelineName}
             onChange={(e) => setPipelineName(e.target.value)}
@@ -282,12 +334,15 @@ function App() {
           <button className="btn btn-primary">
             🚀 Deploy
           </button>
+          <button className="btn btn-secondary" onClick={() => setView('galaxy')}>
+            🌌 Galaxy View
+          </button>
         </div>
       </header>
 
       <div className="main-content">
         <Sidebar sector={sector} config={config} />
-        
+
         <div className="canvas-container">
           <ReactFlow
             nodes={nodes}
@@ -299,6 +354,7 @@ function App() {
             onDrop={onDrop}
             onDragOver={onDragOver}
             nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
             fitView
           >
             <Controls />

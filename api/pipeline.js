@@ -36,6 +36,7 @@ const NODE_LIBRARY = [
   { id: 'output_webhook', category: 'output', name: 'Webhook', icon: '📤', description: 'Send results to external webhook endpoint' },
   { id: 'output_delta', category: 'output', name: 'Delta Lake', icon: '📊', description: 'Write results to Databricks Delta Lake table' },
   { id: 'output_analytics', category: 'output', name: 'Analytics Dashboard', icon: '📈', description: 'Track cache metrics, costs, and performance' },
+  { id: 'storage_s3', category: 'output', name: 'S3 Storage', icon: '🗄️', description: 'Save artifacts and logs to S3-compatible storage' },
 ];
 
 const PIPELINE_TEMPLATES = [
@@ -87,7 +88,7 @@ const PIPELINE_TEMPLATES = [
 // Platform detection heuristics
 function detectPlatform(config) {
   const detected = { platforms: [], suggestions: [] };
-  
+
   // Databricks detection
   if (config.env?.DATABRICKS_HOST || config.env?.DATABRICKS_TOKEN || config.packages?.includes('databricks-sdk')) {
     detected.platforms.push({
@@ -105,7 +106,7 @@ function detectPlatform(config) {
       priority: 'high',
     });
   }
-  
+
   // Snowflake detection
   if (config.env?.SNOWFLAKE_ACCOUNT || config.env?.SNOWFLAKE_USER || config.packages?.includes('snowflake-connector-python')) {
     detected.platforms.push({
@@ -123,7 +124,7 @@ function detectPlatform(config) {
       priority: 'high',
     });
   }
-  
+
   // Vector DB detection
   const vectorDbs = [
     { key: 'PINECONE_API_KEY', name: 'Pinecone', id: 'pinecone' },
@@ -131,7 +132,7 @@ function detectPlatform(config) {
     { key: 'QDRANT_URL', name: 'Qdrant', id: 'qdrant' },
     { key: 'CHROMADB_HOST', name: 'ChromaDB', id: 'chromadb' },
   ];
-  
+
   for (const vdb of vectorDbs) {
     if (config.env?.[vdb.key]) {
       detected.platforms.push({
@@ -151,7 +152,7 @@ function detectPlatform(config) {
       break;
     }
   }
-  
+
   // LLM provider detection
   if (config.env?.OPENAI_API_KEY) {
     detected.platforms.push({
@@ -160,7 +161,7 @@ function detectPlatform(config) {
       confidence: 1.0,
     });
   }
-  
+
   if (config.env?.ANTHROPIC_API_KEY) {
     detected.platforms.push({
       id: 'llm_anthropic',
@@ -168,7 +169,7 @@ function detectPlatform(config) {
       confidence: 1.0,
     });
   }
-  
+
   // Use case detection from packages
   if (config.packages?.includes('langchain') || config.packages?.includes('llama-index')) {
     detected.suggestions.push({
@@ -178,7 +179,7 @@ function detectPlatform(config) {
       template: 'databricks-rag-basic',
     });
   }
-  
+
   if (config.packages?.includes('transformers') || config.packages?.includes('sentence-transformers')) {
     detected.suggestions.push({
       title: 'Cache embedding generation',
@@ -186,7 +187,7 @@ function detectPlatform(config) {
       priority: 'medium',
     });
   }
-  
+
   return detected;
 }
 
@@ -200,11 +201,11 @@ function suggestConfig(useCase, platforms, volume) {
     recommendedNodes: [],
     alerts: [],
   };
-  
+
   // Volume-based recommendations
   const monthlyQueries = volume?.monthly || 10000;
   const avgCostPerQuery = 0.03; // $0.03 avg for GPT-4
-  
+
   if (monthlyQueries > 100000) {
     suggestions.cacheStrategy = 'aggressive';
     suggestions.ttl = 604800; // 1 week for high volume
@@ -221,7 +222,7 @@ function suggestConfig(useCase, platforms, volume) {
     suggestions.cacheStrategy = 'conservative';
     suggestions.recommendedNodes.push('cache_l2');
   }
-  
+
   // Use case specific recommendations
   switch (useCase) {
     case 'rag':
@@ -230,28 +231,28 @@ function suggestConfig(useCase, platforms, volume) {
       suggestions.recommendedNodes.push('vector_db', 'validation_freshness');
       suggestions.estimatedSavings.percentage = 85;
       break;
-      
+
     case 'chatbot':
       suggestions.namespace = 'chat/sessions';
       suggestions.ttl = 3600; // 1 hour for conversational
       suggestions.recommendedNodes.push('validation_cognitive');
       suggestions.estimatedSavings.percentage = 60;
       break;
-      
+
     case 'analytics':
       suggestions.namespace = 'analytics/queries';
       suggestions.ttl = 1800; // 30 min for analytics
       suggestions.recommendedNodes.push('output_analytics');
       suggestions.estimatedSavings.percentage = 70;
       break;
-      
+
     case 'compliance':
       suggestions.namespace = 'enterprise/compliant';
       suggestions.ttl = 604800;
       suggestions.recommendedNodes.push('validation_pii', 'validation_cognitive');
       suggestions.estimatedSavings.percentage = 50;
       break;
-      
+
     case 'reasoning':
       suggestions.namespace = 'reasoning/traces';
       suggestions.ttl = 2592000; // 30 days
@@ -259,21 +260,21 @@ function suggestConfig(useCase, platforms, volume) {
       suggestions.estimatedSavings.percentage = 95;
       break;
   }
-  
+
   // Calculate estimated savings
   const baselineCost = monthlyQueries * avgCostPerQuery;
   suggestions.estimatedSavings.monthly = Math.round(baselineCost * (suggestions.estimatedSavings.percentage / 100));
-  
+
   // Platform-specific additions
   if (platforms?.includes('databricks')) {
     suggestions.namespace = `databricks/${suggestions.namespace}`;
     suggestions.recommendedNodes.push('output_delta');
   }
-  
+
   if (platforms?.includes('snowflake')) {
     suggestions.namespace = `snowflake/${suggestions.namespace}`;
   }
-  
+
   return suggestions;
 }
 
@@ -281,51 +282,51 @@ function suggestConfig(useCase, platforms, volume) {
 function validatePipeline(pipeline) {
   const errors = [];
   const warnings = [];
-  
+
   if (!pipeline.nodes || pipeline.nodes.length === 0) {
     errors.push({ code: 'EMPTY_PIPELINE', message: 'Pipeline must have at least one node' });
     return { valid: false, errors, warnings };
   }
-  
+
   // Check for unconnected nodes
   const connectedNodes = new Set();
   for (const conn of (pipeline.connections || [])) {
     connectedNodes.add(conn.source.nodeId);
     connectedNodes.add(conn.target.nodeId);
   }
-  
+
   for (const node of pipeline.nodes) {
     if (!connectedNodes.has(node.id) && pipeline.nodes.length > 1) {
-      warnings.push({ 
-        code: 'UNCONNECTED_NODE', 
+      warnings.push({
+        code: 'UNCONNECTED_NODE',
         message: `Node "${node.label || node.type}" is not connected to other nodes`,
-        nodeId: node.id 
+        nodeId: node.id
       });
     }
   }
-  
+
   // Check for required configurations
   for (const node of pipeline.nodes) {
     const nodeType = NODE_LIBRARY.find(n => n.id === node.type);
     if (!nodeType) {
-      errors.push({ 
-        code: 'UNKNOWN_NODE', 
+      errors.push({
+        code: 'UNKNOWN_NODE',
         message: `Unknown node type: ${node.type}`,
-        nodeId: node.id 
+        nodeId: node.id
       });
     }
   }
-  
+
   // Check for cycles (simplified)
   // In production, would do full topological sort
-  
+
   // Check cache layer ordering
   const cacheOrder = ['cache_l1', 'cache_l2', 'cache_l3'];
   const cacheNodes = pipeline.nodes
     .filter(n => n.type.startsWith('cache_'))
     .map(n => cacheOrder.indexOf(n.type))
     .filter(i => i !== -1);
-  
+
   for (let i = 1; i < cacheNodes.length; i++) {
     if (cacheNodes[i] < cacheNodes[i - 1]) {
       warnings.push({
@@ -335,18 +336,18 @@ function validatePipeline(pipeline) {
       break;
     }
   }
-  
+
   // Check for LLM without cache
   const hasLlm = pipeline.nodes.some(n => n.type.startsWith('llm_'));
   const hasCache = pipeline.nodes.some(n => n.type.startsWith('cache_'));
-  
+
   if (hasLlm && !hasCache) {
     warnings.push({
       code: 'NO_CACHE',
       message: 'LLM node detected without cache layer - consider adding caching to reduce costs',
     });
   }
-  
+
   // Check settings
   if (!pipeline.settings?.namespace) {
     warnings.push({
@@ -354,7 +355,7 @@ function validatePipeline(pipeline) {
       message: 'No namespace configured - using "default"',
     });
   }
-  
+
   return {
     valid: errors.length === 0,
     errors,
@@ -366,30 +367,30 @@ function validatePipeline(pipeline) {
 // Generate deployment code for different platforms
 function generateCode(pipeline, target = 'python') {
   const code = {};
-  
+
   if (target === 'python' || target === 'all') {
     code.python = generatePythonCode(pipeline);
   }
-  
+
   if (target === 'javascript' || target === 'all') {
     code.javascript = generateJavaScriptCode(pipeline);
   }
-  
+
   if (target === 'databricks' || target === 'all') {
     code.databricks = generateDatabricksCode(pipeline);
   }
-  
+
   if (target === 'curl' || target === 'all') {
     code.curl = generateCurlCode(pipeline);
   }
-  
+
   return code;
 }
 
 function generatePythonCode(pipeline) {
   const namespace = pipeline.settings?.namespace || 'default';
   const ttl = pipeline.settings?.defaultTtl || 86400;
-  
+
   let imports = `from agentcache import AgentCache, CacheConfig\n`;
   let config = `\n# Pipeline: ${pipeline.name || 'Untitled'}\n`;
   config += `cache = AgentCache(\n`;
@@ -397,7 +398,7 @@ function generatePythonCode(pipeline) {
   config += `    namespace="${namespace}",\n`;
   config += `    default_ttl=${ttl},\n`;
   config += `)\n\n`;
-  
+
   // Generate node handlers
   let handlers = `# Cache wrapper for LLM calls\n`;
   handlers += `@cache.cached(ttl=${ttl})\n`;
@@ -408,14 +409,26 @@ function generatePythonCode(pipeline) {
   handlers += `        messages=[{"role": "user", "content": prompt}]\n`;
   handlers += `    )\n`;
   handlers += `    return response.choices[0].message.content\n`;
-  
+
+  handlers += `    return response.choices[0].message.content\n`;
+
+  // Generate storage handlers
+  if (pipeline.nodes.some(n => n.type === 'storage_s3')) {
+    handlers += `\n# S3 Storage Handler\n`;
+    handlers += `async def save_to_s3(data: str, key: str):\n`;
+    handlers += `    # Requires boto3\n`;
+    handlers += `    import boto3\n`;
+    handlers += `    s3 = boto3.client('s3')\n`;
+    handlers += `    s3.put_object(Bucket='agentcache-data', Key=key, Body=data)\n`;
+  }
+
   return imports + config + handlers;
 }
 
 function generateJavaScriptCode(pipeline) {
   const namespace = pipeline.settings?.namespace || 'default';
   const ttl = pipeline.settings?.defaultTtl || 86400;
-  
+
   return `import { AgentCache } from 'agentcache';
 
 // Pipeline: ${pipeline.name || 'Untitled'}
@@ -443,7 +456,7 @@ export { cache, cachedLLMCall };
 function generateDatabricksCode(pipeline) {
   const namespace = pipeline.settings?.namespace || 'databricks/rag';
   const ttl = pipeline.settings?.defaultTtl || 86400;
-  
+
   return `# Databricks Notebook - AgentCache Pipeline
 # Pipeline: ${pipeline.name || 'Untitled'}
 
@@ -507,7 +520,7 @@ def log_to_delta(query, response, cached, latency_ms):
 function generateCurlCode(pipeline) {
   const namespace = pipeline.settings?.namespace || 'default';
   const ttl = pipeline.settings?.defaultTtl || 86400;
-  
+
   return `# AgentCache REST API - Pipeline: ${pipeline.name || 'Untitled'}
 
 # Check cache before LLM call
@@ -542,13 +555,13 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  
+
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
-  
+
   const path = req.url?.split('?')[0] || '';
-  
+
   try {
     // GET /api/pipeline/nodes - Node library
     if (req.method === 'GET' && path.endsWith('/nodes')) {
@@ -558,7 +571,7 @@ export default async function handler(req, res) {
         categories: ['source', 'cache', 'validation', 'llm', 'output'],
       });
     }
-    
+
     // GET /api/pipeline/templates - Pipeline templates
     if (req.method === 'GET' && path.endsWith('/templates')) {
       return res.status(200).json({
@@ -566,68 +579,68 @@ export default async function handler(req, res) {
         templates: PIPELINE_TEMPLATES,
       });
     }
-    
+
     // POST /api/pipeline/detect - Platform detection
     if (req.method === 'POST' && path.endsWith('/detect')) {
       const config = req.body || {};
       const detected = detectPlatform(config);
-      
+
       return res.status(200).json({
         success: true,
         ...detected,
       });
     }
-    
+
     // POST /api/pipeline/suggest - Configuration suggestions
     if (req.method === 'POST' && path.endsWith('/suggest')) {
       const { useCase, platforms, volume } = req.body || {};
       const suggestions = suggestConfig(useCase, platforms, volume);
-      
+
       return res.status(200).json({
         success: true,
         suggestions,
       });
     }
-    
+
     // POST /api/pipeline/validate - Validate pipeline
     if (req.method === 'POST' && path.endsWith('/validate')) {
       const pipeline = req.body?.pipeline;
-      
+
       if (!pipeline) {
         return res.status(400).json({
           success: false,
           error: 'Pipeline configuration required',
         });
       }
-      
+
       const validation = validatePipeline(pipeline);
-      
+
       return res.status(200).json({
         success: true,
         validation,
       });
     }
-    
+
     // POST /api/pipeline/generate - Generate deployment code
     if (req.method === 'POST' && path.endsWith('/generate')) {
       const { pipeline, target = 'all' } = req.body || {};
-      
+
       if (!pipeline) {
         return res.status(400).json({
           success: false,
           error: 'Pipeline configuration required',
         });
       }
-      
+
       const code = generateCode(pipeline, target);
-      
+
       return res.status(200).json({
         success: true,
         code,
         target,
       });
     }
-    
+
     // Default: list endpoints
     return res.status(200).json({
       success: true,
@@ -642,7 +655,7 @@ export default async function handler(req, res) {
         { method: 'POST', path: '/api/pipeline/generate', description: 'Generate deployment code' },
       ],
     });
-    
+
   } catch (error) {
     console.error('Pipeline API error:', error);
     return res.status(500).json({
