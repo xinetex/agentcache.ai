@@ -43,6 +43,22 @@
       "destination": "/api/constraints"
     },
     {
+      "source": "/api/auth/signup",
+      "destination": "/api/auth.js"
+    },
+    {
+      "source": "/api/auth/login",
+      "destination": "/api/auth.js"
+    },
+    {
+      "source": "/api/auth/me",
+      "destination": "/api/auth.js"
+    },
+    {
+      "source": "/api/auth/logout",
+      "destination": "/api/auth.js"
+    },
+    {
       "source": "/api/auth/verify",
       "destination": "/api/auth/verify.js"
     },
