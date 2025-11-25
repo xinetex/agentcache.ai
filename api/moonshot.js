@@ -8,7 +8,7 @@
  * This enables massive cost savings for reasoning-heavy tasks.
  */
 
-export const config = { runtime: 'edge' };
+export const config = { runtime: 'nodejs' };
 
 const MOONSHOT_API_URL = process.env.MOONSHOT_ENDPOINT || 'https://api.moonshot.ai/v1/chat/completions';
 import { CognitiveSentinel } from './cognitive.js';

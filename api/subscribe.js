@@ -1,4 +1,4 @@
-export const config = { runtime: 'edge' };
+export const config = { runtime: 'nodejs' };
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -143,7 +143,7 @@ export default async function handler(req) {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ text: `🆕 Waitlist: ${email}  utm=${utm.source}/${utm.medium}/${utm.campaign}` }),
-      }).catch(() => {});
+      }).catch(() => { });
     }
 
     return json({ success: true });
