@@ -1,0 +1,79 @@
+[
+  {
+    "title": "Beyond Token Caching: The Rise of Agentic Plan Caching",
+    "date": "2025-11-22",
+    "author": "AgentCache Team",
+    "category": "industry",
+    "excerpt": "New research on 'ToolCacheAgent' and 'Agentic Plan Caching' validates the shift from simple token caching to execution state caching. Here's what it means for your infrastructure.",
+    "featured_image": "/blog/images/agentic-plan-caching.png",
+    "slug": "beyond-token-caching",
+    "filename": "2025-11-22-beyond-token-caching.md",
+    "mdPath": "/blog/posts/2025-11-22-beyond-token-caching.md"
+  },
+  {
+    "title": "Decoding Gemini 3's Thought Signatures: A Guide for Developers",
+    "date": "2025-11-21",
+    "author": "AgentCache Team",
+    "category": "technical",
+    "excerpt": "Google's Gemini 3 introduces 'Thought Signatures'—encrypted reasoning traces. Learn how to cache them with AgentCache to slash latency and maintain state.",
+    "featured_image": "/blog/images/gemini-3-thought-signatures.png",
+    "slug": "decoding-gemini-3-thought-signatures",
+    "filename": "2025-11-21-decoding-gemini-3-thought-signatures.md",
+    "mdPath": "/blog/posts/2025-11-21-decoding-gemini-3-thought-signatures.md"
+  },
+  {
+    "title": "The Hidden Cost of Reasoning Models (and How to Fix It)",
+    "date": "2025-11-20",
+    "author": "AgentCache Team",
+    "category": "technical",
+    "excerpt": "Reasoning models like OpenAI o1 are powerful but expensive. Learn how caching reasoning traces can reduce costs by 80% and slash latency by 10x.",
+    "featured_image": "/blog/images/hidden-cost-reasoning-models.png",
+    "slug": "2025-11-20-the-hidden-cost-of-reasoning-models",
+    "filename": "2025-11-20-the-hidden-cost-of-reasoning-models.md",
+    "mdPath": "/blog/posts/2025-11-20-the-hidden-cost-of-reasoning-models.md"
+  },
+  {
+    "title": "Why Multi-Provider Architecture Matters for AI Infrastructure",
+    "date": "2025-11-18",
+    "author": "AgentCache Team",
+    "category": "technical",
+    "excerpt": "When major cloud providers experience outages, multi-provider architecture isn't just nice to have—it's essential. Here's how we built AgentCache for resilience from day one.",
+    "featured_image": "/blog/images/multi-provider-architecture.png",
+    "slug": "why-multi-provider-architecture-matters",
+    "filename": "2025-11-18-why-multi-provider-architecture-matters.md",
+    "mdPath": "/blog/posts/2025-11-18-why-multi-provider-architecture-matters.md"
+  },
+  {
+    "title": "MDAP Case Study: Caching Million-Step LLM Workflows",
+    "date": "2025-11-18",
+    "author": "AgentCache Research Team",
+    "category": "technical",
+    "excerpt": "How Massively Decomposed Agentic Processes achieve 75% cost reduction with intelligent caching for 1M+ step workflows.",
+    "featured_image": "/images/mdap-study.png",
+    "slug": "mdap-case-study",
+    "filename": "case-study-mdap.html",
+    "externalUrl": "/case-study-mdap.html"
+  },
+  {
+    "title": "Global AI Cache Study: 100M+ Requests Across 15 Countries",
+    "date": "2025-11-18",
+    "author": "AgentCache Research Team",
+    "category": "industry",
+    "excerpt": "Analysis of 100M+ AI API calls reveals 68% average cache hit rate and $12.4M in potential annual savings across 8 industries and 15 countries.",
+    "featured_image": "/images/global-study.png",
+    "slug": "global-cache-study",
+    "filename": "global-cache-study.html",
+    "externalUrl": "/global-cache-study.html"
+  },
+  {
+    "title": "How to Protect Your Enterprise RAG System from Indirect Prompt Injection",
+    "date": "2025-11-17",
+    "author": "AgentCache Team",
+    "category": "technical",
+    "excerpt": "How to Protect Your Enterprise RAG System from Indirect Prompt Injection - A comprehensive guide for engineering teams building secure, cost-effective AI systems.",
+    "featured_image": "/blog/images/how-to-protect-your-enterprise-rag-system-from-indirect-prompt-injection.png",
+    "slug": "how-to-protect-your-enterprise-rag-system-from-indirect-prompt-injection",
+    "filename": "2025-11-17-how-to-protect-your-enterprise-rag-system-from-indirect-prompt-injection.md",
+    "mdPath": "/blog/posts/2025-11-17-how-to-protect-your-enterprise-rag-system-from-indirect-prompt-injection.md"
+  }
+]

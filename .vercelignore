@@ -1,8 +1,9 @@
+.env
+.env.*
+.git
+.gemini
+brain
+*.log
 node_modules
-.env*
-!.env.example
-dist
-.DS_Store
-
-pnpm-lock.yaml
-public/dashboard-local.html
+scripts/verify_*
+tests

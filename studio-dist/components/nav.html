@@ -1,0 +1,85 @@
+<!-- Unified Navigation Component -->
+<!-- Include this in all core product pages -->
+
+<header class="fixed top-0 w-full z-50 bg-neutral-950/80 backdrop-blur-md border-b border-white/5">
+    <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-3 group">
+            <div
+                class="h-9 w-9 rounded-xl bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center text-sm font-bold shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
+                AC
+            </div>
+            <span class="font-bold text-lg">AgentCache<span class="text-neutral-500">.ai</span></span>
+        </a>
+
+        <nav class="hidden md:flex gap-8 text-sm font-medium text-neutral-400">
+            <!-- Platform Dropdown -->
+            <div class="relative group">
+                <button class="hover:text-white transition flex items-center gap-1">
+                    Platform
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div
+                    class="absolute top-full left-0 mt-2 w-56 bg-neutral-900 border border-white/10 rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                    <a href="/#cognitive" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                        <div class="font-semibold text-white">Cognitive Memory OS</div>
+                        <div class="text-xs text-neutral-500">3-tier architecture</div>
+                    </a>
+                    <a href="/#moonshot" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                        <div class="font-semibold text-white">Reasoning Cache</div>
+                        <div class="text-xs text-neutral-500">Moonshot AI integration</div>
+                    </a>
+                    <a href="/monitor.html" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                        <div class="font-semibold text-white">Memory Monitor</div>
+                        <div class="text-xs text-neutral-500">Live demo</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Developers Dropdown -->
+            <div class="relative group">
+                <button class="hover:text-white transition flex items-center gap-1">
+                    Developers
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div
+                    class="absolute top-full left-0 mt-2 w-56 bg-neutral-900 border border-white/10 rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                    <a href="/docs.html" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                        <div class="font-semibold text-white">Documentation</div>
+                        <div class="text-xs text-neutral-500">API reference</div>
+                    </a>
+                    <a href="/docs.html#quickstart" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                        <div class="font-semibold text-white">Quick Start</div>
+                        <div class="text-xs text-neutral-500">Get started in 30s</div>
+                    </a>
+                    <a href="/changelog.html" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                        <div class="font-semibold text-white">Changelog</div>
+                        <div class="text-xs text-neutral-500">What's new</div>
+                    </a>
+                </div>
+            </div>
+
+            <a href="/blog.html" class="hover:text-white transition">Blog</a>
+            <a href="/pricing.html" class="hover:text-white transition">Pricing</a>
+        </nav>
+
+        <a href="/login.html"
+            class="px-5 py-2.5 rounded-lg bg-white text-neutral-950 text-sm font-bold hover:bg-neutral-200 transition">
+            Get Started
+        </a>
+    </div>
+</header>
+
+<style>
+    /* Dropdown hover state */
+    .group:hover .group-hover\:opacity-100 {
+        opacity: 1;
+    }
+
+    .group:hover .group-hover\:visible {
+        visibility: visible;
+    }
+</style>

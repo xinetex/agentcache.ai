@@ -23,8 +23,7 @@ body {
     background-size: 50px 50px;
     color: var(--hud-text);
     font-family: 'Rajdhani', sans-serif;
-    overflow-x: hidden;
-    /* Prevent horizontal scroll only */
+    overflow: hidden;
 }
 
 /* Typography */

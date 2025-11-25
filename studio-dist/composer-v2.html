@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pipeline Composer | AgentCache.ai</title>
+  
+  <!-- Libraries -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-tertiary: #1a1a25;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-cyan: #06b6d4;
+      --accent-green: #10b981;
+      --accent-orange: #f59e0b;
+      --accent-pink: #ec4899;
+      --glow-blue: rgba(59, 130, 246, 0.5);
+      --glow-purple: rgba(139, 92, 246, 0.5);
+    }
+    
+    * {
+      font-family: 'Inter', -apple-system, sans-serif;
+      box-sizing: border-box;
+    }
+    
+    body {
+      background: var(--bg-primary);
+      color: #e5e7eb;
+      overflow: hidden;
+    }
+    
+    /* Animated gradient background */
+    .bg-mesh {
+      position: fixed;
+      inset: 0;
+      background: 
+        radial-gradient(ellipse 80% 50% at 20% 40%, rgba(59, 130, 246, 0.15), transparent),
+        radial-gradient(ellipse 60% 40% at 80% 60%, rgba(139, 92, 246, 0.12), transparent),
+        radial-gradient(ellipse 50% 30% at 50% 90%, rgba(6, 182, 212, 0.1), transparent);
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    /* Canvas grid pattern */
+    .canvas-grid {
+      background-image: 
+        linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+    
+    /* Glowing orbs animation */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.4;
+      animation: float 20s ease-in-out infinite;
+    }
+    .orb-1 { width: 300px; height: 300px; background: var(--accent-blue); top: 10%; left: 20%; animation-delay: 0s; }
+    .orb-2 { width: 250px; height: 250px; background: var(--accent-purple); top: 60%; right: 10%; animation-delay: -7s; }
+    .orb-3 { width: 200px; height: 200px; background: var(--accent-cyan); bottom: 20%; left: 40%; animation-delay: -14s; }
+    
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(30px, -30px) scale(1.05); }
+      50% { transform: translate(-20px, 20px) scale(0.95); }
+      75% { transform: translate(40px, 10px) scale(1.02); }
+    }
+    
+    /* Node styling */
+    .pipeline-node {
+      position: absolute;
+      border-radius: 16px;
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 
+        0 4px 30px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: grab;
+      user-select: none;
+    }
+    
+    .pipeline-node:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 
+        0 8px 40px rgba(0, 0, 0, 0.4),
+        0 0 60px var(--node-glow, rgba(59, 130, 246, 0.2)),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+    
+    .pipeline-node.selected {
+      border-color: var(--accent-blue);
+      box-shadow: 
+        0 0 0 2px var(--accent-blue),
+        0 8px 40px rgba(59, 130, 246, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+    
+    .pipeline-node.dragging {
+      cursor: grabbing;
+      transform: scale(1.02);
+      z-index: 1000;
+    }
+    
+    /* Port styling */
+    .node-port {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      background: var(--bg-secondary);
+      cursor: crosshair;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    
+    .node-port::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      background: transparent;
+      transition: all 0.2s ease;
+    }
+    
+    .node-port:hover {
+      transform: scale(1.3);
+      border-color: var(--accent-cyan);
+      background: var(--accent-cyan);
+      box-shadow: 0 0 20px var(--accent-cyan);
+    }
+    
+    .node-port.input { border-color: var(--accent-green); }
+    .node-port.output { border-color: var(--accent-orange); }
+    .node-port.connected { background: currentColor; }
+    
+    /* Connection paths */
+    .connection-path {
+      fill: none;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      filter: drop-shadow(0 0 8px var(--path-color, rgba(59, 130, 246, 0.5)));
+    }
+    
+    .connection-path.animated {
+      stroke-dasharray: 8 4;
+      animation: flowAnimation 1s linear infinite;
+    }
+    
+    @keyframes flowAnimation {
+      from { stroke-dashoffset: 24; }
+      to { stroke-dashoffset: 0; }
+    }
+    
+    /* Particle effects on connections */
+    .flow-particle {
+      fill: var(--accent-cyan);
+      filter: drop-shadow(0 0 6px var(--accent-cyan));
+    }
+    
+    /* Palette items */
+    .palette-node {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      cursor: grab;
+      transition: all 0.2s ease;
+    }
+    
+    .palette-node:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.12);
+      transform: translateX(4px);
+    }
+    
+    .palette-node:active {
+      cursor: grabbing;
+      transform: scale(0.98);
+    }
+    
+    .palette-node .icon {
+      font-size: 24px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      background: var(--node-bg, rgba(59, 130, 246, 0.2));
+    }
+    
+    /* Stats card */
+    .stats-card {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1));
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 16px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .stats-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent 40%, rgba(16, 185, 129, 0.1));
+      pointer-events: none;
+    }
+    
+    /* Animated counter */
+    .counter {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    /* Code modal */
+    .code-block {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      background: var(--bg-primary);
+      border-radius: 12px;
+      padding: 20px;
+      overflow-x: auto;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    
+    .code-block .keyword { color: var(--accent-purple); }
+    .code-block .string { color: var(--accent-green); }
+    .code-block .function { color: var(--accent-blue); }
+    .code-block .comment { color: #6b7280; }
+    .code-block .number { color: var(--accent-orange); }
+    
+    /* Tooltip */
+    .tooltip {
+      position: absolute;
+      background: var(--bg-tertiary);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 12px;
+      pointer-events: none;
+      z-index: 9999;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      transform: translateY(4px);
+      transition: all 0.2s ease;
+    }
+    
+    .tooltip.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    /* Button styling */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      border: none;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-weight: 500;
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.2));
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    
+    .btn-primary:hover::before {
+      opacity: 1;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+    }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+    
+    /* Toast notifications */
+    .toast {
+      backdrop-filter: blur(20px);
+      background: rgba(30, 30, 40, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 12px 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    }
+    
+    .toast.success { border-left: 3px solid var(--accent-green); }
+    .toast.error { border-left: 3px solid #ef4444; }
+    .toast.info { border-left: 3px solid var(--accent-blue); }
+    
+    /* Intro animation */
+    .intro-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-primary);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 24px;
+    }
+    
+    .intro-logo {
+      font-size: 3rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .intro-tagline {
+      color: #6b7280;
+      font-size: 1.1rem;
+    }
+    
+    /* Loading spinner */
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(59, 130, 246, 0.2);
+      border-top-color: var(--accent-blue);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Intro Animation -->
+  <div class="intro-overlay" id="intro">
+    <div class="intro-logo">AgentCache</div>
+    <div class="intro-tagline">Pipeline Composer</div>
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Background effects -->
+  <div class="bg-mesh"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  
+  <!-- Main App -->
+  <div id="app" class="h-screen flex flex-col relative z-10">
+    
+    <!-- Header -->
+    <header class="h-16 flex items-center justify-between px-6 border-b border-white/5 backdrop-blur-xl bg-black/20">
+      <div class="flex items-center gap-5">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">A</div>
+          <span class="text-lg font-semibold">Pipeline Composer</span>
+        </div>
+        <div class="h-6 w-px bg-white/10"></div>
+        <input 
+          type="text" 
+          id="pipeline-name"
+          value="My RAG Pipeline"
+          class="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm w-52 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+        >
+      </div>
+      
+      <div class="flex items-center gap-3">
+        <button onclick="runSimulation()" class="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm flex items-center gap-2 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Simulate
+        </button>
+        <button onclick="validatePipeline()" class="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm flex items-center gap-2 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Validate
+        </button>
+        <button onclick="showDeployModal()" class="btn-primary flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Deploy
+        </button>
+      </div>
+    </header>
+    
+    <!-- Main Content -->
+    <div class="flex-1 flex overflow-hidden">
+      
+      <!-- Left Panel: Node Palette -->
+      <aside class="w-72 border-r border-white/5 flex flex-col bg-black/20 backdrop-blur-xl">
+        <div class="p-4 border-b border-white/5">
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input 
+              type="text" 
+              placeholder="Search nodes..."
+              class="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:border-blue-500/50 focus:outline-none transition-all"
+              oninput="filterNodes(this.value)"
+            >
+          </div>
+        </div>
+        
+        <div id="node-palette" class="flex-1 overflow-y-auto p-4 space-y-6">
+          <!-- Populated by JS -->
+        </div>
+        
+        <!-- Quick Templates -->
+        <div class="p-4 border-t border-white/5">
+          <div class="text-xs text-gray-500 uppercase tracking-wider mb-3">Quick Start</div>
+          <div class="space-y-2">
+            <button onclick="loadTemplate('rag')" class="w-full text-left px-3 py-2.5 rounded-lg bg-gradient-to-r from-orange-500/10 to-orange-600/5 border border-orange-500/20 text-sm hover:from-orange-500/20 hover:to-orange-600/10 transition-all">
+              🧱 Databricks RAG
+            </button>
+            <button onclick="loadTemplate('compliance')" class="w-full text-left px-3 py-2.5 rounded-lg bg-gradient-to-r from-green-500/10 to-green-600/5 border border-green-500/20 text-sm hover:from-green-500/20 hover:to-green-600/10 transition-all">
+              🔒 Enterprise Compliance
+            </button>
+            <button onclick="loadTemplate('reasoning')" class="w-full text-left px-3 py-2.5 rounded-lg bg-gradient-to-r from-pink-500/10 to-pink-600/5 border border-pink-500/20 text-sm hover:from-pink-500/20 hover:to-pink-600/10 transition-all">
+              🧠 Reasoning Cache
+            </button>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- Center: Canvas -->
+      <main class="flex-1 relative canvas-grid">
+        <!-- D3 SVG Canvas -->
+        <svg id="canvas-svg" class="absolute inset-0 w-full h-full">
+          <defs>
+            <!-- Gradient for connections -->
+            <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="var(--accent-cyan)" />
+              <stop offset="100%" stop-color="var(--accent-blue)" />
+            </linearGradient>
+            
+            <!-- Glow filter -->
+            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+            
+            <!-- Arrow marker -->
+            <marker id="arrowhead" markerWidth="12" markerHeight="8" refX="10" refY="4" orient="auto">
+              <path d="M 0 0 L 12 4 L 0 8 Z" fill="url(#connectionGradient)" opacity="0.8"/>
+            </marker>
+          </defs>
+          
+          <!-- Connections layer -->
+          <g id="connections-layer"></g>
+          
+          <!-- Particles layer -->
+          <g id="particles-layer"></g>
+          
+          <!-- Temp connection -->
+          <path id="temp-connection" class="connection-path" stroke="var(--accent-cyan)" stroke-dasharray="6 4" fill="none"/>
+        </svg>
+        
+        <!-- Nodes container (HTML) -->
+        <div id="nodes-container" class="absolute inset-0 pointer-events-none">
+          <!-- Nodes rendered here -->
+        </div>
+        
+        <!-- Floating toolbar -->
+        <div class="absolute top-4 left-4 flex gap-2 bg-black/40 backdrop-blur-xl rounded-xl p-2 border border-white/10">
+          <button onclick="zoomIn()" class="p-2.5 hover:bg-white/10 rounded-lg transition-all" title="Zoom In">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
+          </button>
+          <button onclick="zoomOut()" class="p-2.5 hover:bg-white/10 rounded-lg transition-all" title="Zoom Out">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"/></svg>
+          </button>
+          <div class="w-px bg-white/10 mx-1"></div>
+          <button onclick="autoLayout()" class="p-2.5 hover:bg-white/10 rounded-lg transition-all" title="Auto Layout">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm0 8a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z"/></svg>
+          </button>
+          <button onclick="clearCanvas()" class="p-2.5 hover:bg-red-500/20 rounded-lg transition-all text-red-400" title="Clear All">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </button>
+        </div>
+        
+        <!-- Status bar -->
+        <div class="absolute bottom-4 left-4 flex items-center gap-4 bg-black/40 backdrop-blur-xl rounded-lg px-4 py-2 border border-white/10 text-xs text-gray-400">
+          <span id="node-count">0 nodes</span>
+          <span class="text-white/20">•</span>
+          <span id="connection-count">0 connections</span>
+          <span class="text-white/20">•</span>
+          <span id="zoom-level">100%</span>
+        </div>
+      </main>
+      
+      <!-- Right Panel: Properties & Stats -->
+      <aside class="w-80 border-l border-white/5 flex flex-col bg-black/20 backdrop-blur-xl">
+        <div class="p-4 border-b border-white/5">
+          <h2 class="font-semibold text-lg" id="panel-title">Pipeline Overview</h2>
+        </div>
+        
+        <div id="panel-content" class="flex-1 overflow-y-auto p-4 space-y-6">
+          <!-- Cost Savings Card -->
+          <div class="stats-card">
+            <div class="relative z-10">
+              <div class="text-sm text-emerald-400/80 mb-1">Estimated Savings</div>
+              <div class="counter" id="savings-counter">$0</div>
+              <div class="text-xs text-gray-500 mt-1">per month</div>
+            </div>
+          </div>
+          
+          <!-- Metrics -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-white/5 rounded-xl p-4 border border-white/5">
+              <div class="text-2xl font-bold text-blue-400" id="hit-rate">92%</div>
+              <div class="text-xs text-gray-500">Cache Hit Rate</div>
+            </div>
+            <div class="bg-white/5 rounded-xl p-4 border border-white/5">
+              <div class="text-2xl font-bold text-purple-400" id="latency">12ms</div>
+              <div class="text-xs text-gray-500">Avg Latency</div>
+            </div>
+          </div>
+          
+          <!-- Pipeline Settings -->
+          <div id="pipeline-settings" class="space-y-4">
+            <div class="text-sm font-medium text-gray-400 mb-3">Configuration</div>
+            
+            <div>
+              <label class="block text-xs text-gray-500 mb-1.5">Namespace</label>
+              <input type="text" id="setting-namespace" value="default" 
+                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-blue-500/50 focus:outline-none transition-all"
+                onchange="updateSettings()">
+            </div>
+            
+            <div>
+              <label class="block text-xs text-gray-500 mb-1.5">Default TTL</label>
+              <div class="flex gap-2">
+                <input type="number" id="setting-ttl" value="86400"
+                  class="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-blue-500/50 focus:outline-none transition-all"
+                  onchange="updateSettings()">
+                <span class="text-xs text-gray-500 self-center">seconds</span>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-xs text-gray-500 mb-1.5">Region</label>
+              <select id="setting-region" 
+                class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-blue-500/50 focus:outline-none transition-all"
+                onchange="updateSettings()">
+                <option value="auto">Auto (Nearest Edge)</option>
+                <option value="us-east-1">US East (Virginia)</option>
+                <option value="eu-west-1">EU West (Ireland)</option>
+                <option value="ap-south-1">Asia Pacific (Mumbai)</option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- Node Properties (hidden by default) -->
+          <div id="node-properties" class="space-y-4 hidden">
+            <!-- Populated when node selected -->
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+  
+  <!-- Deploy Modal -->
+  <div id="deploy-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50">
+    <div class="bg-[#16161f] rounded-2xl w-[900px] max-h-[85vh] flex flex-col border border-white/10 shadow-2xl">
+      <div class="flex items-center justify-between p-5 border-b border-white/5">
+        <div>
+          <h3 class="text-xl font-semibold">Deploy Pipeline</h3>
+          <p class="text-sm text-gray-500 mt-1">Generate production-ready code</p>
+        </div>
+        <button onclick="hideDeployModal()" class="p-2 hover:bg-white/10 rounded-lg transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      
+      <!-- Tabs -->
+      <div class="flex gap-1 p-2 border-b border-white/5 bg-black/20">
+        <button class="code-tab active px-5 py-2.5 rounded-lg text-sm font-medium transition-all" data-tab="python" onclick="switchCodeTab('python')">
+          <span class="mr-2">🐍</span>Python
+        </button>
+        <button class="code-tab px-5 py-2.5 rounded-lg text-sm font-medium transition-all" data-tab="javascript" onclick="switchCodeTab('javascript')">
+          <span class="mr-2">📜</span>JavaScript
+        </button>
+        <button class="code-tab px-5 py-2.5 rounded-lg text-sm font-medium transition-all" data-tab="databricks" onclick="switchCodeTab('databricks')">
+          <span class="mr-2">🧱</span>Databricks
+        </button>
+        <button class="code-tab px-5 py-2.5 rounded-lg text-sm font-medium transition-all" data-tab="curl" onclick="switchCodeTab('curl')">
+          <span class="mr-2">⚡</span>cURL
+        </button>
+      </div>
+      
+      <!-- Code -->
+      <div class="flex-1 overflow-auto p-5">
+        <pre id="generated-code" class="code-block"></pre>
+      </div>
+      
+      <!-- Actions -->
+      <div class="flex items-center justify-between p-5 border-t border-white/5 bg-black/20">
+        <div class="flex items-center gap-2 text-sm">
+          <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span class="text-gray-400">Pipeline valid • Ready to deploy</span>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="copyCode()" class="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm transition-all flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            Copy
+          </button>
+          <button onclick="downloadCode()" class="btn-primary flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Download
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Toast Container -->
+  <div id="toast-container" class="fixed bottom-6 right-6 space-y-3 z-50"></div>
+  
+  <!-- Tooltip -->
+  <div id="tooltip" class="tooltip"></div>
+
+  <script>
+    // ============================================================
+    // STATE
+    // ============================================================
+    
+    const state = {
+      nodes: [],
+      connections: [],
+      selectedNode: null,
+      settings: {
+        namespace: 'default',
+        defaultTtl: 86400,
+        region: 'auto',
+      },
+      zoom: 1,
+      pan: { x: 0, y: 0 },
+      isDragging: false,
+      dragNode: null,
+      dragOffset: { x: 0, y: 0 },
+      isConnecting: false,
+      connectionStart: null,
+      generatedCode: {},
+      simulation: null,
+    };
+    
+    let nodeIdCounter = 0;
+    
+    // Node definitions
+    const NODE_TYPES = {
+      // Sources
+      databricks: { category: 'source', name: 'Databricks', icon: '🧱', color: '#f97316', gradient: ['#f97316', '#ea580c'], inputs: [], outputs: ['data', 'trigger'] },
+      snowflake: { category: 'source', name: 'Snowflake', icon: '❄️', color: '#3b82f6', gradient: ['#3b82f6', '#2563eb'], inputs: [], outputs: ['data', 'trigger'] },
+      vector_db: { category: 'source', name: 'Vector DB', icon: '🔮', color: '#8b5cf6', gradient: ['#8b5cf6', '#7c3aed'], inputs: ['query'], outputs: ['results', 'metadata'] },
+      url_monitor: { category: 'source', name: 'URL Monitor', icon: '🌐', color: '#06b6d4', gradient: ['#06b6d4', '#0891b2'], inputs: [], outputs: ['content', 'trigger'] },
+      // Cache
+      cache_l1: { category: 'cache', name: 'L1 Hot', icon: '🔥', color: '#ef4444', gradient: ['#ef4444', '#dc2626'], inputs: ['request'], outputs: ['hit', 'miss'] },
+      cache_l2: { category: 'cache', name: 'L2 Warm', icon: '🟠', color: '#f59e0b', gradient: ['#f59e0b', '#d97706'], inputs: ['request'], outputs: ['hit', 'miss'] },
+      cache_l3: { category: 'cache', name: 'L3 Cold', icon: '🧊', color: '#3b82f6', gradient: ['#3b82f6', '#2563eb'], inputs: ['request'], outputs: ['hit', 'miss'] },
+      cache_reasoning: { category: 'cache', name: 'Reasoning', icon: '🧠', color: '#ec4899', gradient: ['#ec4899', '#db2777'], inputs: ['request'], outputs: ['hit', 'miss', 'tokens'] },
+      // Validation
+      validator: { category: 'validation', name: 'Cognitive', icon: '🛡️', color: '#10b981', gradient: ['#10b981', '#059669'], inputs: ['response', 'context'], outputs: ['validated', 'rejected'] },
+      freshness: { category: 'validation', name: 'Freshness', icon: '⏰', color: '#eab308', gradient: ['#eab308', '#ca8a04'], inputs: ['cached', 'trigger'], outputs: ['fresh', 'stale'] },
+      pii_filter: { category: 'validation', name: 'PII Filter', icon: '🔒', color: '#ef4444', gradient: ['#ef4444', '#dc2626'], inputs: ['content'], outputs: ['clean', 'detected'] },
+      // LLM
+      llm_openai: { category: 'llm', name: 'OpenAI', icon: '🤖', color: '#10b981', gradient: ['#10b981', '#059669'], inputs: ['prompt', 'context'], outputs: ['response', 'usage'] },
+      llm_anthropic: { category: 'llm', name: 'Anthropic', icon: '🎭', color: '#f97316', gradient: ['#f97316', '#ea580c'], inputs: ['prompt', 'context'], outputs: ['response', 'usage'] },
+      // Output
+      webhook: { category: 'output', name: 'Webhook', icon: '📤', color: '#3b82f6', gradient: ['#3b82f6', '#2563eb'], inputs: ['data'], outputs: [] },
+      delta_lake: { category: 'output', name: 'Delta Lake', icon: '📊', color: '#f97316', gradient: ['#f97316', '#ea580c'], inputs: ['data'], outputs: [] },
+      analytics: { category: 'output', name: 'Analytics', icon: '📈', color: '#10b981', gradient: ['#10b981', '#059669'], inputs: ['event'], outputs: [] },
+    };
+    
+    const CATEGORIES = {
+      source: { name: 'Data Sources', color: '#3b82f6' },
+      cache: { name: 'Cache Layers', color: '#f59e0b' },
+      validation: { name: 'Validation', color: '#10b981' },
+      llm: { name: 'LLM Providers', color: '#8b5cf6' },
+      output: { name: 'Outputs', color: '#06b6d4' },
+    };
+    
+    // ============================================================
+    // INITIALIZATION
+    // ============================================================
+    
+    async function init() {
+      // Intro animation
+      await playIntroAnimation();
+      
+      // Render palette
+      renderPalette();
+      
+      // Setup D3 canvas
+      setupCanvas();
+      
+      // Setup drag and drop
+      setupDragDrop();
+      
+      // Animate stats
+      animateStats();
+    }
+    
+    async function playIntroAnimation() {
+      return new Promise(resolve => {
+        const intro = document.getElementById('intro');
+        
+        anime.timeline({
+          complete: () => {
+            intro.style.display = 'none';
+            resolve();
+          }
+        })
+        .add({
+          targets: '.intro-logo',
+          opacity: [0, 1],
+          translateY: [20, 0],
+          duration: 800,
+          easing: 'easeOutExpo'
+        })
+        .add({
+          targets: '.intro-tagline',
+          opacity: [0, 1],
+          translateY: [10, 0],
+          duration: 600,
+          easing: 'easeOutExpo'
+        }, '-=400')
+        .add({
+          targets: '.spinner',
+          opacity: [0, 1],
+          duration: 400
+        }, '-=200')
+        .add({
+          targets: '#intro',
+          opacity: [1, 0],
+          duration: 600,
+          easing: 'easeInExpo'
+        }, '+=800');
+      });
+    }
+    
+    function renderPalette() {
+      const palette = document.getElementById('node-palette');
+      const categories = [...new Set(Object.values(NODE_TYPES).map(n => n.category))];
+      
+      palette.innerHTML = categories.map(cat => `
+        <div class="category" data-category="${cat}">
+          <div class="text-xs font-medium uppercase tracking-wider mb-3" style="color: ${CATEGORIES[cat].color}">${CATEGORIES[cat].name}</div>
+          <div class="space-y-2">
+            ${Object.entries(NODE_TYPES)
+              .filter(([_, n]) => n.category === cat)
+              .map(([id, node]) => `
+                <div 
+                  class="palette-node"
+                  draggable="true"
+                  data-node-type="${id}"
+                  style="--node-bg: ${node.color}20"
+                >
+                  <div class="icon" style="background: linear-gradient(135deg, ${node.gradient[0]}30, ${node.gradient[1]}20)">${node.icon}</div>
+                  <div>
+                    <div class="text-sm font-medium">${node.name}</div>
+                    <div class="text-xs text-gray-500">${node.inputs.length} in • ${node.outputs.length} out</div>
+                  </div>
+                </div>
+              `).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function setupCanvas() {
+      const svg = d3.select('#canvas-svg');
+      const container = document.getElementById('nodes-container');
+      
+      // Make nodes container pointer-events auto
+      container.style.pointerEvents = 'auto';
+      
+      // Canvas pan/zoom (future enhancement)
+    }
+    
+    function setupDragDrop() {
+      const canvas = document.querySelector('main');
+      
+      canvas.addEventListener('dragover', e => e.preventDefault());
+      canvas.addEventListener('drop', e => {
+        e.preventDefault();
+        const type = e.dataTransfer.getData('node-type');
+        if (!type) return;
+        
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left - 80;
+        const y = e.clientY - rect.top - 40;
+        
+        addNode(type, x, y);
+      });
+      
+      // Palette drag start
+      document.querySelectorAll('.palette-node').forEach(el => {
+        el.addEventListener('dragstart', e => {
+          e.dataTransfer.setData('node-type', el.dataset.nodeType);
+          e.dataTransfer.effectAllowed = 'copy';
+        });
+      });
+    }
+    
+    // ============================================================
+    // NODE MANAGEMENT
+    // ============================================================
+    
+    function addNode(type, x, y) {
+      const def = NODE_TYPES[type];
+      if (!def) return;
+      
+      const node = {
+        id: `node_${++nodeIdCounter}`,
+        type,
+        position: { x, y },
+        config: {},
+        label: def.name,
+      };
+      
+      state.nodes.push(node);
+      renderNode(node);
+      updateStatusBar();
+      
+      // Animate in
+      anime({
+        targets: `[data-node-id="${node.id}"]`,
+        scale: [0.5, 1],
+        opacity: [0, 1],
+        duration: 400,
+        easing: 'easeOutBack'
+      });
+      
+      showToast(`Added ${def.name}`, 'success');
+    }
+    
+    function renderNode(node) {
+      const container = document.getElementById('nodes-container');
+      const def = NODE_TYPES[node.type];
+      const isSelected = state.selectedNode === node.id;
+      
+      const nodeEl = document.createElement('div');
+      nodeEl.className = `pipeline-node ${isSelected ? 'selected' : ''}`;
+      nodeEl.dataset.nodeId = node.id;
+      nodeEl.style.cssText = `
+        left: ${node.position.x}px;
+        top: ${node.position.y}px;
+        --node-glow: ${def.color}40;
+        background: linear-gradient(135deg, ${def.gradient[0]}15, ${def.gradient[1]}08);
+        min-width: 180px;
+        pointer-events: auto;
+      `;
+      
+      nodeEl.innerHTML = `
+        <div class="flex items-center gap-3 px-4 py-3 border-b border-white/5">
+          <span class="text-xl">${def.icon}</span>
+          <span class="text-sm font-medium flex-1">${node.label}</span>
+          <button class="delete-btn opacity-0 hover:opacity-100 text-gray-500 hover:text-red-400 transition-all" onclick="deleteNode('${node.id}')">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="flex justify-between px-3 py-2">
+          <div class="space-y-2">
+            ${def.inputs.map(port => `
+              <div class="flex items-center gap-2">
+                <div class="node-port input" data-port="${port}" data-direction="input"></div>
+                <span class="text-xs text-gray-500">${port}</span>
+              </div>
+            `).join('')}
+          </div>
+          <div class="space-y-2">
+            ${def.outputs.map(port => `
+              <div class="flex items-center gap-2 justify-end">
+                <span class="text-xs text-gray-500">${port}</span>
+                <div class="node-port output" data-port="${port}" data-direction="output"></div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      
+      // Event listeners
+      nodeEl.addEventListener('mousedown', e => nodeMouseDown(e, node.id));
+      nodeEl.addEventListener('mouseenter', () => nodeEl.querySelector('.delete-btn').style.opacity = '1');
+      nodeEl.addEventListener('mouseleave', () => nodeEl.querySelector('.delete-btn').style.opacity = '0');
+      
+      // Port events
+      nodeEl.querySelectorAll('.node-port').forEach(port => {
+        port.addEventListener('mousedown', e => portMouseDown(e, node.id, port.dataset.port, port.dataset.direction));
+        port.addEventListener('mouseup', e => portMouseUp(e, node.id, port.dataset.port, port.dataset.direction));
+      });
+      
+      container.appendChild(nodeEl);
+    }
+    
+    function renderAllNodes() {
+      const container = document.getElementById('nodes-container');
+      container.innerHTML = '';
+      state.nodes.forEach(renderNode);
+      renderConnections();
+    }
+    
+    function nodeMouseDown(e, nodeId) {
+      if (e.target.closest('.node-port') || e.target.closest('.delete-btn')) return;
+      
+      e.stopPropagation();
+      selectNode(nodeId);
+      
+      const node = state.nodes.find(n => n.id === nodeId);
+      state.isDragging = true;
+      state.dragNode = nodeId;
+      state.dragOffset = {
+        x: e.clientX - node.position.x,
+        y: e.clientY - node.position.y,
+      };
+      
+      const el = document.querySelector(`[data-node-id="${nodeId}"]`);
+      el.classList.add('dragging');
+    }
+    
+    function selectNode(nodeId) {
+      state.selectedNode = nodeId;
+      document.querySelectorAll('.pipeline-node').forEach(el => el.classList.remove('selected'));
+      document.querySelector(`[data-node-id="${nodeId}"]`)?.classList.add('selected');
+      showNodeProperties(nodeId);
+    }
+    
+    function deleteNode(nodeId) {
+      // Animate out
+      anime({
+        targets: `[data-node-id="${nodeId}"]`,
+        scale: [1, 0.5],
+        opacity: [1, 0],
+        duration: 300,
+        easing: 'easeInBack',
+        complete: () => {
+          state.nodes = state.nodes.filter(n => n.id !== nodeId);
+          state.connections = state.connections.filter(c => 
+            c.source.nodeId !== nodeId && c.target.nodeId !== nodeId
+          );
+          
+          document.querySelector(`[data-node-id="${nodeId}"]`)?.remove();
+          renderConnections();
+          updateStatusBar();
+          
+          if (state.selectedNode === nodeId) {
+            state.selectedNode = null;
+            showPipelineSettings();
+          }
+        }
+      });
+    }
+    
+    // ============================================================
+    // CONNECTIONS (D3)
+    // ============================================================
+    
+    function portMouseDown(e, nodeId, portId, direction) {
+      e.stopPropagation();
+      if (direction === 'output') {
+        state.isConnecting = true;
+        state.connectionStart = { nodeId, portId };
+      }
+    }
+    
+    function portMouseUp(e, nodeId, portId, direction) {
+      e.stopPropagation();
+      
+      if (state.isConnecting && direction === 'input' && state.connectionStart) {
+        const conn = {
+          id: `conn_${Date.now()}`,
+          source: state.connectionStart,
+          target: { nodeId, portId },
+        };
+        
+        if (conn.source.nodeId !== conn.target.nodeId) {
+          state.connections.push(conn);
+          renderConnections();
+          updateStatusBar();
+        }
+      }
+      
+      state.isConnecting = false;
+      state.connectionStart = null;
+      d3.select('#temp-connection').attr('d', '');
+    }
+    
+    function renderConnections() {
+      const svg = d3.select('#connections-layer');
+      svg.selectAll('*').remove();
+      
+      state.connections.forEach(conn => {
+        const sourceNode = document.querySelector(`[data-node-id="${conn.source.nodeId}"]`);
+        const targetNode = document.querySelector(`[data-node-id="${conn.target.nodeId}"]`);
+        
+        if (!sourceNode || !targetNode) return;
+        
+        const sourcePort = sourceNode.querySelector(`[data-port="${conn.source.portId}"][data-direction="output"]`);
+        const targetPort = targetNode.querySelector(`[data-port="${conn.target.portId}"][data-direction="input"]`);
+        
+        if (!sourcePort || !targetPort) return;
+        
+        const svgRect = document.getElementById('canvas-svg').getBoundingClientRect();
+        const sourceRect = sourcePort.getBoundingClientRect();
+        const targetRect = targetPort.getBoundingClientRect();
+        
+        const x1 = sourceRect.left + sourceRect.width/2 - svgRect.left;
+        const y1 = sourceRect.top + sourceRect.height/2 - svgRect.top;
+        const x2 = targetRect.left + targetRect.width/2 - svgRect.left;
+        const y2 = targetRect.top + targetRect.height/2 - svgRect.top;
+        
+        // Curved path
+        const dx = Math.abs(x2 - x1) * 0.5;
+        const path = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+        
+        svg.append('path')
+          .attr('class', 'connection-path')
+          .attr('d', path)
+          .attr('stroke', 'url(#connectionGradient)')
+          .attr('marker-end', 'url(#arrowhead)')
+          .attr('filter', 'url(#glow)')
+          .attr('data-conn-id', conn.id)
+          .on('click', () => deleteConnection(conn.id));
+      });
+    }
+    
+    function deleteConnection(connId) {
+      state.connections = state.connections.filter(c => c.id !== connId);
+      renderConnections();
+      updateStatusBar();
+    }
+    
+    // Global mouse events
+    document.addEventListener('mousemove', e => {
+      // Dragging node
+      if (state.isDragging && state.dragNode) {
+        const node = state.nodes.find(n => n.id === state.dragNode);
+        if (node) {
+          node.position.x = e.clientX - state.dragOffset.x;
+          node.position.y = e.clientY - state.dragOffset.y;
+          
+          const el = document.querySelector(`[data-node-id="${state.dragNode}"]`);
+          if (el) {
+            el.style.left = `${node.position.x}px`;
+            el.style.top = `${node.position.y}px`;
+          }
+          
+          renderConnections();
+        }
+      }
+      
+      // Drawing connection
+      if (state.isConnecting && state.connectionStart) {
+        const sourceNode = document.querySelector(`[data-node-id="${state.connectionStart.nodeId}"]`);
+        const sourcePort = sourceNode?.querySelector(`[data-port="${state.connectionStart.portId}"][data-direction="output"]`);
+        
+        if (sourcePort) {
+          const svgRect = document.getElementById('canvas-svg').getBoundingClientRect();
+          const sourceRect = sourcePort.getBoundingClientRect();
+          
+          const x1 = sourceRect.left + sourceRect.width/2 - svgRect.left;
+          const y1 = sourceRect.top + sourceRect.height/2 - svgRect.top;
+          const x2 = e.clientX - svgRect.left;
+          const y2 = e.clientY - svgRect.top;
+          
+          const dx = Math.abs(x2 - x1) * 0.5;
+          const path = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+          
+          d3.select('#temp-connection').attr('d', path);
+        }
+      }
+    });
+    
+    document.addEventListener('mouseup', () => {
+      if (state.dragNode) {
+        document.querySelector(`[data-node-id="${state.dragNode}"]`)?.classList.remove('dragging');
+      }
+      state.isDragging = false;
+      state.dragNode = null;
+      state.isConnecting = false;
+      state.connectionStart = null;
+      d3.select('#temp-connection').attr('d', '');
+    });
+    
+    // ============================================================
+    // SIMULATION
+    // ============================================================
+    
+    function runSimulation() {
+      if (state.nodes.length === 0) {
+        showToast('Add nodes to simulate', 'info');
+        return;
+      }
+      
+      showToast('Running simulation...', 'info');
+      
+      // Animate data flow through connections
+      state.connections.forEach((conn, i) => {
+        setTimeout(() => {
+          animateDataFlow(conn);
+        }, i * 300);
+      });
+      
+      // Pulse nodes in order
+      state.nodes.forEach((node, i) => {
+        setTimeout(() => {
+          anime({
+            targets: `[data-node-id="${node.id}"]`,
+            scale: [1, 1.05, 1],
+            boxShadow: [
+              '0 0 0 0 rgba(59, 130, 246, 0)',
+              '0 0 30px 10px rgba(59, 130, 246, 0.3)',
+              '0 0 0 0 rgba(59, 130, 246, 0)'
+            ],
+            duration: 600,
+            easing: 'easeInOutQuad'
+          });
+        }, i * 200);
+      });
+      
+      // Update metrics
+      setTimeout(() => {
+        anime({
+          targets: '#hit-rate',
+          innerHTML: [0, 92],
+          round: 1,
+          duration: 1500,
+          easing: 'easeOutExpo',
+          update: function(anim) {
+            document.getElementById('hit-rate').innerHTML = Math.round(anim.animations[0].currentValue) + '%';
+          }
+        });
+        
+        anime({
+          targets: '#latency',
+          innerHTML: [0, 12],
+          round: 1,
+          duration: 1500,
+          easing: 'easeOutExpo',
+          update: function(anim) {
+            document.getElementById('latency').innerHTML = Math.round(anim.animations[0].currentValue) + 'ms';
+          }
+        });
+        
+        showToast('Simulation complete!', 'success');
+      }, state.nodes.length * 200 + 500);
+    }
+    
+    function animateDataFlow(conn) {
+      const svg = d3.select('#particles-layer');
+      const path = d3.select(`[data-conn-id="${conn.id}"]`);
+      
+      if (path.empty()) return;
+      
+      const pathNode = path.node();
+      const pathLength = pathNode.getTotalLength();
+      
+      // Create particle
+      const particle = svg.append('circle')
+        .attr('class', 'flow-particle')
+        .attr('r', 4);
+      
+      // Animate along path
+      anime({
+        targets: {},
+        progress: [0, 100],
+        duration: 800,
+        easing: 'easeInOutQuad',
+        update: function(anim) {
+          const progress = anim.animations[0].currentValue / 100;
+          const point = pathNode.getPointAtLength(progress * pathLength);
+          particle.attr('cx', point.x).attr('cy', point.y);
+        },
+        complete: () => particle.remove()
+      });
+    }
+    
+    // ============================================================
+    // TEMPLATES
+    // ============================================================
+    
+    function loadTemplate(templateName) {
+      // Clear canvas
+      state.nodes = [];
+      state.connections = [];
+      document.getElementById('nodes-container').innerHTML = '';
+      
+      const templates = {
+        rag: {
+          nodes: [
+            { type: 'databricks', x: 80, y: 80, label: 'Databricks' },
+            { type: 'vector_db', x: 80, y: 220, label: 'Vector DB' },
+            { type: 'cache_l2', x: 320, y: 150, label: 'L2 Cache' },
+            { type: 'llm_openai', x: 520, y: 150, label: 'GPT-4o' },
+            { type: 'analytics', x: 720, y: 150, label: 'Analytics' },
+          ],
+          connections: [
+            { s: 0, sp: 'data', t: 1, tp: 'query' },
+            { s: 1, sp: 'results', t: 2, tp: 'request' },
+            { s: 2, sp: 'miss', t: 3, tp: 'prompt' },
+            { s: 3, sp: 'response', t: 4, tp: 'event' },
+          ],
+          settings: { namespace: 'databricks/rag' }
+        },
+        compliance: {
+          nodes: [
+            { type: 'cache_l2', x: 80, y: 150, label: 'L2 Cache' },
+            { type: 'pii_filter', x: 280, y: 150, label: 'PII Filter' },
+            { type: 'llm_anthropic', x: 480, y: 80, label: 'Claude' },
+            { type: 'validator', x: 480, y: 220, label: 'Validator' },
+            { type: 'analytics', x: 680, y: 150, label: 'Analytics' },
+          ],
+          connections: [
+            { s: 0, sp: 'miss', t: 1, tp: 'content' },
+            { s: 1, sp: 'clean', t: 2, tp: 'prompt' },
+            { s: 2, sp: 'response', t: 3, tp: 'response' },
+            { s: 3, sp: 'validated', t: 4, tp: 'event' },
+          ],
+          settings: { namespace: 'enterprise/compliant' }
+        },
+        reasoning: {
+          nodes: [
+            { type: 'cache_reasoning', x: 80, y: 150, label: 'Reasoning Cache' },
+            { type: 'llm_openai', x: 300, y: 150, label: 'o1' },
+            { type: 'cache_l2', x: 500, y: 150, label: 'L2 Persist' },
+            { type: 'analytics', x: 700, y: 150, label: 'Analytics' },
+          ],
+          connections: [
+            { s: 0, sp: 'miss', t: 1, tp: 'prompt' },
+            { s: 1, sp: 'response', t: 2, tp: 'request' },
+            { s: 2, sp: 'hit', t: 3, tp: 'event' },
+          ],
+          settings: { namespace: 'reasoning/o1' }
+        }
+      };
+      
+      const template = templates[templateName];
+      if (!template) return;
+      
+      // Create nodes with animation
+      template.nodes.forEach((n, i) => {
+        setTimeout(() => {
+          const node = {
+            id: `node_${++nodeIdCounter}`,
+            type: n.type,
+            position: { x: n.x, y: n.y },
+            config: {},
+            label: n.label,
+          };
+          state.nodes.push(node);
+          renderNode(node);
+          
+          anime({
+            targets: `[data-node-id="${node.id}"]`,
+            scale: [0, 1],
+            opacity: [0, 1],
+            duration: 500,
+            easing: 'easeOutBack'
+          });
+        }, i * 100);
+      });
+      
+      // Create connections after nodes
+      setTimeout(() => {
+        template.connections.forEach(c => {
+          state.connections.push({
+            id: `conn_${Date.now()}_${Math.random()}`,
+            source: { nodeId: state.nodes[c.s].id, portId: c.sp },
+            target: { nodeId: state.nodes[c.t].id, portId: c.tp },
+          });
+        });
+        renderConnections();
+        updateStatusBar();
+        
+        // Apply settings
+        state.settings.namespace = template.settings.namespace;
+        document.getElementById('setting-namespace').value = template.settings.namespace;
+        
+        animateSavings();
+      }, template.nodes.length * 100 + 200);
+      
+      showToast(`Loaded ${templateName} template`, 'success');
+    }
+    
+    // ============================================================
+    // UI HELPERS
+    // ============================================================
+    
+    function animateStats() {
+      // Initial savings animation
+      animateSavings();
+    }
+    
+    function animateSavings() {
+      const cacheNodes = state.nodes.filter(n => n.type.startsWith('cache')).length;
+      const savings = cacheNodes * 850 + (state.nodes.length > 3 ? 500 : 0);
+      
+      anime({
+        targets: { val: 0 },
+        val: savings,
+        duration: 2000,
+        easing: 'easeOutExpo',
+        update: function(anim) {
+          document.getElementById('savings-counter').textContent = 
+            '$' + Math.round(anim.animations[0].currentValue).toLocaleString();
+        }
+      });
+    }
+    
+    function updateStatusBar() {
+      document.getElementById('node-count').textContent = `${state.nodes.length} nodes`;
+      document.getElementById('connection-count').textContent = `${state.connections.length} connections`;
+      animateSavings();
+    }
+    
+    function showPipelineSettings() {
+      document.getElementById('panel-title').textContent = 'Pipeline Overview';
+      document.getElementById('pipeline-settings').classList.remove('hidden');
+      document.getElementById('node-properties').classList.add('hidden');
+    }
+    
+    function showNodeProperties(nodeId) {
+      const node = state.nodes.find(n => n.id === nodeId);
+      if (!node) return;
+      
+      const def = NODE_TYPES[node.type];
+      
+      document.getElementById('panel-title').textContent = `${def.icon} ${def.name}`;
+      document.getElementById('pipeline-settings').classList.add('hidden');
+      document.getElementById('node-properties').classList.remove('hidden');
+      
+      document.getElementById('node-properties').innerHTML = `
+        <div>
+          <label class="block text-xs text-gray-500 mb-1.5">Label</label>
+          <input type="text" value="${node.label}"
+            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-blue-500/50 focus:outline-none transition-all"
+            onchange="updateNodeLabel('${nodeId}', this.value)">
+        </div>
+        <div class="text-xs text-gray-600 space-y-1 mt-4">
+          <div>Type: ${node.type}</div>
+          <div>ID: ${node.id}</div>
+        </div>
+      `;
+    }
+    
+    function updateNodeLabel(nodeId, label) {
+      const node = state.nodes.find(n => n.id === nodeId);
+      if (node) {
+        node.label = label;
+        renderAllNodes();
+      }
+    }
+    
+    function updateSettings() {
+      state.settings.namespace = document.getElementById('setting-namespace').value;
+      state.settings.defaultTtl = parseInt(document.getElementById('setting-ttl').value) || 86400;
+      state.settings.region = document.getElementById('setting-region').value;
+    }
+    
+    function filterNodes(query) {
+      const q = query.toLowerCase();
+      document.querySelectorAll('.palette-node').forEach(el => {
+        const type = el.dataset.nodeType;
+        const def = NODE_TYPES[type];
+        const visible = def.name.toLowerCase().includes(q) || def.category.includes(q);
+        el.style.display = visible ? 'flex' : 'none';
+      });
+    }
+    
+    function zoomIn() { state.zoom = Math.min(state.zoom + 0.1, 2); updateZoom(); }
+    function zoomOut() { state.zoom = Math.max(state.zoom - 0.1, 0.5); updateZoom(); }
+    function updateZoom() { document.getElementById('zoom-level').textContent = `${Math.round(state.zoom * 100)}%`; }
+    
+    function autoLayout() {
+      const spacing = { x: 220, y: 160 };
+      state.nodes.forEach((node, i) => {
+        const col = i % 4;
+        const row = Math.floor(i / 4);
+        
+        anime({
+          targets: `[data-node-id="${node.id}"]`,
+          left: 80 + col * spacing.x,
+          top: 80 + row * spacing.y,
+          duration: 600,
+          easing: 'easeOutExpo',
+          complete: () => {
+            node.position.x = 80 + col * spacing.x;
+            node.position.y = 80 + row * spacing.y;
+            renderConnections();
+          }
+        });
+      });
+    }
+    
+    function clearCanvas() {
+      if (state.nodes.length === 0) return;
+      if (!confirm('Clear all nodes?')) return;
+      
+      anime({
+        targets: '.pipeline-node',
+        scale: [1, 0],
+        opacity: [1, 0],
+        duration: 300,
+        easing: 'easeInBack',
+        delay: anime.stagger(50),
+        complete: () => {
+          state.nodes = [];
+          state.connections = [];
+          document.getElementById('nodes-container').innerHTML = '';
+          d3.select('#connections-layer').selectAll('*').remove();
+          updateStatusBar();
+        }
+      });
+    }
+    
+    function validatePipeline() {
+      if (state.nodes.length === 0) {
+        showToast('Pipeline is empty', 'error');
+        return;
+      }
+      
+      // Simple validation
+      const hasCache = state.nodes.some(n => n.type.startsWith('cache'));
+      const hasLLM = state.nodes.some(n => n.type.startsWith('llm'));
+      
+      if (hasLLM && !hasCache) {
+        showToast('Warning: LLM without cache layer', 'info');
+      } else {
+        showToast('Pipeline valid!', 'success');
+      }
+    }
+    
+    // ============================================================
+    // DEPLOY MODAL
+    // ============================================================
+    
+    function showDeployModal() {
+      generateCode();
+      document.getElementById('deploy-modal').classList.remove('hidden');
+      document.getElementById('deploy-modal').classList.add('flex');
+      
+      anime({
+        targets: '#deploy-modal > div',
+        scale: [0.9, 1],
+        opacity: [0, 1],
+        duration: 300,
+        easing: 'easeOutExpo'
+      });
+    }
+    
+    function hideDeployModal() {
+      anime({
+        targets: '#deploy-modal > div',
+        scale: [1, 0.9],
+        opacity: [1, 0],
+        duration: 200,
+        easing: 'easeInExpo',
+        complete: () => {
+          document.getElementById('deploy-modal').classList.add('hidden');
+          document.getElementById('deploy-modal').classList.remove('flex');
+        }
+      });
+    }
+    
+    function generateCode() {
+      const ns = state.settings.namespace;
+      const ttl = state.settings.defaultTtl;
+      const name = document.getElementById('pipeline-name').value;
+      
+      state.generatedCode = {
+        python: `from agentcache import AgentCache
+
+# ${name}
+cache = AgentCache(
+    api_key="{{AGENTCACHE_API_KEY}}",
+    namespace="${ns}",
+    default_ttl=${ttl},
+)
+
+@cache.cached(ttl=${ttl})
+async def cached_llm_call(prompt: str):
+    response = await openai.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return response.choices[0].message.content`,
+        
+        javascript: `import { AgentCache } from 'agentcache';
+
+// ${name}
+const cache = new AgentCache({
+  apiKey: process.env.AGENTCACHE_API_KEY,
+  namespace: '${ns}',
+  defaultTtl: ${ttl},
+});
+
+export async function cachedLLMCall(prompt) {
+  return cache.cached(async () => {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [{ role: 'user', content: prompt }],
+    });
+    return response.choices[0].message.content;
+  });
+}`,
+        
+        databricks: `# Databricks Notebook - ${name}
+# COMMAND ----------
+%pip install agentcache
+
+# COMMAND ----------
+from agentcache import AgentCache
+
+cache = AgentCache(
+    api_key=dbutils.secrets.get("agentcache", "api_key"),
+    namespace="${ns}",
+    default_ttl=${ttl},
+)
+
+@cache.cached(ttl=${ttl})
+def rag_query(query: str, context: list) -> str:
+    # Cache hit = ~5ms, miss = ~2000ms
+    response = openai.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": f"{context}\\n{query}"}]
+    )
+    return response.choices[0].message.content`,
+        
+        curl: `# ${name} - REST API
+curl -X POST https://api.agentcache.ai/v1/cache/get \\
+  -H "Authorization: Bearer $AGENTCACHE_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"key": "prompt-hash", "namespace": "${ns}"}'`
+      };
+      
+      switchCodeTab('python');
+    }
+    
+    function switchCodeTab(tab) {
+      document.querySelectorAll('.code-tab').forEach(el => {
+        el.classList.toggle('active', el.dataset.tab === tab);
+        el.style.background = el.dataset.tab === tab ? 'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))' : '';
+      });
+      
+      document.getElementById('generated-code').textContent = state.generatedCode[tab] || '';
+    }
+    
+    function copyCode() {
+      const code = document.getElementById('generated-code').textContent;
+      navigator.clipboard.writeText(code);
+      showToast('Copied to clipboard!', 'success');
+    }
+    
+    function downloadCode() {
+      const code = document.getElementById('generated-code').textContent;
+      const blob = new Blob([code], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'agentcache_pipeline.py';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+    
+    // ============================================================
+    // TOAST NOTIFICATIONS
+    // ============================================================
+    
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        <div class="flex items-center gap-3">
+          ${type === 'success' ? '<svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' : ''}
+          ${type === 'error' ? '<svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' : ''}
+          ${type === 'info' ? '<svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' : ''}
+          <span class="text-sm">${message}</span>
+        </div>
+      `;
+      
+      container.appendChild(toast);
+      
+      anime({
+        targets: toast,
+        translateX: [100, 0],
+        opacity: [0, 1],
+        duration: 400,
+        easing: 'easeOutExpo'
+      });
+      
+      setTimeout(() => {
+        anime({
+          targets: toast,
+          translateX: [0, 100],
+          opacity: [1, 0],
+          duration: 300,
+          easing: 'easeInExpo',
+          complete: () => toast.remove()
+        });
+      }, 3000);
+    }
+    
+    // Initialize
+    init();
+  </script>
+</body>
+</html>

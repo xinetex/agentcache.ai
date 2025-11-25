@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>AgentCache Blog Styler</title>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* Dynamic Variables Root */
+        :root {
+            --bg-color: #050816;
+            --text-color: #f1f5f9;
+            --accent-color: #0ea5e9;
+            --heading-color: #f8fafc;
+            --code-bg: #0f172a;
+
+            --base-font-size: 16px;
+            --line-height: 1.75;
+            --h1-size: 3rem;
+            --h2-size: 1.875rem;
+            --max-width: 65ch;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        /* Control Panel */
+        #controls {
+            width: 320px;
+            background: #1e293b;
+            color: white;
+            padding: 1.5rem;
+            overflow-y: auto;
+            border-right: 1px solid #334155;
+            flex-shrink: 0;
+        }
+
+        .control-group {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #334155;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #94a3b8;
+        }
+
+        .control-group input[type="color"] {
+            width: 100%;
+            height: 40px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .value-display {
+            font-size: 0.75rem;
+            color: #64748b;
+            float: right;
+        }
+
+        /* Preview Area */
+        #preview {
+            flex: 1;
+            background: var(--bg-color);
+            color: var(--text-color);
+            overflow-y: auto;
+            padding: 4rem 2rem;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        /* Simulated Typography Styles */
+        .preview-content {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            font-size: var(--base-font-size);
+            line-height: var(--line-height);
+        }
+
+        .preview-content h1 {
+            font-size: var(--h1-size);
+            color: var(--heading-color);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 2rem;
+        }
+
+        .preview-content h2 {
+            font-size: var(--h2-size);
+            color: var(--heading-color);
+            font-weight: 700;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .preview-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .preview-content a {
+            color: var(--accent-color);
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+
+        .preview-content code {
+            background: var(--code-bg);
+            color: var(--accent-color);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .preview-content pre {
+            background: var(--code-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .preview-content pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        .preview-content ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .preview-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Export Button */
+        .btn-primary {
+            width: 100%;
+            padding: 0.75rem;
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #0284c7;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar Controls -->
+    <div id="controls">
+        <h2 class="text-xl font-bold mb-6 text-white">Blog Styler</h2>
+
+        <div class="control-group">
+            <label>Background Color</label>
+            <input type="color" id="bg-color" value="#050816">
+        </div>
+
+        <div class="control-group">
+            <label>Text Color</label>
+            <input type="color" id="text-color" value="#f1f5f9">
+        </div>
+
+        <div class="control-group">
+            <label>Heading Color</label>
+            <input type="color" id="heading-color" value="#f8fafc">
+        </div>
+
+        <div class="control-group">
+            <label>Accent Color</label>
+            <input type="color" id="accent-color" value="#0ea5e9">
+        </div>
+
+        <div class="control-group">
+            <label>Base Font Size <span class="value-display" id="base-font-val">16px</span></label>
+            <input type="range" id="base-font-size" min="14" max="24" value="16">
+        </div>
+
+        <div class="control-group">
+            <label>Line Height <span class="value-display" id="line-height-val">1.75</span></label>
+            <input type="range" id="line-height" min="1.2" max="2.5" step="0.05" value="1.75">
+        </div>
+
+        <div class="control-group">
+            <label>H1 Size <span class="value-display" id="h1-size-val">3rem</span></label>
+            <input type="range" id="h1-size" min="2" max="6" step="0.1" value="3">
+        </div>
+
+        <div class="control-group">
+            <label>Max Width <span class="value-display" id="max-width-val">65ch</span></label>
+            <input type="range" id="max-width" min="45" max="100" value="65">
+        </div>
+
+        <button class="btn-primary" onclick="exportCSS()">Copy CSS</button>
+    </div>
+
+    <!-- Live Preview -->
+    <div id="preview">
+        <div class="preview-content" id="content-area">
+            <!-- Sample Content -->
+            <h1>The Hidden Cost of Reasoning Models</h1>
+            <p>Reasoning models like <strong>OpenAI o1</strong> and <strong>Moonshot K1</strong> are changing the game.
+                But they come with a hidden tax: <em>latency</em> and <em>cost</em>.</p>
+
+            <h2>The "Reasoning Tax"</h2>
+            <p>Unlike standard LLMs that predict the next token immediately, reasoning models perform a "Chain of
+                Thought" process before outputting a single character. This can take 10-30 seconds.</p>
+
+            <pre><code>// Example of a slow reasoning call
+const response = await openai.chat.completions.create({
+  model: "o1-preview",
+  messages: [{ role: "user", content: "Solve P vs NP" }]
+});</code></pre>
+
+            <h2>The Solution: Neuro-Symbolic Caching</h2>
+            <p>We introduce a new architecture inspired by the <a href="#">Prefrontal Cortex Working Memory (PBWM)</a>
+                model. By caching the <strong>reasoning trace</strong>, not just the final answer, we can reuse
+                expensive "thought" across similar queries.</p>
+
+            <ul>
+                <li><strong>Working Memory</strong>: Fast, active context (Redis).</li>
+                <li><strong>Episodic Memory</strong>: Long-term storage of successful patterns (Vector DB).</li>
+                <li><strong>Gating</strong>: A cheap "critic" model decides what to cache.</li>
+            </ul>
+
+            <p>This reduces costs by up to <strong>90%</strong> for repetitive complex tasks.</p>
+        </div>
+    </div>
+
+    <script>
+        // Variable Mapping
+        const inputs = {
+            'bg-color': '--bg-color',
+            'text-color': '--text-color',
+            'heading-color': '--heading-color',
+            'accent-color': '--accent-color',
+            'base-font-size': { var: '--base-font-size', unit: 'px' },
+            'line-height': { var: '--line-height', unit: '' },
+            'h1-size': { var: '--h1-size', unit: 'rem' },
+            'max-width': { var: '--max-width', unit: 'ch' }
+        };
+
+        // Initialize Listeners
+        Object.keys(inputs).forEach(id => {
+            const el = document.getElementById(id);
+            const config = inputs[id];
+
+            el.addEventListener('input', (e) => {
+                const val = e.target.value;
+                const variable = typeof config === 'string' ? config : config.var;
+                const unit = typeof config === 'string' ? '' : config.unit;
+
+                // Update CSS Variable
+                document.documentElement.style.setProperty(variable, val + unit);
+
+                // Update Value Display if exists
+                const display = document.getElementById(`${id}-val`);
+                if (display) display.textContent = val + unit;
+            });
+        });
+
+        function exportCSS() {
+            const style = getComputedStyle(document.documentElement);
+            const css = `
+/* Paste this into your global CSS or style tag */
+:root {
+  --bg-color: ${style.getPropertyValue('--bg-color').trim()};
+  --text-color: ${style.getPropertyValue('--text-color').trim()};
+  --accent-color: ${style.getPropertyValue('--accent-color').trim()};
+  --heading-color: ${style.getPropertyValue('--heading-color').trim()};
+  --base-font-size: ${style.getPropertyValue('--base-font-size').trim()};
+  --line-height: ${style.getPropertyValue('--line-height').trim()};
+  --h1-size: ${style.getPropertyValue('--h1-size').trim()};
+  --max-width: ${style.getPropertyValue('--max-width').trim()};
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+.prose {
+  font-size: var(--base-font-size);
+  line-height: var(--line-height);
+  max-width: var(--max-width);
+}
+
+.prose h1 { font-size: var(--h1-size); color: var(--heading-color); }
+.prose h2, .prose h3 { color: var(--heading-color); }
+.prose a { color: var(--accent-color); }
+`;
+            navigator.clipboard.writeText(css).then(() => {
+                const btn = document.querySelector('.btn-primary');
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = '#10b981';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#0ea5e9';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+
+</html>

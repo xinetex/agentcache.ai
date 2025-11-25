@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentCache | The World's First Cognitive Memory OS with Reasoning Token Caching</title>
+    <meta name="description"
+        content="Give your AI agents infinite memory that never hallucinates and cache the thinking process for 98% cost savings. Moonshot AI integration + 3-tier memory architecture.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            500: '#0ea5e9',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #020617;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        /* Animated Gradient Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: linear-gradient(135deg, #020617 0%, #0c1a2e 50%, #020617 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Fireflies */
+        .firefly {
+            position: fixed;
+            width: 3px;
+            height: 3px;
+            background: rgba(14, 165, 233, 0.8);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(14, 165, 233, 0.5);
+            animation: float 20s infinite ease-in-out;
+            z-index: 1;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            50% {
+                transform: translate(var(--tx), var(--ty)) scale(1.5);
+            }
+        }
+
+        /* Glass effect with subtle border */
+        .glass {
+            background: rgba(30, 41, 59, 0.3);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+        }
+
+        /* Animated gradient border */
+        .gradient-border {
+            position: relative;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+        }
+
+        .gradient-border::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.5), rgba(139, 92, 246, 0.5), rgba(14, 165, 233, 0.5));
+            background-size: 200% 200%;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            animation: borderGlow 3s ease infinite;
+            pointer-events: none;
+        }
+
+        @keyframes borderGlow {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        /* Hero glow effect */
+        .hero-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 0.5;
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            50% {
+                opacity: 0.8;
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+        }
+
+        /* Hover glow on cards */
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(14, 165, 233, 0.2);
+        }
+
+        /* Text gradient animation */
+        .text-gradient {
+            background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc, #38bdf8);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textShine 5s linear infinite;
+        }
+
+        @keyframes textShine {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 300% 50%;
+            }
+        }
+
+        /* Content wrapper for z-index control */
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+        }
+    </style>
+</head>
+
+<body class="antialiased selection:bg-cyan-500 selection:text-white">
+
+    <!-- Animated Background -->
+    <div class="animated-bg"></div>
+
+    <!-- Fireflies (generated via JS) -->
+    <div id="fireflies-container"></div>
+
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+
+        <!-- Navigation -->
+        <nav class="fixed w-full z-50 glass border-b border-slate-800">
+            <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 bg-cyan-500 rounded-sm rotate-45 shadow-lg shadow-cyan-500/50"></div>
+                    <span class="font-bold text-lg tracking-tight">AgentCache</span>
+                </div>
+
+                <div class="hidden md:flex gap-6 relative">
+                    <!-- Platform Dropdown -->
+                    <div class="relative group">
+                        <button
+                            class="text-sm font-medium text-slate-400 hover:text-white transition flex items-center gap-1">
+                            Platform
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div
+                            class="absolute top-full left-0 mt-2 w-56 glass rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                            <a href="#cognitive" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm transition">
+                                <div class="font-semibold text-white">Cognitive Memory OS</div>
+                                <div class="text-xs text-slate-500">3-tier architecture</div>
+                            </a>
+                            <a href="#moonshot" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm transition">
+                                <div class="font-semibold text-white">Reasoning Cache</div>
+                                <div class="text-xs text-slate-500">98% cost savings</div>
+                            </a>
+                            <a href="/monitor.html"
+                                class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm transition">
+                                <div class="font-semibold text-white">Memory Monitor</div>
+                                <div class="text-xs text-slate-500">Live demo</div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Developers Dropdown -->
+                    <div class="relative group">
+                        <button
+                            class="text-sm font-medium text-slate-400 hover:text-white transition flex items-center gap-1">
+                            Developers
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div
+                            class="absolute top-full left-0 mt-2 w-56 glass rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                            <a href="/docs.html" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm transition">
+                                <div class="font-semibold text-white">Documentation</div>
+                                <div class="text-xs text-slate-500">API reference</div>
+                            </a>
+                            <a href="/docs.html#quickstart"
+                                class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm transition">
+                                <div class="font-semibold text-white">Quick Start</div>
+                                <div class="text-xs text-slate-500">30 second setup</div>
+                            </a>
+                            <a href="/changelog.html"
+                                class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm transition">
+                                <div class="font-semibold text-white">Changelog</div>
+                                <div class="text-xs text-slate-500">What's new</div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <a href="/blog.html" class="text-sm font-medium text-slate-400 hover:text-white transition">Blog</a>
+                    <a href="/pricing.html"
+                        class="text-sm font-medium text-slate-400 hover:text-white transition">Pricing</a>
+                </div>
+
+                <a href="/login.html"
+                    class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full text-sm font-medium transition-all border border-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-cyan-500/20">
+                    Get Started
+                </a>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="relative pt-32 pb-20 overflow-hidden min-h-screen flex items-center">
+            <div class="hero-glow"></div>
+
+            <div class="max-w-7xl mx-auto px-6 text-center relative z-10">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-mono mb-8 backdrop-blur-sm">
+                    <span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+                    World's First Cognitive Memory OS
+                </div>
+
+                <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
+                    Stop Giving Your Agents <br>
+                    <span class="text-gradient">Amnesia.</span>
+                </h1>
+
+                <p class="text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
+                    The only AI memory system that <strong class="text-white">caches the thinking process</strong>, not
+                    just the answer. <br>
+                    Infinite context + 98% cost savings + zero hallucinations.
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+                    <a href="/monitor.html"
+                        class="px-8 py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-xl font-bold text-lg shadow-lg shadow-cyan-500/30 transition-all transform hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/40">
+                        Launch Memory Monitor
+                    </a>
+                    <a href="/pricing.html"
+                        class="px-8 py-4 glass hover:bg-slate-800/60 text-slate-300 rounded-xl font-medium transition-all border border-white/10 hover:border-white/20">
+                        View Pricing
+                    </a>
+                </div>
+
+                <div class="flex items-center justify-center gap-6 text-sm text-slate-500">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                        No credit card required
+                    </div>
+                    <div>•</div>
+                    <div>Start free, upgrade anytime</div>
+                </div>
+
+                <!-- 3-Tier Architecture Visual -->
+                <div class="mt-20 relative max-w-5xl mx-auto">
+                    <div class="gradient-border rounded-2xl p-1">
+                        <div class="bg-slate-900/90 rounded-xl p-8 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+                            <!-- L1 -->
+                            <div class="space-y-3 card-hover glass rounded-xl p-6">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-white mb-3 shadow-lg shadow-rose-500/50">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M13 10V3L4 14h7v7l9-11h-7z">
+                                        </path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-bold text-white">L1: Hot Context</h3>
+                                <p class="text-sm text-slate-400">Active conversation window. Immediate awareness.
+                                    <strong class="text-rose-400">Zero latency</strong>.</p>
+                                <div class="text-xs text-slate-600 font-mono">In-Memory</div>
+                            </div>
+                            <!-- L2 -->
+                            <div class="space-y-3 card-hover glass rounded-xl p-6">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white mb-3 shadow-lg shadow-amber-500/50">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-bold text-white">L2: Warm History</h3>
+                                <p class="text-sm text-slate-400">Recent sessions cached in Redis. Fast recall of
+                                    <strong class="text-amber-400">last 7 days</strong>.</p>
+                                <div class="text-xs text-slate-600 font-mono">Upstash Redis</div>
+                            </div>
+                            <!-- L3 -->
+                            <div class="space-y-3 card-hover glass rounded-xl p-6">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white mb-3 shadow-lg shadow-blue-500/50">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+                                        </path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-bold text-white">L3: Cold Knowledge</h3>
+                                <p class="text-sm text-slate-400"><strong class="text-blue-400">Infinite</strong> vector
+                                    storage. Semantic search retrieves memories from <strong class="text-blue-400">years
+                                        ago</strong>.</p>
+                                <div class="text-xs text-slate-600 font-mono">Upstash Vector</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Keep existing sections from index.html for Three Pillars, Moonshot, etc. -->
+        <!-- ... rest of content ... -->
+
+    </div>
+
+    <!-- Firefly JavaScript -->
+    <script>
+        // Generate fireflies
+        const container = document.getElementById('fireflies-container');
+        const fireflyCount = 30;
+
+        for (let i = 0; i < fireflyCount; i++) {
+            const firefly = document.createElement('div');
+            firefly.className = 'firefly';
+
+            // Random starting position
+            firefly.style.left = Math.random() * 100 + 'vw';
+            firefly.style.top = Math.random() * 100 + 'vh';
+
+            // Random movement distance
+            firefly.style.setProperty('--tx', (Math.random() - 0.5) * 400 + 'px');
+            firefly.style.setProperty('--ty', (Math.random() - 0.5) * 400 + 'px');
+
+            // Random animation delay
+            firefly.style.animationDelay = Math.random() * 20 + 's';
+            firefly.style.animationDuration = (15 + Math.random() * 10) + 's';
+
+            container.appendChild(firefly);
+        }
+    </script>
+
+</body>
+
+</html>

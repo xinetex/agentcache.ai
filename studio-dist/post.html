@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title id="page-title">Blog Post</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/premium.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              500: '#0ea5e9',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Blog Styling */
+    :root {
+      --bg-color: #020617;
+      --text-color: #f1f5f9;
+      --accent-color: #06b6d4;
+      --heading-color: #f8fafc;
+      --base-font-size: 19px;
+      --line-height: 1.6;
+      --h1-size: 2.5rem;
+      --max-width: 74ch;
+    }
+
+    .prose {
+      font-size: var(--base-font-size);
+      line-height: var(--line-height);
+      max-width: var(--max-width);
+    }
+
+    .prose h1 {
+      font-size: var(--h1-size);
+      color: var(--heading-color);
+    }
+
+    .prose h2,
+    .prose h3 {
+      color: var(--heading-color);
+    }
+
+    .prose a {
+      color: var(--accent-color);
+    }
+
+    .prose strong {
+      color: #fff;
+    }
+
+    .prose code {
+      color: #06b6d4;
+      background: rgba(15, 23, 42, 0.5);
+      padding: 0.2em 0.4em;
+      border-radius: 0.25rem;
+      font-weight: 400;
+    }
+
+    .prose pre {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(51, 65, 85, 0.5);
+    }
+  </style>
+</head>
+
+<body class="antialiased selection:bg-cyan-500 selection:text-white">
+
+  <!-- Animated Background -->
+  <div class="animated-bg"></div>
+
+  <!-- Content Wrapper -->
+  <div class="content-wrapper">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass border-b border-slate-800">
+      <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-4 h-4 bg-cyan-500 rounded-sm rotate-45"></div>
+          <span class="font-bold text-lg tracking-tight">AgentCache</span>
+        </div>
+
+        <div class="hidden md:flex gap-6 relative">
+          <!-- Platform Dropdown -->
+          <div class="relative group">
+            <button class="text-sm font-medium text-slate-400 hover:text-white transition flex items-center gap-1">
+              Platform
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            <div
+              class="absolute top-full left-0 mt-2 w-56 glass rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+              <a href="/#cognitive" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                <div class="font-semibold text-white">Cognitive Memory OS</div>
+                <div class="text-xs text-slate-500">3-tier architecture</div>
+              </a>
+              <a href="/#moonshot" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                <div class="font-semibold text-white">Reasoning Cache</div>
+                <div class="text-xs text-slate-500">98% cost savings</div>
+              </a>
+              <a href="/monitor.html" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                <div class="font-semibold text-white">Memory Monitor</div>
+                <div class="text-xs text-slate-500">Live demo</div>
+              </a>
+            </div>
+          </div>
+
+          <!-- Developers Dropdown -->
+          <div class="relative group">
+            <button class="text-sm font-medium text-slate-400 hover:text-white transition flex items-center gap-1">
+              Developers
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            <div
+              class="absolute top-full left-0 mt-2 w-56 glass rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+              <a href="/docs.html" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                <div class="font-semibold text-white">Documentation</div>
+                <div class="text-xs text-slate-500">API reference</div>
+              </a>
+              <a href="/docs.html#quickstart" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                <div class="font-semibold text-white">Quick Start</div>
+                <div class="text-xs text-slate-500">30 second setup</div>
+              </a>
+              <a href="/changelog.html" class="block px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                <div class="font-semibold text-white">Changelog</div>
+                <div class="text-xs text-slate-500">What's new</div>
+              </a>
+            </div>
+          </div>
+
+          <a href="/blog.html" class="text-sm font-medium text-slate-400 hover:text-white transition">Blog</a>
+          <a href="/pricing.html" class="text-sm font-medium text-slate-400 hover:text-white transition">Pricing</a>
+        </div>
+
+        <a href="/login.html"
+          class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full text-sm font-medium transition-all border border-white/10">
+          Get Started
+        </a>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <div class="md:hidden absolute top-4 right-6">
+        <button id="mobile-menu-btn" class="text-slate-300 hover:text-white p-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mobile Menu (Hidden by default) -->
+      <div id="mobile-menu"
+        class="hidden md:hidden absolute top-16 left-0 w-full glass border-b border-slate-800 p-4 flex flex-col gap-4">
+        <div class="space-y-4">
+          <div class="font-semibold text-slate-400 text-xs uppercase tracking-wider px-2">Platform</div>
+          <a href="/#cognitive" class="block px-2 text-sm text-slate-300 hover:text-white">Cognitive Memory OS</a>
+          <a href="/#moonshot" class="block px-2 text-sm text-slate-300 hover:text-white">Reasoning Cache</a>
+          <a href="/monitor.html" class="block px-2 text-sm text-slate-300 hover:text-white">Memory Monitor</a>
+
+          <div class="font-semibold text-slate-400 text-xs uppercase tracking-wider px-2 mt-4">Developers</div>
+          <a href="/docs.html" class="block px-2 text-sm text-slate-300 hover:text-white">Documentation</a>
+          <a href="/docs.html#quickstart" class="block px-2 text-sm text-slate-300 hover:text-white">Quick Start</a>
+          <a href="/changelog.html" class="block px-2 text-sm text-slate-300 hover:text-white">Changelog</a>
+
+          <div class="border-t border-white/10 my-2"></div>
+          <a href="/blog.html" class="block px-2 text-sm font-medium text-slate-300 hover:text-white">Blog</a>
+          <a href="/pricing.html" class="block px-2 text-sm font-medium text-slate-300 hover:text-white">Pricing</a>
+          <a href="/login.html"
+            class="block w-full text-center bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all mt-4">
+            Get Started
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <script>
+      // Mobile Menu Toggle
+      const mobileBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+
+      if (mobileBtn && mobileMenu) {
+        mobileBtn.addEventListener('click', () => {
+          mobileMenu.classList.toggle('hidden');
+        });
+      }
+    </script>
+
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <!-- Loading State -->
+      <div id="loading" class="text-center py-20">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500"></div>
+        <p class="mt-4 text-slate-400">Loading post...</p>
+      </div>
+
+      <!-- Error State -->
+      <div id="error" class="hidden text-center py-20">
+        <p class="text-rose-400 mb-4">Failed to load blog post</p>
+        <a href="/blog.html" class="text-sky-400 hover:text-sky-300">← Back to blog</a>
+      </div>
+
+      <!-- Post Content -->
+      <article id="post-content" class="hidden">
+        <!-- Post Header -->
+        <div class="mb-8">
+          <div class="flex items-center gap-2 mb-3">
+            <span id="post-category" class="px-3 py-1 rounded-full text-xs font-medium"></span>
+            <span class="text-xs text-slate-400" id="post-date"></span>
+          </div>
+
+          <h1 id="post-title" class="text-4xl md:text-5xl font-bold tracking-tight text-slate-50 mb-4"></h1>
+
+          <p id="post-excerpt" class="text-lg text-slate-400 mb-6"></p>
+
+          <div class="flex items-center gap-4 text-sm text-slate-500 border-b border-slate-800 pb-6">
+            <div class="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span id="read-time">5 min read</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              <span id="post-author">AgentCache Team</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Post Body -->
+        <div id="post-body"
+          class="prose prose-invert prose-slate max-w-none prose-headings:text-slate-50 prose-h2:text-2xl prose-h2:font-semibold prose-h2:mt-8 prose-h2:mb-4 prose-h3:text-xl prose-h3:font-semibold prose-h3:mt-6 prose-h3:mb-3 prose-p:text-slate-300 prose-p:leading-relaxed prose-a:text-sky-400 prose-a:no-underline hover:prose-a:text-sky-300 prose-code:text-sky-400 prose-code:bg-slate-900 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-800 prose-ul:text-slate-300 prose-ol:text-slate-300">
+          <!-- Markdown content rendered here -->
+        </div>
+
+        <!-- CTA -->
+        <div class="mt-12 p-6 rounded-2xl glass border border-cyan-500/30">
+          <h3 class="text-xl font-semibold text-slate-50 mb-2">Ready to reduce your AI costs by 90%?</h3>
+          <p class="text-slate-300 mb-4">Get started with AgentCache today. No credit card required.</p>
+          <div class="flex gap-3">
+            <a href="/login.html"
+              class="px-6 py-3 rounded-lg bg-sky-500 text-sm font-medium text-slate-950 hover:bg-sky-400 transition">
+              Get Your API Key
+            </a>
+            <a href="/proxy.html"
+              class="px-6 py-3 rounded-lg border border-sky-500/40 text-sm font-medium text-sky-400 hover:bg-sky-500/10 transition">
+              Read Setup Guide
+            </a>
+          </div>
+        </div>
+
+        <!-- Share -->
+        <div class="mt-8 flex items-center justify-between border-t border-slate-800 pt-8">
+          <div>
+            <p class="text-sm text-slate-400 mb-2">Share this post</p>
+            <div class="flex gap-2">
+              <button onclick="shareTwitter()"
+                class="px-4 py-2 rounded-lg bg-slate-900 text-sm text-slate-300 hover:bg-slate-800 transition">
+                Twitter
+              </button>
+              <button onclick="shareLinkedIn()"
+                class="px-4 py-2 rounded-lg bg-slate-900 text-sm text-slate-300 hover:bg-slate-800 transition">
+                LinkedIn
+              </button>
+              <button onclick="copyLink()"
+                class="px-4 py-2 rounded-lg bg-slate-900 text-sm text-slate-300 hover:bg-slate-800 transition">
+                Copy Link
+              </button>
+            </div>
+          </div>
+          <a href="/blog.html" class="text-sm text-sky-400 hover:text-sky-300">
+            ← Back to all posts
+          </a>
+        </div>
+      </article>
+    </main>
+
+    <footer class="border-t border-slate-800 bg-slate-950/50 py-8 mt-12">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <p class="text-sm text-slate-400">
+          Built with ❤️ for AI developers •
+          <a href="/" class="text-sky-400 hover:text-sky-300">AgentCache.ai</a>
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      // Get slug from URL parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const slug = urlParams.get('slug');
+
+      if (!slug) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('error').classList.remove('hidden');
+      } else {
+        loadPost(slug);
+      }
+
+      async function loadPost(slug) {
+        try {
+          // Load blog index to get post metadata
+          const indexResponse = await fetch('/blog-index.json');
+          const posts = await indexResponse.json();
+          const post = posts.find(p => p.slug === slug);
+
+          if (!post) {
+            throw new Error('Post not found');
+          }
+
+          // Load markdown content
+          const mdResponse = await fetch(post.mdPath);
+          const markdown = await mdResponse.text();
+
+          // Parse frontmatter and content
+          const { frontmatter, body } = parseFrontmatter(markdown);
+
+          // Update page
+          document.getElementById('page-title').textContent = post.title;
+          document.getElementById('post-title').textContent = post.title;
+          document.getElementById('post-excerpt').textContent = post.excerpt;
+          document.getElementById('post-date').textContent = new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+          document.getElementById('post-author').textContent = post.author;
+
+          // Category badge
+          const categoryEl = document.getElementById('post-category');
+          const categoryColors = {
+            technical: 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300',
+            industry: 'bg-sky-500/10 border-sky-500/40 text-sky-300',
+            tutorial: 'bg-violet-500/10 border-violet-500/40 text-violet-300'
+          };
+          categoryEl.className = `px-3 py-1 rounded-full border text-xs font-medium ${categoryColors[post.category]}`;
+          categoryEl.textContent = post.category.charAt(0).toUpperCase() + post.category.slice(1);
+
+          // Render markdown
+          document.getElementById('post-body').innerHTML = marked.parse(body);
+
+          // Show content, hide loading
+          document.getElementById('loading').classList.add('hidden');
+          document.getElementById('post-content').classList.remove('hidden');
+
+        } catch (err) {
+          console.error('Failed to load post:', err);
+          document.getElementById('loading').classList.add('hidden');
+          document.getElementById('error').classList.remove('hidden');
+        }
+      }
+
+      function parseFrontmatter(markdown) {
+        const lines = markdown.split('\n');
+        let inFrontmatter = false;
+        let frontmatter = {};
+        let bodyStart = 0;
+
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i] === '---') {
+            if (!inFrontmatter) {
+              inFrontmatter = true;
+            } else {
+              bodyStart = i + 1;
+              break;
+            }
+          } else if (inFrontmatter) {
+            const match = lines[i].match(/^([^:]+):\s*(.+)$/);
+            if (match) {
+              frontmatter[match[1]] = match[2];
+            }
+          }
+        }
+
+        return {
+          frontmatter,
+          body: lines.slice(bodyStart).join('\n')
+        };
+      }
+
+      function shareTwitter() {
+        const text = document.getElementById('post-title').textContent;
+        const url = window.location.href;
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+      }
+
+      function shareLinkedIn() {
+        const url = window.location.href;
+        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
+      }
+
+      function copyLink() {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+          alert('Link copied to clipboard!');
+        });
+      }
+    </script>
+
+  </div><!-- /content-wrapper -->
+
+  <!-- Firefly Animation -->
+  <script src="/assets/fireflies.js"></script>
+
+</body>
+
+</html>

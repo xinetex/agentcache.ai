@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food Delivery Case Study: Save $47,000/month | AgentCache.ai</title>
+  <meta name="description" content="See how a DoorDash-scale food delivery platform saved $47,000/month using AgentCache for AI-powered features.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-neutral-950 text-neutral-100 antialiased">
+  
+  <!-- Nav -->
+  <header class="sticky top-0 z-50 backdrop-blur bg-neutral-950/80 border-b border-white/10">
+    <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <div class="h-8 w-8 rounded-md bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold">AC</div>
+        <span class="font-semibold">AgentCache<span class="text-neutral-400">.ai</span></span>
+      </a>
+      <a href="/login" class="px-4 py-2 rounded-md bg-indigo-500 text-sm font-semibold text-white hover:bg-indigo-400 transition">
+        Get Started Free
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="mx-auto max-w-5xl px-6 py-16">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300 mb-6">
+      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+      Case Study • Food Delivery
+    </div>
+    
+    <h1 class="text-5xl font-bold mb-6">
+      How a DoorDash-Scale Platform<br/>
+      <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-indigo-400">
+        Saved $47,000/month
+      </span><br/>
+      with AgentCache
+    </h1>
+    
+    <p class="text-xl text-neutral-300 mb-8">
+      Processing 10 million AI requests per month. 72% cache hit rate. 
+      Zero code changes to existing infrastructure.
+    </p>
+
+    <div class="grid md:grid-cols-3 gap-6 mb-12">
+      <div class="p-6 rounded-xl border border-emerald-500/30 bg-emerald-500/5">
+        <div class="text-3xl font-bold text-emerald-400 mb-2">$47,000</div>
+        <div class="text-sm text-neutral-400">Monthly savings</div>
+      </div>
+      <div class="p-6 rounded-xl border border-indigo-500/30 bg-indigo-500/5">
+        <div class="text-3xl font-bold text-indigo-400 mb-2">72%</div>
+        <div class="text-sm text-neutral-400">Cache hit rate</div>
+      </div>
+      <div class="p-6 rounded-xl border border-purple-500/30 bg-purple-500/5">
+        <div class="text-3xl font-bold text-purple-400 mb-2">45ms</div>
+        <div class="text-sm text-neutral-400">Avg response time</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- The Challenge -->
+  <section class="mx-auto max-w-5xl px-6 py-12">
+    <h2 class="text-3xl font-bold mb-6">The Challenge</h2>
+    
+    <div class="p-8 rounded-xl bg-neutral-900 border border-neutral-800 mb-8">
+      <p class="text-lg text-neutral-300 mb-4">
+        A food delivery platform processing <strong class="text-white">10 million orders per month</strong> 
+        was using AI for multiple features:
+      </p>
+      
+      <ul class="space-y-3 text-neutral-300">
+        <li class="flex items-start gap-3">
+          <div class="w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+            <i data-lucide="alert-circle" class="w-4 h-4 text-red-400"></i>
+          </div>
+          <div>
+            <strong class="text-white">Menu item descriptions</strong> - AI-generated descriptions for 500k+ menu items
+          </div>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+            <i data-lucide="alert-circle" class="w-4 h-4 text-red-400"></i>
+          </div>
+          <div>
+            <strong class="text-white">Dietary analysis</strong> - Analyzing ingredients for allergies/preferences
+          </div>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+            <i data-lucide="alert-circle" class="w-4 h-4 text-red-400"></i>
+          </div>
+          <div>
+            <strong class="text-white">Smart search</strong> - "Find me something spicy and vegetarian near me"
+          </div>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+            <i data-lucide="alert-circle" class="w-4 h-4 text-red-400"></i>
+          </div>
+          <div>
+            <strong class="text-white">Review summarization</strong> - Summarizing thousands of reviews per restaurant
+          </div>
+        </li>
+        <li class="flex items-start gap-3">
+          <div class="w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+            <i data-lucide="alert-circle" class="w-4 h-4 text-red-400"></i>
+          </div>
+          <div>
+            <strong class="text-white">Image recognition</strong> - Tagging food photos for search/recommendations
+          </div>
+        </li>
+      </ul>
+      
+      <div class="mt-6 p-4 rounded-lg bg-red-500/10 border border-red-500/30">
+        <div class="flex items-start gap-3">
+          <i data-lucide="trending-up" class="w-5 h-5 text-red-400 flex-shrink-0 mt-1"></i>
+          <div class="text-sm text-neutral-300">
+            <strong class="text-red-400">Monthly AI costs: $65,000</strong><br/>
+            Growing 15% month-over-month as new restaurants and users joined the platform.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- The Solution -->
+  <section class="mx-auto max-w-5xl px-6 py-12">
+    <h2 class="text-3xl font-bold mb-6">The AgentCache Solution</h2>
+    
+    <div class="grid md:grid-cols-2 gap-6 mb-8">
+      <div class="p-6 rounded-xl bg-gradient-to-br from-emerald-500/10 to-indigo-500/10 border border-emerald-500/30">
+        <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+          <i data-lucide="zap" class="w-6 h-6 text-emerald-400"></i>
+          Before AgentCache
+        </h3>
+        <ul class="space-y-3 text-sm text-neutral-300">
+          <li>❌ Every menu item description = fresh AI call</li>
+          <li>❌ Same dietary analysis repeated 1000s of times</li>
+          <li>❌ Popular restaurants re-analyzed constantly</li>
+          <li>❌ 2-3 second response times</li>
+          <li>❌ $65,000/month in AI costs</li>
+        </ul>
+      </div>
+      
+      <div class="p-6 rounded-xl bg-gradient-to-br from-emerald-500/10 to-indigo-500/10 border border-emerald-500/30">
+        <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+          <i data-lucide="sparkles" class="w-6 h-6 text-emerald-400"></i>
+          After AgentCache
+        </h3>
+        <ul class="space-y-3 text-sm text-neutral-300">
+          <li>✅ Menu items cached globally (72% hit rate)</li>
+          <li>✅ Dietary analysis instant for common items</li>
+          <li>✅ Restaurant reviews cached for 24 hours</li>
+          <li>✅ 45ms average response time</li>
+          <li>✅ $18,000/month in AI costs</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Detailed Breakdown -->
+  <section class="mx-auto max-w-5xl px-6 py-12">
+    <h2 class="text-3xl font-bold mb-6">Cost Breakdown by Feature</h2>
+    
+    <!-- Feature 1: Menu Descriptions -->
+    <div class="mb-8 p-6 rounded-xl bg-neutral-900 border border-neutral-800">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <h3 class="text-xl font-bold mb-2">🍕 Menu Item Descriptions</h3>
+          <p class="text-neutral-400">AI-generated descriptions for menu items</p>
+        </div>
+        <div class="text-right">
+          <div class="text-2xl font-bold text-emerald-400">$24,000</div>
+          <div class="text-xs text-neutral-500">saved per month</div>
+        </div>
+      </div>
+      
+      <div class="grid md:grid-cols-2 gap-4 mb-4">
+        <div class="p-4 rounded-lg bg-neutral-800/50">
+          <div class="text-xs text-neutral-500 mb-1">Volume</div>
+          <div class="font-semibold">5M descriptions/month</div>
+        </div>
+        <div class="p-4 rounded-lg bg-neutral-800/50">
+          <div class="text-xs text-neutral-500 mb-1">Cache Hit Rate</div>
+          <div class="font-semibold text-emerald-400">85%</div>
+        </div>
+      </div>
+      
+      <div class="p-4 rounded-lg bg-neutral-800/50">
+        <div class="text-sm mb-3"><strong>Why it works:</strong></div>
+        <ul class="text-sm text-neutral-400 space-y-2">
+          <li>• "Margherita Pizza" appears at 10,000+ restaurants → generated once, served 10,000 times</li>
+          <li>• Popular items like "Cheeseburger", "Caesar Salad" have 90%+ cache hit rates</li>
+          <li>• Even unique dishes benefit when description format is standardized</li>
+        </ul>
+      </div>
+      
+      <div class="mt-4 flex items-center justify-between text-sm">
+        <div class="text-neutral-500">Before: $30,000/mo</div>
+        <div class="text-neutral-500">→</div>
+        <div class="text-emerald-400 font-semibold">After: $6,000/mo</div>
+      </div>
+    </div>
+
+    <!-- Feature 2: Dietary Analysis -->
+    <div class="mb-8 p-6 rounded-xl bg-neutral-900 border border-neutral-800">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <h3 class="text-xl font-bold mb-2">🥗 Dietary Analysis</h3>
+          <p class="text-neutral-400">Analyzing ingredients for allergies, vegan, gluten-free, etc.</p>
+        </div>
+        <div class="text-right">
+          <div class="text-2xl font-bold text-emerald-400">$12,000</div>
+          <div class="text-xs text-neutral-500">saved per month</div>
+        </div>
+      </div>
+      
+      <div class="grid md:grid-cols-2 gap-4 mb-4">
+        <div class="p-4 rounded-lg bg-neutral-800/50">
+          <div class="text-xs text-neutral-500 mb-1">Volume</div>
+          <div class="font-semibold">3M analyses/month</div>
+        </div>
+        <div class="p-4 rounded-lg bg-neutral-800/50">
+          <div class="text-xs text-neutral-500 mb-1">Cache Hit Rate</div>
+          <div class="font-semibold text-emerald-400">78%</div>
+        </div>
+      </div>
+      
+      <div class="p-4 rounded-lg bg-neutral-800/50">
+        <div class="text-sm mb-3"><strong>Why it works:</strong></div>
+        <ul class="text-sm text-neutral-400 space-y-2">
+          <li>• Common ingredients analyzed repeatedly: "chicken breast", "rice", "tomatoes"</li>
+          <li>• Same menu items checked by thousands of users with dietary restrictions</li>
+          <li>• "Is this vegan?" asked for same item 100+ times per day</li>
+        </ul>
+      </div>
+      
+      <div class="mt-4 flex items-center justify-between text-sm">
+        <div class="text-neutral-500">Before: $18,000/mo</div>
+        <div class="text-neutral-500">→</div>
+        <div class="text-emerald-400 font-semibold">After: $6,000/mo</div>
+      </div>
+    </div>
+
+    <!-- Feature 3: Review Summaries -->
+    <div class="mb-8 p-6 rounded-xl bg-neutral-900 border border-neutral-800">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <h3 class="text-xl font-bold mb-2">⭐ Review Summarization</h3>
+          <p class="text-neutral-400">Summarizing thousands of reviews per restaurant</p>
+        </div>
+        <div class="text-right">
+          <div class="text-2xl font-bold text-emerald-400">$8,000</div>
+          <div class="text-xs text-neutral-500">saved per month</div>
+        </div>
+      </div>
+      
+      <div class="grid md:grid-cols-2 gap-4 mb-4">
+        <div class="p-4 rounded-lg bg-neutral-800/50">
+          <div class="text-xs text-neutral-500 mb-1">Volume</div>
+          <div class="font-semibold">1M summaries/month</div>
+        </div>
+        <div class="p-4 rounded-lg bg-neutral-800/50">
+          <div class="text-xs text-neutral-500 mb-1">Cache Hit Rate</div>
+          <div class="font-semibold text-emerald-400">65%</div>
+        </div>
+      </div>
+      
+      <div class="p-4 rounded-lg bg-neutral-800/50">
+        <div class="text-sm mb-3"><strong>Why it works:</strong></div>
+        <ul class="text-sm text-neutral-400 space-y-2">
+          <li>• Popular restaurants viewed 1000s of times → summary cached for 24 hours</li>
+          <li>• New reviews regenerate summary, but cache serves during peak hours</li>
+          <li>• Top 1000 restaurants account for 70% of all summary views</li>
+        </ul>
+      </div>
+      
+      <div class="mt-4 flex items-center justify-between text-sm">
+        <div class="text-neutral-500">Before: $12,000/mo</div>
+        <div class="text-neutral-500">→</div>
+        <div class="text-emerald-400 font-semibold">After: $4,000/mo</div>
+      </div>
+    </div>
+
+    <!-- Feature 4: Image Recognition -->
+    <div class="mb-8 p-6 rounded-xl bg-neutral-900 border border-neutral-800">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <h3 class="text-xl font-bold mb-2">📸 Food Image Recognition</h3>
+          <p class="text-neutral-400">Tagging food photos for search and recommendations</p>
+        </div>
+        <div class="text-right">
+          <div class="text-2xl font-bold text-emerald-400">$3,000</div>
+          <div class="text-xs text-neutral-500">saved per month</div>
+        </div>
+      </div>
+      
+      <div class="grid md:grid-cols-2 gap-4 mb-4">
+        <div class="p-4 rounded-lg bg-neutral-800/50">
+          <div class="text-xs text-neutral-500 mb-1">Volume</div>
+          <div class="font-semibold">1M images/month</div>
+        </div>
+        <div class="p-4 rounded-lg bg-neutral-800/50">
+          <div class="text-xs text-neutral-500 mb-1">Cache Hit Rate</div>
+          <div class="font-semibold text-emerald-400">55%</div>
+        </div>
+      </div>
+      
+      <div class="p-4 rounded-lg bg-neutral-800/50">
+        <div class="text-sm mb-3"><strong>Why it works:</strong></div>
+        <ul class="text-sm text-neutral-400 space-y-2">
+          <li>• Restaurants reuse official menu photos across multiple platforms</li>
+          <li>• Stock photos of popular dishes analyzed repeatedly</li>
+          <li>• Same image URL → instant cached recognition result</li>
+        </ul>
+      </div>
+      
+      <div class="mt-4 flex items-center justify-between text-sm">
+        <div class="text-neutral-500">Before: $5,000/mo</div>
+        <div class="text-neutral-500">→</div>
+        <div class="text-emerald-400 font-semibold">After: $2,000/mo</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Total Savings -->
+  <section class="mx-auto max-w-5xl px-6 py-12">
+    <div class="p-8 rounded-2xl bg-gradient-to-br from-emerald-500/20 via-indigo-500/20 to-purple-500/20 border-2 border-emerald-500/40">
+      <h2 class="text-3xl font-bold mb-6 text-center">Total Monthly Savings</h2>
+      
+      <div class="grid md:grid-cols-2 gap-8 mb-8">
+        <div>
+          <div class="text-neutral-400 text-sm mb-2">Before AgentCache</div>
+          <div class="text-5xl font-bold mb-4">$65,000</div>
+          <div class="space-y-2 text-sm text-neutral-300">
+            <div class="flex justify-between">
+              <span>Menu descriptions</span>
+              <span>$30,000</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Dietary analysis</span>
+              <span>$18,000</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Review summaries</span>
+              <span>$12,000</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Image recognition</span>
+              <span>$5,000</span>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <div class="text-emerald-400 text-sm mb-2">After AgentCache</div>
+          <div class="text-5xl font-bold text-emerald-400 mb-4">$18,000</div>
+          <div class="space-y-2 text-sm text-neutral-300">
+            <div class="flex justify-between">
+              <span>Menu descriptions</span>
+              <span class="text-emerald-400">$6,000</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Dietary analysis</span>
+              <span class="text-emerald-400">$6,000</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Review summaries</span>
+              <span class="text-emerald-400">$4,000</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Image recognition</span>
+              <span class="text-emerald-400">$2,000</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="text-center">
+        <div class="inline-block p-6 rounded-xl bg-emerald-500/20 border border-emerald-500/40">
+          <div class="text-sm text-emerald-300 mb-2">Monthly Savings</div>
+          <div class="text-4xl font-bold text-emerald-400">$47,000</div>
+          <div class="text-sm text-neutral-400 mt-2">72% cost reduction</div>
+        </div>
+      </div>
+      
+      <div class="mt-8 text-center">
+        <div class="text-2xl font-bold mb-2">Annual Savings: $564,000</div>
+        <div class="text-neutral-400">ROI: Immediate (setup took 2 hours)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Implementation -->
+  <section class="mx-auto max-w-5xl px-6 py-12">
+    <h2 class="text-3xl font-bold mb-6">Implementation</h2>
+    
+    <div class="space-y-6">
+      <div class="p-6 rounded-xl bg-neutral-900 border border-neutral-800">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+            <span class="text-xl font-bold text-emerald-400">1</span>
+          </div>
+          <h3 class="text-xl font-bold">Sign up for AgentCache API key</h3>
+        </div>
+        <p class="text-neutral-400 ml-13">Free tier includes 10,000 requests/month. Took 2 minutes.</p>
+      </div>
+      
+      <div class="p-6 rounded-xl bg-neutral-900 border border-neutral-800">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+            <span class="text-xl font-bold text-emerald-400">2</span>
+          </div>
+          <h3 class="text-xl font-bold">Wrap existing AI calls</h3>
+        </div>
+        <pre class="text-xs bg-neutral-950 p-4 rounded-lg overflow-x-auto text-neutral-300 ml-13"><code>// Before
+const description = await openai.chat.completions.create({
+  model: "gpt-4",
+  messages: [{ role: "user", content: `Describe: ${menuItem}` }]
+});
+
+// After (one function wrapper)
+const description = await cachedAI({
+  model: "gpt-4", 
+  messages: [{ role: "user", content: `Describe: ${menuItem}` }]
+});</code></pre>
+      </div>
+      
+      <div class="p-6 rounded-xl bg-neutral-900 border border-neutral-800">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+            <span class="text-xl font-bold text-emerald-400">3</span>
+          </div>
+          <h3 class="text-xl font-bold">Deploy and monitor</h3>
+        </div>
+        <p class="text-neutral-400 ml-13">Deployed to production. Monitored cache hit rates. Adjusted TTLs for optimal performance.</p>
+      </div>
+    </div>
+    
+    <div class="mt-8 p-6 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+      <div class="flex items-start gap-3">
+        <i data-lucide="check-circle" class="w-6 h-6 text-emerald-400 flex-shrink-0 mt-1"></i>
+        <div>
+          <strong class="text-emerald-400">Total implementation time: 2 hours</strong><br/>
+          <span class="text-sm text-neutral-400">Most time spent testing different cache TTLs for different features.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Results -->
+  <section class="mx-auto max-w-5xl px-6 py-12">
+    <h2 class="text-3xl font-bold mb-6">Results After 30 Days</h2>
+    
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="p-6 rounded-xl border border-emerald-500/30 bg-emerald-500/5">
+        <i data-lucide="dollar-sign" class="w-8 h-8 text-emerald-400 mb-4"></i>
+        <div class="text-2xl font-bold mb-2">$47,000</div>
+        <div class="text-sm text-neutral-400">Saved in month 1</div>
+      </div>
+      
+      <div class="p-6 rounded-xl border border-indigo-500/30 bg-indigo-500/5">
+        <i data-lucide="zap" class="w-8 h-8 text-indigo-400 mb-4"></i>
+        <div class="text-2xl font-bold mb-2">45ms</div>
+        <div class="text-sm text-neutral-400">Avg response time (was 2.3s)</div>
+      </div>
+      
+      <div class="p-6 rounded-xl border border-purple-500/30 bg-purple-500/5">
+        <i data-lucide="trending-up" class="w-8 h-8 text-purple-400 mb-4"></i>
+        <div class="text-2xl font-bold mb-2">72%</div>
+        <div class="text-sm text-neutral-400">Overall cache hit rate</div>
+      </div>
+      
+      <div class="p-6 rounded-xl border border-amber-500/30 bg-amber-500/5">
+        <i data-lucide="users" class="w-8 h-8 text-amber-400 mb-4"></i>
+        <div class="text-2xl font-bold mb-2">+23%</div>
+        <div class="text-sm text-neutral-400">User engagement (faster = better)</div>
+      </div>
+      
+      <div class="p-6 rounded-xl border border-rose-500/30 bg-rose-500/5">
+        <i data-lucide="activity" class="w-8 h-8 text-rose-400 mb-4"></i>
+        <div class="text-2xl font-bold mb-2">Zero</div>
+        <div class="text-sm text-neutral-400">Service disruptions</div>
+      </div>
+      
+      <div class="p-6 rounded-xl border border-cyan-500/30 bg-cyan-500/5">
+        <i data-lucide="clock" class="w-8 h-8 text-cyan-400 mb-4"></i>
+        <div class="text-2xl font-bold mb-2">2 hours</div>
+        <div class="text-sm text-neutral-400">Total maintenance time</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="mx-auto max-w-5xl px-6 py-16">
+    <div class="p-12 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/40 text-center">
+      <h2 class="text-4xl font-bold mb-4">Ready to save $40k+/month?</h2>
+      <p class="text-xl text-neutral-300 mb-8 max-w-2xl mx-auto">
+        If you're processing millions of AI requests, AgentCache can dramatically reduce costs 
+        with zero downtime and minimal implementation effort.
+      </p>
+      <div class="flex gap-4 justify-center">
+        <a href="/login" class="px-8 py-4 rounded-xl bg-white text-neutral-900 font-bold text-lg hover:scale-105 transition">
+          Start Free Trial
+        </a>
+        <a href="/docs" class="px-8 py-4 rounded-xl border border-white/20 text-white hover:bg-white/5 transition">
+          Read Docs
+        </a>
+      </div>
+      <div class="mt-6 text-sm text-neutral-400">
+        Free tier: 10,000 requests/month • No credit card required
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/10 py-8 text-center text-sm text-neutral-500">
+    © 2025 AgentCache.ai • <a href="/privacy" class="hover:text-white">Privacy</a> • <a href="/terms" class="hover:text-white">Terms</a>
+  </footer>
+
+  <script>
+    if (window.lucide) lucide.createIcons();
+  </script>
+</body>
+</html>

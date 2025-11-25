@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgentCache Studio - Sector-Aware Pipeline Orchestration</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <link rel="stylesheet" href="css/studio-theme.css">
+  <style>
+    /* Custom overrides */
+    * {
+      box-sizing: border-box;
+    }
+
+    .node-connection {
+      stroke-dasharray: 1000;
+      stroke-dashoffset: 1000;
+    }
+
+    .node-connection.animated {
+      animation: dash 2s linear forwards;
+    }
+
+    @keyframes dash {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    .metric-value {
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  .canvas-node {
+  cursor: grab;
+  transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .canvas-node:active { cursor: grabbing; }
+  .canvas-node:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.3); }
+
+  #wizardModal { backdrop-filter: blur(8px); }
+  .wizard-step { display: none; }
+  .wizard-step.active { display: block; }
+
+  .node-connection { stroke-dasharray: 1000; stroke-dashoffset: 1000; }
+  .node-connection.animated { animation: dash 2s linear forwards; }
+  @keyframes dash { to { stroke-dashoffset: 0; } }
+
+  .metric-value { font-variant-numeric: tabular-nums; }
+
+  .use-case-option.selected,
+  .perf-option.selected {
+  border-color: rgb(14 165 233);
+  background-color: rgb(7 89 133 / 0.3);
+  }
+  </style>
+</head>
+
+<body class="antialiased">
+  <div class="scanline-overlay"></div>
+  <div class="scanline-beam"></div>
+
+  <!-- Main Layout -->
+  <div class="flex h-screen flex-col">
+
+    <!-- Header -->
+    <!-- Header -->
+    <header class="flex items-center justify-between hud-panel px-6 py-3 z-20 relative">
+      <div class="flex items-center gap-4">
+        <div
+          class="flex h-10 w-10 items-center justify-center border border-[var(--hud-accent)] bg-[var(--hud-accent)]/10 text-[var(--hud-accent)] font-bold shadow-[0_0_10px_var(--hud-accent)]">
+          AC
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-widest text-[var(--hud-accent)] text-glow">AgentCache Studio</h1>
+          <p class="text-xs text-[var(--hud-text-dim)] font-mono">SECTOR-AWARE ORCHESTRATION</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <!-- Sector Badge -->
+        <div
+          class="flex items-center gap-2 border border-[var(--hud-border)] bg-[var(--hud-panel-bg)] px-4 py-2 clip-path-badge">
+          <span class="text-xs font-mono uppercase tracking-wide text-[var(--hud-text-dim)]">Sector //</span>
+          <div class="flex items-center gap-2">
+            <span id="sectorIcon" class="text-lg text-[var(--hud-accent)]">🏥</span>
+            <span id="sectorName" class="text-sm font-bold text-[var(--hud-accent)] tracking-wider">HEALTHCARE</span>
+          </div>
+        </div>
+
+        <!-- Compliance Badges -->
+        <div id="complianceBadges" class="flex items-center gap-2">
+          <span
+            class="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-300">
+            <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+            HIPAA
+          </span>
+        </div>
+
+        <!-- Actions -->
+        <!-- Actions -->
+        <button id="newPipelineBtn" class="btn-cyber btn-cyber-primary px-6 py-2 flex items-center gap-2">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          New Pipeline
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex flex-1 overflow-hidden">
+
+      <!-- Left Sidebar: Node Palette -->
+      <aside class="w-72 hud-panel border-r-0 border-r border-[var(--hud-border)] overflow-y-auto z-10">
+        <div class="p-4">
+          <div class="mb-6 border-b border-[var(--hud-border)] pb-4">
+            <h2 class="text-lg font-bold text-[var(--hud-accent)] mb-1">Node Palette</h2>
+            <p class="text-xs text-[var(--hud-text-dim)] font-mono">DRAG UNITS TO GRID</p>
+          </div>
+
+          <!-- Generic Nodes -->
+          <div class="mb-6">
+            <h3
+              class="text-xs font-bold uppercase tracking-widest text-[var(--hud-text-dim)] mb-3 pl-1 border-l-2 border-[var(--hud-accent)]">
+              Sources</h3>
+            <div class="space-y-2" id="sourceNodes">
+              <div class="node-palette-item wizard-option group flex items-center gap-3 p-3 cursor-grab"
+                data-node-type="http_api">
+                <div
+                  class="flex h-8 w-8 items-center justify-center border border-[var(--hud-border)] text-xs font-bold text-[var(--hud-accent)]">
+                  API</div>
+                <div class="flex-1">
+                  <p class="text-sm font-bold tracking-wide">HTTP API</p>
+                  <p class="text-xs text-[var(--hud-text-dim)] font-mono">REST, gRPC, webhooks</p>
+                </div>
+              </div>
+
+              <div class="node-palette-item wizard-option group flex items-center gap-3 p-3 cursor-grab"
+                data-node-type="storage_s3">
+                <div
+                  class="flex h-8 w-8 items-center justify-center border border-[var(--hud-border)] text-xs font-bold text-[var(--hud-accent)]">
+                  S3</div>
+                <div class="flex-1">
+                  <p class="text-sm font-bold tracking-wide">S3 Storage</p>
+                  <p class="text-xs text-[var(--hud-text-dim)] font-mono">AWS S3, MinIO</p>
+                </div>
+              </div>
+
+              <div class="node-palette-item wizard-option group flex items-center gap-3 p-3 cursor-grab"
+                data-node-type="database">
+                <div
+                  class="flex h-8 w-8 items-center justify-center border border-[var(--hud-border)] text-xs font-bold text-[var(--hud-accent)]">
+                  DB</div>
+                <div class="flex-1">
+                  <p class="text-sm font-bold tracking-wide">Database</p>
+                  <p class="text-xs text-[var(--hud-text-dim)] font-mono">Postgres, Snowflake</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cache Layers -->
+          <div class="mb-6">
+            <h3
+              class="text-xs font-bold uppercase tracking-widest text-[var(--hud-text-dim)] mb-3 pl-1 border-l-2 border-[var(--hud-accent)]">
+              Cache Layers</h3>
+            <div class="space-y-2" id="cacheNodes">
+              <div class="node-palette-item wizard-option group flex items-center gap-3 p-3 cursor-grab"
+                data-node-type="cache_l1">
+                <div
+                  class="flex h-8 w-8 items-center justify-center border border-[var(--hud-success)] text-xs font-bold text-[var(--hud-success)] bg-[var(--hud-success)]/10">
+                  L1</div>
+                <div class="flex-1">
+                  <p class="text-sm font-bold tracking-wide">L1 Cache</p>
+                  <p class="text-xs text-[var(--hud-text-dim)] font-mono">In-memory • 5ms</p>
+                </div>
+              </div>
+
+              <div class="node-palette-item wizard-option group flex items-center gap-3 p-3 cursor-grab"
+                data-node-type="cache_l2">
+                <div
+                  class="flex h-8 w-8 items-center justify-center border border-[var(--hud-accent)] text-xs font-bold text-[var(--hud-accent)] bg-[var(--hud-accent)]/10">
+                  L2</div>
+                <div class="flex-1">
+                  <p class="text-sm font-bold tracking-wide">L2 Cache</p>
+                  <p class="text-xs text-[var(--hud-text-dim)] font-mono">Object store • 15ms</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sector-Specific Nodes -->
+          <div class="mb-6" id="sectorNodesContainer">
+            <h3 class="text-xs font-semibold uppercase tracking-wide text-emerald-400 mb-2">
+              <span id="sectorNodesTitle">Healthcare Nodes</span>
+            </h3>
+            <div class="space-y-2" id="sectorNodes">
+              <!-- Dynamically populated from API -->
+            </div>
+          </div>
+
+          <!-- LLM Nodes -->
+          <div class="mb-6">
+            <h3
+              class="text-xs font-bold uppercase tracking-widest text-[var(--hud-text-dim)] mb-3 pl-1 border-l-2 border-[var(--hud-accent)]">
+              LLM</h3>
+            <div class="space-y-2">
+              <div class="node-palette-item wizard-option group flex items-center gap-3 p-3 cursor-grab"
+                data-node-type="llm_openai">
+                <div
+                  class="flex h-8 w-8 items-center justify-center border border-[var(--hud-accent-secondary)] text-xs font-bold text-[var(--hud-accent-secondary)] bg-[var(--hud-accent-secondary)]/10">
+                  AI</div>
+                <div class="flex-1">
+                  <p class="text-sm font-bold tracking-wide">OpenAI</p>
+                  <p class="text-xs text-[var(--hud-text-dim)] font-mono">GPT-4o • 800ms</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center: Canvas -->
+      <main class="flex-1 flex flex-col relative">
+
+        <!-- Metrics Bar -->
+        <div class="border-b border-[var(--hud-border)] bg-[var(--hud-panel-bg)] px-6 py-3 z-10">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-6">
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-slate-400">Pipeline:</span>
+                <span id="pipelineName" class="text-sm font-semibold">Untitled Pipeline</span>
+              </div>
+              <div class="h-4 w-px bg-slate-700"></div>
+              <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-slate-500">Hit Rate</span>
+                  <span id="metricHitRate" class="metric-value text-sm font-semibold text-emerald-400">--</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-slate-500">Latency</span>
+                  <span id="metricLatency" class="metric-value text-sm font-semibold text-sky-400">--</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-slate-500">Savings</span>
+                  <span id="metricSavings" class="metric-value text-sm font-semibold text-emerald-400">--</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <div id="validationStatus" class="flex items-center gap-2 rounded-full bg-slate-800/50 px-3 py-1 text-xs">
+                <span class="h-2 w-2 rounded-full bg-slate-500"></span>
+                <span class="text-slate-400">No pipeline</span>
+              </div>
+              <button id="optimizeBtn"
+                class="rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
+                disabled>
+                ⚡ Optimize
+              </button>
+              <button id="deployBtn"
+                class="rounded-lg bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
+                disabled>
+                Deploy
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Canvas Area -->
+        <div class="flex-1 relative overflow-hidden">
+          <svg id="canvas" class="absolute inset-0 w-full h-full">
+            <defs>
+              <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                <polygon points="0 0, 10 3, 0 6" fill="#64748b" />
+              </marker>
+              <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#00f3ff;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#7000ff;stop-opacity:1" />
+              </linearGradient>
+            </defs>
+            <g id="connections"></g>
+          </svg>
+          <div id="nodesContainer" class="absolute inset-0 pointer-events-none">
+            <!-- Nodes rendered here -->
+          </div>
+
+          <!-- Empty State -->
+          <div id="emptyState" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div class="text-center">
+              <div
+                class="mb-4 inline-flex h-20 w-20 items-center justify-center rounded-full border border-[var(--hud-border)] bg-[var(--hud-accent)]/5 shadow-[0_0_30px_var(--hud-accent)]/20">
+                <svg class="h-10 w-10 text-[var(--hud-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                  </path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold text-[var(--hud-text)] mb-2 tracking-widest text-glow">NO PIPELINE DETECTED
+              </h3>
+              <p class="text-sm text-[var(--hud-text-dim)] font-mono">INITIALIZE WIZARD TO BEGIN ORCHESTRATION</p>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Right Sidebar: AI Assistant -->
+      <aside class="w-80 hud-panel border-l-0 border-l border-[var(--hud-border)] flex flex-col z-10">
+        <div class="border-b border-[var(--hud-border)] px-4 py-3 bg-[var(--hud-accent)]/5">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold text-[var(--hud-accent)] tracking-wider">AI ASSISTANT</h2>
+            <button id="clearChatBtn"
+              class="text-xs text-[var(--hud-text-dim)] hover:text-[var(--hud-accent)] font-mono">
+              [CLEAR]
+            </button>
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 space-y-3" id="aiAssistantChat">
+          <div class="text-xs text-slate-500 text-center py-8">
+            <p>Ask me to optimize your pipeline, add nodes, or adjust configuration</p>
+            <p class="mt-2 text-slate-600">Try: "Make it faster" or "Add audit logging"</p>
+          </div>
+        </div>
+
+        <div class="border-t border-[var(--hud-border)] p-4">
+          <div class="flex gap-2">
+            <input id="aiInput" type="text" placeholder="ENTER COMMAND..."
+              class="flex-1 input-cyber rounded-none px-3 py-2 text-sm" />
+            <button id="aiSendBtn" class="btn-cyber px-4 py-2 text-sm font-bold">
+              SEND
+            </button>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- Wizard Modal -->
+  <div id="wizardModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md hidden">
+    <div class="w-full max-w-2xl hud-panel wizard-content p-0 relative">
+      <div class="border-b border-[var(--hud-border)] px-6 py-4 bg-[var(--hud-accent)]/5">
+        <h2 class="text-xl font-bold text-[var(--hud-accent)] tracking-widest text-glow">INITIALIZE PIPELINE</h2>
+        <p class="text-sm text-[var(--hud-text-dim)] font-mono mt-1">AI ORCHESTRATION SEQUENCE // SECTOR: <span
+            class="text-[var(--hud-accent)]">HEALTHCARE</span></p>
+      </div>
+
+      <div class="p-6" id="wizardContent">
+        <!-- Step 1: Use Case -->
+        <div class="wizard-step active" data-step="1">
+          <h3 class="text-lg font-bold text-[var(--hud-text)] mb-4 tracking-wide">SELECT USE CASE PROTOCOL</h3>
+          <div class="space-y-3">
+            <button class="use-case-option w-full text-left wizard-option p-4 group" data-usecase="clinical-decision"
+              data-prompt="Build a HIPAA-compliant clinical decision support cache for patient triage and diagnosis queries">
+              <div class="flex items-center gap-4">
+                <span class="text-2xl filter drop-shadow-[0_0_5px_rgba(0,243,255,0.5)]">🏥</span>
+                <div>
+                  <p class="font-bold text-[var(--hud-text)] group-hover:text-[var(--hud-accent)] transition-colors">
+                    CLINICAL DECISION SUPPORT</p>
+                  <p class="text-sm text-[var(--hud-text-dim)] font-mono">HIPAA-compliant cache for patient triage</p>
+                </div>
+              </div>
+            </button>
+
+            <button class="use-case-option w-full text-left wizard-option p-4 group" data-usecase="trading"
+              data-prompt="Build a low-latency cache for trading assistant with real-time market data">
+              <div class="flex items-center gap-4">
+                <span class="text-2xl filter drop-shadow-[0_0_5px_rgba(0,243,255,0.5)]">📈</span>
+                <div>
+                  <p class="font-bold text-[var(--hud-text)] group-hover:text-[var(--hud-accent)] transition-colors">
+                    TRADING ASSISTANT</p>
+                  <p class="text-sm text-[var(--hud-text-dim)] font-mono">Low-latency cache for real-time market data
+                  </p>
+                </div>
+              </div>
+            </button>
+
+            <button class="use-case-option w-full text-left wizard-option p-4 group" data-usecase="contract-review"
+              data-prompt="Build a privilege-protected cache for legal contract review and document analysis">
+              <div class="flex items-center gap-4">
+                <span class="text-2xl filter drop-shadow-[0_0_5px_rgba(0,243,255,0.5)]">⚖️</span>
+                <div>
+                  <p class="font-bold text-[var(--hud-text)] group-hover:text-[var(--hud-accent)] transition-colors">
+                    CONTRACT REVIEW</p>
+                  <p class="text-sm text-[var(--hud-text-dim)] font-mono">Privilege-protected cache for legal analysis
+                  </p>
+                </div>
+              </div>
+            </button>
+
+            <button class="use-case-option w-full text-left wizard-option p-4 group" data-usecase="custom">
+              <div class="flex items-center gap-4">
+                <span class="text-2xl filter drop-shadow-[0_0_5px_rgba(0,243,255,0.5)]">⚡</span>
+                <div>
+                  <p class="font-bold text-[var(--hud-text)] group-hover:text-[var(--hud-accent)] transition-colors">
+                    CUSTOM CONFIGURATION</p>
+                  <p class="text-sm text-[var(--hud-text-dim)] font-mono">Manual parameter override</p>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Natural Language Input (for custom) -->
+        <div class="wizard-step" data-step="2">
+          <h3 class="text-lg font-bold text-[var(--hud-text)] mb-4 tracking-wide">DEFINE PARAMETERS</h3>
+          <textarea id="customUseCase" rows="6" placeholder="ENTER PIPELINE SPECIFICATIONS..."
+            class="w-full input-cyber p-4 text-sm focus:ring-0"></textarea>
+        </div>
+
+        <!-- Step 3: Performance Goal -->
+        <div class="wizard-step" data-step="3">
+          <h3 class="text-lg font-bold text-[var(--hud-text)] mb-4 tracking-wide">OPTIMIZATION TARGET</h3>
+          <div class="space-y-3">
+            <button class="perf-option w-full text-left wizard-option p-4 group" data-perf="fast">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="font-bold text-[var(--hud-text)] group-hover:text-[var(--hud-accent)]">⚡ LOW LATENCY</p>
+                  <p class="text-sm text-[var(--hud-text-dim)] font-mono">Minimize response time • Single L1 cache</p>
+                </div>
+                <span class="text-xs text-[var(--hud-accent)] font-mono">~97ms p95</span>
+              </div>
+            </button>
+
+            <button class="perf-option selected w-full text-left wizard-option p-4 group" data-perf="balanced">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="font-bold text-[var(--hud-text)] group-hover:text-[var(--hud-accent)]">⚖️ BALANCED</p>
+                  <p class="text-sm text-[var(--hud-text-dim)] font-mono">Good speed + cost savings • L1 + L2 cache</p>
+                </div>
+                <span class="text-xs text-[var(--hud-success)] font-mono">RECOMMENDED</span>
+              </div>
+            </button>
+
+            <button class="perf-option w-full text-left wizard-option p-4 group" data-perf="cost">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="font-bold text-[var(--hud-text)] group-hover:text-[var(--hud-accent)]">💰 COST OPTIMIZED</p>
+                  <p class="text-sm text-[var(--hud-text-dim)] font-mono">Maximum savings • Multi-tier cache</p>
+                </div>
+                <span class="text-xs text-[var(--hud-success)] font-mono">~$2.40/req saved</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 4: Review -->
+        <div class="wizard-step" data-step="4">
+          <div class="flex items-center justify-center py-8" id="generatingLoader">
+            <div class="text-center">
+              <div
+                class="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-[var(--hud-accent)] border-r-transparent">
+              </div>
+              <p class="mt-4 text-sm text-[var(--hud-text-dim)] font-mono animate-pulse">GENERATING PIPELINE
+                CONFIGURATION...</p>
+            </div>
+          </div>
+
+          <div id="reviewContent" class="hidden">
+            <h3 class="text-lg font-bold text-[var(--hud-text)] mb-4 tracking-wide">CONFIRM CONFIGURATION</h3>
+            <div class="hud-panel p-4 border border-[var(--hud-accent)]/30">
+              <div class="space-y-4">
+                <div>
+                  <p class="text-xs text-[var(--hud-text-dim)] font-mono mb-1">GENERATED PIPELINE //</p>
+                  <p id="reviewName" class="text-lg font-bold text-[var(--hud-accent)] text-glow">--</p>
+                </div>
+                <div>
+                  <p class="text-xs text-[var(--hud-text-dim)] font-mono mb-2">NODES //</p>
+                  <div id="reviewNodes" class="flex flex-wrap gap-2">
+                    <!-- Populated by JS -->
+                  </div>
+                </div>
+                <div class="grid grid-cols-3 gap-4 pt-2 border-t border-[var(--hud-border)]">
+                  <div>
+                    <p class="text-xs text-[var(--hud-text-dim)] font-mono">EST. LATENCY</p>
+                    <p id="reviewLatency" class="text-xl font-bold text-[var(--hud-accent)]">--</p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-[var(--hud-text-dim)] font-mono">HIT RATE</p>
+                    <p id="reviewHitRate" class="text-xl font-bold text-[var(--hud-success)]">--</p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-[var(--hud-text-dim)] font-mono">SAVINGS</p>
+                    <p id="reviewSavings" class="text-xl font-bold text-[var(--hud-success)]">--</p>
+                  </div>
+                </div>
+                <div class="pt-2">
+                  <p class="text-xs text-[var(--hud-text-dim)] font-mono mb-2">AI REASONING //</p>
+                  <ul id="reviewReasoning" class="space-y-2 text-xs text-[var(--hud-text)] font-mono">
+                    <!-- Populated by JS -->
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="border-t border-[var(--hud-border)] px-6 py-4 flex items-center justify-between bg-[var(--hud-panel-bg)]">
+        <button id="wizardBackBtn" class="btn-cyber px-4 py-2 text-sm hidden">
+          &lt; BACK
+        </button>
+        <div class="flex gap-3">
+          <button id="wizardCancelBtn"
+            class="btn-cyber px-4 py-2 text-sm text-[var(--hud-text-dim)] border-[var(--hud-text-dim)] hover:border-[var(--hud-danger)] hover:text-[var(--hud-danger)]">
+            CANCEL
+          </button>
+          <button id="wizardNextBtn" class="btn-cyber btn-cyber-primary px-8 py-2 text-sm font-bold">
+            NEXT >
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div>
+  </div>
+
+  <!-- Code View Modal -->
+  <div id="codeModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md hidden">
+    <div
+      class="w-full max-w-5xl h-[80vh] flex flex-col rounded-2xl border border-[var(--hud-border)] bg-[var(--hud-panel-bg)] shadow-[0_0_50px_rgba(14,165,233,0.1)] overflow-hidden">
+      <!-- Header -->
+      <div
+        class="flex items-center justify-between border-b border-[var(--hud-border)] px-6 py-4 bg-[var(--hud-panel-bg)]">
+        <div>
+          <h2 class="text-xl font-bold tracking-widest text-[var(--hud-accent)] text-glow">DEPLOYMENT ARTIFACTS</h2>
+          <p class="text-xs text-[var(--hud-text-dim)] font-mono">GENERATED BY AGENTCACHE COGNITIVE ENGINE</p>
+        </div>
+        <button id="closeCodeModalBtn" class="text-[var(--hud-text-dim)] hover:text-[var(--hud-accent)]">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar: Reasoning -->
+        <div class="w-80 border-r border-[var(--hud-border)] bg-[var(--hud-panel-bg)]/50 p-6 overflow-y-auto">
+          <h3 class="text-xs font-bold uppercase tracking-widest text-[var(--hud-text-dim)] mb-4">Architectural
+            Decisions</h3>
+          <ul id="codeReasoning" class="space-y-4 text-sm text-[var(--hud-text)] font-mono">
+            <!-- Populated by JS -->
+          </ul>
+        </div>
+
+        <!-- Main: Code -->
+        <div class="flex-1 flex flex-col bg-[#0d1117]">
+          <!-- Tabs -->
+          <div class="flex border-b border-[var(--hud-border)] bg-[var(--hud-panel-bg)]">
+            <button
+              class="code-tab active px-6 py-3 text-sm font-bold text-[var(--hud-accent)] border-b-2 border-[var(--hud-accent)] bg-[var(--hud-accent)]/10"
+              data-target="python">PYTHON</button>
+            <button class="code-tab px-6 py-3 text-sm font-bold text-[var(--hud-text-dim)] hover:text-[var(--hud-text)]"
+              data-target="javascript">JAVASCRIPT</button>
+            <button class="code-tab px-6 py-3 text-sm font-bold text-[var(--hud-text-dim)] hover:text-[var(--hud-text)]"
+              data-target="databricks">DATABRICKS</button>
+            <button class="code-tab px-6 py-3 text-sm font-bold text-[var(--hud-text-dim)] hover:text-[var(--hud-text)]"
+              data-target="curl">cURL</button>
+          </div>
+
+          <!-- Code Content -->
+          <div class="flex-1 overflow-auto p-6 font-mono text-sm">
+            <pre id="codeContent" class="text-slate-300"><code># Generating code...</code></pre>
+          </div>
+
+          <!-- Footer Actions -->
+          <div class="border-t border-[var(--hud-border)] p-4 flex justify-end gap-3 bg-[var(--hud-panel-bg)]">
+            <button class="btn-cyber px-4 py-2 text-sm"
+              onclick="navigator.clipboard.writeText(document.getElementById('codeContent').innerText)">COPY
+              CODE</button>
+            <button class="btn-cyber btn-cyber-primary px-6 py-2 text-sm"
+              onclick="window.location.href='/dashboard.html'">DEPLOY TO EDGE</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State
+    let currentSector = 'healthcare';
+    let currentPipeline = null;
+    let wizardState = {
+      step: 1,
+      useCase: null,
+      prompt: '',
+      performance: 'balanced',
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadSectorNodes();
+      loadSectorNodes();
+      attachEventListeners();
+      setupCanvasDragDrop();
+
+      // Check for pipeline ID in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const pipelineId = urlParams.get('id');
+      if (pipelineId) {
+        loadPipelineFromId(pipelineId);
+      } else {
+        // Open wizard by default if no ID
+        openWizard();
+      }
+    });
+
+    // Load pipeline from API (simulated for ID, real for generation)
+    async function loadPipelineFromId(id) {
+      // In a real app, we'd fetch the specific pipeline by ID
+      // For this demo, we'll generate one based on the ID to show off the generator
+      const promptMap = {
+        'fin-risk': 'Build a financial risk control pipeline with PII scrubbing and compliance checks',
+        'support-assist': 'Create a customer support assistant with caching and toxicity filtering',
+        'content-guard': 'Setup a content moderation pipeline for user generated content'
+      };
+
+      const prompt = promptMap[id] || 'Build a general purpose cache pipeline';
+
+      try {
+        const response = await fetch('/api/pipeline/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt, sector: 'general' })
+        });
+
+        const data = await response.json();
+        if (data.success && data.pipeline) {
+          currentPipeline = data.pipeline;
+          renderPipelineOnCanvas(data.pipeline);
+        }
+      } catch (e) {
+        console.error('Failed to load pipeline', e);
+      }
+    }
+
+    // Load sector-specific nodes from API
+    async function loadSectorNodes() {
+      try {
+        const response = await fetch(`/api/sector/${currentSector}`);
+        const data = await response.json();
+
+        if (data.success && data.nodes) {
+          renderSectorNodes(data.nodes);
+        }
+      } catch (error) {
+        console.error('Failed to load sector nodes:', error);
+      }
+    }
+
+    function renderSectorNodes(nodes) {
+      const container = document.getElementById('sectorNodes');
+      container.innerHTML = nodes.map(node => `
+        <div class="node-palette-item wizard-option group flex items-center gap-3 p-3 cursor-grab" draggable="true" data-node-type="${node.id}">
+          <div class="flex h-8 w-8 items-center justify-center border border-[var(--hud-accent)] text-xs font-bold text-[var(--hud-accent)] bg-[var(--hud-accent)]/10">${node.icon || node.id.substring(0, 2).toUpperCase()}</div>
+          <div class="flex-1">
+            <p class="text-sm font-bold tracking-wide">${node.name}</p>
+            <p class="text-xs text-[var(--hud-text-dim)] font-mono">${node.description}</p>
+          </div>
+        </div>
+      `).join('');
+
+      // Re-attach drag listeners for dynamic nodes
+      attachDragListeners();
+    }
+
+    function attachDragListeners() {
+      document.querySelectorAll('.node-palette-item').forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('nodeType', item.dataset.nodeType);
+          e.dataTransfer.effectAllowed = 'copy';
+        });
+      });
+    }
+
+    function setupCanvasDragDrop() {
+      const canvas = document.getElementById('pipelineCanvas');
+
+      canvas.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+      });
+
+      canvas.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const nodeType = e.dataTransfer.getData('nodeType');
+        if (nodeType && currentPipeline) {
+          const rect = canvas.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+
+          addNodeToPipeline(nodeType, x, y);
+        }
+      });
+    }
+
+    function addNodeToPipeline(type, x, y) {
+      const newNode = {
+        type: type,
+        id: `${type}_${Date.now()}`,
+        position: { x, y }
+      };
+
+      currentPipeline.nodes.push(newNode);
+      renderPipelineOnCanvas(currentPipeline);
+    }
+
+    // Event Listeners
+    function attachEventListeners() {
+      // New Pipeline button
+      document.getElementById('newPipelineBtn').addEventListener('click', () => {
+        openWizard();
+      });
+
+      // Wizard navigation
+      document.getElementById('wizardNextBtn').addEventListener('click', wizardNext);
+      document.getElementById('wizardBackBtn').addEventListener('click', wizardBack);
+      document.getElementById('wizardCancelBtn').addEventListener('click', closeWizard);
+
+      // Use case selection
+      document.querySelectorAll('.use-case-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.use-case-option').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          wizardState.useCase = btn.dataset.usecase;
+          wizardState.prompt = btn.dataset.prompt || '';
+        });
+      });
+
+      // Performance selection
+      document.querySelectorAll('.perf-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.perf-option').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          wizardState.performance = btn.dataset.perf;
+        });
+      });
+
+      // AI Chat
+      document.getElementById('aiSendBtn').addEventListener('click', sendAIMessage);
+      document.getElementById('aiInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendAIMessage();
+      });
+
+      // Optimize button
+      document.getElementById('optimizeBtn').addEventListener('click', optimizePipeline);
+
+      // Deploy button
+      document.getElementById('deployBtn').addEventListener('click', async () => {
+        const apiKey = localStorage.getItem('agentcache_api_key');
+        if (!apiKey) {
+          if (confirm('Please login or sign up to deploy your pipeline. Redirect to login?')) {
+            window.location.href = '/login.html';
+          }
+          return;
+        }
+
+        if (!currentPipeline) return;
+
+        // Show generating state
+        const btn = document.getElementById('deployBtn');
+        const originalText = btn.textContent;
+        btn.textContent = 'GENERATING...';
+        btn.disabled = true;
+
+        try {
+          // Fetch generated code
+          const response = await fetch('/api/pipeline/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pipeline: currentPipeline, target: 'all' })
+          });
+
+          const data = await response.json();
+
+          if (data.success && data.code) {
+            // Populate modal
+            window.generatedCode = data.code; // Store for tab switching
+            document.getElementById('codeContent').textContent = data.code.python;
+
+            // Populate reasoning
+            const reasoningList = document.getElementById('codeReasoning');
+            reasoningList.innerHTML = (currentPipeline.reasoning || ['Optimized for performance and cost']).map(r =>
+              `<li class="flex gap-2"><span class="text-[var(--hud-accent)]">></span> ${r}</li>`
+            ).join('');
+
+            // Show modal
+            document.getElementById('codeModal').classList.remove('hidden');
+          }
+        } catch (e) {
+          console.error('Generation failed', e);
+          alert('Failed to generate deployment artifacts');
+        } finally {
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }
+      });
+
+      // Code Modal Controls
+      document.getElementById('closeCodeModalBtn').addEventListener('click', () => {
+        document.getElementById('codeModal').classList.add('hidden');
+      });
+
+      document.querySelectorAll('.code-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.code-tab').forEach(t => {
+            t.classList.remove('active', 'border-b-2', 'border-[var(--hud-accent)]', 'bg-[var(--hud-accent)]/10', 'text-[var(--hud-accent)]');
+            t.classList.add('text-[var(--hud-text-dim)]');
+          });
+          tab.classList.add('active', 'border-b-2', 'border-[var(--hud-accent)]', 'bg-[var(--hud-accent)]/10', 'text-[var(--hud-accent)]');
+          tab.classList.remove('text-[var(--hud-text-dim)]');
+
+          const target = tab.dataset.target;
+          if (window.generatedCode && window.generatedCode[target]) {
+            document.getElementById('codeContent').textContent = window.generatedCode[target];
+          }
+        });
+      });
+    }
+
+    // Wizard Flow
+    function openWizard() {
+      document.getElementById('wizardModal').classList.remove('hidden');
+      wizardState = { step: 1, useCase: null, prompt: '', performance: 'balanced' };
+      updateWizardStep();
+    }
+
+    function closeWizard() {
+      document.getElementById('wizardModal').classList.add('hidden');
+    }
+
+    async function wizardNext() {
+      const nextBtn = document.getElementById('wizardNextBtn');
+
+      if (wizardState.step === 1) {
+        if (!wizardState.useCase) {
+          alert('Please select a use case');
+          return;
+        }
+
+        if (wizardState.useCase === 'custom') {
+          wizardState.step = 2;
+        } else {
+          wizardState.step = 3;
+        }
+      } else if (wizardState.step === 2) {
+        const customPrompt = document.getElementById('customUseCase').value.trim();
+        if (!customPrompt) {
+          alert('Please describe your use case');
+          return;
+        }
+        wizardState.prompt = customPrompt;
+        wizardState.step = 3;
+      } else if (wizardState.step === 3) {
+        wizardState.step = 4;
+        nextBtn.textContent = 'Create Pipeline';
+
+        // Call AI to generate pipeline
+        setTimeout(() => generatePipeline(), 500);
+      } else if (wizardState.step === 4) {
+        // Apply pipeline to canvas
+        if (currentPipeline) {
+          renderPipelineOnCanvas(currentPipeline);
+          closeWizard();
+        }
+      }
+
+      updateWizardStep();
+    }
+
+    function wizardBack() {
+      if (wizardState.step === 2 && wizardState.useCase !== 'custom') {
+        wizardState.step = 1;
+      } else if (wizardState.step > 1) {
+        wizardState.step--;
+      }
+
+      const nextBtn = document.getElementById('wizardNextBtn');
+      nextBtn.textContent = wizardState.step === 4 ? 'Create Pipeline' : 'Next';
+      updateWizardStep();
+    }
+
+    function updateWizardStep() {
+      document.querySelectorAll('.wizard-step').forEach(step => {
+        step.classList.remove('active');
+      });
+
+      const currentStep = document.querySelector(`[data-step="${wizardState.step}"]`);
+      if (currentStep) currentStep.classList.add('active');
+
+      const backBtn = document.getElementById('wizardBackBtn');
+      backBtn.classList.toggle('hidden', wizardState.step === 1);
+    }
+
+    // Generate Pipeline via AI API
+    async function generatePipeline() {
+      const loader = document.getElementById('generatingLoader');
+      const content = document.getElementById('reviewContent');
+
+      loader.classList.remove('hidden');
+      content.classList.add('hidden');
+
+      try {
+        // Build prompt based on selections
+        let fullPrompt = wizardState.prompt;
+        if (wizardState.performance === 'fast') {
+          fullPrompt += ' optimized for low latency';
+        } else if (wizardState.performance === 'cost') {
+          fullPrompt += ' optimized for cost savings';
+        }
+
+        const response = await fetch('/api/pipeline/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: fullPrompt,
+            sector: currentSector,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.pipeline) {
+          currentPipeline = data.pipeline;
+          displayPipelineReview(data.pipeline);
+
+          loader.classList.add('hidden');
+          content.classList.remove('hidden');
+        } else {
+          throw new Error(data.error || 'Failed to generate pipeline');
+        }
+      } catch (error) {
+        console.error('Pipeline generation failed:', error);
+        alert('Failed to generate pipeline. Please try again.');
+        wizardBack();
+      }
+    }
+
+    function displayPipelineReview(pipeline) {
+      document.getElementById('reviewName').textContent = pipeline.name;
+      document.getElementById('reviewLatency').textContent = `${pipeline.metrics.estimatedLatency}ms`;
+      document.getElementById('reviewHitRate').textContent = `${pipeline.metrics.estimatedHitRate}%`;
+      document.getElementById('reviewSavings').textContent = `$${pipeline.metrics.estimatedSavings}/req`;
+
+      // Render nodes
+      const nodesHtml = pipeline.nodes.map(node =>
+        `<span class="inline-flex items-center border border-[var(--hud-border)] bg-[var(--hud-panel-bg)] px-2 py-0.5 text-xs text-[var(--hud-text)] font-mono">${node.type}</span>`
+      ).join('');
+      document.getElementById('reviewNodes').innerHTML = nodesHtml;
+
+      // Render reasoning
+      const reasoningHtml = pipeline.reasoning.map(reason =>
+        `<li class="flex items-start gap-2"><span class="text-[var(--hud-accent)]">></span><span>${reason}</span></li>`
+      ).join('');
+      document.getElementById('reviewReasoning').innerHTML = reasoningHtml;
+    }
+
+    // Render Pipeline on Canvas
+    function renderPipelineOnCanvas(pipeline) {
+      document.getElementById('emptyState').classList.add('hidden');
+      document.getElementById('pipelineName').textContent = pipeline.name;
+      document.getElementById('metricHitRate').textContent = `${Math.round(pipeline.metrics.estimated_hit_rate * 100)}%`;
+      document.getElementById('metricLatency').textContent = `${pipeline.metrics.estimated_latency_ms}ms`;
+      document.getElementById('metricSavings').textContent = `$${pipeline.metrics.estimated_savings_per_request}`;
+
+      // Update validation status
+      const status = document.getElementById('validationStatus');
+      if (pipeline.compliance.satisfied) {
+        status.innerHTML = `
+          <span class="h-2 w-2 rounded-full bg-[var(--hud-success)] shadow-[0_0_5px_var(--hud-success)]"></span>
+          <span class="text-[var(--hud-success)] font-mono text-xs">VALID • ${pipeline.compliance.frameworks.join(', ')}</span>
+        `;
+      }
+
+      // Enable buttons
+      document.getElementById('optimizeBtn').disabled = false;
+      document.getElementById('deployBtn').disabled = false;
+
+      // Render nodes on canvas
+      const container = document.getElementById('nodesContainer');
+      const nodesHtml = pipeline.nodes.map((node, i) => `
+        <div class="canvas-node absolute pointer-events-auto p-3" style="left: ${100 + i * 200}px; top: ${200}px">
+          <div class="node-header flex items-center gap-2">
+            <div class="flex h-6 w-6 items-center justify-center border border-[var(--hud-accent)] text-[10px] font-bold text-[var(--hud-accent)]">${node.type.substring(0, 3).toUpperCase()}</div>
+            <div>
+              <p class="text-xs font-bold tracking-wide text-[var(--hud-text)]">${node.type}</p>
+            </div>
+          </div>
+          <p class="text-[10px] text-[var(--hud-text-dim)] font-mono">${node.id}</p>
+        </div >
+          `).join('');
+      container.innerHTML = nodesHtml;
+
+      // Draw connections
+      drawConnections(pipeline.connections, pipeline.nodes);
+
+      // Add to AI chat
+      addAIMessage(`Created pipeline: ${pipeline.name} with ${pipeline.nodes.length} nodes`, 'assistant');
+    }
+
+    function drawConnections(connections, nodes) {
+      const svg = document.getElementById('connections');
+      svg.innerHTML = '';
+
+      connections.forEach(conn => {
+        const fromNode = nodes.find(n => n.id === conn.from);
+        const toNode = nodes.find(n => n.id === conn.to);
+
+        if (fromNode && toNode) {
+          const fromX = fromNode.position.x + 100;
+          const fromY = fromNode.position.y + 40;
+          const toX = toNode.position.x;
+          const toY = toNode.position.y + 40;
+
+          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path.setAttribute('d', `M ${fromX} ${fromY} C ${(fromX + toX) / 2} ${fromY}, ${(fromX + toX) / 2} ${toY}, ${toX} ${toY} `);
+          path.setAttribute('stroke', 'url(#connectionGradient)');
+          path.setAttribute('stroke-width', '2');
+          path.setAttribute('fill', 'none');
+          path.setAttribute('marker-end', 'url(#arrowhead)');
+          path.classList.add('node-connection', 'animated');
+
+          svg.appendChild(path);
+        }
+      });
+    }
+
+    // AI Chat
+    function sendAIMessage() {
+      const input = document.getElementById('aiInput');
+      const message = input.value.trim();
+
+      if (!message) return;
+
+      addAIMessage(message, 'user');
+      input.value = '';
+
+      // Process AI command
+      processAICommand(message);
+    }
+
+    function addAIMessage(text, role) {
+      const chat = document.getElementById('aiAssistantChat');
+      const isUser = role === 'user';
+
+      const msg = document.createElement('div');
+      msg.className = `text - sm ${isUser ? 'text-right' : ''} `;
+      msg.innerHTML = `
+          < div class="inline-block px-3 py-2 font-mono text-xs ${isUser ? 'bg-[var(--hud-accent)]/20 text-[var(--hud-accent)] border border-[var(--hud-accent)]' : 'bg-[var(--hud-panel-bg)] text-[var(--hud-text)] border border-[var(--hud-border)]'}" >
+            ${isUser ? '> ' : ''}${text}
+        </div >
+          `;
+
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function processAICommand(command) {
+      if (!currentPipeline) {
+        addAIMessage('Please create a pipeline first', 'assistant');
+        return;
+      }
+
+      const lower = command.toLowerCase();
+
+      if (lower.includes('faster') || lower.includes('latency')) {
+        await optimizePipeline(['latency']);
+      } else if (lower.includes('cost') || lower.includes('cheap')) {
+        await optimizePipeline(['cost']);
+      } else {
+        addAIMessage(`I can help optimize your pipeline.Try: "make it faster" or "reduce cost"`, 'assistant');
+      }
+    }
+
+    // Optimize Pipeline
+    async function optimizePipeline(goals = ['cost']) {
+      if (!currentPipeline) return;
+
+      addAIMessage(`Optimizing pipeline for ${goals.join(', ')}...`, 'assistant');
+
+      try {
+        const response = await fetch('/api/pipeline/optimize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pipeline: currentPipeline,
+            goals,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.pipeline) {
+          currentPipeline = data.pipeline;
+          renderPipelineOnCanvas(data.pipeline);
+
+          const improvements = [];
+          if (data.improvement.latency !== 0) improvements.push(`${Math.abs(data.improvement.latency)}ms ${data.improvement.latency < 0 ? 'slower' : 'faster'} `);
+          if (data.improvement.hitRate !== 0) improvements.push(`${Math.abs(data.improvement.hitRate)}% ${data.improvement.hitRate > 0 ? 'better' : 'worse'} hit rate`);
+
+          addAIMessage(`✅ Optimized! ${improvements.join(', ')}. Made ${data.changes.length} changes.`, 'assistant');
+        }
+      } catch (error) {
+        console.error('Optimization failed:', error);
+        addAIMessage('Optimization failed. Please try again.', 'assistant');
+      }
+    }
+
+    document.getElementById('clearChatBtn').addEventListener('click', () => {
+      document.getElementById('aiAssistantChat').innerHTML = `
+          <div class="text-xs text-[var(--hud-text-dim)] text-center py-8 font-mono">
+            <p>SYSTEM READY. AWAITING INPUT.</p>
+            <p class="mt-2 text-[var(--hud-accent)] opacity-70">TRY: "OPTIMIZE LATENCY" or "ADD AUDIT LOG"</p>
+          </div>
+        `;
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AgentCache.ai — Edge caching for AI API calls</title>
+    <meta name="description" content="AgentCache.ai is an edge caching layer for AI API calls. Drop in 5 lines of code to reduce AI costs by up to 90% and make responses 10x faster." />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js"></script>
+    <style>
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+      
+      @keyframes shimmer {
+        0% { background-position: -1000px 0; }
+        100% { background-position: 1000px 0; }
+      }
+      
+      .animate-fadeInUp {
+        animation: fadeInUp 0.6s ease-out;
+      }
+      
+      .hover-lift {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      
+      .hover-lift:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+      }
+      
+      .code-shimmer {
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          rgba(139, 92, 246, 0.1) 50%,
+          transparent 100%
+        );
+        background-size: 2000px 100%;
+        animation: shimmer 3s infinite;
+      }
+      
+      /* Smooth scroll */
+      html {
+        scroll-behavior: smooth;
+      }
+      
+      /* Button hover glow */
+      button, a[class*="bg-"] {
+        transition: all 0.3s ease;
+      }
+      
+      button:hover, a[class*="bg-"]:hover {
+        filter: brightness(1.1);
+      }
+    </style>
+  </head>
+  <body class="bg-neutral-950 text-neutral-100 antialiased selection:bg-indigo-500/30 selection:text-white">
+    <!-- Top Nav -->
+    <header class="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/70 bg-neutral-950/60 border-b border-white/10">
+      <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="h-8 w-8 grid place-content-center rounded-md bg-white/5 ring-1 ring-white/10">
+            <span class="text-sm font-semibold tracking-tight">AC</span>
+          </div>
+          <span class="text-sm md:text-base font-semibold tracking-tight">AgentCache<span class="text-neutral-400">.ai</span></span>
+        </div>
+        <nav class="hidden md:flex items-center gap-6 text-sm text-neutral-300">
+          <a href="#product" class="hover:text-white hover:underline underline-offset-4">Product</a>
+          <a href="#pricing" class="hover:text-white hover:underline underline-offset-4">Pricing</a>
+          <a href="/blog.html" class="hover:text-white hover:underline underline-offset-4">Blog</a>
+          <a href="/docs.html" class="hover:text-white hover:underline underline-offset-4">Docs</a>
+          <a href="https://github.com/xinetex/agentcache.ai" class="hover:text-white hover:underline underline-offset-4" rel="noopener noreferrer">GitHub</a>
+        </nav>
+        <div class="flex items-center gap-3">
+          <a href="/docs.html" class="hidden md:inline-flex items-center gap-2 rounded-md px-3.5 py-2 text-sm text-neutral-200 ring-1 ring-white/10 hover:ring-white/20 hover:bg-white/5 transition-colors">
+            <i data-lucide="book-open" class="h-4 w-4"></i>
+            Docs
+          </a>
+          <a href="/login.html" class="hidden sm:inline-flex items-center gap-2 rounded-md px-3.5 py-2 text-sm text-neutral-200 hover:text-white transition-colors">
+            <i data-lucide="log-in" class="h-4 w-4"></i>
+            Login
+          </a>
+          <a href="/login.html" class="inline-flex items-center gap-2 rounded-md px-3.5 py-2 text-sm font-semibold tracking-tight bg-indigo-500 text-white hover:bg-indigo-400 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 transition-colors">
+            <i data-lucide="user-plus" class="h-4 w-4"></i>
+            Sign up free
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero -->
+    <section id="product" class="relative overflow-hidden">
+      <div class="pointer-events-none absolute inset-0">
+        <div class="absolute -top-40 left-1/2 -translate-x-1/2 h-[36rem] w-[80rem] rounded-full bg-indigo-500/10 blur-3xl"></div>
+        <div class="absolute -bottom-56 -left-20 h-96 w-96 rounded-full bg-fuchsia-500/10 blur-3xl"></div>
+      </div>
+      <div class="mx-auto max-w-7xl px-6 pt-16 pb-8 sm:pt-24 sm:pb-12">
+        <div class="grid lg:grid-cols-12 gap-12 items-center">
+          <div class="lg:col-span-6 xl:col-span-5">
+            <div class="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-xs text-emerald-300">
+              <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/20 ring-1 ring-emerald-500/30">
+                <i data-lucide="zap" class="h-3.5 w-3.5"></i>
+              </span>
+              ✅ NEW: Zero-friction proxy - just change OPENAI_BASE_URL
+            </div>
+            <h1 class="mt-5 text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-white">
+              Edge caching for AI APIs.
+              <span class="text-neutral-300">10x faster, 90% cheaper.</span>
+            </h1>
+            <p class="mt-5 text-base sm:text-lg text-neutral-300 leading-relaxed">
+              Drop-in caching proxy for OpenAI and Anthropic. Change one environment variable to get 90% cost savings + 10× faster responses. No SDK, no code changes, no hassle.
+            </p>
+            <div class="mt-8 flex flex-col sm:flex-row gap-3">
+              <a href="/login.html" class="inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold tracking-tight bg-white text-neutral-900 hover:bg-neutral-200 hover:scale-105 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-all">
+                <i data-lucide="rocket" class="h-4 w-4"></i>
+                Get API key – Free
+              </a>
+              <a href="/proxy.html" class="inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm text-neutral-200 ring-1 ring-white/10 hover:bg-white/5 hover:ring-white/20 hover:scale-105 transition-all">
+                <i data-lucide="book-open" class="h-4 w-4"></i>
+                Setup Guide (1 min)
+              </a>
+            </div>
+            <div class="flex items-center gap-4 text-xs text-neutral-400 mt-6">
+              <div class="inline-flex items-center gap-2">
+                <i data-lucide="shield-check" class="h-4 w-4 text-emerald-400"></i>
+                <span>SHA-256 keys</span>
+              </div>
+              <div class="inline-flex items-center gap-2">
+                <i data-lucide="webhook" class="h-4 w-4 text-emerald-400"></i>
+                <span>Webhooks</span>
+              </div>
+              <div class="inline-flex items-center gap-2">
+                <i data-lucide="globe" class="h-4 w-4 text-emerald-400"></i>
+                <span>Global edge</span>
+              </div>
+              <div class="inline-flex items-center gap-2">
+                <i data-lucide="gauge" class="h-4 w-4 text-emerald-400"></i>
+                <span>Rate limiting</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Code Card -->
+          <div id="code" class="lg:col-span-6 xl:col-span-7">
+            <div class="relative rounded-xl border border-white/10 bg-gradient-to-b from-white/5 to-white/[0.03] shadow-2xl shadow-black/30 hover-lift code-shimmer">
+              <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
+                <div class="flex items-center gap-2 text-xs text-neutral-300">
+                  <span class="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500/80 ring-2 ring-emerald-500/30"></span>
+                  <span class="uppercase tracking-tight">agentcache quickstart</span>
+                </div>
+                <button id="copy-code" class="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs text-neutral-200 ring-1 ring-white/10 hover:bg-white/5 hover:ring-white/20 active:scale-[0.98] transition">
+                  <i data-lucide="copy" class="h-3.5 w-3.5"></i>
+                  Copy
+                </button>
+              </div>
+
+              <!-- Tabs -->
+              <div class="px-3 pt-3">
+                <div class="flex gap-1 rounded-md p-1 ring-1 ring-white/10 bg-white/5 w-fit">
+                  <input id="tab-js" name="code-tab" type="radio" class="peer/tab-js hidden" />
+                  <label for="tab-js" class="cursor-pointer select-none rounded-md px-3 py-1.5 text-xs text-neutral-300 hover:text-white hover:bg-white/5 peer-checked/tab-js:bg-white/10 peer-checked/tab-js:text-white">Node</label>
+
+                  <input id="tab-py" name="code-tab" type="radio" class="peer/tab-py hidden" />
+                  <label for="tab-py" class="cursor-pointer select-none rounded-md px-3 py-1.5 text-xs text-neutral-300 hover:text-white hover:bg-white/5 peer-checked/tab-py:bg-white/10 peer-checked/tab-py:text-white">Python</label>
+
+                  <input id="tab-edge" name="code-tab" type="radio" class="peer/tab-edge hidden" />
+                  <label for="tab-edge" class="cursor-pointer select-none rounded-md px-3 py-1.5 text-xs text-neutral-300 hover:text-white hover:bg-white/5 peer-checked/tab-edge:bg-white/10 peer-checked/tab-edge:text-white">cURL</label>
+
+                  <input id="tab-visual" name="code-tab" type="radio" class="peer/tab-visual hidden" checked />
+                  <label for="tab-visual" class="cursor-pointer select-none rounded-md px-3 py-1.5 text-xs text-neutral-300 hover:text-white hover:bg-white/5 peer-checked/tab-visual:bg-white/10 peer-checked/tab-visual:text-white">Live Demo</label>
+                </div>
+              </div>
+
+              <!-- Code panes -->
+              <div class="p-4">
+                <pre id="pane-js" class="tab-pane hidden text-sm leading-6 overflow-auto rounded-lg bg-black/60 ring-1 ring-white/10 p-4 max-h-[400px]"><code class="text-neutral-200">
+// 1) Install
+// npm install agentcache-client
+import { AgentCache } from 'agentcache-client';
+
+const cache = new AgentCache('ac_demo_test123');
+
+// 2) Check cache before calling your LLM
+const result = await cache.get({
+  provider: 'openai',
+  model: 'gpt-4',
+  messages: [
+    { role: 'system', content: 'You are a helpful assistant' },
+    { role: 'user', content: 'Explain quantum computing' }
+  ]
+});
+
+if (result.hit) {
+  console.log('✅ Cache hit!', result.latency_ms + 'ms');
+  return result.response; // Instant!
+}
+
+// 3) Cache miss - call your LLM and store
+const llmResponse = await openai.chat.completions.create({...});
+await cache.set({
+  provider: 'openai',
+  model: 'gpt-4',
+  messages: [...],
+  response: llmResponse.choices[0].message.content
+});
+                </code></pre>
+
+                <pre id="pane-py" class="tab-pane hidden text-sm leading-6 overflow-auto rounded-lg bg-black/60 ring-1 ring-white/10 p-4 max-h-[400px]"><code class="text-neutral-200">
+# Python SDK coming soon! For now, use REST API:
+import requests
+
+API_KEY = 'ac_demo_test123'  # Get yours at agentcache.ai
+
+# Check cache
+response = requests.post('https://agentcache.ai/api/cache/get',
+    headers={'X-API-Key': API_KEY, 'Content-Type': 'application/json'},
+    json={
+        'provider': 'openai',
+        'model': 'gpt-4',
+        'messages': [{'role': 'user', 'content': 'What is Python?'}]
+    }
+)
+
+data = response.json()
+if data.get('hit'):
+    print(f"✅ Cache hit! {data['latency_ms']}ms")
+    return data['response']
+
+# Cache miss - call your LLM
+from openai import OpenAI
+client = OpenAI()
+completion = client.chat.completions.create(
+    model='gpt-4',
+    messages=[{'role': 'user', 'content': 'What is Python?'}]
+)
+
+# Store in cache
+requests.post('https://agentcache.ai/api/cache/set',
+    headers={'X-API-Key': API_KEY, 'Content-Type': 'application/json'},
+    json={'provider': 'openai', 'model': 'gpt-4', 'messages': [...], 'response': completion.choices[0].message.content}
+)
+                </code></pre>
+
+                <pre id="pane-edge" class="tab-pane hidden text-sm leading-6 overflow-auto rounded-lg bg-black/60 ring-1 ring-white/10 p-4 max-h-[400px]"><code class="text-neutral-200">
+# cURL - test immediately
+curl -X POST https://agentcache.ai/api/cache/get \
+  -H "X-API-Key: ac_demo_test123" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider": "openai",
+    "model": "gpt-4",
+    "messages": [
+      {"role": "user", "content": "Explain caching"}
+    ]
+  }'
+
+# Response on cache hit:
+# {
+#   "hit": true,
+#   "response": "Caching stores frequently...",
+#   "latency_ms": 23,
+#   "cached_at": "2025-01-11T10:30:00Z"
+# }
+
+# Moonshot AI (Kimi K2) - with reasoning token caching:
+curl -X POST https://agentcache.ai/api/moonshot \
+  -H "X-API-Key: ac_demo_test123" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "moonshot-v1-128k",
+    "messages": [{"role": "user", "content": "Analyze this code"}],
+    "cache_reasoning": true
+  }'
+# 98% cost savings on reasoning-heavy queries!
+                </code></pre>
+
+                <!-- Visual Tab - 3D Cache Performance + Weather Example -->
+                <div id="pane-visual" class="tab-pane block rounded-lg bg-gradient-to-br from-blue-950/40 to-indigo-950/40 ring-1 ring-white/10 overflow-hidden">
+                  <div class="flex h-[480px]">
+                    <!-- Left: 3D Visualization -->
+                    <div class="flex-1 relative">
+                      <div id="cache-3d-viz" class="absolute inset-0"></div>
+                      <div class="absolute top-2 left-2 text-[10px] text-neutral-400 space-y-0.5">
+                        <div class="font-semibold text-white">Real-time Cache Performance</div>
+                        <div>X: Time • Y: Latency • Z: Cost</div>
+                      </div>
+                      <div class="absolute bottom-2 left-2 flex items-center gap-3 text-[10px]">
+                        <div class="flex items-center gap-1">
+                          <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
+                          <span class="text-emerald-300">HITs (90%)</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                          <div class="w-2 h-2 rounded-full bg-yellow-400"></div>
+                          <span class="text-yellow-300">MISSes</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Right: Weather Example -->
+                    <div class="w-80 border-l border-white/10 p-4 overflow-y-auto">
+                      <!-- Header -->
+                      <div class="mb-3">
+                        <div class="flex items-center gap-2 text-xs font-semibold text-white">
+                          <i data-lucide="cloud-sun" class="h-3.5 w-3.5 text-sky-400"></i>
+                          Use Case: Weather.ai
+                        </div>
+                        <div class="text-[10px] text-neutral-400 mt-0.5">Caching AI weather summaries</div>
+                      </div>
+
+                      <!-- Scenario -->
+                      <div class="space-y-3">
+                        <!-- User 1 - Cache MISS -->
+                        <div class="rounded-lg bg-yellow-500/10 ring-1 ring-yellow-500/30 p-3">
+                          <div class="flex items-center justify-between mb-2">
+                            <div class="text-xs font-semibold text-white">User 1: Cache MISS</div>
+                            <div class="text-xs font-bold text-yellow-400">2.3s</div>
+                          </div>
+                          <div class="space-y-1 text-[10px]">
+                          <div class="flex items-center justify-between py-1.5 px-2 rounded bg-black/20">
+                            <span class="text-neutral-300">① Check AgentCache</span>
+                            <span class="text-yellow-400">Not found</span>
+                          </div>
+                          <div class="flex items-center justify-between py-1.5 px-2 rounded bg-black/20">
+                            <span class="text-neutral-300">② Call OpenAI GPT-4</span>
+                            <span class="text-neutral-400">2.3s</span>
+                          </div>
+                          <div class="flex items-center justify-between py-1.5 px-2 rounded bg-black/20">
+                            <span class="text-neutral-300">③ Store in cache (TTL: 5min)</span>
+                            <span class="text-emerald-400">Cached ✓</span>
+                          </div>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-yellow-500/30 flex items-center justify-between text-xs">
+                          <span class="text-neutral-400">Cost:</span>
+                          <span class="text-yellow-300 font-semibold">$0.002</span>
+                        </div>
+                      </div>
+
+                      <!-- Users 2-1000 - Cache HIT -->
+                      <div class="rounded-lg bg-emerald-500/10 ring-1 ring-emerald-500/30 p-4">
+                        <div class="flex items-center justify-between mb-3">
+                          <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-emerald-500/20 ring-1 ring-emerald-500/40 flex items-center justify-center text-xs font-semibold text-emerald-300">2-1K</div>
+                            <div>
+                              <div class="text-sm font-semibold text-white">Next 999 users ask same question</div>
+                              <div class="text-xs text-emerald-300 mt-0.5">Cache HIT - Instant response from edge</div>
+                            </div>
+                          </div>
+                          <div class="text-right">
+                            <div class="text-xs text-neutral-400">Avg Latency</div>
+                            <div class="text-lg font-bold text-emerald-400">45ms</div>
+                          </div>
+                        </div>
+                        <div class="space-y-2 text-xs">
+                          <div class="flex items-center justify-between py-1.5 px-2 rounded bg-black/20">
+                            <span class="text-neutral-300">① Check AgentCache</span>
+                            <span class="text-emerald-400">Found! ✓</span>
+                          </div>
+                          <div class="flex items-center justify-between py-1.5 px-2 rounded bg-black/20">
+                            <span class="text-neutral-300">② Return cached response</span>
+                            <span class="text-emerald-400">Instant</span>
+                          </div>
+                          <div class="flex items-center justify-between py-1.5 px-2 rounded bg-black/20 opacity-50">
+                            <span class="text-neutral-400 line-through">③ Call OpenAI GPT-4</span>
+                            <span class="text-neutral-500">Skipped</span>
+                          </div>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-emerald-500/30 flex items-center justify-between text-xs">
+                          <span class="text-neutral-400">Cost per user:</span>
+                          <span class="text-emerald-300 font-semibold">$0.00 × 999</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="mt-4 pt-4 border-t border-white/10">
+                      <div class="grid grid-cols-3 gap-3 text-center">
+                        <div>
+                          <div class="text-xs text-neutral-400 mb-1">Total Savings</div>
+                          <div class="text-xl font-bold text-emerald-400">$1.998</div>
+                        </div>
+                        <div>
+                          <div class="text-xs text-neutral-400 mb-1">Speed Boost</div>
+                          <div class="text-xl font-bold text-indigo-400">51x</div>
+                        </div>
+                        <div>
+                          <div class="text-xs text-neutral-400 mb-1">Cache Hit Rate</div>
+                          <div class="text-xl font-bold text-purple-400">99.9%</div>
+                        </div>
+                      </div>
+                      <div class="text-center text-xs text-neutral-500 mt-3">Same concept works for news summaries, crypto analysis, code reviews, etc.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between px-4 py-3 border-t border-white/10 text-xs text-neutral-400">
+                <div class="flex items-center gap-3">
+                  <div class="inline-flex items-center gap-1.5">
+                    <i data-lucide="cpu" class="h-3.5 w-3.5"></i>
+                    <span>Compatible with OpenAI, Anthropic, Claude</span>
+                  </div>
+                </div>
+                <div class="hidden sm:flex items-center gap-4">
+                  <div class="inline-flex items-center gap-1.5">
+                    <i data-lucide="timer" class="h-3.5 w-3.5"></i>
+                    <span>10x faster cache hits</span>
+                  </div>
+                  <div class="inline-flex items-center gap-1.5">
+                    <i data-lucide="coins" class="h-3.5 w-3.5"></i>
+                    <span>Up to 90% cost reduction</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Trust Bar -->
+            <div class="mt-8">
+              <div class="rounded-xl ring-1 ring-indigo-500/30 bg-indigo-500/5 p-4">
+                <div class="flex items-center gap-3">
+                  <div class="inline-flex h-10 w-10 items-center justify-center rounded-md bg-indigo-500/20 ring-1 ring-indigo-500/30">
+                    <i data-lucide="sparkles" class="h-5 w-5 text-indigo-400"></i>
+                  </div>
+                  <div class="flex-1">
+                    <div class="text-sm font-semibold text-white">🚀 Now with Moonshot AI (Kimi K2) Integration</div>
+                    <div class="text-xs text-neutral-300 mt-1">Cache reasoning tokens separately • 98% cost savings • 200K+ context window</div>
+                  </div>
+                  <a href="#moonshot" class="hidden sm:inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs text-white ring-1 ring-white/10 hover:bg-white/5 transition">
+                    Learn more
+                    <i data-lucide="arrow-right" class="h-3 w-3"></i>
+                  </a>
+                </div>
+              </div>
+              <div class="mt-4 text-xs text-neutral-400 text-center">Trusted by JettyThunder.app and growing • <a href="#signup" class="text-indigo-400 hover:text-indigo-300 underline underline-offset-2">Join early adopters</a></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Metrics -->
+    <section id="metrics" class="mx-auto max-w-7xl px-6 py-12 sm:py-16">
+      <div class="grid sm:grid-cols-3 gap-4">
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5 hover-lift">
+          <div class="text-sm text-neutral-400">Cost savings</div>
+          <div class="mt-2 text-3xl font-semibold tracking-tight">
+            <span data-animate-number="90" data-suffix="%">0</span>
+          </div>
+          <div class="mt-2 text-xs text-neutral-400">Cache identical prompts and reuse responses across your fleet.</div>
+        </div>
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5 hover-lift">
+          <div class="text-sm text-neutral-400">Latency improvement</div>
+          <div class="mt-2 text-3xl font-semibold tracking-tight">
+            <span data-animate-number="10" data-suffix="x">0</span> faster
+          </div>
+          <div class="mt-2 text-xs text-neutral-400">Global edge network with sub-50ms P95 cache hits.</div>
+        </div>
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5 hover-lift">
+          <div class="text-sm text-neutral-400">Setup time</div>
+          <div class="mt-2 text-3xl font-semibold tracking-tight">
+            <span data-animate-number="5" data-suffix=" lines">0</span>
+          </div>
+          <div class="mt-2 text-xs text-neutral-400">Drop-in wrapper around your existing AI clients.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature Grid -->
+    <section class="mx-auto max-w-7xl px-6 py-12 sm:py-16">
+      <div class="grid lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-1">
+          <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight">Edge cache for AI workloads</h2>
+          <p class="mt-3 text-neutral-300">Deterministic keys, adaptive TTLs, streaming support, and observability out of the box.</p>
+          <div class="mt-6">
+            <a href="/docs.html" class="inline-flex items-center gap-2 rounded-md px-3.5 py-2 text-sm text-neutral-200 ring-1 ring-white/10 hover:bg-white/5 hover:ring-white/20 transition-colors">
+              <i data-lucide="file-code" class="h-4 w-4"></i>
+              Read the docs
+            </a>
+          </div>
+        </div>
+        <div class="lg:col-span-2 grid sm:grid-cols-2 gap-6">
+          <div class="rounded-xl ring-1 ring-emerald-500/30 bg-emerald-500/5 p-5">
+            <div class="flex items-center gap-2 text-sm text-neutral-300">
+              <i data-lucide="plug-zap" class="h-4 w-4"></i>
+              Proxy Mode (Zero-code)
+              <span class="ml-auto text-[10px] text-emerald-400 font-semibold">LIVE</span>
+            </div>
+            <p class="mt-2 text-sm text-neutral-400">OpenAI & Anthropic-compatible proxy. Just change base URL—no code changes.</p>
+          </div>
+          <div class="rounded-xl ring-1 ring-emerald-500/30 bg-emerald-500/5 p-5">
+            <div class="flex items-center gap-2 text-sm text-neutral-300">
+              <i data-lucide="webhook" class="h-4 w-4"></i>
+              Webhooks & Events
+              <span class="ml-auto text-[10px] text-emerald-400 font-semibold">LIVE</span>
+            </div>
+            <p class="mt-2 text-sm text-neutral-400">Real-time notifications for cache hits, quota warnings, anomalies. HMAC-SHA256 signed.</p>
+          </div>
+          <div class="rounded-xl ring-1 ring-emerald-500/30 bg-emerald-500/5 p-5">
+            <div class="flex items-center gap-2 text-sm text-neutral-300">
+              <i data-lucide="gauge" class="h-4 w-4"></i>
+              Rate Limiting
+              <span class="ml-auto text-[10px] text-emerald-400 font-semibold">LIVE</span>
+            </div>
+            <p class="mt-2 text-sm text-neutral-400">Per-key rate limits (100-500 req/min) to prevent runaway agents.</p>
+          </div>
+          <div class="rounded-xl ring-1 ring-emerald-500/30 bg-emerald-500/5 p-5">
+            <div class="flex items-center gap-2 text-sm text-neutral-300">
+              <i data-lucide="database" class="h-4 w-4"></i>
+              Deterministic Keys
+              <span class="ml-auto text-[10px] text-emerald-400 font-semibold">LIVE</span>
+            </div>
+            <p class="mt-2 text-sm text-neutral-400">SHA-256 hashing of prompts, model, and params—100% cache hit accuracy.</p>
+          </div>
+          <div class="rounded-xl ring-1 ring-emerald-500/30 bg-emerald-500/5 p-5">
+            <div class="flex items-center gap-2 text-sm text-neutral-300">
+              <i data-lucide="users" class="h-4 w-4"></i>
+              Multi-tenant Namespaces
+              <span class="ml-auto text-[10px] text-emerald-400 font-semibold">LIVE</span>
+            </div>
+            <p class="mt-2 text-sm text-neutral-400">Segment cache by customer/workflow with X-Cache-Namespace header.</p>
+          </div>
+          <div class="rounded-xl ring-1 ring-emerald-500/30 bg-emerald-500/5 p-5">
+            <div class="flex items-center gap-2 text-sm text-neutral-300">
+              <i data-lucide="file-search" class="h-4 w-4"></i>
+              Real-time Analytics
+              <span class="ml-auto text-[10px] text-emerald-400 font-semibold">LIVE</span>
+            </div>
+            <p class="mt-2 text-sm text-neutral-400">Hit rate, cost savings, tokens saved—all via /api/stats endpoint + dashboard.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Moonshot AI Feature -->
+    <section id="moonshot" class="mx-auto max-w-7xl px-6 py-12 sm:py-16">
+      <div class="rounded-2xl ring-1 ring-indigo-500/30 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 overflow-hidden">
+        <div class="grid lg:grid-cols-2 gap-8 p-6 sm:p-8">
+          <div>
+            <div class="inline-flex items-center gap-2 rounded-full bg-indigo-500/20 ring-1 ring-indigo-500/30 px-3 py-1 text-xs text-indigo-200">
+              <i data-lucide="sparkles" class="h-3.5 w-3.5"></i>
+              New feature
+            </div>
+            <h3 class="mt-4 text-2xl sm:text-3xl font-semibold tracking-tight text-white">Moonshot AI (Kimi K2) Integration</h3>
+            <p class="mt-3 text-neutral-300">First AI caching service with dedicated reasoning token caching. Perfect for complex analysis, code review, and deep reasoning tasks.</p>
+            
+            <div class="mt-6 space-y-3">
+              <div class="flex items-start gap-3">
+                <div class="inline-flex h-6 w-6 items-center justify-center rounded-md bg-indigo-500/20 ring-1 ring-indigo-500/30 flex-shrink-0">
+                  <i data-lucide="brain" class="h-3.5 w-3.5 text-indigo-400"></i>
+                </div>
+                <div>
+                  <div class="text-sm font-semibold text-white">Reasoning Token Caching</div>
+                  <div class="text-xs text-neutral-400 mt-0.5">Cache Kimi K2's "thinking" process separately - 98% savings on reasoning-heavy queries</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="inline-flex h-6 w-6 items-center justify-center rounded-md bg-indigo-500/20 ring-1 ring-indigo-500/30 flex-shrink-0">
+                  <i data-lucide="layers" class="h-3.5 w-3.5 text-indigo-400"></i>
+                </div>
+                <div>
+                  <div class="text-sm font-semibold text-white">200K+ Token Context</div>
+                  <div class="text-xs text-neutral-400 mt-0.5">Massive context windows for codebase analysis and document processing</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="inline-flex h-6 w-6 items-center justify-center rounded-md bg-indigo-500/20 ring-1 ring-indigo-500/30 flex-shrink-0">
+                  <i data-lucide="zap" class="h-3.5 w-3.5 text-indigo-400"></i>
+                </div>
+                <div>
+                  <div class="text-sm font-semibold text-white">Dual TTL Strategy</div>
+                  <div class="text-xs text-neutral-400 mt-0.5">Responses cached 7 days, reasoning cached 1 hour - optimal freshness</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6">
+              <a href="/docs.html#moonshot" class="inline-flex items-center gap-2 rounded-md px-3.5 py-2 text-sm font-semibold tracking-tight bg-indigo-500 text-white hover:bg-indigo-400 transition">
+                <i data-lucide="book-open" class="h-4 w-4"></i>
+                Moonshot API docs
+              </a>
+            </div>
+          </div>
+
+          <div class="rounded-xl ring-1 ring-white/10 bg-black/40 p-4">
+            <div class="text-xs text-neutral-400 mb-3">Example: 100K token codebase analysis</div>
+            <div class="space-y-3 text-sm">
+              <div class="rounded-lg bg-white/5 p-3">
+                <div class="text-xs text-neutral-400">Without AgentCache</div>
+                <div class="mt-1 text-lg font-semibold text-white">$405/month</div>
+                <div class="text-xs text-neutral-500">50 queries/day × ($0.12 response + $0.15 reasoning)</div>
+              </div>
+              <div class="rounded-lg bg-indigo-500/20 ring-1 ring-indigo-500/30 p-3">
+                <div class="text-xs text-indigo-200">With AgentCache + Reasoning Cache</div>
+                <div class="mt-1 text-lg font-semibold text-white">$8.10/month</div>
+                <div class="text-xs text-indigo-300">First call cached, 49 calls instant</div>
+              </div>
+              <div class="flex items-center justify-between pt-2 border-t border-white/10">
+                <span class="text-xs text-neutral-400">Monthly savings</span>
+                <span class="text-xl font-semibold text-emerald-400">$396.90</span>
+              </div>
+              <div class="text-xs text-neutral-500 text-center">98% cost reduction</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="mx-auto max-w-7xl px-6 py-12 sm:py-16">
+      <h3 class="text-2xl sm:text-3xl font-semibold tracking-tight">How it works</h3>
+      <div class="mt-6 grid md:grid-cols-3 gap-6">
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+          <div class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-indigo-500/20 ring-1 ring-white/10">
+            <i data-lucide="plug-zap" class="h-4 w-4"></i>
+          </div>
+          <div class="mt-3 font-semibold">Wrap your call</div>
+          <p class="mt-1 text-sm text-neutral-400">Replace your AI client call with cache.fetch({ key, fn }). No vendor lock-in.</p>
+        </div>
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+          <div class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-indigo-500/20 ring-1 ring-white/10">
+            <i data-lucide="hash" class="h-4 w-4"></i>
+          </div>
+          <div class="mt-3 font-semibold">We key your prompt</div>
+          <p class="mt-1 text-sm text-neutral-400">Inputs, model, tools, and options are hashed into a stable cache key.</p>
+        </div>
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+          <div class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-indigo-500/20 ring-1 ring-white/10">
+            <i data-lucide="ripple" class="h-4 w-4"></i>
+          </div>
+          <div class="mt-3 font-semibold">Edge hits, instant wins</div>
+          <p class="mt-1 text-sm text-neutral-400">Cache hits return from the nearest region; misses stream through and get cached.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Use Cases for AI Agents & Robotics -->
+    <section class="mx-auto max-w-7xl px-6 py-12 sm:py-16">
+      <div class="text-center mb-8">
+        <h3 class="text-2xl sm:text-3xl font-semibold tracking-tight">Built for AI Agents & Robotics</h3>
+        <p class="mt-2 text-sm text-neutral-400">Real-world scenarios where AgentCache delivers immediate ROI</p>
+      </div>
+      
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Use Case 1: FAQ Pattern -->
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6 hover-lift">
+          <div class="inline-flex h-10 w-10 items-center justify-center rounded-md bg-emerald-500/20 ring-1 ring-emerald-500/30">
+            <i data-lucide="message-circle" class="h-5 w-5 text-emerald-400"></i>
+          </div>
+          <h4 class="mt-4 text-lg font-semibold tracking-tight">Repetitive User Questions</h4>
+          <p class="mt-2 text-sm text-neutral-400">Customer support agents, onboarding bots, and FAQ assistants cache common queries. First user pays, next 1000 get instant answers.</p>
+          <div class="mt-4 flex items-center gap-2 text-xs text-emerald-400">
+            <i data-lucide="trending-up" class="h-3.5 w-3.5"></i>
+            <span>95%+ hit rate on FAQs</span>
+          </div>
+          <div class="mt-1 text-xs text-neutral-500">2-5 sec → 50ms | $0.002 → $0</div>
+        </div>
+
+        <!-- Use Case 2: Code Review -->
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6 hover-lift">
+          <div class="inline-flex h-10 w-10 items-center justify-center rounded-md bg-indigo-500/20 ring-1 ring-indigo-500/30">
+            <i data-lucide="code-2" class="h-5 w-5 text-indigo-400"></i>
+          </div>
+          <h4 class="mt-4 text-lg font-semibold tracking-tight">Code Review & Analysis</h4>
+          <p class="mt-2 text-sm text-neutral-400">PR review bots and security scanners cache reasoning tokens with Moonshot AI. Reuse analysis for similar code patterns.</p>
+          <div class="mt-4 flex items-center gap-2 text-xs text-indigo-400">
+            <i data-lucide="brain" class="h-3.5 w-3.5"></i>
+            <span>98% cost reduction on reasoning</span>
+          </div>
+          <div class="mt-1 text-xs text-neutral-500">$405/mo → $8.10/mo</div>
+        </div>
+
+        <!-- Use Case 3: Multi-Tenant Platforms -->
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6 hover-lift">
+          <div class="inline-flex h-10 w-10 items-center justify-center rounded-md bg-purple-500/20 ring-1 ring-purple-500/30">
+            <i data-lucide="users" class="h-5 w-5 text-purple-400"></i>
+          </div>
+          <h4 class="mt-4 text-lg font-semibold tracking-tight">Multi-Tenant Agent Platforms</h4>
+          <p class="mt-2 text-sm text-neutral-400">Agency tools and white-label platforms use namespace isolation. Each customer gets their own cache hits without data collision.</p>
+          <div class="mt-4 flex items-center gap-2 text-xs text-purple-400">
+            <i data-lucide="shield-check" class="h-3.5 w-3.5"></i>
+            <span>Per-customer cache isolation</span>
+          </div>
+          <div class="mt-1 text-xs text-neutral-500">Perfect for JettyThunder.app</div>
+        </div>
+
+        <!-- Use Case 4: Document Processing -->
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6 hover-lift">
+          <div class="inline-flex h-10 w-10 items-center justify-center rounded-md bg-orange-500/20 ring-1 ring-orange-500/30">
+            <i data-lucide="file-text" class="h-5 w-5 text-orange-400"></i>
+          </div>
+          <h4 class="mt-4 text-lg font-semibold tracking-tight">Document Summarization</h4>
+          <p class="mt-2 text-sm text-neutral-400">Research agents and content aggregators cache document analysis. Daily briefings reuse yesterday's summaries, only pay for new content.</p>
+          <div class="mt-4 flex items-center gap-2 text-xs text-orange-400">
+            <i data-lucide="file-check" class="h-3.5 w-3.5"></i>
+            <span>Process once, serve many</span>
+          </div>
+          <div class="mt-1 text-xs text-neutral-500">Recurring reports • PDF Q&A</div>
+        </div>
+
+        <!-- Use Case 5: Agentic Workflows -->
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6 hover-lift">
+          <div class="inline-flex h-10 w-10 items-center justify-center rounded-md bg-cyan-500/20 ring-1 ring-cyan-500/30">
+            <i data-lucide="workflow" class="h-5 w-5 text-cyan-400"></i>
+          </div>
+          <h4 class="mt-4 text-lg font-semibold tracking-tight">Multi-Step Agent Chains</h4>
+          <p class="mt-2 text-sm text-neutral-400">LangGraph, AutoGPT, CrewAI workflows cache deterministic steps. Planning and reasoning get reused across similar tasks automatically.</p>
+          <div class="mt-4 flex items-center gap-2 text-xs text-cyan-400">
+            <i data-lucide="zap" class="h-3.5 w-3.5"></i>
+            <span>10x faster agent loops</span>
+          </div>
+          <div class="mt-1 text-xs text-neutral-500">Cache intermediate reasoning</div>
+        </div>
+
+        <!-- Use Case 6: Robotics & Edge AI -->
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6 hover-lift">
+          <div class="inline-flex h-10 w-10 items-center justify-center rounded-md bg-pink-500/20 ring-1 ring-pink-500/30">
+            <i data-lucide="cpu" class="h-5 w-5 text-pink-400"></i>
+          </div>
+          <h4 class="mt-4 text-lg font-semibold tracking-tight">Robotics & Autonomous Systems</h4>
+          <p class="mt-2 text-sm text-neutral-400">Robots with vision models cache scene understanding. Warehouse bots reuse object detection, drones cache navigation decisions for known routes.</p>
+          <div class="mt-4 flex items-center gap-2 text-xs text-pink-400">
+            <i data-lucide="gauge" class="h-3.5 w-3.5"></i>
+            <span>Real-time inference at edge</span>
+          </div>
+          <div class="mt-1 text-xs text-neutral-500">Sub-50ms latency • Offline cache</div>
+        </div>
+      </div>
+
+      <div class="mt-8 text-center">
+        <p class="text-sm text-neutral-400">All use cases work with the same 5-line integration. <a href="#signup" class="text-indigo-400 hover:text-indigo-300 underline underline-offset-2">Try it with demo key</a></p>
+      </div>
+    </section>
+
+    <!-- Testimonial / Visual -->
+    <section class="mx-auto max-w-7xl px-6 py-12 sm:py-16">
+      <div class="grid lg:grid-cols-2 gap-8 items-stretch">
+        <div class="rounded-xl overflow-hidden ring-1 ring-white/10">
+          <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1600&auto=format&fit=crop" alt="Engineer working with code" class="h-full w-full object-cover" />
+        </div>
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6 flex flex-col justify-between">
+          <div>
+            <div class="text-xs text-neutral-400">Customer story</div>
+            <blockquote class="mt-3 text-xl font-semibold tracking-tight text-white">
+              AgentCache turned our AI bill from a line item into a rounding error. We saw 72% hit rates in week one and P95 latencies fell below 60ms.
+            </blockquote>
+            <div class="mt-4 flex items-center gap-3">
+              <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=256&auto=format&fit=crop" alt="Customer face" class="h-9 w-9 rounded-full ring-2 ring-white/10 object-cover" />
+              <div>
+                <div class="text-sm font-semibold tracking-tight">Ava Reynolds</div>
+                <div class="text-xs text-neutral-400">Platform Lead, Vector</div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-6 flex items-center gap-4 text-xs text-neutral-400">
+            <div class="inline-flex items-center gap-1.5">
+              <i data-lucide="bar-chart-3" class="h-3.5 w-3.5"></i>
+              <span>72% hit rate</span>
+            </div>
+            <div class="inline-flex items-center gap-1.5">
+              <i data-lucide="rss" class="h-3.5 w-3.5"></i>
+              <span>Streaming preserved</span>
+            </div>
+            <div class="inline-flex items-center gap-1.5">
+              <i data-lucide="server" class="h-3.5 w-3.5"></i>
+              <span>Edge replicated</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="mx-auto max-w-7xl px-6 py-12 sm:py-16">
+      <div class="flex items-end justify-between flex-wrap gap-4">
+        <div>
+          <h3 class="text-3xl font-semibold tracking-tight">Pricing that pays for itself</h3>
+          <p class="mt-2 text-sm text-neutral-400">Start free. Scale with transparent usage-based pricing.</p>
+        </div>
+        <a href="#signup" class="inline-flex items-center gap-2 rounded-md px-3.5 py-2 text-sm font-semibold tracking-tight bg-indigo-500 text-white hover:bg-indigo-400 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 transition-colors">
+          <i data-lucide="credit-card" class="h-4 w-4"></i>
+          Create account
+        </a>
+      </div>
+
+      <div class="mt-8 grid md:grid-cols-3 gap-6">
+        <!-- Free -->
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5 flex flex-col">
+          <div class="flex items-center justify-between">
+            <div class="text-sm font-semibold tracking-tight">Free</div>
+            <span class="rounded-full bg-white/5 px-2 py-0.5 text-xs text-neutral-300 ring-1 ring-white/10">Starter</span>
+          </div>
+          <div class="mt-4 text-3xl font-semibold tracking-tight">$0</div>
+          <div class="text-xs text-neutral-400">per month</div>
+          <ul class="mt-4 space-y-2 text-sm text-neutral-300">
+            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> 100k cached tokens</li>
+            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> 3 projects</li>
+            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> Shared edge region</li>
+          </ul>
+          <a href="#signup" class="mt-6 inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm ring-1 ring-white/10 hover:bg-white/5 hover:ring-white/20 transition">Get started</a>
+        </div>
+
+        <!-- Pro -->
+        <div class="rounded-xl ring-1 ring-indigo-500/30 bg-white/[0.04] p-5 flex flex-col relative">
+          <div class="absolute -top-3 right-4 rounded-full bg-indigo-500 text-white text-[10px] px-2 py-0.5 ring-1 ring-white/10">Popular</div>
+          <div class="flex items-center justify-between">
+            <div class="text-sm font-semibold tracking-tight">Pro</div>
+            <span class="rounded-full bg-white/5 px-2 py-0.5 text-xs text-neutral-300 ring-1 ring-white/10">Teams</span>
+          </div>
+          <div class="mt-4 text-3xl font-semibold tracking-tight">$49</div>
+          <div class="text-xs text-neutral-400">per month + usage</div>
+          <ul class="mt-4 space-y-2 text-sm text-neutral-300">
+            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> 5M cached tokens</li>
+            <li class="flex gap-2"><i data-lucide="clock" class="h-4 w-4 text-indigo-400"></i> <span class="text-neutral-400">Custom domains (Q1)</span></li>
+            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> Analytics dashboard</li>
+          </ul>
+          <a href="#signup" class="mt-6 inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm bg-indigo-500 text-white hover:bg-indigo-400 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 transition">Start Pro</a>
+        </div>
+
+        <!-- Enterprise -->
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5 flex flex-col">
+          <div class="flex items-center justify-between">
+            <div class="text-sm font-semibold tracking-tight">Enterprise</div>
+            <span class="rounded-full bg-white/5 px-2 py-0.5 text-xs text-neutral-300 ring-1 ring-white/10">Scale</span>
+          </div>
+          <div class="mt-4 text-3xl font-semibold tracking-tight">Custom</div>
+          <div class="text-xs text-neutral-400">annual</div>
+          <ul class="mt-4 space-y-2 text-sm text-neutral-300">
+            <li class="flex gap-2"><i data-lucide="clock" class="h-4 w-4 text-indigo-400"></i> <span class="text-neutral-400">Dedicated region & SLA (Q2)</span></li>
+            <li class="flex gap-2"><i data-lucide="clock" class="h-4 w-4 text-indigo-400"></i> <span class="text-neutral-400">SSO/SAML & SCIM (Q2)</span></li>
+            <li class="flex gap-2"><i data-lucide="clock" class="h-4 w-4 text-indigo-400"></i> <span class="text-neutral-400">VPC peering (Q2)</span></li>
+          </ul>
+          <a href="#contact" class="mt-6 inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm ring-1 ring-white/10 hover:bg-white/5 hover:ring-white/20 transition">Contact sales</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Roadmap -->
+    <section class="mx-auto max-w-7xl px-6 py-12 sm:py-16">
+      <div class="text-center mb-8">
+        <h3 class="text-2xl sm:text-3xl font-semibold tracking-tight">Public Roadmap</h3>
+        <p class="mt-2 text-sm text-neutral-400">Transparent development - shipping based on user feedback</p>
+      </div>
+      
+      <div class="grid md:grid-cols-3 gap-6">
+        <!-- Live Now -->
+        <div class="rounded-xl ring-1 ring-emerald-500/30 bg-emerald-500/5 p-6">
+          <div class="inline-flex items-center gap-2 text-sm font-semibold text-emerald-400 mb-4">
+            <i data-lucide="check-circle" class="h-4 w-4"></i>
+            Live Now
+          </div>
+          <ul class="space-y-2 text-sm text-neutral-300">
+            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> NPM package published</li>
+            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> Moonshot AI integration</li>
+            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> Real-time analytics dashboard</li>
+            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> Namespace multi-tenancy</li>
+            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> Webhook notifications</li>
+            <li class="flex gap-2"><i data-lucide="check" class="h-4 w-4 text-emerald-400"></i> Rate limiting & quotas</li>
+          </ul>
+        </div>
+        
+        <!-- Q1 2025 -->
+        <div class="rounded-xl ring-1 ring-indigo-500/30 bg-indigo-500/5 p-6">
+          <div class="inline-flex items-center gap-2 text-sm font-semibold text-indigo-400 mb-4">
+            <i data-lucide="clock" class="h-4 w-4"></i>
+            Q1 2025
+          </div>
+          <ul class="space-y-2 text-sm text-neutral-300">
+            <li class="flex gap-2"><i data-lucide="zap" class="h-4 w-4 text-indigo-400"></i> Streaming support (SSE)</li>
+            <li class="flex gap-2"><i data-lucide="tag" class="h-4 w-4 text-indigo-400"></i> Tag-based cache purging</li>
+            <li class="flex gap-2"><i data-lucide="credit-card" class="h-4 w-4 text-indigo-400"></i> Stripe billing (at 50 users)</li>
+            <li class="flex gap-2"><i data-lucide="globe" class="h-4 w-4 text-indigo-400"></i> Custom domains</li>
+            <li class="flex gap-2="><i data-lucide="key" class="h-4 w-4 text-indigo-400"></i> User dashboard & API keys</li>
+            <li class="flex gap-2"><i data-lucide="file-code" class="h-4 w-4 text-indigo-400"></i> Python SDK</li>
+          </ul>
+        </div>
+        
+        <!-- Q2 2025 -->
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-6">
+          <div class="inline-flex items-center gap-2 text-sm font-semibold text-neutral-400 mb-4">
+            <i data-lucide="calendar" class="h-4 w-4"></i>
+            Q2 2025
+          </div>
+          <ul class="space-y-2 text-sm text-neutral-300">
+            <li class="flex gap-2"><i data-lucide="shield" class="h-4 w-4 text-neutral-400"></i> PII scrubbing & redaction</li>
+            <li class="flex gap-2"><i data-lucide="server" class="h-4 w-4 text-neutral-400"></i> Self-hosted option</li>
+            <li class="flex gap-2"><i data-lucide="lock" class="h-4 w-4 text-neutral-400"></i> SSO/SAML authentication</li>
+            <li class="flex gap-2"><i data-lucide="download" class="h-4 w-4 text-neutral-400"></i> Data export & backup</li>
+            <li class="flex gap-2"><i data-lucide="activity" class="h-4 w-4 text-neutral-400"></i> Adaptive TTL & smart caching</li>
+            <li class="flex gap-2"><i data-lucide="terminal" class="h-4 w-4 text-neutral-400"></i> Go SDK</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="mt-6 text-center">
+        <p class="text-xs text-neutral-500">Want to influence the roadmap? <a href="#signup" class="text-indigo-400 hover:text-indigo-300 underline underline-offset-2">Join early access</a> and share your feedback.</p>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="mx-auto max-w-7xl px-6 py-12 sm:py-16">
+      <h3 class="text-2xl sm:text-3xl font-semibold tracking-tight">FAQ</h3>
+      <div class="mt-6 grid md:grid-cols-2 gap-6">
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+          <div class="flex items-center gap-2 text-sm font-semibold">
+            <i data-lucide="help-circle" class="h-4 w-4"></i>
+            How do you avoid stale cache entries?
+          </div>
+          <p class="mt-2 text-sm text-neutral-400">Keys include provider, model, and parameters in the hash. TTLs can be set per request (default 7 days). Tag-based purging coming Q1 2025.</p>
+        </div>
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+          <div class="flex items-center gap-2 text-sm font-semibold">
+            <i data-lucide="shield" class="h-4 w-4"></i>
+            Is my data secure?
+          </div>
+          <p class="mt-2 text-sm text-neutral-400">All entries are encrypted at rest by Upstash Redis (TLS in transit, AES-256 at rest). PII scrubbing and customer-managed keys coming Q2 2025.</p>
+        </div>
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+          <div class="flex items-center gap-2 text-sm font-semibold">
+            <i data-lucide="link" class="h-4 w-4"></i>
+            Which providers do you support?
+          </div>
+          <p class="mt-2 text-sm text-neutral-400">Any LLM provider - OpenAI, Anthropic, Claude tested. Moonshot AI (Kimi K2) has dedicated reasoning caching. Bring your own API keys.</p>
+        </div>
+        <div class="rounded-xl ring-1 ring-white/10 bg-white/[0.03] p-5">
+          <div class="flex items-center gap-2 text-sm font-semibold">
+            <i data-lucide="construction" class="h-4 w-4"></i>
+            What about function calling and tools?
+          </div>
+          <p class="mt-2 text-sm text-neutral-400">Include tools/functions in your messages array - they'll be part of the cache key. Custom key material for RAG coming Q1 2025.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section id="signup" class="mx-auto max-w-7xl px-6 pb-16">
+      <div class="rounded-2xl ring-1 ring-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.02] p-6 sm:p-8">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <h4 class="text-2xl font-semibold tracking-tight">Ready to cache your next million prompts?</h4>
+            <p class="mt-2 text-sm text-neutral-300">Create a project in seconds and drop in the 5-line wrapper. No code changes to your models.</p>
+          </div>
+          <div class="flex flex-col sm:flex-row items-center gap-3">
+            <a href="/login.html" class="inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold tracking-tight bg-white text-neutral-900 hover:bg-neutral-200 transition-colors">
+              <i data-lucide="user-plus" class="h-4 w-4"></i>
+              Sign up free - Get API key
+            </a>
+            <a href="/docs.html" class="inline-flex items-center gap-2 rounded-md px-3.5 py-2 text-sm text-neutral-200 ring-1 ring-white/10 hover:bg-white/5 hover:ring-white/20 transition-colors">
+              <i data-lucide="book-open" class="h-4 w-4"></i>
+              View docs
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10">
+      <div class="mx-auto max-w-7xl px-6 py-10">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 text-sm">
+          <div class="space-y-3">
+            <div class="flex items-center gap-2">
+              <div class="h-8 w-8 grid place-content-center rounded-md bg-white/5 ring-1 ring-white/10">
+                <span class="text-sm font-semibold tracking-tight">AC</span>
+              </div>
+              <span class="text-sm font-semibold tracking-tight">AgentCache<span class="text-neutral-400">.ai</span></span>
+            </div>
+            <p class="text-neutral-400">Edge caching for AI API calls. Faster responses, lower bills.</p>
+          </div>
+          <div>
+            <div class="text-neutral-300 font-semibold">Product</div>
+            <ul class="mt-3 space-y-2 text-neutral-400">
+              <li><a href="#product" class="hover:text-white hover:underline underline-offset-4">Overview</a></li>
+              <li><a href="#pricing" class="hover:text-white hover:underline underline-offset-4">Pricing</a></li>
+                        <li><a href="/docs.html" class="hover:text-white hover:underline underline-offset-4">Documentation</a></li>
+            </ul>
+          </div>
+          <div>
+            <div class="text-neutral-300 font-semibold">Developers</div>
+            <ul class="mt-3 space-y-2 text-neutral-400">
+                        <li><a href="/changelog.html" class="hover:text-white hover:underline underline-offset-4">Changelog</a></li>
+                        <li><a href="/status.html" class="hover:text-white hover:underline underline-offset-4">Status</a></li>
+                        <li><a href="https://github.com/xinetex/agentcache.ai" class="hover:text-white hover:underline underline-offset-4" rel="noopener noreferrer">GitHub</a></li>
+            </ul>
+          </div>
+          <div>
+            <div class="text-neutral-300 font-semibold">Company</div>
+            <ul class="mt-3 space-y-2 text-neutral-400">
+                        <li><a href="/about.html" class="hover:text-white hover:underline underline-offset-4">About</a></li>
+                        <li><a href="mailto:support@agentcache.ai" class="hover:text-white hover:underline underline-offset-4">Contact</a></li>
+                        <li><a href="/terms.html" class="hover:text-white hover:underline underline-offset-4">Terms</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="mt-8 flex items-center justify-between text-xs text-neutral-500">
+          <div>© <span id="year"></span> AgentCache.ai</div>
+          <div class="flex items-center gap-3">
+            <a href="/privacy.html" class="hover:text-neutral-300">Privacy</a>
+            <span class="text-neutral-700">•</span>
+            <a href="/security.html" class="hover:text-neutral-300">Security</a>
+            <span class="text-neutral-700">•</span>
+            <a href="/cookie.html" class="hover:text-neutral-300">Cookie</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Scripts: icons + UX + Animations -->
+    <script>
+      // Removed particle animation to prevent memory issues
+      
+      // Render lucide with strokeWidth 1.5
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.lucide) {
+          window.lucide.createIcons({ attrs: { "stroke-width": 1.5 } });
+        }
+        // Copy code handler
+        const btn = document.getElementById("copy-code");
+        const js = document.getElementById("pane-js");
+        const py = document.getElementById("pane-py");
+        const edge = document.getElementById("pane-edge");
+        const getActiveCode = () => {
+          const jsTab = document.getElementById("tab-js");
+          const pyTab = document.getElementById("tab-py");
+          const edgeTab = document.getElementById("tab-edge");
+          if (edgeTab.checked) return edge.innerText;
+          if (pyTab.checked) return py.innerText;
+          return js.innerText;
+        };
+        btn?.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(getActiveCode().trim());
+            btn.innerText = "Copied";
+            setTimeout(() => (btn.innerHTML = '<i data-lucide="copy" class="h-3.5 w-3.5"></i> Copy'), 1200);
+            if (window.lucide) window.lucide.createIcons({ attrs: { "stroke-width": 1.5 } });
+          } catch (e) {
+            btn.innerText = "Copy failed";
+            setTimeout(() => (btn.innerHTML = '<i data-lucide="copy" class="h-3.5 w-3.5"></i> Copy'), 1400);
+            if (window.lucide) window.lucide.createIcons({ attrs: { "stroke-width": 1.5 } });
+          }
+        });
+        // Tab switching
+        const tabRadios = document.querySelectorAll('input[name="code-tab"]');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+        tabRadios.forEach(radio => {
+          radio.addEventListener('change', (e) => {
+            const tabId = e.target.id.replace('tab-', 'pane-');
+            tabPanes.forEach(pane => pane.classList.add('hidden'));
+            document.getElementById(tabId)?.classList.remove('hidden');
+          });
+        });
+        
+        // Year
+        const y = document.getElementById("year");
+        if (y) y.textContent = new Date().getFullYear();
+        
+        // Animated number counters
+        const animateNumber = (element, target, suffix = '', duration = 2000) => {
+          const start = 0;
+          const increment = target / (duration / 16);
+          let current = start;
+          const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+              current = target;
+              clearInterval(timer);
+            }
+            element.textContent = Math.floor(current) + suffix;
+          }, 16);
+        };
+        
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+          threshold: 0.1,
+          rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.style.opacity = '1';
+              entry.target.style.transform = 'translateY(0)';
+              
+              // Animate numbers in metrics
+              const metricsSection = entry.target.closest('#metrics');
+              if (metricsSection) {
+                const numbers = entry.target.querySelectorAll('[data-animate-number]');
+                numbers.forEach(num => {
+                  const target = parseInt(num.getAttribute('data-animate-number'));
+                  const suffix = num.getAttribute('data-suffix') || '';
+                  animateNumber(num, target, suffix);
+                });
+              }
+            }
+          });
+        }, observerOptions);
+        
+        // Observe all sections
+        document.querySelectorAll('section').forEach(section => {
+          section.style.opacity = '0';
+          section.style.transform = 'translateY(30px)';
+          section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+          observer.observe(section);
+        });
+        
+        // Make hero section visible immediately
+        const heroSection = document.querySelector('section');
+        if (heroSection) {
+          heroSection.style.opacity = '1';
+          heroSection.style.transform = 'translateY(0)';
+        }
+        
+        // Code typing animation
+        const codeBlocks = document.querySelectorAll('pre code');
+        codeBlocks.forEach(block => {
+          const originalText = block.textContent;
+          block.textContent = '';
+          let charIndex = 0;
+          
+          const typeChar = () => {
+            if (charIndex < originalText.length) {
+              block.textContent += originalText.charAt(charIndex);
+              charIndex++;
+              setTimeout(typeChar, 2); // Fast typing
+            }
+          };
+          
+          // Start typing when code block is visible
+          const codeObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                setTimeout(typeChar, 300);
+                codeObserver.disconnect();
+              }
+            });
+          }, { threshold: 0.5 });
+          
+          codeObserver.observe(block.closest('pre'));
+        });
+      });
+
+      // Weather demo is pure HTML/CSS - no JS needed
+
+      // Waitlist submit
+      const form = document.getElementById('waitlist-form');
+      const email = document.getElementById('waitlist-email');
+      const msg = document.getElementById('waitlist-msg');
+      if (form) {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const val = email.value.trim();
+          if (!/.+@.+\..+/.test(val)) {
+            alert('Enter a valid email');
+            return;
+          }
+          try {
+            const res = await fetch('/api/subscribe', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ email: val }),
+            });
+            if (res.ok) {
+              msg?.classList.remove('hidden');
+              form.reset();
+            } else {
+              const data = await res.json().catch(() => ({}));
+              alert(data.error || 'Something went wrong. Please try again.');
+            }
+          } catch (err) {
+            alert('Network error - try again.');
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
