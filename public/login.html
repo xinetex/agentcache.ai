@@ -57,9 +57,13 @@
     <div id="error-msg"
       class="hidden mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-xs text-center"></div>
 
-    <div class="mt-6 text-center">
-      <a href="/pricing.html" class="text-xs text-slate-500 hover:text-white transition">Don't have a key? Get one
-        here.</a>
+    <div class="mt-6 text-center space-y-4">
+      <button id="generate-btn" class="text-xs text-cyan-400 hover:text-cyan-300 transition underline">
+        Generate Demo Key (Free)
+      </button>
+      <div class="block">
+        <a href="/pricing.html" class="text-xs text-slate-500 hover:text-white transition">View Pricing</a>
+      </div>
     </div>
   </div>
 
@@ -101,6 +105,24 @@
       errorMsg.textContent = msg;
       errorMsg.classList.remove('hidden');
     }
+
+    // Demo Key Generation
+    document.getElementById('generate-btn').addEventListener('click', () => {
+      const demoKey = 'ac_demo_' + Math.random().toString(36).substring(2, 15);
+      document.getElementById('api-key').value = demoKey;
+      // Auto submit
+      localStorage.setItem('agentcache_api_key', demoKey);
+
+      // Show success message briefly then redirect
+      const btn = document.getElementById('generate-btn');
+      btn.textContent = 'Key Generated! Redirecting...';
+      btn.classList.remove('text-cyan-400');
+      btn.classList.add('text-emerald-400', 'no-underline');
+
+      setTimeout(() => {
+        window.location.href = '/pipeline-studio.html'; // Redirect to Wizard for new users
+      }, 800);
+    });
   </script>
 </body>
 
