@@ -77,7 +77,7 @@ export class JettySpeedDb {
       WHERE is_active = true 
       ORDER BY city
     `;
-    return result as EdgeLocation[];
+    return result as unknown as EdgeLocation[];
   }
 
   // Get latest metrics for an edge (last 5 minutes)
@@ -100,7 +100,7 @@ export class JettySpeedDb {
       WHERE timestamp > NOW() - INTERVAL '5 minutes'
       ORDER BY edge_id, timestamp DESC
     `;
-    
+
     const metricsMap = new Map<string, EdgeMetric>();
     result.forEach((metric: any) => {
       metricsMap.set(metric.edge_id, metric as EdgeMetric);
