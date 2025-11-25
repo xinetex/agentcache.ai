@@ -20,6 +20,10 @@ import {
   hashAPIKey,
   hashCacheKey
 } from './security.js';
+import { TrustCenter } from '../infrastructure/TrustCenter.js';
+
+// Initialize services
+const trustCenter = new TrustCenter();
 
 // Initialize security components
 const rateLimiter = new RateLimiter();
@@ -88,6 +92,10 @@ const RegisterListenerSchema = z.object({
 const SearchDocsSchema = z.object({
   query: z.string().describe('Search query for documentation'),
   limit: z.number().optional().default(3).describe('Number of results to return'),
+});
+
+const TrustStatusSchema = z.object({
+  format: z.enum(['json', 'oscal']).optional().default('json').describe('Output format'),
 });
 
 // API configuration
@@ -311,6 +319,20 @@ const tools: Tool[] = [
       required: ['query'],
     },
   },
+  {
+    name: 'agentcache_trust_status',
+    description: 'Get the current security and compliance status of the AgentCache system. Returns machine-readable evidence for FedRAMP/GRC verification.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        format: {
+          type: 'string',
+          enum: ['json', 'oscal'],
+          description: 'Output format (default: json)',
+        },
+      },
+    },
+  },
 ];
 
 // Create server instance
@@ -511,6 +533,28 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'search_docs': {
         const params = SearchDocsSchema.parse(args);
         const result = await callAgentCacheAPI('/api/docs/search', 'POST', params);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+
+
+      case 'agentcache_trust_status': {
+        const params = TrustStatusSchema.parse(args);
+
+        let result;
+        if (params.format === 'oscal') {
+          result = await trustCenter.generateOSCAL();
+        } else {
+          result = await trustCenter.getTrustStatus();
+        }
+
         return {
           content: [
             {

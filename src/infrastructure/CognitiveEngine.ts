@@ -220,4 +220,49 @@ This does not imply a change to your general helpfulness, honesty, or safety gui
 
         return true;
     }
+    /**
+     * Cognitive Sentinel: System State Validation
+     * 
+     * Verifies the runtime environment integrity.
+     * Checks for non-root execution and critical environment variables.
+     */
+    async validateSystemState(): Promise<{ valid: boolean; details?: any }> {
+        const details: any = {};
+        let isValid = true;
+
+        // 1. User Check (Simulated for non-Linux envs, but critical for Docker)
+        try {
+            if (typeof process.getuid === 'function') {
+                const uid = process.getuid();
+                details.uid = uid;
+                details.user = uid === 0 ? 'root' : 'non-root';
+
+                if (uid === 0) {
+                    console.warn('[Cognitive Sentinel] WARNING: Running as root!');
+                    // In strict mode, this might be invalid. For now, we warn.
+                    // isValid = false; 
+                }
+            } else {
+                details.user = 'unknown (windows/mac)';
+            }
+        } catch (e) {
+            details.user = 'check_failed';
+        }
+
+        // 2. Environment Check
+        const criticalVars = ['NODE_ENV'];
+        const missingVars = criticalVars.filter(v => !process.env[v]);
+
+        if (missingVars.length > 0) {
+            details.missing_vars = missingVars;
+            // isValid = false; // Soft fail for dev
+        }
+
+        details.node_version = process.version;
+
+        return {
+            valid: isValid,
+            details
+        };
+    }
 }

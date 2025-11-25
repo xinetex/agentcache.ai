@@ -194,11 +194,19 @@ function WizardModalNew({ sector, config, onClose, onComplete }) {
                 <div>
                   <h3>Select Use Case</h3>
                   <p>Choose a starting point. You can refine settings in the next steps.</p>
+                  <p className="legend-hint">Amounts shown are estimated monthly savings from caching, not fees.</p>
                 </div>
                 <div className="recommended-badge">
                   <span className="pulse-dot"></span>
                   <span>Recommended</span>
                 </div>
+              </div>
+
+              {/* Legend */}
+              <div className="legend-bar" role="note" aria-label="Badge legend">
+                <span className="legend-chip legend-savings">💰 Est. savings/mo</span>
+                <span className="legend-chip legend-compliance">🔒 Compliance badges</span>
+                <span className="legend-chip legend-complexity">🏷️ Enterprise = complexity</span>
               </div>
 
               <div className="use-case-grid-new">
@@ -215,10 +223,10 @@ function WizardModalNew({ sector, config, onClose, onComplete }) {
                       <div className="card-title-row">
                         <h4>{scenario.name}</h4>
                         {scenario.complexity === 'complex' && (
-                          <span className="badge badge-advanced">Enterprise</span>
+                          <span className="badge badge-advanced" title="Complexity level">Enterprise</span>
                         )}
                         {scenario.estimatedSavings && (
-                          <span className="badge badge-popular">{scenario.estimatedSavings}</span>
+                          <span className="badge badge-savings" title="Estimated monthly savings vs no caching">{scenario.estimatedSavings}</span>
                         )}
                       </div>
                       <p>{scenario.description}</p>

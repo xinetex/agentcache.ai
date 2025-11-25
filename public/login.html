@@ -142,11 +142,9 @@
       errorMsg.classList.remove('hidden');
     }
 
-    // Demo Key Generation
+    // Demo Key Generation (safe: no missing DOM references)
     document.getElementById('generate-btn').addEventListener('click', () => {
       const demoKey = 'ac_demo_' + Math.random().toString(36).substring(2, 15);
-      document.getElementById('api-key').value = demoKey;
-      // Auto submit
       localStorage.setItem('agentcache_api_key', demoKey);
 
       // Show success message briefly then redirect

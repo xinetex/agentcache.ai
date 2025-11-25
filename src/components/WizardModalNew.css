@@ -177,6 +177,36 @@
   overflow-y: auto;
 }
 
+/* Legend */
+.legend-bar {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.25rem 0 1rem 0;
+}
+
+.legend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  border: 1px solid #334155;
+  background: rgba(15, 23, 42, 0.6);
+  color: #cbd5e1;
+}
+
+.legend-savings { border-color: rgba(16,185,129,.5); color: #86efac; background: rgba(16,185,129,.1); }
+.legend-compliance { border-color: rgba(59,130,246,.4); color: #93c5fd; background: rgba(59,130,246,.1); }
+.legend-complexity { border-color: rgba(168,85,247,.4); color: #e9d5ff; background: rgba(168,85,247,.1); }
+
+.legend-hint {
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
 .wizard-step-new {
   animation: fadeInContent 0.3s ease-out;
 }
@@ -326,6 +356,13 @@
   background: rgba(14, 165, 233, 0.1);
   color: #7dd3fc;
   border: 1px solid rgba(14, 165, 233, 0.3);
+}
+
+/* New: savings badge */
+.badge-savings {
+  background: rgba(16, 185, 129, 0.12);
+  color: #86efac;
+  border: 1px solid rgba(16, 185, 129, 0.35);
 }
 
 .badge-advanced {

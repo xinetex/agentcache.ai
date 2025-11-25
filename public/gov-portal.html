@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentCache.ai | Government Intake Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-900 text-white min-h-screen">
+
+    <!-- Navigation -->
+    <nav class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md fixed w-full z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <span class="text-xl font-bold tracking-tight">AgentCache<span
+                            class="text-blue-500">.ai</span></span>
+                    <span
+                        class="ml-3 px-2 py-0.5 rounded text-xs font-medium bg-blue-900 text-blue-200 border border-blue-700">GOV</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-slate-400">FedRAMP Ready (In Process)</span>
+                    <a href="#" class="text-sm font-medium text-white hover:text-blue-400">Documentation</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="relative pt-24 pb-16 sm:pt-32 sm:pb-24 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="lg:grid lg:grid-cols-12 lg:gap-8">
+                <div class="sm:text-center md:max-w-2xl md:mx-auto lg:col-span-6 lg:text-left">
+                    <div
+                        class="inline-flex items-center px-3 py-1 rounded-full border border-blue-500/30 bg-blue-500/10 mb-6">
+                        <span class="flex h-2 w-2 rounded-full bg-blue-400 mr-2 animate-pulse"></span>
+                        <span class="text-sm font-medium text-blue-300">Aligned with Genesis Mission 2025</span>
+                    </div>
+                    <h1 class="text-4xl tracking-tight font-extrabold text-white sm:text-5xl md:text-6xl">
+                        <span class="block">Secure AI Infrastructure</span>
+                        <span class="block gradient-text">for Federal Agencies</span>
+                    </h1>
+                    <p
+                        class="mt-3 text-base text-slate-300 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
+                        Accelerate scientific discovery and mission outcomes with the only AI caching layer built for
+                        <b>Viewpoint Neutrality</b> and <b>90% Cost Efficiency</b>.
+                    </p>
+                    <div class="mt-8 sm:max-w-lg sm:mx-auto sm:text-center lg:text-left lg:mx-0">
+                        <button onclick="startWizard()"
+                            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all">
+                            Start Agency Onboarding
+                            <svg class="ml-2 -mr-1 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                            </svg>
+                        </button>
+                        <p class="mt-3 text-sm text-slate-400">
+                            IL2 / IL4 / IL5 Configurations Available
+                        </p>
+                    </div>
+                </div>
+                <div
+                    class="mt-12 relative sm:max-w-lg sm:mx-auto lg:mt-0 lg:max-w-none lg:mx-0 lg:col-span-6 lg:flex lg:items-center">
+                    <div class="relative mx-auto w-full rounded-lg shadow-lg lg:max-w-md">
+                        <div
+                            class="relative block w-full bg-slate-800 rounded-lg overflow-hidden border border-slate-700">
+                            <img src="../artifacts/gov_ai_hero.png" alt="Government AI Command Center"
+                                class="w-full opacity-90 hover:opacity-100 transition-opacity duration-500">
+                            <div
+                                class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="bg-slate-800/50 py-16 border-y border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                <!-- Feature 1 -->
+                <div class="glass-panel p-6 rounded-xl">
+                    <div
+                        class="w-12 h-12 bg-blue-900/50 rounded-lg flex items-center justify-center mb-4 border border-blue-700/30">
+                        <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-medium text-white">OSCAL-Ready Compliance</h3>
+                    <p class="mt-2 text-sm text-slate-400">Automated generation of NIST SP 800-53 control evidence
+                        (AC-2, SC-13, AU-2) for rapid ATO.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="glass-panel p-6 rounded-xl">
+                    <div
+                        class="w-12 h-12 bg-blue-900/50 rounded-lg flex items-center justify-center mb-4 border border-blue-700/30">
+                        <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-medium text-white">90% Cost Efficiency</h3>
+                    <p class="mt-2 text-sm text-slate-400">Reduce federal compute spend immediately. Cache common
+                        queries across agencies and labs.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="glass-panel p-6 rounded-xl">
+                    <div
+                        class="w-12 h-12 bg-blue-900/50 rounded-lg flex items-center justify-center mb-4 border border-blue-700/30">
+                        <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-medium text-white">Viewpoint Neutrality</h3>
+                    <p class="mt-2 text-sm text-slate-400">Enforce objective truth standards with our Cognitive Sentinel
+                        and Audit Logging layer.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wizard Modal Container -->
+    <div id="wizard-container" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog"
+        aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-slate-900 bg-opacity-90 transition-opacity" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div
+                class="inline-block align-bottom bg-slate-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-slate-700">
+                <div id="wizard-root"></div> <!-- React Wizard Mount Point -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import React from 'https://esm.sh/react@18';
+        import ReactDOM from 'https://esm.sh/react-dom@18/client';
+        import GovWizard from './src/components/GovWizard.jsx'; // We will need to bundle this or use a simple script for the demo
+
+        // For the HTML demo, we'll implement a simple JS wizard script below instead of full React bundling complexity for a single file
+        // This keeps the demo lightweight and immediate.
+
+        window.startWizard = function () {
+            document.getElementById('wizard-container').classList.remove('hidden');
+            renderWizardStep(1);
+        }
+
+        let currentStep = 1;
+        const totalSteps = 4;
+        let formData = {};
+
+        function renderWizardStep(step) {
+            const root = document.getElementById('wizard-root');
+            let content = '';
+
+            if (step === 1) {
+                content = `
+                    <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                <h3 class="text-lg leading-6 font-medium text-white" id="modal-title">Step 1: Agency Profile</h3>
+                                <div class="mt-4 space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-300">Agency Name</label>
+                                        <input type="text" id="agency-name" class="mt-1 block w-full bg-slate-700 border border-slate-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g. Department of Energy">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-300">Mission Area</label>
+                                        <select id="mission-area" class="mt-1 block w-full bg-slate-700 border border-slate-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                            <option>Scientific Discovery (Genesis Mission)</option>
+                                            <option>National Security</option>
+                                            <option>Citizen Services</option>
+                                            <option>Healthcare (VA/HHS)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-700/50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="button" onclick="nextStep(1)" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">Next: Security Level</button>
+                        <button type="button" onclick="closeWizard()" class="mt-3 w-full inline-flex justify-center rounded-md border border-slate-600 shadow-sm px-4 py-2 bg-slate-800 text-base font-medium text-slate-300 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Cancel</button>
+                    </div>
+                `;
+            } else if (step === 2) {
+                content = `
+                    <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <h3 class="text-lg leading-6 font-medium text-white">Step 2: Security Impact Level</h3>
+                        <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                            <div class="relative rounded-lg border border-slate-600 bg-slate-700 p-4 shadow-sm flex cursor-pointer hover:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500" onclick="selectLevel('IL2')">
+                                <div class="flex-1">
+                                    <h3 class="text-sm font-medium text-white">IL2 (Public)</h3>
+                                    <p class="mt-1 text-xs text-slate-400">Non-controlled unclassified information.</p>
+                                </div>
+                                <input type="radio" name="il-level" value="IL2" class="sr-only">
+                            </div>
+                            <div class="relative rounded-lg border border-blue-500 bg-slate-700 p-4 shadow-sm flex cursor-pointer ring-1 ring-blue-500" onclick="selectLevel('IL4')">
+                                <div class="flex-1">
+                                    <h3 class="text-sm font-medium text-white">IL4 (CUI)</h3>
+                                    <p class="mt-1 text-xs text-slate-400">Controlled Unclassified Information (PII/PHI).</p>
+                                </div>
+                                <input type="radio" name="il-level" value="IL4" class="sr-only" checked>
+                            </div>
+                            <div class="relative rounded-lg border border-slate-600 bg-slate-700 p-4 shadow-sm flex cursor-pointer hover:border-blue-500" onclick="selectLevel('IL5')">
+                                <div class="flex-1">
+                                    <h3 class="text-sm font-medium text-white">IL5 (Mission Critical)</h3>
+                                    <p class="mt-1 text-xs text-slate-400">Higher sensitivity CUI and NSS.</p>
+                                </div>
+                                <input type="radio" name="il-level" value="IL5" class="sr-only">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-700/50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="button" onclick="nextStep(2)" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">Next: Compliance</button>
+                        <button type="button" onclick="renderWizardStep(1)" class="mt-3 w-full inline-flex justify-center rounded-md border border-slate-600 shadow-sm px-4 py-2 bg-slate-800 text-base font-medium text-slate-300 hover:bg-slate-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Back</button>
+                    </div>
+                `;
+            } else if (step === 3) {
+                content = `
+                    <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <h3 class="text-lg leading-6 font-medium text-white">Step 3: Compliance Frameworks</h3>
+                        <div class="mt-4 space-y-4">
+                            <div class="flex items-start">
+                                <div class="flex items-center h-5">
+                                    <input id="fedramp" type="checkbox" checked disabled class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-slate-600 rounded bg-slate-700">
+                                </div>
+                                <div class="ml-3 text-sm">
+                                    <label for="fedramp" class="font-medium text-white">FedRAMP (NIST 800-53)</label>
+                                    <p class="text-slate-400">Mandatory for all federal cloud deployments.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="flex items-center h-5">
+                                    <input id="hipaa" type="checkbox" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-slate-600 rounded bg-slate-700">
+                                </div>
+                                <div class="ml-3 text-sm">
+                                    <label for="hipaa" class="font-medium text-white">HIPAA / HITECH</label>
+                                    <p class="text-slate-400">Required for VA/HHS health data processing.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="flex items-center h-5">
+                                    <input id="neutrality" type="checkbox" checked class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-slate-600 rounded bg-slate-700">
+                                </div>
+                                <div class="ml-3 text-sm">
+                                    <label for="neutrality" class="font-medium text-white">Viewpoint Neutrality Mandate</label>
+                                    <p class="text-slate-400">Enforce objective truth standards (Executive Order 2025).</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-700/50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="button" onclick="finishWizard()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 sm:ml-3 sm:w-auto sm:text-sm">Configure Workspace</button>
+                        <button type="button" onclick="renderWizardStep(2)" class="mt-3 w-full inline-flex justify-center rounded-md border border-slate-600 shadow-sm px-4 py-2 bg-slate-800 text-base font-medium text-slate-300 hover:bg-slate-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Back</button>
+                    </div>
+                `;
+            } else if (step === 4) {
+                content = `
+                    <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 text-center">
+                        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                            <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <h3 class="text-lg leading-6 font-medium text-white">Workspace Configured</h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-slate-300">
+                                Your secure environment has been provisioned with the following controls:
+                            </p>
+                            <ul class="mt-4 text-left text-sm text-slate-400 bg-slate-900/50 p-4 rounded-md space-y-2">
+                                <li class="flex items-center"><svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Impact Level: <span class="text-white ml-1 font-mono">IL4 (CUI)</span></li>
+                                <li class="flex items-center"><svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Compliance: <span class="text-white ml-1 font-mono">FedRAMP + Neutrality</span></li>
+                                <li class="flex items-center"><svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Trust Center: <span class="text-white ml-1 font-mono">Active (OSCAL Ready)</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="bg-slate-700/50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="button" onclick="closeWizard()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">Enter Workspace</button>
+                    </div>
+                `;
+            }
+
+            root.innerHTML = content;
+        }
+
+        window.nextStep = function (current) {
+            // Save data (mock)
+            if (current === 1) {
+                formData.agency = document.getElementById('agency-name').value;
+                formData.mission = document.getElementById('mission-area').value;
+            }
+            renderWizardStep(current + 1);
+        }
+
+        window.selectLevel = function (level) {
+            // Visual selection logic would go here
+            console.log("Selected level:", level);
+        }
+
+        window.finishWizard = function () {
+            // Simulate API call to configure TrustCenter
+            console.log("Configuring TrustCenter with:", formData);
+            setTimeout(() => {
+                renderWizardStep(4);
+            }, 1000);
+        }
+
+        window.closeWizard = function () {
+            document.getElementById('wizard-container').classList.add('hidden');
+        }
+    </script>
+</body>
+
+</html>

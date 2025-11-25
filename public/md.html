@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgentCache Docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="/assets/premium.css">
+  <style>
+    .markdown-body { color: #e5e7eb; }
+    .markdown-body h1, .markdown-body h2, .markdown-body h3 { color: white; }
+    .markdown-body pre { background: #0b1220; padding: 1rem; border-radius: 0.5rem; overflow: auto; }
+    .markdown-body code { background: rgba(148,163,184,.15); padding: .15rem .35rem; border-radius: .25rem; }
+    a { color: #38bdf8; }
+  </style>
+</head>
+<body class="bg-slate-950">
+  <nav class="sticky top-0 z-50 glass border-b border-slate-800">
+    <div class="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+      <a href="/docs.html" class="text-slate-300 hover:text-white text-sm">← Back to Docs</a>
+      <span class="text-slate-400 text-sm" id="docTitle"></span>
+    </div>
+  </nav>
+  <main class="max-w-5xl mx-auto px-6 py-8">
+    <article id="content" class="markdown-body prose prose-invert max-w-none"></article>
+  </main>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const doc = params.get('doc');
+    const path = doc ? `/docs/${doc}.md` : '/docs/README.md';
+    document.getElementById('docTitle').textContent = doc ? doc.replace(/-/g,' ') : 'docs';
+    fetch(path)
+      .then(r => {
+        if (!r.ok) throw new Error('Document not found');
+        return r.text();
+      })
+      .then(md => { document.getElementById('content').innerHTML = marked.parse(md); })
+      .catch(err => {
+        document.getElementById('content').innerHTML = `<p class='text-red-400'>${err.message}</p>`;
+      });
+  </script>
+</body>
+</html>

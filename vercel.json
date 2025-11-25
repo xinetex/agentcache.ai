@@ -91,6 +91,10 @@
       "destination": "/docs.html"
     },
     {
+      "source": "/docs/:doc.md",
+      "destination": "/md.html?doc=:doc"
+    },
+    {
       "source": "/blog",
       "destination": "/blog.html"
     },
