@@ -1,7 +1,15 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run build && mkdir -p public/studio && cp -r studio-dist/* public/studio/",
   "outputDirectory": "public",
   "rewrites": [
+    {
+      "source": "/studio",
+      "destination": "/studio/index.html"
+    },
+    {
+      "source": "/studio/:path*",
+      "destination": "/studio/:path*"
+    },
     {
       "source": "/api/cache/get",
       "destination": "/api/cache"
