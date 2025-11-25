@@ -1,7 +1,7 @@
 import { uploadToIPFS, getGatewayUrl } from '../../src/lib/ipfs';
 
 export const config = {
-    runtime: 'edge',
+    runtime: 'nodejs',
     regions: ['iad1'], // Optional: Configure regions
 };
 

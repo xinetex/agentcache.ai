@@ -1,7 +1,7 @@
 import { serializer } from '../../src/lib/proto/serializer';
 
 export const config = {
-    runtime: 'edge',
+    runtime: 'nodejs',
 };
 
 interface PrewarmRequest {
