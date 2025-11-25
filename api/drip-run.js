@@ -1,4 +1,4 @@
-export const config = { runtime: 'edge' };
+export const config = { runtime: 'nodejs' };
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
@@ -34,12 +34,12 @@ async function sendDrip(to, kind) {
   const text = subject;
 
   if (RESEND_API_KEY) {
-    const r = await fetch('https://api.resend.com/emails', { method:'POST', headers:{ Authorization:`Bearer ${RESEND_API_KEY}`, 'content-type':'application/json' }, body: JSON.stringify({ from:`${FROM_NAME} <${FROM_EMAIL}>`, to, subject, html, text })});
+    const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'content-type': 'application/json' }, body: JSON.stringify({ from: `${FROM_NAME} <${FROM_EMAIL}>`, to, subject, html, text }) });
     if (!r.ok) throw new Error('Resend failed');
     return;
   }
   if (SENDGRID_API_KEY) {
-    const r = await fetch('https://api.sendgrid.com/v3/mail/send', { method:'POST', headers:{ Authorization:`Bearer ${SENDGRID_API_KEY}`, 'content-type':'application/json' }, body: JSON.stringify({ personalizations:[{ to:[{email:to}] }], from:{ email:FROM_EMAIL, name:FROM_NAME }, subject, content:[{type:'text/plain', value:text},{type:'text/html', value:html}] })});
+    const r = await fetch('https://api.sendgrid.com/v3/mail/send', { method: 'POST', headers: { Authorization: `Bearer ${SENDGRID_API_KEY}`, 'content-type': 'application/json' }, body: JSON.stringify({ personalizations: [{ to: [{ email: to }] }], from: { email: FROM_EMAIL, name: FROM_NAME }, subject, content: [{ type: 'text/plain', value: text }, { type: 'text/html', value: html }] }) });
     if (!r.ok) throw new Error('SendGrid failed');
     return;
   }
@@ -51,28 +51,28 @@ export default async function handler(req) {
   const headerToken = (auth.startsWith('Bearer ') ? auth.slice(7) : '');
   const qpToken = u.searchParams.get('token') || '';
   const token = headerToken || qpToken;
-  if (!token || token !== (process.env.DRIP_TOKEN || '')) return json({ error:'Unauthorized' }, 401);
+  if (!token || token !== (process.env.DRIP_TOKEN || '')) return json({ error: 'Unauthorized' }, 401);
 
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const key = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !key) return json({ error:'Service not configured' }, 500);
+  if (!url || !key) return json({ error: 'Service not configured' }, 500);
 
-  const now = Math.floor(Date.now()/1000);
-  const kinds = ['0','2','5'];
+  const now = Math.floor(Date.now() / 1000);
+  const kinds = ['0', '2', '5'];
   let sent = 0;
 
   for (const kind of kinds) {
-    const getDue = await fetch(url, { method:'POST', headers:{ Authorization:`Bearer ${key}`, 'content-type':'application/json' }, body: JSON.stringify({ commands: [["ZRANGEBYSCORE", `drip:${kind}`, 0, now, 'LIMIT', 0, 100]] })});
+    const getDue = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${key}`, 'content-type': 'application/json' }, body: JSON.stringify({ commands: [["ZRANGEBYSCORE", `drip:${kind}`, 0, now, 'LIMIT', 0, 100]] }) });
     const arr = await getDue.json();
     const emails = Array.isArray(arr) ? arr[0]?.result || [] : [];
     if (!emails.length) continue;
 
     for (const email of emails) {
-      try { await sendDrip(email, kind); sent++; } catch {}
+      try { await sendDrip(email, kind); sent++; } catch { }
     }
     // remove all processed
-    await fetch(url, { method:'POST', headers:{ Authorization:`Bearer ${key}`, 'content-type':'application/json' }, body: JSON.stringify({ commands: [["ZREMRANGEBYSCORE", `drip:${kind}`, 0, now]] })});
+    await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${key}`, 'content-type': 'application/json' }, body: JSON.stringify({ commands: [["ZREMRANGEBYSCORE", `drip:${kind}`, 0, now]] }) });
   }
 
-  return json({ ok:true, sent, ts: new Date().toISOString() });
+  return json({ ok: true, sent, ts: new Date().toISOString() });
 }
