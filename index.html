@@ -27,6 +27,13 @@
     </script>
     <link rel="stylesheet" href="css/studio-theme.css">
     <style>
+        html, body {
+            overflow-x: hidden;
+            overflow-y: auto;
+            height: auto;
+            min-height: 100vh;
+        }
+        
         body {
             background-color: var(--hud-bg);
             background-image:
@@ -593,13 +600,13 @@
 
                 <!-- Visual -->
                 <div class="glass rounded-2xl p-1 border border-amber-500/20 shadow-2xl shadow-amber-900/20">
-                    <p class="text-slate-300">{ "url": "https://sensors.io/traffic" }</p>
-                    <p class="text-emerald-400">✔ Monitoring active. Auto-sync enabled.</p>
-                    <p class="animate-pulse">_</p>
+                    <div class="bg-slate-950 rounded-xl p-6 font-mono text-xs md:text-sm">
+                        <p class="text-slate-300">{ "url": "https://sensors.io/traffic" }</p>
+                        <p class="text-emerald-400">✔ Monitoring active. Auto-sync enabled.</p>
+                        <p class="animate-pulse">_</p>
+                    </div>
                 </div>
             </div>
-        </div>
-        </div>
         </div>
     </section>
 
