@@ -44,3 +44,11 @@ Verified the **Wizard E2E flow** using a script (`scripts/verify_wizard_e2e.js`)
     *   `suggestNodes`: Returned relevant nodes for the sector.
     *   `calculateComplexity`: Correctly calculated complexity score and cost.
     *   `learnFromPipeline`: Successfully stored the pipeline pattern in the database (fixed SQL parameter/syntax errors).
+
+### L3 Vector Search Verification
+Verified the **Semantic Search** functionality using `scripts/verify_l3_vector.js` against Upstash Vector.
+*   **Credentials**: Confirmed `UPSTASH_VECTOR_REST_URL` and `TOKEN` are set.
+*   **Unit Tests**: Added `tests/unit/platform-memory-l3.test.js` (5 tests passed).
+*   **Functionality**:
+    *   **Upsert**: Successfully stored a pattern with reasoning in the vector index.
+    *   **Semantic Search**: Successfully retrieved the pattern using a semantic query ("finding patterns by meaning") with high confidence (~0.91).
