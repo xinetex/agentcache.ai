@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   try {
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const redirectUri = `${process.env.VERCEL_URL || 'https://agentcache.ai'}/api/auth/google/callback`;
+    const redirectUri = 'https://agentcache.ai/api/auth/google/callback';
 
     // Exchange code for access token
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {

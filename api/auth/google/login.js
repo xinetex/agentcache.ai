@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
   // Google OAuth configuration
   const clientId = process.env.GOOGLE_CLIENT_ID;
-  const redirectUri = `${process.env.VERCEL_URL || 'https://agentcache.ai'}/api/auth/google/callback`;
+  const redirectUri = 'https://agentcache.ai/api/auth/google/callback';
   
   if (!clientId) {
     return res.status(500).json({ error: 'Google OAuth not configured' });

@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
   // GitHub OAuth configuration
   const clientId = process.env.GITHUB_CLIENT_ID;
-  const redirectUri = `${process.env.VERCEL_URL || 'https://agentcache.ai'}/api/auth/github/callback`;
+  const redirectUri = 'https://agentcache.ai/api/auth/github/callback';
   
   if (!clientId) {
     return res.status(500).json({ error: 'GitHub OAuth not configured' });
