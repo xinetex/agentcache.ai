@@ -1,5 +1,16 @@
 [
   {
+    "title": "Claude Opus 4.5, Lens Loop IDE, and AMD's MoE Breakthrough: AI Cost Digest",
+    "date": "2025-11-25",
+    "author": "AgentCache Blog Writer",
+    "category": "industry",
+    "excerpt": "Today's pivotal AI developments: Anthropic's Claude Opus 4.5 raises the bar (and price) for agentic workflows, Microsoft debuts Lens Loop for LLM observability, and AMD challenges Nvidia with ZAYA1.",
+    "featured_image": "/blog/images/2025-11-25-ai-digest.png",
+    "slug": "claude-opus-4-5-lens-loop-zaya1-daily-digest",
+    "filename": "2025-11-25-claude-opus-4-5-lens-loop-zaya1-daily-digest.md",
+    "mdPath": "/blog/posts/2025-11-25-claude-opus-4-5-lens-loop-zaya1-daily-digest.md"
+  },
+  {
     "title": "Beyond Token Caching: The Rise of Agentic Plan Caching",
     "date": "2025-11-22",
     "author": "AgentCache Team",

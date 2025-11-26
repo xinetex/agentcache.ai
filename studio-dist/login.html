@@ -37,21 +37,27 @@
       </div>
     </div>
 
-    <h2 class="text-xl font-bold text-center mb-2 tracking-wider text-white">IDENTITY VERIFICATION</h2>
-    <p class="text-[var(--hud-text-dim)] text-center mb-8 text-sm font-mono">ENTER ACCESS CREDENTIALS</p>
+    <h2 class="text-xl font-bold text-center mb-2 tracking-wider text-white">SIGN IN</h2>
+    <p class="text-[var(--hud-text-dim)] text-center mb-8 text-sm font-mono">ENTER YOUR CREDENTIALS</p>
 
     <form id="login-form" class="space-y-4">
       <div>
-        <label for="api-key" class="block text-xs font-bold text-[var(--hud-accent)] mb-1 tracking-wider">API
-          KEY</label>
-        <input type="password" id="api-key" name="api-key" required
+        <label for="email" class="block text-xs font-bold text-[var(--hud-accent)] mb-1 tracking-wider">EMAIL ADDRESS</label>
+        <input type="email" id="email" name="email" required autocomplete="email"
           class="w-full input-cyber rounded-none px-4 py-3 text-[var(--hud-text)] placeholder-[var(--hud-text-dim)] focus:outline-none transition font-mono text-sm"
-          placeholder="ac_live_...">
+          placeholder="your@email.com">
+      </div>
+
+      <div>
+        <label for="password" class="block text-xs font-bold text-[var(--hud-accent)] mb-1 tracking-wider">PASSWORD</label>
+        <input type="password" id="password" name="password" required autocomplete="current-password"
+          class="w-full input-cyber rounded-none px-4 py-3 text-[var(--hud-text)] placeholder-[var(--hud-text-dim)] focus:outline-none transition font-mono text-sm"
+          placeholder="Enter your password">
       </div>
 
       <button type="submit"
         class="w-full btn-cyber-primary py-3 font-bold tracking-widest transition flex items-center justify-center gap-2 group">
-        <span>INITIALIZE SESSION</span>
+        <span>SIGN IN</span>
         <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor"
           viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
@@ -85,31 +91,49 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const apiKey = document.getElementById('api-key').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
 
-      if (!apiKey.startsWith('ac_')) {
-        showError('Invalid API Key format. Must start with "ac_".');
-        return;
-      }
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<span>AUTHENTICATING...</span>';
+      submitBtn.disabled = true;
 
-      // Verify Key
       try {
-        const res = await fetch('/api/auth/verify', {
+        const res = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ apiKey })
+          body: JSON.stringify({ email, password })
         });
 
-        const data = await res.json();
+        let data;
+        const contentType = res.headers.get('content-type');
+        
+        if (contentType && contentType.includes('application/json')) {
+          data = await res.json();
+        } else {
+          // API returned HTML error page
+          const text = await res.text();
+          throw new Error(`API returned HTML instead of JSON. Status: ${res.status}. This usually means the API endpoint doesn't exist yet or crashed.`);
+        }
 
-        if (res.ok && data.valid) {
-          localStorage.setItem('agentcache_api_key', apiKey);
+        if (res.ok) {
+          // Store JWT token and user info
+          localStorage.setItem('agentcache_token', data.token);
+          localStorage.setItem('agentcache_user', JSON.stringify(data.user));
+          
+          // Redirect to Studio
           window.location.href = '/studio.html';
         } else {
-          showError('Invalid API Key. Please check and try again.');
+          showError(data.message || 'Invalid email or password');
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
         }
       } catch (err) {
+        console.error('Login error:', err);
         showError('Connection error. Please try again.');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
       }
     });
 
@@ -118,11 +142,9 @@
       errorMsg.classList.remove('hidden');
     }
 
-    // Demo Key Generation
+    // Demo Key Generation (safe: no missing DOM references)
     document.getElementById('generate-btn').addEventListener('click', () => {
       const demoKey = 'ac_demo_' + Math.random().toString(36).substring(2, 15);
-      document.getElementById('api-key').value = demoKey;
-      // Auto submit
       localStorage.setItem('agentcache_api_key', demoKey);
 
       // Show success message briefly then redirect

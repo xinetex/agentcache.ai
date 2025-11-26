@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
   <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="/dynamicview-renderer.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
     
@@ -36,6 +37,14 @@
       border-color: rgb(14 165 233);
       background-color: rgb(7 89 133 / 0.3);
     }
+    
+    .tab-btn { transition: all 0.2s; }
+    .tab-btn.active { border-bottom-color: rgb(14 165 233); color: rgb(14 165 233); }
+    .tab-content { display: none; }
+    .tab-content.active { display: flex; }
+    
+    .template-card { cursor: pointer; transition: all 0.2s; }
+    .template-card:hover { transform: translateY(-2px); border-color: rgb(14 165 233); }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 antialiased">
@@ -167,8 +176,20 @@
       <!-- Center: Canvas -->
       <main class="flex-1 flex flex-col bg-slate-950">
         
-        <!-- Metrics Bar -->
-        <div class="border-b border-slate-800/80 bg-slate-900/50 px-6 py-3">
+        <!-- Tab Navigation -->
+        <div class="border-b border-slate-800/80 bg-slate-900/50">
+          <div class="flex items-center gap-1 px-6">
+            <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400 active" data-tab="pipeline">
+              Pipeline Builder
+            </button>
+            <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400" data-tab="dynamicview">
+              Dynamic View
+            </button>
+          </div>
+        </div>
+        
+        <!-- Metrics Bar (for Pipeline tab) -->
+        <div id="metricsBar" class="border-b border-slate-800/80 bg-slate-900/50 px-6 py-3">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-6">
               <div class="flex items-center gap-2">
@@ -207,8 +228,8 @@
           </div>
         </div>
         
-        <!-- Canvas Area -->
-        <div class="flex-1 relative overflow-hidden bg-[radial-gradient(circle_at_1px_1px,_rgb(51,65,85)_1px,_transparent_0)] bg-[length:24px_24px]">
+        <!-- Pipeline Canvas Tab -->
+        <div id="pipelineTab" class="tab-content active flex-1 relative overflow-hidden bg-[radial-gradient(circle_at_1px_1px,_rgb(51,65,85)_1px,_transparent_0)] bg-[length:24px_24px]">
           <svg id="canvas" class="absolute inset-0 w-full h-full">
             <defs>
               <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
@@ -235,6 +256,50 @@
               </div>
               <h3 class="text-lg font-semibold text-slate-400 mb-2">No pipeline yet</h3>
               <p class="text-sm text-slate-500">Click "New Pipeline" to start with AI wizard</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Dynamic View Tab -->
+        <div id="dynamicViewTab" class="tab-content flex-col flex-1 overflow-hidden">
+          <!-- Dynamic View Controls -->
+          <div class="border-b border-slate-800/80 bg-slate-900/50 p-4">
+            <div class="flex items-center gap-3 mb-3">
+              <input 
+                id="dynamicViewPrompt" 
+                type="text" 
+                placeholder="Describe the view you want... (e.g., 'Show me a performance dashboard')" 
+                class="flex-1 rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500/50"
+              />
+              <button id="generateViewBtn" class="rounded-lg bg-sky-600 px-6 py-2 text-sm font-semibold text-white hover:bg-sky-500">
+                Generate
+              </button>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-500">Quick Start:</span>
+              <div id="templateGallery" class="flex items-center gap-2 overflow-x-auto">
+                <!-- Templates populated by JS -->
+              </div>
+            </div>
+          </div>
+          
+          <!-- Dynamic View Render Canvas -->
+          <div id="dynamicViewCanvas" class="flex-1 overflow-y-auto p-6 bg-slate-950">
+            <!-- Empty state -->
+            <div id="dynamicViewEmpty" class="flex items-center justify-center h-full">
+              <div class="text-center max-w-md">
+                <div class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-slate-800/50">
+                  <svg class="h-8 w-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-slate-300 mb-2">No Dynamic View loaded</h3>
+                <p class="text-sm text-slate-500 mb-4">Generate a custom view using AI, or select a template from the quick start gallery above</p>
+                <div class="flex items-center justify-center gap-2 text-xs text-slate-600">
+                  <span class="px-2 py-1 rounded bg-slate-800/50">🟢 Templates load instantly</span>
+                  <span class="px-2 py-1 rounded bg-slate-800/50">⚡ AI generation ~500ms</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -142,23 +142,58 @@
     </main>
 
     <script>
-        document.getElementById('signup-form').addEventListener('submit', function (e) {
+        document.getElementById('signup-form').addEventListener('submit', async function (e) {
             e.preventDefault();
 
-            // Simulate API call
             const button = this.querySelector('button[type="submit"]');
             const originalText = button.innerHTML;
-            button.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Creating...';
+            button.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Creating account...';
             button.disabled = true;
 
-            setTimeout(() => {
-                // Generate demo key
-                const demoKey = 'ac_live_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-                localStorage.setItem('agentcache_api_key', demoKey);
+            try {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const full_name = document.getElementById('name').value;
 
-                // Redirect to Studio (React App)
+                // Call real API
+                const response = await fetch('/api/auth/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password, full_name })
+                });
+
+                let data;
+                const contentType = response.headers.get('content-type');
+                
+                if (contentType && contentType.includes('application/json')) {
+                  data = await response.json();
+                } else {
+                  // API returned HTML error page
+                  const text = await response.text();
+                  throw new Error(`API returned HTML instead of JSON. Status: ${response.status}. Database might not be set up yet. Please contact support.`);
+                }
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Registration failed');
+                }
+
+                // Store JWT token
+                localStorage.setItem('agentcache_token', data.token);
+                localStorage.setItem('agentcache_user', JSON.stringify(data.user));
+
+                // Show success message
+                alert('Account created successfully! Welcome to AgentCache.');
+
+                // Redirect to Studio
                 window.location.href = '/studio.html';
-            }, 1500);
+            } catch (error) {
+                console.error('Signup error:', error);
+                alert(error.message || 'Registration failed. Please try again.');
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
         });
     </script>
 </body>

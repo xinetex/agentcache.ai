@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Launching Demo...</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #030508;
+            color: #e0f7fa;
+            font-family: monospace;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .loader {
+            border: 2px solid #00f3ff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="text-center">
+        <div class="loader mx-auto mb-4"></div>
+        <div class="text-xl text-cyan-400">Initializing Demo Environment...</div>
+        <div class="text-sm text-slate-500 mt-2">Generating ephemeral keys</div>
+    </div>
+
+    <script>
+        // Generate a demo key
+        const demoKey = 'ac_demo_' + Math.random().toString(36).substring(2, 15);
+
+        // Store in localStorage
+        localStorage.setItem('agentcache_api_key', demoKey);
+
+        // Redirect to Studio with demo flag
+        setTimeout(() => {
+            window.location.href = '/studio.html?demo=true';
+        }, 800);
+    </script>
+</body>
+
+</html>
