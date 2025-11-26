@@ -1,8 +1,8 @@
 import crypto from 'crypto';
 import { query } from '../../lib/db.js';
-import sgMail from '@sendgrid/mail';
+import { Resend } from 'resend';
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -48,9 +48,9 @@ export default async function handler(req, res) {
     // Send reset email
     const resetUrl = `${process.env.VERCEL_URL || 'https://agentcache.ai'}/reset-password.html?token=${resetToken}`;
     
-    const msg = {
+    await resend.emails.send({
+      from: 'AgentCache <noreply@agentcache.ai>',
       to: user.email,
-      from: process.env.SENDGRID_FROM_EMAIL || 'support@agentcache.ai',
       subject: 'Reset Your AgentCache Password',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -72,22 +72,8 @@ export default async function handler(req, res) {
             AgentCache - LLM Response Caching Platform
           </p>
         </div>
-      `,
-      text: `
-Reset Your Password
-
-You requested to reset your password for AgentCache.
-
-Click this link to reset your password:
-${resetUrl}
-
-This link will expire in 1 hour.
-
-If you didn't request this, you can safely ignore this email.
       `
-    };
-
-    await sgMail.send(msg);
+    });
 
     return res.status(200).json({ 
       message: 'If an account exists with that email, a reset link has been sent.' 
