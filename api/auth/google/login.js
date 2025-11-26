@@ -3,6 +3,7 @@ export default async function handler(req, res) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const baseUrl = process.env.BASE_URL || (process.env.NODE_ENV === 'production' ? 'https://agentcache.ai' : 'http://localhost:3000');
   const redirectUri = `${baseUrl}/api/auth/google/callback`;
+  console.log('DEBUG: Google OAuth redirectUri:', redirectUri);
 
   if (!clientId) {
     return res.status(500).json({ error: 'Google OAuth not configured' });

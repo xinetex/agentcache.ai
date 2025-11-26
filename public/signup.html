@@ -93,6 +93,7 @@
                     </div>
                 </form>
 
+                <!-- OAuth section temporarily hidden
                 <div class="mt-6">
                     <div class="relative">
                         <div class="absolute inset-0 flex items-center">
@@ -132,6 +133,7 @@
                         </button>
                     </div>
                 </div>
+                -->
             </div>
 
             <p class="text-center text-sm text-slate-500">
@@ -142,7 +144,8 @@
     </main>
 
     <script>
-        // OAuth button handlers
+        // OAuth button handlers (temporarily disabled)
+        /*
         document.getElementById('github-signup-btn').addEventListener('click', () => {
             window.location.href = '/api/auth/github/login';
         });
@@ -150,6 +153,7 @@
         document.getElementById('google-signup-btn').addEventListener('click', () => {
             window.location.href = '/api/auth/google/login';
         });
+        */
 
         document.getElementById('signup-form').addEventListener('submit', async function (e) {
             e.preventDefault();
