@@ -51,14 +51,9 @@ export default async function handler(req, res) {
 
     // Find user by email
     const userResult = await query(`
-      SELECT 
-        u.*,
-        o.name as organization_name,
-        o.slug as organization_slug,
-        o.status as organization_status
-      FROM users u
-      LEFT JOIN organizations o ON u.organization_id = o.id
-      WHERE u.email = $1 AND u.is_active = true
+      SELECT *
+      FROM users
+      WHERE email = $1 AND is_active = true
     `, [email.toLowerCase()]);
 
     if (userResult.rows.length === 0) {
@@ -69,13 +64,6 @@ export default async function handler(req, res) {
     }
 
     const user = userResult.rows[0];
-
-    // Check if organization is active (if user has one)
-    if (user.organization_id && user.organization_status !== 'active') {
-      return res.status(403).json({
-        error: 'Your organization account is not active. Please contact support.'
-      });
-    }
 
     // Verify password
     const passwordMatch = await bcrypt.compare(password, user.password_hash);
@@ -107,11 +95,9 @@ export default async function handler(req, res) {
         id: user.id,
         email: user.email,
         fullName: user.full_name,
-        organizationId: user.organization_id,
-        organizationName: user.organization_name,
-        organizationSlug: user.organization_slug,
+        organizationId: user.organization_id || null,
         role: user.role || 'member',
-        emailVerified: user.email_verified,
+        emailVerified: user.email_verified || false,
       },
     });
 
