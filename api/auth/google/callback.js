@@ -11,7 +11,8 @@ export default async function handler(req, res) {
   try {
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const redirectUri = 'https://agentcache.ai/api/auth/google/callback';
+    const baseUrl = process.env.BASE_URL || (process.env.NODE_ENV === 'production' ? 'https://agentcache.ai' : 'http://localhost:3000');
+    const redirectUri = `${baseUrl}/api/auth/google/callback`;
 
     // Exchange code for access token
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
@@ -29,7 +30,7 @@ export default async function handler(req, res) {
     });
 
     const tokenData = await tokenResponse.json();
-    
+
     if (tokenData.error || !tokenData.access_token) {
       throw new Error('Failed to get access token');
     }
