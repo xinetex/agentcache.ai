@@ -19,6 +19,7 @@
     "@neondatabase/serverless": "^1.0.2",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.0",
+    "@sendgrid/mail": "^8.1.6",
     "@upstash/redis": "^1.31.6",
     "@upstash/vector": "^1.2.2",
     "bcryptjs": "^2.4.3",

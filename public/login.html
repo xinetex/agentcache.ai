@@ -49,7 +49,10 @@
       </div>
 
       <div>
-        <label for="password" class="block text-xs font-bold text-[var(--hud-accent)] mb-1 tracking-wider">PASSWORD</label>
+        <div class="flex justify-between items-center mb-1">
+          <label for="password" class="block text-xs font-bold text-[var(--hud-accent)] tracking-wider">PASSWORD</label>
+          <a href="/forgot-password.html" class="text-xs text-[var(--hud-text-dim)] hover:text-[var(--hud-accent)] transition">Forgot?</a>
+        </div>
         <input type="password" id="password" name="password" required autocomplete="current-password"
           class="w-full input-cyber rounded-none px-4 py-3 text-[var(--hud-text)] placeholder-[var(--hud-text-dim)] focus:outline-none transition font-mono text-sm"
           placeholder="Enter your password">
