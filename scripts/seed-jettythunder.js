@@ -46,7 +46,7 @@ async function seedJettyThunder() {
 
     // 2. Create admin user
     console.log('\n📝 Creating admin user...');
-    const password = 'JettyThunder2024!'; // Change this!
+    const password = process.env.ADMIN_PASSWORD || crypto.randomBytes(16).toString('hex');
     const passwordHash = await bcrypt.hash(password, 10);
 
     const userResult = await query(`

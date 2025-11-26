@@ -16,8 +16,15 @@ NC='\033[0m' # No Color
 
 # Test configuration
 API_BASE="https://agentcache.ai"
-TEST_EMAIL="admin@jettythunder.app"
-TEST_PASSWORD="JettyThunder2024!"
+TEST_EMAIL="${TEST_EMAIL:-test@example.com}"
+TEST_PASSWORD="${TEST_PASSWORD:-}"
+
+# Check for required env vars
+if [ -z "$TEST_PASSWORD" ]; then
+  echo "❌ Error: TEST_EMAIL and TEST_PASSWORD environment variables required"
+  echo "Usage: TEST_EMAIL='your@email.com' TEST_PASSWORD='yourpass' ./test-dashboard-integration.sh"
+  exit 1
+fi
 
 echo "📝 Test Configuration:"
 echo "   API: $API_BASE"
