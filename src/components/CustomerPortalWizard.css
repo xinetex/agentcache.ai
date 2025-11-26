@@ -1,0 +1,576 @@
+.wizard-overlay-customer {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+}
+
+.wizard-modal-customer {
+  width: 100%;
+  max-width: 56rem;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 1rem;
+  border: 1px solid rgb(51 65 85);
+  background-color: rgb(15 23 42);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.wizard-header-customer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgb(30 41 59);
+  background: linear-gradient(to bottom, rgb(15 23 42), rgb(15 23 42 / 0.95));
+}
+
+.wizard-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.wizard-icon-customer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  background: linear-gradient(135deg, rgb(14 165 233), rgb(59 130 246));
+  color: white;
+}
+
+.wizard-brand h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: rgb(248 250 252);
+  margin: 0;
+}
+
+.wizard-subtitle {
+  font-size: 0.875rem;
+  color: rgb(148 163 184);
+  margin: 0.25rem 0 0 0;
+}
+
+.wizard-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background-color: rgb(30 41 59);
+}
+
+.step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  background-color: rgb(14 165 233);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+}
+
+.step-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgb(203 213 225);
+}
+
+.step-total {
+  font-size: 0.875rem;
+  color: rgb(100 116 139);
+}
+
+.close-btn-customer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.375rem;
+  border: 1px solid rgb(51 65 85);
+  background-color: rgb(30 41 59);
+  color: rgb(148 163 184);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.close-btn-customer:hover {
+  background-color: rgb(51 65 85);
+  color: rgb(248 250 252);
+}
+
+.wizard-body-customer {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+}
+
+.wizard-step-customer {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.step-header {
+  margin-bottom: 2rem;
+}
+
+.step-header h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: rgb(248 250 252);
+  margin: 0 0 0.5rem 0;
+}
+
+.step-header p {
+  font-size: 0.875rem;
+  color: rgb(148 163 184);
+  margin: 0;
+}
+
+.customer-input-group {
+  margin-bottom: 1.5rem;
+}
+
+.customer-input-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgb(203 213 225);
+  margin-bottom: 0.5rem;
+}
+
+.required {
+  color: rgb(239 68 68);
+}
+
+.customer-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(51 65 85);
+  background-color: rgb(30 41 59);
+  color: rgb(248 250 252);
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.customer-input:focus {
+  outline: none;
+  border-color: rgb(14 165 233);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.customer-input::placeholder {
+  color: rgb(100 116 139);
+}
+
+.section-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgb(203 213 225);
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.customer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.customer-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  border: 2px solid rgb(51 65 85);
+  background-color: rgb(30 41 59);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.customer-card:hover {
+  border-color: rgb(71 85 105);
+  background-color: rgb(51 65 85);
+}
+
+.customer-card.selected {
+  border-color: rgb(14 165 233);
+  background-color: rgb(30 41 59);
+}
+
+.card-icon {
+  font-size: 2rem;
+}
+
+.card-content h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgb(248 250 252);
+  margin: 0 0 0.25rem 0;
+}
+
+.card-content p {
+  font-size: 0.75rem;
+  color: rgb(148 163 184);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.selection-indicator {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  background-color: rgb(14 165 233);
+}
+
+.selection-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background-color: white;
+}
+
+.scale-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.scale-option {
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border: 2px solid rgb(51 65 85);
+  background-color: rgb(30 41 59);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.scale-option:hover {
+  border-color: rgb(71 85 105);
+  background-color: rgb(51 65 85);
+}
+
+.scale-option.selected {
+  border-color: rgb(14 165 233);
+  background-color: rgb(30 41 59);
+}
+
+.scale-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.scale-icon {
+  font-size: 1.5rem;
+}
+
+.scale-header h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgb(248 250 252);
+  margin: 0;
+}
+
+.scale-option p {
+  font-size: 0.875rem;
+  color: rgb(148 163 184);
+  margin: 0;
+}
+
+.plan-tier-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.plan-tier-card {
+  position: relative;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border: 2px solid rgb(51 65 85);
+  background-color: rgb(30 41 59);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.plan-tier-card:hover {
+  border-color: rgb(71 85 105);
+  background-color: rgb(51 65 85);
+}
+
+.plan-tier-card.selected {
+  border-color: rgb(14 165 233);
+  background-color: rgb(30 41 59);
+}
+
+.recommended-badge-small {
+  position: absolute;
+  top: -0.5rem;
+  right: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, rgb(34 197 94), rgb(22 163 74));
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.plan-tier-card h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: rgb(248 250 252);
+  margin: 0 0 0.5rem 0;
+}
+
+.plan-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: rgb(14 165 233);
+  margin: 0 0 1rem 0;
+}
+
+.plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.875rem;
+  color: rgb(148 163 184);
+}
+
+.plan-features li {
+  padding: 0.25rem 0;
+}
+
+.namespace-strategy-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.namespace-strategy-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border: 2px solid rgb(51 65 85);
+  background-color: rgb(30 41 59);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.namespace-strategy-card:hover {
+  border-color: rgb(71 85 105);
+  background-color: rgb(51 65 85);
+}
+
+.namespace-strategy-card.selected {
+  border-color: rgb(14 165 233);
+  background-color: rgb(30 41 59);
+}
+
+.strategy-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.strategy-content {
+  flex: 1;
+}
+
+.strategy-content h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgb(248 250 252);
+  margin: 0 0 0.5rem 0;
+}
+
+.strategy-content p {
+  font-size: 0.875rem;
+  color: rgb(148 163 184);
+  margin: 0 0 0.75rem 0;
+}
+
+.strategy-preview {
+  margin-top: 0.75rem;
+}
+
+.badge-list {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background-color: rgb(51 65 85);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgb(148 163 184);
+  font-family: 'Monaco', 'Courier New', monospace;
+}
+
+.custom-namespace-input {
+  margin-top: 1rem;
+}
+
+.custom-namespace-input label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgb(203 213 225);
+  margin-bottom: 0.5rem;
+}
+
+.loading-state-customer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.spinner-customer {
+  width: 3rem;
+  height: 3rem;
+  border: 4px solid rgb(51 65 85);
+  border-top-color: rgb(14 165 233);
+  border-radius: 9999px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1.5rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-state-customer p {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: rgb(248 250 252);
+  margin: 0 0 0.5rem 0;
+}
+
+.loading-subtitle-customer {
+  font-size: 0.875rem;
+  color: rgb(148 163 184);
+}
+
+.wizard-footer-customer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid rgb(30 41 59);
+  background-color: rgb(15 23 42);
+}
+
+.footer-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: rgb(100 116 139);
+}
+
+.footer-hint svg {
+  color: rgb(71 85 105);
+}
+
+.footer-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-customer {
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn-secondary-customer {
+  border: 1px solid rgb(51 65 85);
+  background-color: rgb(30 41 59);
+  color: rgb(203 213 225);
+}
+
+.btn-secondary-customer:hover {
+  background-color: rgb(51 65 85);
+}
+
+.btn-primary-customer {
+  background: linear-gradient(135deg, rgb(14 165 233), rgb(59 130 246));
+  color: white;
+}
+
+.btn-primary-customer:hover {
+  background: linear-gradient(135deg, rgb(2 132 199), rgb(37 99 235));
+}
+
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.mt-6 {
+  margin-top: 1.5rem;
+}
