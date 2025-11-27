@@ -9,6 +9,17 @@ class SectorDashboardAPI {
     this.autoRefreshInterval = 30000; // 30 seconds
     this.autoRefreshTimer = null;
     this.isLoading = false;
+    this.consecutiveFailures = 0;
+    this.maxFailures = 3;
+  }
+
+  /**
+   * Escape HTML to prevent XSS
+   */
+  escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 
   /**
@@ -101,46 +112,7 @@ class SectorDashboardAPI {
     }
   }
 
-  /**
-   * Update compliance badges
-   */
-  updateCompliance(compliance) {
-    if (!compliance || !compliance.frameworks) return;
 
-    console.log(`[${this.sector}] Compliance:`, compliance.frameworks);
-    
-    // Update compliance status if element exists
-    const complianceContainer = document.getElementById('complianceStatus');
-    if (complianceContainer && compliance.frameworks) {
-      complianceContainer.innerHTML = compliance.frameworks.map(framework => `
-        <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-xs font-medium text-emerald-300">
-          <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-          ${framework}
-        </span>
-      `).join('');
-    }
-  }
-
-  /**
-   * Update top pipelines table
-   */
-  updateTopPipelines(pipelines) {
-    const container = document.getElementById('topPipelines');
-    if (!container || !pipelines || pipelines.length === 0) return;
-
-    container.innerHTML = pipelines.map(pipeline => `
-      <div class="flex items-center justify-between p-3 rounded-md border border-slate-800 bg-slate-900/50">
-        <div class="flex-1">
-          <div class="text-sm font-medium text-slate-200">${pipeline.name}</div>
-          <div class="text-xs text-slate-500">${pipeline.nodeCount} nodes • ${pipeline.complexity} complexity</div>
-        </div>
-        <div class="text-right">
-          <div class="text-sm font-semibold text-emerald-400">${pipeline.hitRate?.toFixed(1) || 0}%</div>
-          <div class="text-xs text-slate-500">${pipeline.requests?.toLocaleString() || 0} req</div>
-        </div>
-      </div>
-    `).join('');
-  }
 
   /**
    * Update performance charts
@@ -168,6 +140,86 @@ class SectorDashboardAPI {
       console.log(`[${this.sector}] Performance history:`, data.performanceHistory.length, 'data points');
       // Can be used for trend charts
     }
+  }
+
+  /**
+   * Update compliance badges (XSS-safe)
+   */
+  updateCompliance(compliance) {
+    if (!compliance || !compliance.frameworks) return;
+
+    console.log(`[${this.sector}] Compliance:`, compliance.frameworks);
+    
+    const complianceContainer = document.getElementById('complianceStatus');
+    if (complianceContainer && Array.isArray(compliance.frameworks)) {
+      // Clear existing content
+      complianceContainer.innerHTML = '';
+      
+      // Create elements safely without innerHTML injection
+      compliance.frameworks.forEach(framework => {
+        const span = document.createElement('span');
+        span.className = 'inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-xs font-medium text-emerald-300';
+        
+        const dot = document.createElement('span');
+        dot.className = 'h-1.5 w-1.5 rounded-full bg-emerald-400';
+        
+        const text = document.createTextNode(framework);
+        
+        span.appendChild(dot);
+        span.appendChild(text);
+        complianceContainer.appendChild(span);
+      });
+    }
+  }
+
+  /**
+   * Update top pipelines table (XSS-safe)
+   */
+  updateTopPipelines(pipelines) {
+    const container = document.getElementById('topPipelines');
+    if (!container || !Array.isArray(pipelines) || pipelines.length === 0) return;
+
+    // Clear existing content
+    container.innerHTML = '';
+    
+    pipelines.forEach(pipeline => {
+      const div = document.createElement('div');
+      div.className = 'flex items-center justify-between p-3 rounded-md border border-slate-800 bg-slate-900/50';
+      
+      // Left side
+      const leftDiv = document.createElement('div');
+      leftDiv.className = 'flex-1';
+      
+      const nameDiv = document.createElement('div');
+      nameDiv.className = 'text-sm font-medium text-slate-200';
+      nameDiv.textContent = pipeline.name || 'Unnamed Pipeline';
+      
+      const detailsDiv = document.createElement('div');
+      detailsDiv.className = 'text-xs text-slate-500';
+      detailsDiv.textContent = `${pipeline.nodeCount || 0} nodes • ${pipeline.complexity || 'unknown'} complexity`;
+      
+      leftDiv.appendChild(nameDiv);
+      leftDiv.appendChild(detailsDiv);
+      
+      // Right side
+      const rightDiv = document.createElement('div');
+      rightDiv.className = 'text-right';
+      
+      const hitRateDiv = document.createElement('div');
+      hitRateDiv.className = 'text-sm font-semibold text-emerald-400';
+      hitRateDiv.textContent = `${(pipeline.hitRate || 0).toFixed(1)}%`;
+      
+      const reqDiv = document.createElement('div');
+      reqDiv.className = 'text-xs text-slate-500';
+      reqDiv.textContent = `${(pipeline.requests || 0).toLocaleString()} req`;
+      
+      rightDiv.appendChild(hitRateDiv);
+      rightDiv.appendChild(reqDiv);
+      
+      div.appendChild(leftDiv);
+      div.appendChild(rightDiv);
+      container.appendChild(div);
+    });
   }
 
   /**
@@ -216,13 +268,16 @@ class SectorDashboardAPI {
     }
   }
 
+
   /**
-   * Refresh data and update UI
+   * Refresh data and update UI with error recovery
    */
   async refresh(timeRange = '24h') {
     const data = await this.loadData(timeRange);
     
     if (data) {
+      this.consecutiveFailures = 0; // Reset failure counter
+      
       this.updateMetrics(data);
       this.updateCompliance(data.metrics?.compliance);
       this.updateTopPipelines(data.topPipelines);
@@ -237,7 +292,15 @@ class SectorDashboardAPI {
       console.log(`[${this.sector}] Dashboard refreshed successfully`);
       return true;
     } else {
-      console.warn(`[${this.sector}] Refresh failed - keeping current data`);
+      this.consecutiveFailures++;
+      console.warn(`[${this.sector}] Refresh failed (${this.consecutiveFailures}/${this.maxFailures})`);
+      
+      // Stop auto-refresh after too many failures
+      if (this.consecutiveFailures >= this.maxFailures) {
+        console.error(`[${this.sector}] Too many failures, stopping auto-refresh`);
+        this.stopAutoRefresh();
+      }
+      
       return false;
     }
   }
@@ -263,6 +326,7 @@ class SectorDashboardAPI {
       if (timeRangeSelect) {
         timeRangeSelect.addEventListener('change', (e) => {
           console.log(`[${this.sector}] Time range changed to:`, e.target.value);
+          this.consecutiveFailures = 0; // Reset failures on manual action
           this.refresh(e.target.value);
           this.stopAutoRefresh();
           this.startAutoRefresh(e.target.value);
@@ -275,6 +339,14 @@ class SectorDashboardAPI {
     }
 
     return success;
+  }
+
+  /**
+   * Cleanup method to prevent memory leaks
+   */
+  destroy() {
+    this.stopAutoRefresh();
+    console.log(`[${this.sector}] Dashboard API destroyed`);
   }
 }
 

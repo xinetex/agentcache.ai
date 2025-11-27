@@ -37,6 +37,8 @@ export default async function handler(req, res) {
 
     // Get time range from query params (default: 24h)
     const timeRange = req.query.timeRange || '24h';
+    
+    // Validate time range
     const timeIntervals = {
       '1h': '1 hour',
       '24h': '24 hours',
@@ -44,7 +46,14 @@ export default async function handler(req, res) {
       '30d': '30 days'
     };
     
-    const interval = timeIntervals[timeRange] || '24 hours';
+    if (!timeIntervals[timeRange]) {
+      return res.status(400).json({ 
+        error: 'Invalid time range',
+        validRanges: Object.keys(timeIntervals)
+      });
+    }
+    
+    const interval = timeIntervals[timeRange];
 
     // Get sector-wide metrics from sector_dashboard_metrics view
     const sectorMetricsResult = await query(`
@@ -96,9 +105,9 @@ export default async function handler(req, res) {
         top_query_types
       FROM sector_analytics
       WHERE sector = $1
-        AND date >= CURRENT_DATE - INTERVAL '${daysBack} days'
+        AND date >= CURRENT_DATE - INTERVAL '1 day' * $2
       ORDER BY date DESC
-    `, [normalizedSector]);
+    `, [normalizedSector, daysBack]);
 
     // Get query type breakdown from most recent day
     const queryTypesResult = await query(`
@@ -143,11 +152,11 @@ export default async function handler(req, res) {
       FROM pipeline_metrics pm
       JOIN pipelines p ON p.id = pm.pipeline_id
       WHERE p.sector = $1
-        AND pm.timestamp >= NOW() - INTERVAL '${interval}'
+        AND pm.timestamp >= NOW() - $2::INTERVAL
       GROUP BY latency_p50, latency_p95
       ORDER BY latency_p50
       LIMIT 50
-    `, [normalizedSector]);
+    `, [normalizedSector, interval]);
 
     // Calculate latency buckets for histogram
     const latencyBuckets = calculateLatencyBuckets(latencyDistResult.rows);
