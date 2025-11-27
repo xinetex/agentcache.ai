@@ -85,7 +85,7 @@
     {
       "source": "/daily",
       "destination": "/daily.html"
-    }
+    },
     {
       "source": "/visualizations",
       "destination": "/visualizations.html"
