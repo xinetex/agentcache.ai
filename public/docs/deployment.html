@@ -133,7 +133,7 @@ else:
             <section>
                 <h2 class="text-2xl font-bold mb-4 text-white">AgentCache Edge (Self-Hosted)</h2>
                 <p class="text-slate-400 mb-4">For air-gapped or high-compliance environments, deploy AgentCache Edge
-                    using Docker.</p>
+                    using Docker or Kubernetes.</p>
 
                 <div class="mb-6">
                     <h3 class="text-lg font-semibold text-white mb-2">Docker Compose</h3>
@@ -146,19 +146,247 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379
       - AGENTCACHE_API_KEY=your_secret_key
+      - NODE_ENV=production
     depends_on:
       - redis
 
   redis:
     image: redis:alpine
     ports:
-      - "6379:6379"</code></pre>
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:</code></pre>
                 </div>
 
-                <p class="text-slate-400">
+                <p class="text-slate-400 mb-8">
                     Run <code>docker-compose up -d</code> to start the service. Your local instance will be available at
                     <code>http://localhost:3000</code>.
                 </p>
+            </section>
+
+            <!-- Kubernetes -->
+            <section>
+                <h2 class="text-2xl font-bold mb-4 text-white">Kubernetes Deployment</h2>
+                <p class="text-slate-400 mb-4">For production environments, deploy using Kubernetes with Helm or raw manifests.</p>
+
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-white mb-2">Helm Installation</h3>
+                    <pre><code>helm repo add agentcache https://charts.agentcache.ai
+helm install agentcache agentcache/agentcache-edge \
+  --set redis.enabled=true \
+  --set apiKey=your_secret_key \
+  --set replicas=3</code></pre>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-white mb-2">Kubernetes Manifests</h3>
+                    <pre><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agentcache-edge
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: agentcache
+  template:
+    metadata:
+      labels:
+        app: agentcache
+    spec:
+      containers:
+      - name: agentcache
+        image: xinetex/agentcache-edge:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: REDIS_URL
+          value: redis://redis-service:6379
+        - name: AGENTCACHE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: agentcache-secrets
+              key: api-key
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agentcache-service
+spec:
+  selector:
+    app: agentcache
+  ports:
+  - port: 3000
+    targetPort: 3000
+  type: LoadBalancer</code></pre>
+                </div>
+            </section>
+
+            <!-- Air-Gapped Configuration -->
+            <section>
+                <h2 class="text-2xl font-bold mb-4 text-white">Air-Gapped Security</h2>
+                <p class="text-slate-400 mb-4">Deploy AgentCache in fully isolated environments without external internet access.</p>
+
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-white mb-2">Offline Image Distribution</h3>
+                    <pre><code># Save Docker images
+docker save xinetex/agentcache-edge:latest -o agentcache-edge.tar
+docker save redis:alpine -o redis.tar
+
+# Transfer to air-gapped environment, then load:
+docker load -i agentcache-edge.tar
+docker load -i redis.tar</code></pre>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-white mb-2">Configuration for Isolated Networks</h3>
+                    <pre><code># docker-compose-airgapped.yml
+version: '3'
+services:
+  agentcache:
+    image: xinetex/agentcache-edge:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - AGENTCACHE_API_KEY=${AGENTCACHE_API_KEY}
+      - AIR_GAPPED_MODE=true
+      - DISABLE_TELEMETRY=true
+      - DISABLE_UPDATES=true
+    networks:
+      - isolated
+
+  redis:
+    image: redis:alpine
+    networks:
+      - isolated
+    volumes:
+      - redis-data:/data
+
+networks:
+  isolated:
+    internal: true
+
+volumes:
+  redis-data:</code></pre>
+                </div>
+
+                <div class="glass p-6 rounded-lg">
+                    <h4 class="font-semibold text-white mb-2">Security Features</h4>
+                    <ul class="list-disc list-inside text-slate-400 space-y-2">
+                        <li><strong>No external calls</strong>: All data stays within your network perimeter</li>
+                        <li><strong>TLS termination</strong>: Configure at your load balancer or ingress</li>
+                        <li><strong>Audit logging</strong>: All cache operations logged locally</li>
+                        <li><strong>RBAC support</strong>: Namespace-based access control</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Environment Variables -->
+            <section>
+                <h2 class="text-2xl font-bold mb-4 text-white">Environment Variables</h2>
+                <p class="text-slate-400 mb-4">Configure AgentCache Edge with these environment variables.</p>
+
+                <div class="glass p-6 rounded-lg space-y-4">
+                    <div>
+                        <code class="text-cyan-400">REDIS_URL</code>
+                        <p class="text-slate-400 text-sm">Redis connection string (required)</p>
+                        <pre><code>REDIS_URL=redis://localhost:6379</code></pre>
+                    </div>
+
+                    <div>
+                        <code class="text-cyan-400">AGENTCACHE_API_KEY</code>
+                        <p class="text-slate-400 text-sm">API key for authentication (required)</p>
+                        <pre><code>AGENTCACHE_API_KEY=your_secret_key_here</code></pre>
+                    </div>
+
+                    <div>
+                        <code class="text-cyan-400">DATABASE_URL</code>
+                        <p class="text-slate-400 text-sm">PostgreSQL connection for analytics (optional)</p>
+                        <pre><code>DATABASE_URL=postgresql://user:pass@localhost:5432/agentcache</code></pre>
+                    </div>
+
+                    <div>
+                        <code class="text-cyan-400">AIR_GAPPED_MODE</code>
+                        <p class="text-slate-400 text-sm">Enable for isolated environments (default: false)</p>
+                        <pre><code>AIR_GAPPED_MODE=true</code></pre>
+                    </div>
+
+                    <div>
+                        <code class="text-cyan-400">LOG_LEVEL</code>
+                        <p class="text-slate-400 text-sm">Logging verbosity: debug, info, warn, error (default: info)</p>
+                        <pre><code>LOG_LEVEL=info</code></pre>
+                    </div>
+
+                    <div>
+                        <code class="text-cyan-400">CACHE_TTL</code>
+                        <p class="text-slate-400 text-sm">Default cache TTL in seconds (default: 86400)</p>
+                        <pre><code>CACHE_TTL=86400</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Production Best Practices -->
+            <section>
+                <h2 class="text-2xl font-bold mb-4 text-white">Production Best Practices</h2>
+
+                <div class="space-y-6">
+                    <div class="glass p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-white mb-3">High Availability</h3>
+                        <ul class="list-disc list-inside text-slate-400 space-y-2">
+                            <li>Run at least 3 replicas for redundancy</li>
+                            <li>Use Redis Cluster or Redis Sentinel for cache HA</li>
+                            <li>Configure health checks: <code>GET /health</code></li>
+                            <li>Set up horizontal pod autoscaling based on CPU/memory</li>
+                        </ul>
+                    </div>
+
+                    <div class="glass p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-white mb-3">Monitoring</h3>
+                        <ul class="list-disc list-inside text-slate-400 space-y-2">
+                            <li>Prometheus metrics endpoint: <code>/metrics</code></li>
+                            <li>Monitor cache hit rate, latency, and error rates</li>
+                            <li>Set up alerts for cache degradation</li>
+                            <li>Track Redis memory usage and eviction rates</li>
+                        </ul>
+                    </div>
+
+                    <div class="glass p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-white mb-3">Security</h3>
+                        <ul class="list-disc list-inside text-slate-400 space-y-2">
+                            <li>Rotate API keys regularly (use Kubernetes secrets)</li>
+                            <li>Enable TLS for Redis connections in production</li>
+                            <li>Implement network policies to restrict traffic</li>
+                            <li>Use namespace-based access control for multi-tenancy</li>
+                        </ul>
+                    </div>
+
+                    <div class="glass p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-white mb-3">Performance Tuning</h3>
+                        <ul class="list-disc list-inside text-slate-400 space-y-2">
+                            <li>Co-locate cache with application workloads (same region/AZ)</li>
+                            <li>Use Redis pipelining for batch operations</li>
+                            <li>Configure appropriate TTLs per namespace</li>
+                            <li>Monitor and adjust Redis maxmemory policy</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Support -->
+            <section class="border-t border-slate-800 pt-12">
+                <h2 class="text-2xl font-bold mb-4 text-white">Need Help?</h2>
+                <div class="glass p-6 rounded-lg">
+                    <p class="text-slate-400 mb-4">For enterprise deployments, compliance questions, or technical support:</p>
+                    <ul class="space-y-2 text-slate-400">
+                        <li>📧 Email: <a href="mailto:enterprise@agentcache.ai" class="text-cyan-400 hover:underline">enterprise@agentcache.ai</a></li>
+                        <li>📚 Documentation: <a href="/docs.html" class="text-cyan-400 hover:underline">agentcache.ai/docs</a></li>
+                        <li>💬 Discord: <a href="https://discord.gg/agentcache" class="text-cyan-400 hover:underline">Join our community</a></li>
+                    </ul>
+                </div>
             </section>
 
         </div>
