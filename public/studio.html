@@ -607,6 +607,9 @@
       // Optimize button
       document.getElementById('optimizeBtn').addEventListener('click', optimizePipeline);
       
+      // Deploy button - saves pipeline
+      document.getElementById('deployBtn').addEventListener('click', savePipeline);
+      
       // Tab switching
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -716,13 +719,14 @@
           fullPrompt += ' optimized for cost savings';
         }
         
-        const response = await fetch('/api/pipeline/generate', {
+        const response = await fetch('/api/pipelines/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             prompt: fullPrompt,
             sector: currentSector,
-            performance: wizardState.performance
+            performance: wizardState.performance,
+            save: false // Preview mode, save manually later
           }),
         });
         
@@ -761,6 +765,74 @@
         `<li class="flex items-start gap-2"><span class="text-emerald-400">•</span><span>${reason}</span></li>`
       ).join('');
       document.getElementById('reviewReasoning').innerHTML = reasoningHtml;
+    }
+    
+    // Save Pipeline to Database
+    async function savePipeline() {
+      if (!currentPipeline) {
+        addAIMessage('No pipeline to save', 'assistant');
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('agentcache_token');
+        if (!token) {
+          alert('Please log in to save pipelines');
+          return;
+        }
+
+        const response = await fetch('/api/pipelines/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            name: currentPipeline.name,
+            description: currentPipeline.description,
+            sector: currentPipeline.sector,
+            nodes: currentPipeline.nodes,
+            connections: currentPipeline.connections,
+            features: currentPipeline.features,
+            complexity: currentPipeline.complexity,
+            monthlyCost: currentPipeline.metrics?.estimated_monthly_cost
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          currentPipeline.id = data.pipeline.id;
+          addAIMessage(`✅ Pipeline saved successfully: ${data.pipeline.id}`, 'assistant');
+        } else {
+          throw new Error(data.error || 'Failed to save pipeline');
+        }
+      } catch (error) {
+        console.error('Save failed:', error);
+        addAIMessage(`❌ Failed to save: ${error.message}`, 'assistant');
+      }
+    }
+
+    // Load Pipelines from Database
+    async function loadPipelines() {
+      try {
+        const token = localStorage.getItem('agentcache_token');
+        if (!token) return;
+
+        const response = await fetch('/api/pipelines/list?limit=20', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await response.json();
+        
+        if (data.pipelines) {
+          console.log(`Loaded ${data.pipelines.length} pipelines`);
+          return data.pipelines;
+        }
+      } catch (error) {
+        console.error('Failed to load pipelines:', error);
+      }
+      return [];
     }
     
     // Render Pipeline on Canvas
