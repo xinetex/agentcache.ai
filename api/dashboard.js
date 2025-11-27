@@ -37,16 +37,34 @@ export default async function handler(req, res) {
 
     const user = userResult.rows[0];
 
-    // Get current month usage
+    // Get usage metrics from pipeline_metrics (last 24h)
     const usageResult = await query(`
-      SELECT * FROM get_current_month_usage($1)
+      SELECT 
+        COALESCE(SUM(requests), 0) as total_requests,
+        COALESCE(SUM(cache_hits), 0) as total_hits,
+        COALESCE(SUM(cache_misses), 0) as total_misses,
+        CASE 
+          WHEN SUM(requests) > 0 
+          THEN ROUND((SUM(cache_hits)::decimal / SUM(requests)) * 100, 1)
+          ELSE 0 
+        END as hit_rate,
+        COALESCE(ROUND(AVG(latency_p50)), 0) as avg_latency,
+        COALESCE(SUM(cost_saved), 0) as cost_saved,
+        COALESCE(SUM(tokens_saved), 0) as tokens_saved
+      FROM pipeline_metrics pm
+      JOIN pipelines p ON p.id = pm.pipeline_id
+      WHERE p.user_id = $1
+        AND pm.timestamp >= NOW() - INTERVAL '24 hours'
     `, [userId]);
 
     const usage = usageResult.rows[0] || {
-      requests: 0,
-      hits: 0,
+      total_requests: 0,
+      total_hits: 0,
+      total_misses: 0,
       hit_rate: 0,
-      cost_saved: 0
+      avg_latency: 0,
+      cost_saved: 0,
+      tokens_saved: 0
     };
 
     // Get pipelines summary
@@ -62,16 +80,24 @@ export default async function handler(req, res) {
 
     const pipelinesSummary = pipelinesResult.rows[0];
 
-    // Get recent pipelines
+    // Get recent pipelines with 24h metrics
     const recentPipelinesResult = await query(`
       SELECT 
-        id, name, sector, status, complexity_tier,
-        monthly_cost, nodes, connections,
-        created_at, updated_at
-      FROM pipelines
-      WHERE user_id = $1 AND status != 'archived'
-      ORDER BY updated_at DESC
-      LIMIT 5
+        p.id, p.name, p.sector, p.status, p.complexity_tier,
+        p.monthly_cost, p.nodes, p.connections, p.node_count,
+        p.created_at, p.updated_at,
+        COALESCE(SUM(pm.requests), 0) as requests_24h,
+        COALESCE(AVG(pm.hit_rate), 0) as hit_rate_24h,
+        COALESCE(SUM(pm.cost_saved), 0) as cost_saved_24h
+      FROM pipelines p
+      LEFT JOIN pipeline_metrics pm ON pm.pipeline_id = p.id 
+        AND pm.timestamp >= NOW() - INTERVAL '24 hours'
+      WHERE p.user_id = $1 AND p.status != 'archived'
+      GROUP BY p.id, p.name, p.sector, p.status, p.complexity_tier,
+               p.monthly_cost, p.nodes, p.connections, p.node_count,
+               p.created_at, p.updated_at
+      ORDER BY p.updated_at DESC
+      LIMIT 10
     `, [userId]);
 
     // Get API keys count
@@ -102,10 +128,14 @@ export default async function handler(req, res) {
         fullName: user.full_name
       },
       usage: {
-        requests: parseInt(usage.requests),
-        hits: parseInt(usage.hits),
-        hitRate: parseFloat(usage.hit_rate),
-        costSaved: parseFloat(usage.cost_saved)
+        requests: parseInt(usage.total_requests || 0),
+        hits: parseInt(usage.total_hits || 0),
+        misses: parseInt(usage.total_misses || 0),
+        hitRate: parseFloat(usage.hit_rate || 0),
+        avgLatency: parseInt(usage.avg_latency || 0),
+        costSaved: parseFloat(usage.cost_saved || 0),
+        tokensSaved: parseInt(usage.tokens_saved || 0),
+        throughput: Math.round((parseInt(usage.total_requests || 0)) / 86400) // req/sec
       },
       pipelines: {
         total: parseInt(pipelinesSummary.total_pipelines),
@@ -118,9 +148,12 @@ export default async function handler(req, res) {
           sector: p.sector,
           status: p.status,
           complexity: p.complexity_tier,
-          monthlyCost: parseFloat(p.monthly_cost),
-          nodeCount: p.nodes?.length || 0,
+          monthlyCost: parseFloat(p.monthly_cost || 0),
+          nodeCount: p.node_count || p.nodes?.length || 0,
           connectionCount: p.connections?.length || 0,
+          requests24h: parseInt(p.requests_24h || 0),
+          hitRate24h: parseFloat(p.hit_rate_24h || 0),
+          costSaved24h: parseFloat(p.cost_saved_24h || 0),
           createdAt: p.created_at,
           updatedAt: p.updated_at
         }))
