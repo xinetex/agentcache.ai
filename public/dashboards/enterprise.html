@@ -11,6 +11,9 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://d3js.org/d3-sankey.v0.12.min.js"></script>
   <script src="/js/visualizations/agentcache-viz.js"></script>
+  
+  <!-- Sector Dashboard API Integration -->
+  <script src="/js/sector-dashboard-api.js"></script>
   <style>.metric-card{transition:transform .2s ease,box-shadow .2s ease}.metric-card:hover{transform:translateY(-4px);box-shadow:0 12px 24px rgba(0,0,0,.3)}.status-glow{box-shadow:0 0 10px currentColor}::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:#0f172a}::-webkit-scrollbar-thumb{background:#334155;border-radius:4px}</style>
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-100">
@@ -88,9 +91,17 @@
     </div>
   </div>
   <script>
-    lucide.createIcons();
+    lucide.createIcons();    // Initialize API integration    const dashboardAPI = new SectorDashboardAPI('enterprise');    let liveDataLoaded = false;
     const data={apiUptime:99.98,responseP95:34,costSavings:542000,regionCount:12,activeRegions:12,teamAdoption:89.4,dataProcessed:847,infraNetwork:{nodes:[{id:'cache',label:'AgentCache',group:0,value:100},{id:'aws',label:'AWS',group:1,value:90},{id:'azure',label:'Azure',group:1,value:85},{id:'gcp',label:'GCP',group:1,value:80},{id:'k8s',label:'Kubernetes',group:2,value:95}],links:[{source:'aws',target:'cache',value:8},{source:'azure',target:'cache',value:7},{source:'gcp',target:'cache',value:6},{source:'cache',target:'k8s',value:9}]}};
-    document.addEventListener('DOMContentLoaded',()=>{
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Try to load live data first
+      liveDataLoaded = await dashboardAPI.initialize();
+      
+      // If live data failed, fall back to simulated data
+      if (!liveDataLoaded) {
+        console.warn('[Enterprise] Live data unavailable, using simulated data');
+      }
+      
       AgentCacheViz.animateCountUp('apiUptime',data.apiUptime,2000,'%');
       AgentCacheViz.animateCountUp('regionCount',data.regionCount,1500);
       AgentCacheViz.animateCountUp('activeRegions',data.activeRegions,1500);
@@ -101,7 +112,7 @@
       AgentCacheViz.animateCardsEntrance('.metric-card');
       startActivityFeed();
     });
-    function startActivityFeed(){const activities=[{icon:'check-circle',text:'Multi-region cache sync: US-East → EU-West',color:'emerald'},{icon:'server',text:'Auto-scaling triggered: +3 nodes',color:'sky'},{icon:'shield',text:'Security scan passed: 0 vulnerabilities',color:'purple'},{icon:'zap',text:'Performance boost: 23% latency reduction',color:'amber'}];const feed=document.getElementById('activityFeed');function add(){const a=activities[Math.floor(Math.random()*activities.length)];const i=document.createElement('div');i.className='flex items-center gap-3 p-3 rounded-md border border-slate-800 bg-slate-900/50 opacity-0';i.innerHTML=`<i data-lucide="${a.icon}" class="w-4 h-4 text-${a.color}-400"></i><div class="flex-1"><div class="text-sm text-slate-200">${a.text}</div><div class="text-xs text-slate-500">${new Date().toLocaleTimeString()}</div></div>`;feed.insertBefore(i,feed.firstChild);lucide.createIcons();anime({targets:i,opacity:[0,1],translateX:[-20,0],duration:400,easing:'easeOutCubic'});if(feed.children.length>10)feed.removeChild(feed.lastChild);}for(let i=0;i<5;i++)setTimeout(()=>add(),i*500);setInterval(add,3000);}
+    function startActivityFeed(){const activities=[{icon:'check-circle',text:'Multi-region cache sync: US-East → EU-West',color:'emerald'},{icon:'server',text:'Auto-scaling triggered: +3 nodes',color:'sky'},{icon:'shield',text:'Security scan passed: 0 vulnerabilities',color:'purple'},{icon:'zap',text:'Performance boost: 23% latency reduction',color:'amber'}];const feed=document.getElementById('activityFeed');function add(){const a=activities[Math.floor(Math.random()*activities.length)];const i=document.createElement('div');i.className='flex items-center gap-3 p-3 rounded-md border border-slate-800 bg-slate-900/50 opacity-0';i.innerHTML=`<i data-lucide="${a.icon}" class="w-4 h-4 text-${a.color}-400"></i><div class="flex-1"><div class="text-sm text-slate-200">${a.text}</div><div class="text-xs text-slate-500">${new Date().toLocaleTimeString()}</div></div>`;feed.insertBefore(i,feed.firstChild);lucide.createIcons();    // Initialize API integration    const dashboardAPI = new SectorDashboardAPI('enterprise');    let liveDataLoaded = false;anime({targets:i,opacity:[0,1],translateX:[-20,0],duration:400,easing:'easeOutCubic'});if(feed.children.length>10)feed.removeChild(feed.lastChild);}for(let i=0;i<5;i++)setTimeout(()=>add(),i*500);setInterval(add,3000);}
     function exportReport(){const b=new Blob([JSON.stringify({timestamp:new Date().toISOString(),sector:'Enterprise',metrics:data,compliance:{soc2:true,iso27001:true}},null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`enterprise-analytics-${Date.now()}.json`;a.click();URL.revokeObjectURL(u);}
   </script>
 </body>

@@ -13,6 +13,9 @@
   <script src="https://d3js.org/d3-sankey.v0.12.min.js"></script>
   <script src="/js/visualizations/agentcache-viz.js"></script>
   
+  <!-- Sector Dashboard API Integration -->
+  <script src="/js/sector-dashboard-api.js"></script>
+  
   <style>
     .metric-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
     .metric-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3); }
@@ -217,7 +220,7 @@
   </div>
 
   <script>
-    lucide.createIcons();
+    lucide.createIcons();    // Initialize API integration    const dashboardAPI = new SectorDashboardAPI('education');    let liveDataLoaded = false;
     
     const eduData = {
       contentAccuracy: 97.2, learningVelocity: 2.8, privacyScore: 100, teacherAdoption: 84.3,
@@ -243,7 +246,15 @@
       }))
     };
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Try to load live data first
+      liveDataLoaded = await dashboardAPI.initialize();
+      
+      // If live data failed, fall back to simulated data
+      if (!liveDataLoaded) {
+        console.warn('[Education] Live data unavailable, using simulated data');
+      }
+      
       AgentCacheViz.animateCountUp('contentAccuracy', eduData.contentAccuracy, 2000, '%');
       AgentCacheViz.animateCountUp('learningVelocity', eduData.learningVelocity, 2000, 'x');
       AgentCacheViz.animateCountUp('privacyScore', eduData.privacyScore, 2000, '%');
@@ -274,7 +285,7 @@
         item.className = 'flex items-center gap-3 p-3 rounded-md border border-slate-800 bg-slate-900/50 opacity-0';
         item.innerHTML = `<i data-lucide="${activity.icon}" class="w-4 h-4 text-${activity.color}-400 flex-shrink-0"></i><div class="flex-1"><div class="text-sm text-slate-200">${activity.text}</div><div class="text-xs text-slate-500">${new Date().toLocaleTimeString()}</div></div>`;
         feed.insertBefore(item, feed.firstChild);
-        lucide.createIcons();
+        lucide.createIcons();    // Initialize API integration    const dashboardAPI = new SectorDashboardAPI('education');    let liveDataLoaded = false;
         anime({ targets: item, opacity: [0, 1], translateX: [-20, 0], duration: 400, easing: 'easeOutCubic' });
         if (feed.children.length > 10) feed.removeChild(feed.lastChild);
       }
@@ -282,7 +293,32 @@
       setInterval(addActivity, 3000);
     }
 
-    function refreshDashboard() { console.log('[Education] Refreshing...'); const btn = event.target.closest('button'); btn.disabled = true; anime({ targets: btn.querySelector('svg'), rotate: '1turn', duration: 800, complete: () => btn.disabled = false }); }
+    function refreshDashboard() {
+      const btn = event.target.closest('button');
+      btn.disabled = true;
+      
+      // Show refresh animation
+      anime({
+        targets: btn.querySelector('svg'),
+        rotate: '1turn',
+        duration: 800,
+        easing: 'easeInOutQuad'
+      });
+      
+      // If live data is available, refresh from API
+      if (liveDataLoaded && dashboardAPI) {
+        const timeRange = document.getElementById('timeRange').value;
+        dashboardAPI.refresh(timeRange).then(() => {
+          btn.disabled = false;
+        });
+      } else {
+        // Otherwise use simulated data
+        console.log('[Education Dashboard] Refreshing simulated data...');
+        setTimeout(() => {
+          btn.disabled = false;
+        }, 800);
+      }
+    }); }
     function exportReport() { const blob = new Blob([JSON.stringify({ timestamp: new Date().toISOString(), sector: 'Education', metrics: eduData, compliance: { ferpa: true, coppa: true } }, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `education-analytics-${Date.now()}.json`; a.click(); URL.revokeObjectURL(url); }
   </script>
 </body>

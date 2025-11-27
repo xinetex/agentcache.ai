@@ -11,6 +11,9 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://d3js.org/d3-sankey.v0.12.min.js"></script>
   <script src="/js/visualizations/agentcache-viz.js"></script>
+  
+  <!-- Sector Dashboard API Integration -->
+  <script src="/js/sector-dashboard-api.js"></script>
   <style>.metric-card{transition:transform .2s ease,box-shadow .2s ease}.metric-card:hover{transform:translateY(-4px);box-shadow:0 12px 24px rgba(0,0,0,.3)}.status-glow{box-shadow:0 0 10px currentColor}::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:#0f172a}::-webkit-scrollbar-thumb{background:#334155;border-radius:4px}</style>
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-100">
@@ -110,9 +113,17 @@
     </div>
   </div>
   <script>
-    lucide.createIcons();
+    lucide.createIcons();    // Initialize API integration    const dashboardAPI = new SectorDashboardAPI('government');    let liveDataLoaded = false;
     const data={securityPosture:100,dataClassification:100,complianceScore:99.4,auditTrail:124893,agencyAdoption:86.7,activeAgencies:47,costOptimization:2847000,agencyNetwork:{nodes:[{id:'cache',label:'AgentCache',group:0,value:100},{id:'dod',label:'DoD',group:1,value:90},{id:'dhs',label:'DHS',group:1,value:85},{id:'va',label:'VA',group:1,value:80},{id:'treasury',label:'Treasury',group:1,value:75}],links:[{source:'dod',target:'cache',value:9},{source:'dhs',target:'cache',value:8},{source:'va',target:'cache',value:7},{source:'treasury',target:'cache',value:6}]},securityData:Array.from({length:7},(_,i)=>({time:new Date(Date.now()-(6-i)*86400000),value:Math.random()*5}))};
-    document.addEventListener('DOMContentLoaded',()=>{
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Try to load live data first
+      liveDataLoaded = await dashboardAPI.initialize();
+      
+      // If live data failed, fall back to simulated data
+      if (!liveDataLoaded) {
+        console.warn('[Government] Live data unavailable, using simulated data');
+      }
+      
       AgentCacheViz.animateCountUp('securityPosture',data.securityPosture,2000,'%');
       AgentCacheViz.animateCountUp('dataClassification',data.dataClassification,2000,'%');
       AgentCacheViz.animateCountUp('complianceScore',data.complianceScore,2000,'%');
@@ -125,7 +136,7 @@
       AgentCacheViz.animateCardsEntrance('.metric-card');
       startActivityFeed();
     });
-    function startActivityFeed(){const activities=[{icon:'shield-check',text:'Security scan: Zero threats detected',color:'emerald'},{icon:'lock',text:'CUI data classified and protected',color:'sky'},{icon:'file-text',text:'Audit log entry: Access request approved',color:'purple'},{icon:'alert-triangle',text:'Compliance check: NIST 800-53 verified',color:'amber'}];const feed=document.getElementById('activityFeed');function add(){const a=activities[Math.floor(Math.random()*activities.length)];const i=document.createElement('div');i.className='flex items-center gap-3 p-3 rounded-md border border-slate-800 bg-slate-900/50 opacity-0';i.innerHTML=`<i data-lucide="${a.icon}" class="w-4 h-4 text-${a.color}-400"></i><div class="flex-1"><div class="text-sm text-slate-200">${a.text}</div><div class="text-xs text-slate-500">${new Date().toLocaleTimeString()}</div></div>`;feed.insertBefore(i,feed.firstChild);lucide.createIcons();anime({targets:i,opacity:[0,1],translateX:[-20,0],duration:400,easing:'easeOutCubic'});if(feed.children.length>10)feed.removeChild(feed.lastChild);}for(let i=0;i<5;i++)setTimeout(()=>add(),i*500);setInterval(add,3500);}
+    function startActivityFeed(){const activities=[{icon:'shield-check',text:'Security scan: Zero threats detected',color:'emerald'},{icon:'lock',text:'CUI data classified and protected',color:'sky'},{icon:'file-text',text:'Audit log entry: Access request approved',color:'purple'},{icon:'alert-triangle',text:'Compliance check: NIST 800-53 verified',color:'amber'}];const feed=document.getElementById('activityFeed');function add(){const a=activities[Math.floor(Math.random()*activities.length)];const i=document.createElement('div');i.className='flex items-center gap-3 p-3 rounded-md border border-slate-800 bg-slate-900/50 opacity-0';i.innerHTML=`<i data-lucide="${a.icon}" class="w-4 h-4 text-${a.color}-400"></i><div class="flex-1"><div class="text-sm text-slate-200">${a.text}</div><div class="text-xs text-slate-500">${new Date().toLocaleTimeString()}</div></div>`;feed.insertBefore(i,feed.firstChild);lucide.createIcons();    // Initialize API integration    const dashboardAPI = new SectorDashboardAPI('government');    let liveDataLoaded = false;anime({targets:i,opacity:[0,1],translateX:[-20,0],duration:400,easing:'easeOutCubic'});if(feed.children.length>10)feed.removeChild(feed.lastChild);}for(let i=0;i<5;i++)setTimeout(()=>add(),i*500);setInterval(add,3500);}
     function exportReport(){const b=new Blob([JSON.stringify({timestamp:new Date().toISOString(),sector:'Government',metrics:data,compliance:{fedramp_high:true,fisma:true,nist_800_53:true}},null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`government-analytics-${Date.now()}.json`;a.click();URL.revokeObjectURL(u);}
   </script>
 </body>

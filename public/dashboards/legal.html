@@ -16,6 +16,9 @@
   <!-- AgentCache Viz Library -->
   <script src="/js/visualizations/agentcache-viz.js"></script>
   
+  <!-- Sector Dashboard API Integration -->
+  <script src="/js/sector-dashboard-api.js"></script>
+  
   <style>
     @keyframes shimmer {
       0% { background-position: -1000px 0; }
@@ -452,7 +455,7 @@
 
   <script>
     // Initialize Lucide icons
-    lucide.createIcons();
+    lucide.createIcons();    // Initialize API integration    const dashboardAPI = new SectorDashboardAPI('legal');    let liveDataLoaded = false;
 
     // Simulated legal data
     const legalData = {
@@ -535,7 +538,15 @@
     }
 
     // Initialize dashboard
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Try to load live data first
+      liveDataLoaded = await dashboardAPI.initialize();
+      
+      // If live data failed, fall back to simulated data
+      if (!liveDataLoaded) {
+        console.warn('[Legal] Live data unavailable, using simulated data');
+      }
+      
       initializeDashboard();
       startActivityFeed();
       
@@ -626,7 +637,7 @@
         `;
         
         feed.insertBefore(item, feed.firstChild);
-        lucide.createIcons();
+        lucide.createIcons();    // Initialize API integration    const dashboardAPI = new SectorDashboardAPI('legal');    let liveDataLoaded = false;
         
         // Animate entrance
         anime({
@@ -653,18 +664,31 @@
     }
 
     function refreshDashboard() {
-      console.log('[Legal Dashboard] Refreshing data...');
-      
       const btn = event.target.closest('button');
       btn.disabled = true;
+      
+      // Show refresh animation
       anime({
         targets: btn.querySelector('svg'),
         rotate: '1turn',
         duration: 800,
-        easing: 'easeInOutQuad',
-        complete: () => {
+        easing: 'easeInOutQuad'
+      });
+      
+      // If live data is available, refresh from API
+      if (liveDataLoaded && dashboardAPI) {
+        const timeRange = document.getElementById('timeRange').value;
+        dashboardAPI.refresh(timeRange).then(() => {
           btn.disabled = false;
-        }
+        });
+      } else {
+        // Otherwise use simulated data
+        console.log('[Legal Dashboard] Refreshing simulated data...');
+        setTimeout(() => {
+          btn.disabled = false;
+        }, 800);
+      }
+    }
       });
     }
 

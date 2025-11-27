@@ -16,6 +16,9 @@
   <!-- AgentCache Viz Library -->
   <script src="/js/visualizations/agentcache-viz.js"></script>
   
+  <!-- Sector Dashboard API Integration -->
+  <script src="/js/sector-dashboard-api.js"></script>
+  
   <style>
     /* Loading animation */
     @keyframes shimmer {
@@ -432,7 +435,11 @@
     // Initialize Lucide icons
     lucide.createIcons();
 
-    // Simulated healthcare data
+    // Initialize API integration
+    const dashboardAPI = new SectorDashboardAPI('healthcare');
+    let liveDataLoaded = false;
+
+    // Simulated healthcare data (fallback)
     const healthcareData = {
       phiProtectionRate: 100,
       clinicalValidation: 95.8,
@@ -492,8 +499,16 @@
     }
 
     // Initialize dashboard
-    document.addEventListener('DOMContentLoaded', () => {
-      initializeDashboard();
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Try to load live data first
+      liveDataLoaded = await dashboardAPI.initialize();
+      
+      // If live data failed, fall back to simulated data
+      if (!liveDataLoaded) {
+        console.warn('[Healthcare] Live data unavailable, using simulated data');
+        initializeDashboard();
+      }
+      
       startActivityFeed();
       
       // Animate metric cards entrance
@@ -602,26 +617,30 @@
     }
 
     function refreshDashboard() {
-      // Simulate data refresh
-      console.log('[Healthcare Dashboard] Refreshing data...');
-      
-      // In production, fetch from API
-      // fetch('/api/healthcare/metrics?timeRange=' + document.getElementById('timeRange').value)
-      //   .then(res => res.json())
-      //   .then(data => updateDashboard(data));
-      
-      // For now, show refresh animation
       const btn = event.target.closest('button');
       btn.disabled = true;
+      
+      // Show refresh animation
       anime({
         targets: btn.querySelector('svg'),
         rotate: '1turn',
         duration: 800,
-        easing: 'easeInOutQuad',
-        complete: () => {
-          btn.disabled = false;
-        }
+        easing: 'easeInOutQuad'
       });
+      
+      // If live data is available, refresh from API
+      if (liveDataLoaded && dashboardAPI) {
+        const timeRange = document.getElementById('timeRange').value;
+        dashboardAPI.refresh(timeRange).then(() => {
+          btn.disabled = false;
+        });
+      } else {
+        // Otherwise use simulated data
+        console.log('[Healthcare Dashboard] Refreshing simulated data...');
+        setTimeout(() => {
+          btn.disabled = false;
+        }, 800);
+      }
     }
 
     function exportReport() {
