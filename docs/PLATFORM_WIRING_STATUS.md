@@ -56,28 +56,25 @@ SELECT * FROM sector_dashboard_metrics;
 
 ## 🔄 **In Progress**
 
-### Phase 3: API Endpoints (50% Complete)
+### Phase 3: API Endpoints (70% Complete)
 
-#### ✅ Already Existing
-- `/api/dashboard.js` - Main dashboard endpoint (uses `@neondatabase/serverless`)
-- `/api/sector.js` - Sector-specific node metadata
-- `/api/cognitive-universe.js` - Full Cognitive Universe data
-- `/api/analytics.js` - Platform analytics
+#### ✅ Completed & Deployed
+- `/api/dashboard.js` - ✅ **UPDATED** - Now queries `pipeline_metrics` with 24h metrics
+- `/api/pipelines/list.js` - ✅ **CREATED** - Full pipeline list with metrics and pagination
+- `/api/pipelines/create.js` - ✅ **CREATED** - Pipeline creation with auto-complexity calculation
+- `/api/sector.js` - ✅ Sector-specific node metadata (existing)
+- `/api/cognitive-universe.js` - ✅ Full Cognitive Universe data (existing)
+- `/api/analytics.js` - ✅ Platform analytics (existing)
 
-#### ⏳ Needs Enhancement
-1. **`/api/dashboard.js`** - Update to query new tables
-   - **Current**: Uses `lib/db.js` and `lib/jwt.js` imports
-   - **Needed**: Connect to `pipeline_performance_24h` view and `pipeline_metrics`
-   - **Status**: File exists, needs update for new schema
+#### ⏳ Remaining Tasks
+1. **`/api/pipelines/update.js`** - Update pipeline config
+   - **Status**: Not created (15 min)
 
-2. **`/api/pipelines/*.js`** - CRUD operations  
-   - **Missing Files**:
-     - `/api/pipelines/list.js` - `GET` list user pipelines
-     - `/api/pipelines/create.js` - `POST` create pipeline
-     - `/api/pipelines/update.js` - `PUT` update pipeline
-     - `/api/pipelines/generate.js` - `POST` AI generation (rule-based)
-     - `/api/pipelines/delete.js` - `DELETE` soft delete
-   - **Status**: Not started
+2. **`/api/pipelines/generate.js`** - AI-powered pipeline generation
+   - **Status**: Not created (30 min)
+
+3. **`/api/pipelines/delete.js`** - Soft delete (set status='archived')
+   - **Status**: Not created (10 min)
 
 3. **`/api/dashboards/[sector].js`** - Dynamic sector endpoint
    - **Route**: `/api/dashboards/healthcare`, `/api/dashboards/finance`, etc.
@@ -243,9 +240,9 @@ User → /dashboards/healthcare.html
 - [x] No orphaned records
 
 ### API Layer
-- [ ] `/api/dashboard` returns real data
-- [ ] `/api/pipelines/list` works
-- [ ] `/api/pipelines/create` saves to DB
+- [x] `/api/dashboard` returns real data
+- [x] `/api/pipelines/list` works
+- [x] `/api/pipelines/create` saves to DB
 - [ ] `/api/pipelines/update` modifies records
 - [ ] `/api/dashboards/:sector` returns sector data
 - [ ] All endpoints < 200ms response time
@@ -278,13 +275,14 @@ User → /dashboards/healthcare.html
 ### Git Commits
 ```bash
 ✅ d683041 - feat: add workspace and pipeline database schema with comprehensive seed data
+✅ 6edc5b7 - docs: comprehensive platform wiring status and roadmap
+✅ 3e32e0f - feat: wire dashboard and pipelines APIs to live database
 
 ⏳ Next commits:
-- feat: update dashboard API to query new schema
-- feat: create pipeline CRUD endpoints
+- feat: create remaining pipeline endpoints (update, generate, delete)
 - feat: wire studio frontend to backend APIs
 - feat: add sector dashboard endpoints
-- docs: update platform wiring status
+- docs: update platform wiring status (final)
 ```
 
 ### Vercel Deployment
