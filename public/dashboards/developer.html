@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Developer Analytics Dashboard - Code intelligence and API performance">
+  <title>Developer Analytics - AgentCache</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://d3js.org/d3-sankey.v0.12.min.js"></script>
+  <script src="/js/visualizations/agentcache-viz.js"></script>
+  <style>.metric-card{transition:transform .2s ease,box-shadow .2s ease}.metric-card:hover{transform:translateY(-4px);box-shadow:0 12px 24px rgba(0,0,0,.3)}.status-glow{box-shadow:0 0 10px currentColor}::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:#0f172a}::-webkit-scrollbar-thumb{background:#334155;border-radius:4px}</style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="flex min-h-screen w-full">
+    <aside class="hidden lg:flex lg:flex-col lg:w-64 border-r border-slate-800/80 bg-slate-950/90">
+      <div class="flex items-center px-6 py-5 border-b border-slate-800/80">
+        <div class="h-7 w-7 rounded-md bg-sky-500/20 border border-sky-400/40 flex items-center justify-center mr-2"><span class="text-sm font-semibold text-sky-300">AC</span></div>
+        <div><div class="text-base font-semibold text-slate-50">AgentCache</div><div class="text-xs text-slate-500">Developer</div></div>
+      </div>
+      <nav class="flex-1 overflow-y-auto px-3 pt-4 space-y-2">
+        <a href="/dashboard.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm text-slate-400 hover:bg-slate-900/80"><i data-lucide="layout-dashboard" class="w-4 h-4"></i><span>Dashboard</span></a>
+        <a href="/dashboards/developer.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm font-medium bg-slate-900 text-slate-50"><i data-lucide="code" class="w-4 h-4 text-green-300"></i><span>Developer</span></a>
+      </nav>
+    </aside>
+    <div class="flex-1 flex flex-col">
+      <header class="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur px-6 py-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <i data-lucide="code" class="w-5 h-5 text-green-400"></i>
+            <h1 class="text-xl font-semibold">Developer Analytics</h1>
+            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-xs text-emerald-300"><span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>Live</span>
+          </div>
+          <button onclick="exportReport()" class="inline-flex items-center gap-1.5 rounded-md bg-sky-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-sky-500"><i data-lucide="download" class="w-4 h-4"></i>Export</button>
+        </div>
+      </header>
+      <main class="flex-1 overflow-y-auto p-6 space-y-6">
+        <section>
+          <h2 class="text-lg font-semibold mb-4">Mission Critical Metrics</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs uppercase tracking-wide text-slate-500">Code Accuracy</span><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i></div>
+              <div id="codeAccuracy" class="text-4xl font-bold">0%</div>
+              <div class="mt-2 text-xs text-emerald-400">Syntax validated</div>
+            </div>
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs uppercase tracking-wide text-slate-500">API Latency</span><i data-lucide="zap" class="w-4 h-4 text-sky-400"></i></div>
+              <div id="apiLatency" class="text-4xl font-bold">0ms</div>
+              <div class="mt-2 text-xs text-sky-400">P99: <span id="latencyP99">0ms</span></div>
+            </div>
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs uppercase tracking-wide text-slate-500">Dev Productivity</span><i data-lucide="trending-up" class="w-4 h-4 text-purple-400"></i></div>
+              <div id="devProductivity" class="text-4xl font-bold">0x</div>
+              <div class="mt-2 text-xs text-purple-400">Code completion boost</div>
+            </div>
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs uppercase tracking-wide text-slate-500">Bug Detection</span><i data-lucide="bug" class="w-4 h-4 text-amber-400"></i></div>
+              <div id="bugDetection" class="text-4xl font-bold">0</div>
+              <div class="mt-2 text-xs text-amber-400">Issues caught early</div>
+            </div>
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs uppercase tracking-wide text-slate-500">SDK Coverage</span><i data-lucide="package" class="w-4 h-4 text-rose-400"></i></div>
+              <div id="sdkCoverage" class="text-4xl font-bold">0</div>
+              <div class="mt-2 text-xs text-rose-400">Languages supported</div>
+            </div>
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs uppercase tracking-wide text-slate-500">Cost Per Query</span><i data-lucide="dollar-sign" class="w-4 h-4 text-green-400"></i></div>
+              <div id="costPerQuery" class="text-4xl font-bold">$0</div>
+              <div class="mt-2 text-xs text-emerald-400">↓ 84% vs direct LLM</div>
+            </div>
+          </div>
+        </section>
+        <section>
+          <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+            <h2 class="text-lg font-semibold mb-4">Code Intelligence Flow</h2>
+            <div id="codeFlow" class="w-full" style="min-height:400px"></div>
+          </div>
+        </section>
+        <section>
+          <h2 class="text-lg font-semibold mb-4">Language Distribution</h2>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+              <h3 class="text-base font-semibold mb-4">Cache Hit Rate by Language</h3>
+              <div class="space-y-3">
+                <div><div class="flex items-center justify-between text-sm mb-1"><span class="text-slate-300">Python</span><span class="font-semibold text-emerald-400">97%</span></div><div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-emerald-500 rounded-full" style="width:97%"></div></div></div>
+                <div><div class="flex items-center justify-between text-sm mb-1"><span class="text-slate-300">JavaScript</span><span class="font-semibold text-sky-400">95%</span></div><div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-sky-500 rounded-full" style="width:95%"></div></div></div>
+                <div><div class="flex items-center justify-between text-sm mb-1"><span class="text-slate-300">TypeScript</span><span class="font-semibold text-purple-400">94%</span></div><div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-purple-500 rounded-full" style="width:94%"></div></div></div>
+                <div><div class="flex items-center justify-between text-sm mb-1"><span class="text-slate-300">Go</span><span class="font-semibold text-amber-400">92%</span></div><div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-amber-500 rounded-full" style="width:92%"></div></div></div>
+              </div>
+            </div>
+            <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+              <h3 class="text-base font-semibold mb-4">Query Volume Trend</h3>
+              <div id="queryChart" class="w-full" style="height:240px"></div>
+            </div>
+          </div>
+        </section>
+        <section>
+          <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+            <h2 class="text-lg font-semibold mb-4">Live Code Activity</h2>
+            <div id="activityFeed" class="space-y-2 max-h-96 overflow-y-auto"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script>
+    lucide.createIcons();
+    const data={codeAccuracy:98.7,apiLatency:28,latencyP99:45,devProductivity:3.2,bugDetection:847,sdkCoverage:12,costPerQuery:0.0021,codeFlow:{nodes:[{id:'ide',label:'IDE'},{id:'cache',label:'AgentCache'},{id:'github',label:'GitHub Copilot'},{id:'llm',label:'LLM Engine'},{id:'output',label:'Code Output'}],links:[{source:'ide',target:'cache',value:850},{source:'cache',target:'github',value:420},{source:'github',target:'llm',value:380},{source:'llm',target:'output',value:820}]},queryData:Array.from({length:7},(_,i)=>({time:new Date(Date.now()-(6-i)*86400000),value:8000+Math.random()*4000}))};
+    document.addEventListener('DOMContentLoaded',()=>{
+      AgentCacheViz.animateCountUp('codeAccuracy',data.codeAccuracy,2000,'%');
+      AgentCacheViz.animateCountUp('devProductivity',data.devProductivity,2000,'x');
+      AgentCacheViz.animateCountUp('bugDetection',data.bugDetection,1500);
+      AgentCacheViz.animateCountUp('sdkCoverage',data.sdkCoverage,1500);
+      AgentCacheViz.animateCountUp('latencyP99',data.latencyP99,1500);
+      setTimeout(()=>{document.getElementById('apiLatency').textContent=data.apiLatency+'ms';document.getElementById('costPerQuery').textContent='$'+data.costPerQuery.toFixed(4);},1500);
+      setTimeout(()=>AgentCacheViz.createSankeyDiagram('codeFlow',data.codeFlow.nodes,data.codeFlow.links,{height:400}),500);
+      setTimeout(()=>AgentCacheViz.createTimeSeriesChart('queryChart',data.queryData,{height:240}),800);
+      AgentCacheViz.animateCardsEntrance('.metric-card');
+      startActivityFeed();
+    });
+    function startActivityFeed(){const activities=[{icon:'code',text:'Code completion: React component',color:'emerald'},{icon:'git-branch',text:'Repository analysis: 2.3K files indexed',color:'sky'},{icon:'bug',text:'Bug detected: Null pointer exception',color:'purple'},{icon:'file-code',text:'Documentation generated: API reference',color:'amber'}];const feed=document.getElementById('activityFeed');function add(){const a=activities[Math.floor(Math.random()*activities.length)];const i=document.createElement('div');i.className='flex items-center gap-3 p-3 rounded-md border border-slate-800 bg-slate-900/50 opacity-0';i.innerHTML=`<i data-lucide="${a.icon}" class="w-4 h-4 text-${a.color}-400"></i><div class="flex-1"><div class="text-sm text-slate-200">${a.text}</div><div class="text-xs text-slate-500">${new Date().toLocaleTimeString()}</div></div>`;feed.insertBefore(i,feed.firstChild);lucide.createIcons();anime({targets:i,opacity:[0,1],translateX:[-20,0],duration:400,easing:'easeOutCubic'});if(feed.children.length>10)feed.removeChild(feed.lastChild);}for(let i=0;i<5;i++)setTimeout(()=>add(),i*500);setInterval(add,2500);}
+    function exportReport(){const b=new Blob([JSON.stringify({timestamp:new Date().toISOString(),sector:'Developer',metrics:data},null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`developer-analytics-${Date.now()}.json`;a.click();URL.revokeObjectURL(u);}
+  </script>
+</body>
+</html>

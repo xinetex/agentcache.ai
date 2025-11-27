@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Healthcare Analytics Dashboard - HIPAA-compliant cache intelligence for clinical operations">
+  <title>Healthcare Analytics - AgentCache</title>
+  
+  <!-- CDN Resources -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://d3js.org/d3-sankey.v0.12.min.js"></script>
+  
+  <!-- AgentCache Viz Library -->
+  <script src="/js/visualizations/agentcache-viz.js"></script>
+  
+  <style>
+    /* Loading animation */
+    @keyframes shimmer {
+      0% { background-position: -1000px 0; }
+      100% { background-position: 1000px 0; }
+    }
+    
+    .skeleton {
+      animation: shimmer 2s infinite linear;
+      background: linear-gradient(to right, #1e293b 4%, #334155 25%, #1e293b 36%);
+      background-size: 1000px 100%;
+    }
+    
+    /* Metric card hover effect */
+    .metric-card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .metric-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Alert pulse */
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 1; }
+      50% { transform: scale(1); opacity: 0.7; }
+      100% { transform: scale(0.95); opacity: 1; }
+    }
+    
+    .alert-pulse {
+      animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+    }
+    
+    /* Status indicator glow */
+    .status-glow {
+      box-shadow: 0 0 10px currentColor;
+    }
+    
+    /* Smooth scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-slate-950 text-slate-100 antialiased">
+  <div class="flex min-h-screen w-full">
+    
+    <!-- Sidebar -->
+    <aside class="hidden lg:flex lg:flex-col lg:w-64 border-r border-slate-800/80 bg-slate-950/90 backdrop-blur">
+      <div class="flex items-center justify-between px-6 py-5 border-b border-slate-800/80">
+        <div class="flex items-center gap-2">
+          <div class="h-7 w-7 rounded-md bg-sky-500/20 border border-sky-400/40 flex items-center justify-center">
+            <span class="text-sm font-semibold tracking-tight text-sky-300">AC</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-base font-semibold text-slate-50 tracking-tight">AgentCache</span>
+            <span class="text-xs font-medium text-slate-500 tracking-tight">Healthcare Analytics</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="flex-1 overflow-y-auto">
+        <div class="px-3 pt-4 pb-6 space-y-2 text-sm">
+          <div class="px-3 text-[0.7rem] font-medium uppercase tracking-[0.16em] text-slate-500">Navigation</div>
+          
+          <a href="/dashboard.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm text-slate-400 hover:bg-slate-900/80 hover:text-slate-100">
+            <i data-lucide="layout-dashboard" class="w-4 h-4 stroke-[1.5]"></i>
+            <span>Main Dashboard</span>
+          </a>
+          
+          <a href="/dashboards/healthcare.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm font-medium bg-slate-900 text-slate-50">
+            <i data-lucide="heart-pulse" class="w-4 h-4 stroke-[1.5] text-emerald-300"></i>
+            <span>Healthcare</span>
+          </a>
+          
+          <a href="/dashboards/finance.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm text-slate-400 hover:bg-slate-900/80 hover:text-slate-100">
+            <i data-lucide="trending-up" class="w-4 h-4 stroke-[1.5]"></i>
+            <span>Finance</span>
+          </a>
+          
+          <a href="/dashboards/legal.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm text-slate-400 hover:bg-slate-900/80 hover:text-slate-100">
+            <i data-lucide="scale" class="w-4 h-4 stroke-[1.5]"></i>
+            <span>Legal</span>
+          </a>
+        </div>
+
+        <div class="px-3 pt-2 pb-6 space-y-2 text-sm">
+          <div class="px-3 text-[0.7rem] font-medium uppercase tracking-[0.16em] text-slate-500">Compliance</div>
+          
+          <div class="px-3 py-2 rounded-md bg-emerald-500/10 border border-emerald-500/30">
+            <div class="flex items-center gap-2 mb-1">
+              <div class="h-2 w-2 rounded-full bg-emerald-400 status-glow"></div>
+              <span class="text-xs font-semibold text-emerald-300">HIPAA Compliant</span>
+            </div>
+            <p class="text-xs text-slate-400">All 18 identifiers protected</p>
+          </div>
+          
+          <div class="px-3 py-2 rounded-md bg-sky-500/10 border border-sky-500/30">
+            <div class="flex items-center gap-2 mb-1">
+              <div class="h-2 w-2 rounded-full bg-sky-400 status-glow"></div>
+              <span class="text-xs font-semibold text-sky-300">FDA 21 CFR Part 11</span>
+            </div>
+            <p class="text-xs text-slate-400">Electronic signatures valid</p>
+          </div>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      
+      <!-- Header -->
+      <header class="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur">
+        <div class="flex items-center justify-between px-6 py-3">
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
+              <i data-lucide="heart-pulse" class="w-5 h-5 text-emerald-400"></i>
+              <h1 class="text-xl font-semibold tracking-tight text-slate-50">Healthcare Analytics</h1>
+            </div>
+            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-xs font-medium text-emerald-300">
+              <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+              Live
+            </span>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <select id="timeRange" class="rounded-md border border-slate-800 bg-slate-900/80 px-3 py-1.5 text-sm text-slate-100 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500/50">
+              <option value="1h">Last Hour</option>
+              <option value="24h" selected>Last 24 Hours</option>
+              <option value="7d">Last 7 Days</option>
+              <option value="30d">Last 30 Days</option>
+            </select>
+            
+            <button onclick="refreshDashboard()" class="inline-flex items-center gap-1.5 rounded-md border border-slate-800 bg-slate-900/80 hover:bg-slate-900 px-3 py-1.5 text-sm font-medium text-slate-100">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              Refresh
+            </button>
+            
+            <button onclick="exportReport()" class="inline-flex items-center gap-1.5 rounded-md bg-sky-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-sky-500">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              Export
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <main class="flex-1 overflow-y-auto p-6 space-y-6">
+        
+        <!-- Critical Alerts (if any) -->
+        <div id="alertsContainer" class="hidden">
+          <!-- Alerts will be dynamically added here -->
+        </div>
+
+        <!-- Tier 1 Metrics - Mission Critical -->
+        <section>
+          <h2 class="text-lg font-semibold text-slate-50 mb-4">Mission Critical Metrics</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            
+            <!-- PHI Protection Rate -->
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs uppercase tracking-wide text-slate-500">PHI Protection Rate</span>
+                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+              </div>
+              <div id="phiProtectionRate" class="text-4xl font-bold text-slate-50">0%</div>
+              <div class="mt-2 flex items-center gap-2">
+                <span class="text-xs text-emerald-400">Target: 100%</span>
+                <div class="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div class="h-full bg-emerald-500 rounded-full" style="width: 100%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Clinical Validation Score -->
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs uppercase tracking-wide text-slate-500">Clinical Validation</span>
+                <i data-lucide="clipboard-check" class="w-4 h-4 text-sky-400"></i>
+              </div>
+              <div id="clinicalValidation" class="text-4xl font-bold text-slate-50">0%</div>
+              <div class="mt-2 flex items-center gap-2">
+                <span class="text-xs text-sky-400">PubMed/FDA/CDC verified</span>
+                <div class="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div class="h-full bg-sky-500 rounded-full" style="width: 95%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- System Uptime -->
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs uppercase tracking-wide text-slate-500">System Uptime</span>
+                <i data-lucide="activity" class="w-4 h-4 text-purple-400"></i>
+              </div>
+              <div id="systemUptime" class="text-4xl font-bold text-slate-50">0%</div>
+              <div class="mt-2 flex items-center gap-2">
+                <span class="text-xs text-purple-400">99.9% SLA</span>
+                <span class="text-xs text-slate-500">• 43 days, 18 hrs</span>
+              </div>
+            </div>
+
+            <!-- EHR Integration Health -->
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs uppercase tracking-wide text-slate-500">EHR Integrations</span>
+                <i data-lucide="network" class="w-4 h-4 text-amber-400"></i>
+              </div>
+              <div id="ehrIntegrations" class="text-4xl font-bold text-slate-50">0/0</div>
+              <div class="mt-2 flex items-center gap-1.5">
+                <span class="inline-flex items-center gap-1 text-xs text-emerald-400">
+                  <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                  Epic
+                </span>
+                <span class="inline-flex items-center gap-1 text-xs text-emerald-400">
+                  <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                  Cerner
+                </span>
+                <span class="inline-flex items-center gap-1 text-xs text-emerald-400">
+                  <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                  FHIR
+                </span>
+              </div>
+            </div>
+
+            <!-- HIPAA Audit Trail -->
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs uppercase tracking-wide text-slate-500">HIPAA Audit Logs</span>
+                <i data-lucide="file-text" class="w-4 h-4 text-rose-400"></i>
+              </div>
+              <div id="hipaaLogs" class="text-4xl font-bold text-slate-50">0</div>
+              <div class="mt-2 flex items-center gap-2">
+                <span class="text-xs text-emerald-400">100% complete • Immutable</span>
+              </div>
+            </div>
+
+            <!-- Cost Per Query -->
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs uppercase tracking-wide text-slate-500">Cost Per Query</span>
+                <i data-lucide="dollar-sign" class="w-4 h-4 text-green-400"></i>
+              </div>
+              <div id="costPerQuery" class="text-4xl font-bold text-slate-50">$0.00</div>
+              <div class="mt-2 flex items-center gap-2">
+                <span class="text-xs text-emerald-400">↓ 73% vs direct LLM</span>
+                <span class="text-xs text-slate-500">• $4.2K saved</span>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- EHR Integration Network Graph -->
+        <section>
+          <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-semibold text-slate-50">EHR Integration Network</h2>
+              <span class="text-xs text-slate-500">Real-time connection status</span>
+            </div>
+            <div id="ehrNetworkGraph" class="w-full" style="min-height: 400px;"></div>
+          </div>
+        </section>
+
+        <!-- Operational KPIs -->
+        <section>
+          <h2 class="text-lg font-semibold text-slate-50 mb-4">Operational Performance</h2>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Cache Hit Rate by Department -->
+            <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+              <h3 class="text-base font-semibold text-slate-100 mb-4">Cache Hit Rate by Department</h3>
+              <div class="space-y-3">
+                <div>
+                  <div class="flex items-center justify-between text-sm mb-1">
+                    <span class="text-slate-300">Emergency Dept</span>
+                    <span class="font-semibold text-emerald-400">92%</span>
+                  </div>
+                  <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-emerald-500 rounded-full" style="width: 92%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between text-sm mb-1">
+                    <span class="text-slate-300">ICU</span>
+                    <span class="font-semibold text-sky-400">87%</span>
+                  </div>
+                  <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-sky-500 rounded-full" style="width: 87%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between text-sm mb-1">
+                    <span class="text-slate-300">Outpatient</span>
+                    <span class="font-semibold text-purple-400">94%</span>
+                  </div>
+                  <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-purple-500 rounded-full" style="width: 94%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between text-sm mb-1">
+                    <span class="text-slate-300">Surgery</span>
+                    <span class="font-semibold text-amber-400">85%</span>
+                  </div>
+                  <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-amber-500 rounded-full" style="width: 85%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Response Latency Distribution -->
+            <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+              <h3 class="text-base font-semibold text-slate-100 mb-4">Response Latency (ms)</h3>
+              <div id="latencyChart" class="w-full" style="height: 200px;"></div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Patient Safety & Drug Interactions -->
+        <section>
+          <h2 class="text-lg font-semibold text-slate-50 mb-4">Patient Safety Intelligence</h2>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            
+            <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="h-10 w-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                  <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-slate-50" id="safetyEvents">0</div>
+                  <div class="text-xs text-slate-500">Near-Miss Detections</div>
+                </div>
+              </div>
+              <div class="text-xs text-amber-400">Contradictory advice flagged</div>
+            </div>
+
+            <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="h-10 w-10 rounded-lg bg-rose-500/20 flex items-center justify-center">
+                  <i data-lucide="pill" class="w-5 h-5 text-rose-400"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-slate-50" id="drugInteractions">0</div>
+                  <div class="text-xs text-slate-500">Drug Interaction Alerts</div>
+                </div>
+              </div>
+              <div class="text-xs text-rose-400">Adverse events prevented</div>
+            </div>
+
+            <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="h-10 w-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                  <i data-lucide="users" class="w-5 h-5 text-emerald-400"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-slate-50" id="providerAdoption">0%</div>
+                  <div class="text-xs text-slate-500">Provider Adoption</div>
+                </div>
+              </div>
+              <div class="text-xs text-emerald-400">Clinicians actively using</div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- HIPAA Compliance Matrix -->
+        <section>
+          <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-semibold text-slate-50">HIPAA Identifier Protection Status</h2>
+              <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-xs font-medium text-emerald-300">
+                <i data-lucide="check-circle" class="w-3 h-3"></i>
+                18/18 Protected
+              </span>
+            </div>
+            <div id="hipaaHeatmap" class="w-full" style="min-height: 300px;"></div>
+          </div>
+        </section>
+
+        <!-- Live Activity Feed -->
+        <section>
+          <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+            <h2 class="text-lg font-semibold text-slate-50 mb-4">Live Activity Feed</h2>
+            <div id="activityFeed" class="space-y-2 max-h-96 overflow-y-auto">
+              <!-- Activity items will be added here -->
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Simulated healthcare data
+    const healthcareData = {
+      phiProtectionRate: 100,
+      clinicalValidation: 95.8,
+      systemUptime: 99.94,
+      ehrIntegrations: { active: 3, total: 3 },
+      hipaaLogs: 47582,
+      costPerQuery: 0.0087,
+      safetyEvents: 23,
+      drugInteractions: 156,
+      providerAdoption: 87.3,
+      
+      ehrNetwork: {
+        nodes: [
+          { id: 'cache', label: 'AgentCache', group: 0, value: 100 },
+          { id: 'epic', label: 'Epic EMR', group: 1, value: 80 },
+          { id: 'cerner', label: 'Cerner', group: 1, value: 75 },
+          { id: 'fhir', label: 'FHIR API', group: 1, value: 70 },
+          { id: 'phi_filter', label: 'PHI Filter', group: 2, value: 90 },
+          { id: 'validator', label: 'Clinical Validator', group: 3, value: 85 },
+          { id: 'llm', label: 'LLM Engine', group: 4, value: 95 }
+        ],
+        links: [
+          { source: 'epic', target: 'cache', value: 5 },
+          { source: 'cerner', target: 'cache', value: 4 },
+          { source: 'fhir', target: 'cache', value: 3 },
+          { source: 'cache', target: 'phi_filter', value: 8 },
+          { source: 'phi_filter', target: 'validator', value: 7 },
+          { source: 'validator', target: 'llm', value: 6 }
+        ]
+      },
+      
+      latencyData: generateTimeSeriesData(24),
+      
+      hipaaIdentifiers: [
+        { x: 'Name', y: 'Protected', value: 100 },
+        { x: 'Address', y: 'Protected', value: 100 },
+        { x: 'DOB', y: 'Protected', value: 100 },
+        { x: 'SSN', y: 'Protected', value: 100 },
+        { x: 'MRN', y: 'Protected', value: 100 },
+        { x: 'Email', y: 'Protected', value: 100 },
+        { x: 'Phone', y: 'Protected', value: 100 },
+        { x: 'IP Address', y: 'Protected', value: 100 },
+        { x: 'Device ID', y: 'Protected', value: 100 }
+      ]
+    };
+
+    function generateTimeSeriesData(hours) {
+      const data = [];
+      const now = new Date();
+      for (let i = hours; i >= 0; i--) {
+        data.push({
+          time: new Date(now - i * 3600000),
+          value: 30 + Math.random() * 40
+        });
+      }
+      return data;
+    }
+
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeDashboard();
+      startActivityFeed();
+      
+      // Animate metric cards entrance
+      AgentCacheViz.animateCardsEntrance('.metric-card');
+    });
+
+    function initializeDashboard() {
+      // Animate count-up metrics
+      AgentCacheViz.animateCountUp('phiProtectionRate', healthcareData.phiProtectionRate, 2000, '%');
+      AgentCacheViz.animateCountUp('clinicalValidation', healthcareData.clinicalValidation, 2000, '%');
+      AgentCacheViz.animateCountUp('systemUptime', healthcareData.systemUptime, 2000, '%');
+      AgentCacheViz.animateCountUp('safetyEvents', healthcareData.safetyEvents, 1500);
+      AgentCacheViz.animateCountUp('drugInteractions', healthcareData.drugInteractions, 1500);
+      AgentCacheViz.animateCountUp('providerAdoption', healthcareData.providerAdoption, 2000, '%');
+      AgentCacheViz.animateCountUp('hipaaLogs', healthcareData.hipaaLogs, 2500);
+      
+      // EHR integrations
+      document.getElementById('ehrIntegrations').textContent = 
+        `${healthcareData.ehrIntegrations.active}/${healthcareData.ehrIntegrations.total}`;
+      
+      // Cost per query
+      setTimeout(() => {
+        document.getElementById('costPerQuery').textContent = 
+          '$' + healthcareData.costPerQuery.toFixed(4);
+      }, 1500);
+      
+      // Create EHR network graph
+      setTimeout(() => {
+        AgentCacheViz.createNetworkGraph(
+          'ehrNetworkGraph',
+          healthcareData.ehrNetwork.nodes,
+          healthcareData.ehrNetwork.links,
+          { height: 400 }
+        );
+      }, 500);
+      
+      // Create latency chart
+      setTimeout(() => {
+        AgentCacheViz.createTimeSeriesChart(
+          'latencyChart',
+          healthcareData.latencyData,
+          { height: 200 }
+        );
+      }, 800);
+      
+      // Create HIPAA heatmap
+      setTimeout(() => {
+        AgentCacheViz.createHeatmap(
+          'hipaaHeatmap',
+          healthcareData.hipaaIdentifiers,
+          { height: 300 }
+        );
+      }, 1200);
+    }
+
+    // Live activity feed
+    const activities = [
+      { icon: 'check-circle', text: 'Cache hit: ED triage query', color: 'emerald', time: 'now' },
+      { icon: 'shield', text: 'PHI filtered: patient demographics', color: 'sky', time: '2s ago' },
+      { icon: 'clipboard-check', text: 'Clinical validation: diagnosis confirmed', color: 'purple', time: '5s ago' },
+      { icon: 'alert-triangle', text: 'Drug interaction detected and flagged', color: 'amber', time: '12s ago' },
+      { icon: 'network', text: 'Epic EMR sync completed', color: 'emerald', time: '18s ago' },
+      { icon: 'file-text', text: 'HIPAA audit log entry created', color: 'slate', time: '25s ago' }
+    ];
+
+    function startActivityFeed() {
+      const feed = document.getElementById('activityFeed');
+      
+      function addActivity() {
+        const activity = activities[Math.floor(Math.random() * activities.length)];
+        const item = document.createElement('div');
+        item.className = 'flex items-center gap-3 p-3 rounded-md border border-slate-800 bg-slate-900/50 opacity-0';
+        item.innerHTML = `
+          <i data-lucide="${activity.icon}" class="w-4 h-4 text-${activity.color}-400 flex-shrink-0"></i>
+          <div class="flex-1">
+            <div class="text-sm text-slate-200">${activity.text}</div>
+            <div class="text-xs text-slate-500">${new Date().toLocaleTimeString()}</div>
+          </div>
+        `;
+        
+        feed.insertBefore(item, feed.firstChild);
+        lucide.createIcons();
+        
+        // Animate entrance
+        anime({
+          targets: item,
+          opacity: [0, 1],
+          translateX: [-20, 0],
+          duration: 400,
+          easing: 'easeOutCubic'
+        });
+        
+        // Keep only last 10 items
+        if (feed.children.length > 10) {
+          feed.removeChild(feed.lastChild);
+        }
+      }
+      
+      // Initial activities
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => addActivity(), i * 500);
+      }
+      
+      // Add new activity every 3 seconds
+      setInterval(addActivity, 3000);
+    }
+
+    function refreshDashboard() {
+      // Simulate data refresh
+      console.log('[Healthcare Dashboard] Refreshing data...');
+      
+      // In production, fetch from API
+      // fetch('/api/healthcare/metrics?timeRange=' + document.getElementById('timeRange').value)
+      //   .then(res => res.json())
+      //   .then(data => updateDashboard(data));
+      
+      // For now, show refresh animation
+      const btn = event.target.closest('button');
+      btn.disabled = true;
+      anime({
+        targets: btn.querySelector('svg'),
+        rotate: '1turn',
+        duration: 800,
+        easing: 'easeInOutQuad',
+        complete: () => {
+          btn.disabled = false;
+        }
+      });
+    }
+
+    function exportReport() {
+      const report = {
+        timestamp: new Date().toISOString(),
+        sector: 'Healthcare',
+        metrics: healthcareData,
+        compliance: {
+          hipaa: true,
+          fda_21_cfr_11: true,
+          hitech: true
+        }
+      };
+      
+      const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `healthcare-analytics-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>

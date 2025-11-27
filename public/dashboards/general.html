@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="General Analytics Dashboard - Universal cache intelligence across all sectors">
+  <title>General Analytics - AgentCache</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://d3js.org/d3-sankey.v0.12.min.js"></script>
+  <script src="/js/visualizations/agentcache-viz.js"></script>
+  <style>.metric-card{transition:transform .2s ease,box-shadow .2s ease}.metric-card:hover{transform:translateY(-4px);box-shadow:0 12px 24px rgba(0,0,0,.3)}.status-glow{box-shadow:0 0 10px currentColor}::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:#0f172a}::-webkit-scrollbar-thumb{background:#334155;border-radius:4px}</style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="flex min-h-screen w-full">
+    <aside class="hidden lg:flex lg:flex-col lg:w-64 border-r border-slate-800/80 bg-slate-950/90">
+      <div class="flex items-center px-6 py-5 border-b border-slate-800/80">
+        <div class="h-7 w-7 rounded-md bg-sky-500/20 border border-sky-400/40 flex items-center justify-center mr-2"><span class="text-sm font-semibold text-sky-300">AC</span></div>
+        <div><div class="text-base font-semibold text-slate-50">AgentCache</div><div class="text-xs text-slate-500">General</div></div>
+      </div>
+      <nav class="flex-1 overflow-y-auto px-3 pt-4 space-y-2">
+        <a href="/dashboard.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm text-slate-400 hover:bg-slate-900/80"><i data-lucide="layout-dashboard" class="w-4 h-4"></i><span>Dashboard</span></a>
+        <a href="/dashboards/general.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm font-medium bg-slate-900 text-slate-50"><i data-lucide="globe" class="w-4 h-4 text-slate-300"></i><span>General</span></a>
+      </nav>
+    </aside>
+    <div class="flex-1 flex flex-col">
+      <header class="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur px-6 py-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <i data-lucide="globe" class="w-5 h-5 text-slate-400"></i>
+            <h1 class="text-xl font-semibold">General Analytics</h1>
+            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-xs text-emerald-300"><span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>Live</span>
+          </div>
+          <button onclick="exportReport()" class="inline-flex items-center gap-1.5 rounded-md bg-sky-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-sky-500"><i data-lucide="download" class="w-4 h-4"></i>Export</button>
+        </div>
+      </header>
+      <main class="flex-1 overflow-y-auto p-6 space-y-6">
+        <section>
+          <h2 class="text-lg font-semibold mb-4">Universal Metrics</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs uppercase tracking-wide text-slate-500">Query Accuracy</span><i data-lucide="target" class="w-4 h-4 text-emerald-400"></i></div>
+              <div id="queryAccuracy" class="text-4xl font-bold">0%</div>
+              <div class="mt-2 text-xs text-emerald-400">Cross-domain validation</div>
+            </div>
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs uppercase tracking-wide text-slate-500">Cache Hit Rate</span><i data-lucide="zap" class="w-4 h-4 text-sky-400"></i></div>
+              <div id="cacheHitRate" class="text-4xl font-bold">0%</div>
+              <div class="mt-2 text-xs text-sky-400">Global average</div>
+            </div>
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs uppercase tracking-wide text-slate-500">Response Time</span><i data-lucide="clock" class="w-4 h-4 text-purple-400"></i></div>
+              <div id="responseTime" class="text-4xl font-bold">0ms</div>
+              <div class="mt-2 text-xs text-purple-400">Median latency</div>
+            </div>
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs uppercase tracking-wide text-slate-500">Total Queries</span><i data-lucide="activity" class="w-4 h-4 text-amber-400"></i></div>
+              <div id="totalQueries" class="text-4xl font-bold">0</div>
+              <div class="mt-2 text-xs text-amber-400">Last 24 hours</div>
+            </div>
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs uppercase tracking-wide text-slate-500">User Satisfaction</span><i data-lucide="smile" class="w-4 h-4 text-rose-400"></i></div>
+              <div id="userSat" class="text-4xl font-bold">0%</div>
+              <div class="mt-2 text-xs text-rose-400">CSAT score</div>
+            </div>
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs uppercase tracking-wide text-slate-500">Cost Efficiency</span><i data-lucide="dollar-sign" class="w-4 h-4 text-green-400"></i></div>
+              <div id="costEfficiency" class="text-4xl font-bold">0%</div>
+              <div class="mt-2 text-xs text-emerald-400">Average savings</div>
+            </div>
+          </div>
+        </section>
+        <section>
+          <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+            <h2 class="text-lg font-semibold mb-4">Cross-Sector Query Flow</h2>
+            <div id="queryFlow" class="w-full" style="min-height:400px"></div>
+          </div>
+        </section>
+        <section>
+          <h2 class="text-lg font-semibold mb-4">Usage Insights</h2>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+              <h3 class="text-base font-semibold mb-4">Top Query Categories</h3>
+              <div class="space-y-3">
+                <div><div class="flex items-center justify-between text-sm mb-1"><span class="text-slate-300">Information Retrieval</span><span class="font-semibold text-emerald-400">34%</span></div><div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-emerald-500 rounded-full" style="width:34%"></div></div></div>
+                <div><div class="flex items-center justify-between text-sm mb-1"><span class="text-slate-300">Problem Solving</span><span class="font-semibold text-sky-400">27%</span></div><div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-sky-500 rounded-full" style="width:27%"></div></div></div>
+                <div><div class="flex items-center justify-between text-sm mb-1"><span class="text-slate-300">Content Generation</span><span class="font-semibold text-purple-400">21%</span></div><div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-purple-500 rounded-full" style="width:21%"></div></div></div>
+                <div><div class="flex items-center justify-between text-sm mb-1"><span class="text-slate-300">Analysis & Insights</span><span class="font-semibold text-amber-400">18%</span></div><div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-amber-500 rounded-full" style="width:18%"></div></div></div>
+              </div>
+            </div>
+            <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+              <h3 class="text-base font-semibold mb-4">Query Volume Trend</h3>
+              <div id="volumeChart" class="w-full" style="height:240px"></div>
+            </div>
+          </div>
+        </section>
+        <section>
+          <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+            <h2 class="text-lg font-semibold mb-4">Live Universal Activity</h2>
+            <div id="activityFeed" class="space-y-2 max-h-96 overflow-y-auto"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script>
+    lucide.createIcons();
+    const data={queryAccuracy:96.3,cacheHitRate:92.7,responseTime:48,totalQueries:847293,userSat:93.8,costEfficiency:79.4,queryFlow:{nodes:[{id:'user',label:'User Queries'},{id:'cache',label:'AgentCache'},{id:'llm',label:'LLM Fallback'},{id:'response',label:'Response'}],links:[{source:'user',target:'cache',value:1000},{source:'cache',target:'response',value:920},{source:'cache',target:'llm',value:80},{source:'llm',target:'response',value:80}]},volumeData:Array.from({length:7},(_,i)=>({time:new Date(Date.now()-(6-i)*86400000),value:750000+Math.random()*150000}))};
+    document.addEventListener('DOMContentLoaded',()=>{
+      AgentCacheViz.animateCountUp('queryAccuracy',data.queryAccuracy,2000,'%');
+      AgentCacheViz.animateCountUp('cacheHitRate',data.cacheHitRate,2000,'%');
+      AgentCacheViz.animateCountUp('totalQueries',data.totalQueries,2500);
+      AgentCacheViz.animateCountUp('userSat',data.userSat,2000,'%');
+      AgentCacheViz.animateCountUp('costEfficiency',data.costEfficiency,2000,'%');
+      setTimeout(()=>{document.getElementById('responseTime').textContent=data.responseTime+'ms';},1500);
+      setTimeout(()=>AgentCacheViz.createSankeyDiagram('queryFlow',data.queryFlow.nodes,data.queryFlow.links,{height:400}),500);
+      setTimeout(()=>AgentCacheViz.createTimeSeriesChart('volumeChart',data.volumeData,{height:240}),800);
+      AgentCacheViz.animateCardsEntrance('.metric-card');
+      startActivityFeed();
+    });
+    function startActivityFeed(){const activities=[{icon:'message-circle',text:'Query answered: General knowledge question',color:'emerald'},{icon:'search',text:'Information lookup: Historical data retrieval',color:'sky'},{icon:'lightbulb',text:'Recommendation generated: Personalized suggestion',color:'purple'},{icon:'check-circle',text:'Quality check passed: Response validated',color:'amber'}];const feed=document.getElementById('activityFeed');function add(){const a=activities[Math.floor(Math.random()*activities.length)];const i=document.createElement('div');i.className='flex items-center gap-3 p-3 rounded-md border border-slate-800 bg-slate-900/50 opacity-0';i.innerHTML=`<i data-lucide="${a.icon}" class="w-4 h-4 text-${a.color}-400"></i><div class="flex-1"><div class="text-sm text-slate-200">${a.text}</div><div class="text-xs text-slate-500">${new Date().toLocaleTimeString()}</div></div>`;feed.insertBefore(i,feed.firstChild);lucide.createIcons();anime({targets:i,opacity:[0,1],translateX:[-20,0],duration:400,easing:'easeOutCubic'});if(feed.children.length>10)feed.removeChild(feed.lastChild);}for(let i=0;i<5;i++)setTimeout(()=>add(),i*500);setInterval(add,2800);}
+    function exportReport(){const b=new Blob([JSON.stringify({timestamp:new Date().toISOString(),sector:'General',metrics:data},null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`general-analytics-${Date.now()}.json`;a.click();URL.revokeObjectURL(u);}
+  </script>
+</body>
+</html>

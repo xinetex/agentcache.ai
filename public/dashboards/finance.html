@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Finance Analytics Dashboard - Real-time trading intelligence with PCI-DSS compliance">
+  <title>Finance Analytics - AgentCache</title>
+  
+  <!-- CDN Resources -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://d3js.org/d3-sankey.v0.12.min.js"></script>
+  
+  <!-- AgentCache Viz Library -->
+  <script src="/js/visualizations/agentcache-viz.js"></script>
+  
+  <style>
+    @keyframes shimmer {
+      0% { background-position: -1000px 0; }
+      100% { background-position: 1000px 0; }
+    }
+    
+    .skeleton {
+      animation: shimmer 2s infinite linear;
+      background: linear-gradient(to right, #1e293b 4%, #334155 25%, #1e293b 36%);
+      background-size: 1000px 100%;
+    }
+    
+    .metric-card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .metric-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+    }
+    
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 1; }
+      50% { transform: scale(1); opacity: 0.7; }
+      100% { transform: scale(0.95); opacity: 1; }
+    }
+    
+    .alert-pulse {
+      animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+    }
+    
+    .status-glow {
+      box-shadow: 0 0 10px currentColor;
+    }
+    
+    /* Price ticker */
+    @keyframes ticker-scroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    
+    .ticker-wrapper {
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    
+    .ticker-content {
+      display: inline-block;
+      animation: ticker-scroll 30s linear infinite;
+    }
+    
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-slate-950 text-slate-100 antialiased">
+  <div class="flex min-h-screen w-full">
+    
+    <!-- Sidebar -->
+    <aside class="hidden lg:flex lg:flex-col lg:w-64 border-r border-slate-800/80 bg-slate-950/90 backdrop-blur">
+      <div class="flex items-center justify-between px-6 py-5 border-b border-slate-800/80">
+        <div class="flex items-center gap-2">
+          <div class="h-7 w-7 rounded-md bg-sky-500/20 border border-sky-400/40 flex items-center justify-center">
+            <span class="text-sm font-semibold tracking-tight text-sky-300">AC</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-base font-semibold text-slate-50 tracking-tight">AgentCache</span>
+            <span class="text-xs font-medium text-slate-500 tracking-tight">Finance Analytics</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="flex-1 overflow-y-auto">
+        <div class="px-3 pt-4 pb-6 space-y-2 text-sm">
+          <div class="px-3 text-[0.7rem] font-medium uppercase tracking-[0.16em] text-slate-500">Navigation</div>
+          
+          <a href="/dashboard.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm text-slate-400 hover:bg-slate-900/80 hover:text-slate-100">
+            <i data-lucide="layout-dashboard" class="w-4 h-4 stroke-[1.5]"></i>
+            <span>Main Dashboard</span>
+          </a>
+          
+          <a href="/dashboards/healthcare.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm text-slate-400 hover:bg-slate-900/80 hover:text-slate-100">
+            <i data-lucide="heart-pulse" class="w-4 h-4 stroke-[1.5]"></i>
+            <span>Healthcare</span>
+          </a>
+          
+          <a href="/dashboards/finance.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm font-medium bg-slate-900 text-slate-50">
+            <i data-lucide="trending-up" class="w-4 h-4 stroke-[1.5] text-emerald-300"></i>
+            <span>Finance</span>
+          </a>
+          
+          <a href="/dashboards/legal.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm text-slate-400 hover:bg-slate-900/80 hover:text-slate-100">
+            <i data-lucide="scale" class="w-4 h-4 stroke-[1.5]"></i>
+            <span>Legal</span>
+          </a>
+        </div>
+
+        <div class="px-3 pt-2 pb-6 space-y-2 text-sm">
+          <div class="px-3 text-[0.7rem] font-medium uppercase tracking-[0.16em] text-slate-500">Compliance</div>
+          
+          <div class="px-3 py-2 rounded-md bg-emerald-500/10 border border-emerald-500/30">
+            <div class="flex items-center gap-2 mb-1">
+              <div class="h-2 w-2 rounded-full bg-emerald-400 status-glow"></div>
+              <span class="text-xs font-semibold text-emerald-300">PCI-DSS Level 1</span>
+            </div>
+            <p class="text-xs text-slate-400">Payment card data secured</p>
+          </div>
+          
+          <div class="px-3 py-2 rounded-md bg-sky-500/10 border border-sky-500/30">
+            <div class="flex items-center gap-2 mb-1">
+              <div class="h-2 w-2 rounded-full bg-sky-400 status-glow"></div>
+              <span class="text-xs font-semibold text-sky-300">SOC 2 Type II</span>
+            </div>
+            <p class="text-xs text-slate-400">Audit controls active</p>
+          </div>
+          
+          <div class="px-3 py-2 rounded-md bg-purple-500/10 border border-purple-500/30">
+            <div class="flex items-center gap-2 mb-1">
+              <div class="h-2 w-2 rounded-full bg-purple-400 status-glow"></div>
+              <span class="text-xs font-semibold text-purple-300">FINRA/SEC</span>
+            </div>
+            <p class="text-xs text-slate-400">Trade surveillance enabled</p>
+          </div>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      
+      <!-- Header with Market Ticker -->
+      <header class="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur">
+        <div class="flex items-center justify-between px-6 py-3 border-b border-slate-800/50">
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
+              <i data-lucide="trending-up" class="w-5 h-5 text-emerald-400"></i>
+              <h1 class="text-xl font-semibold tracking-tight text-slate-50">Finance Analytics</h1>
+            </div>
+            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-xs font-medium text-emerald-300">
+              <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+              Live Market Data
+            </span>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <select id="timeRange" class="rounded-md border border-slate-800 bg-slate-900/80 px-3 py-1.5 text-sm text-slate-100 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500/50">
+              <option value="1h">Last Hour</option>
+              <option value="1d" selected>Today</option>
+              <option value="1w">Last Week</option>
+              <option value="1m">Last Month</option>
+            </select>
+            
+            <button onclick="refreshDashboard()" class="inline-flex items-center gap-1.5 rounded-md border border-slate-800 bg-slate-900/80 hover:bg-slate-900 px-3 py-1.5 text-sm font-medium text-slate-100">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              Refresh
+            </button>
+            
+            <button onclick="exportReport()" class="inline-flex items-center gap-1.5 rounded-md bg-sky-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-sky-500">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              Export
+            </button>
+          </div>
+        </div>
+        
+        <!-- Market Ticker -->
+        <div class="ticker-wrapper px-6 py-2 bg-slate-950/50">
+          <div id="marketTicker" class="ticker-content text-sm">
+            <!-- Ticker items will be added here -->
+          </div>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <main class="flex-1 overflow-y-auto p-6 space-y-6">
+        
+        <!-- Critical Alerts -->
+        <div id="alertsContainer" class="hidden">
+          <!-- Alerts will be dynamically added here -->
+        </div>
+
+        <!-- Tier 1 Metrics - Mission Critical -->
+        <section>
+          <h2 class="text-lg font-semibold text-slate-50 mb-4">Mission Critical Metrics</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            
+            <!-- Trade Accuracy -->
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs uppercase tracking-wide text-slate-500">Trade Accuracy</span>
+                <i data-lucide="target" class="w-4 h-4 text-emerald-400"></i>
+              </div>
+              <div id="tradeAccuracy" class="text-4xl font-bold text-slate-50">0%</div>
+              <div class="mt-2 flex items-center gap-2">
+                <span class="text-xs text-emerald-400">0 false positives</span>
+                <div class="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div class="h-full bg-emerald-500 rounded-full" style="width: 100%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Latency P95 -->
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs uppercase tracking-wide text-slate-500">Latency P95</span>
+                <i data-lucide="zap" class="w-4 h-4 text-sky-400"></i>
+              </div>
+              <div id="latencyP95" class="text-4xl font-bold text-slate-50">0ms</div>
+              <div class="mt-2 flex items-center gap-2">
+                <span class="text-xs text-sky-400">Target: &lt;20ms</span>
+                <span class="text-xs text-slate-500">• P99: <span id="latencyP99">0ms</span></span>
+              </div>
+            </div>
+
+            <!-- Market Data Freshness -->
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs uppercase tracking-wide text-slate-500">Data Freshness</span>
+                <i data-lucide="clock" class="w-4 h-4 text-purple-400"></i>
+              </div>
+              <div id="dataFreshness" class="text-4xl font-bold text-slate-50">0s</div>
+              <div class="mt-2 flex items-center gap-2">
+                <span class="text-xs text-purple-400">Real-time feeds: 12</span>
+              </div>
+            </div>
+
+            <!-- Fraud Detection Rate -->
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs uppercase tracking-wide text-slate-500">Fraud Detection</span>
+                <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400"></i>
+              </div>
+              <div id="fraudDetection" class="text-4xl font-bold text-slate-50">0</div>
+              <div class="mt-2 flex items-center gap-2">
+                <span class="text-xs text-rose-400">Threats blocked: <span id="threatsBlocked">0</span></span>
+              </div>
+            </div>
+
+            <!-- Regulatory Compliance Score -->
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs uppercase tracking-wide text-slate-500">Compliance Score</span>
+                <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i>
+              </div>
+              <div id="complianceScore" class="text-4xl font-bold text-slate-50">0%</div>
+              <div class="mt-2 flex items-center gap-2">
+                <span class="text-xs text-emerald-400">FINRA/SEC compliant</span>
+              </div>
+            </div>
+
+            <!-- Cost Per Trade -->
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs uppercase tracking-wide text-slate-500">Cost Per Trade</span>
+                <i data-lucide="dollar-sign" class="w-4 h-4 text-green-400"></i>
+              </div>
+              <div id="costPerTrade" class="text-4xl font-bold text-slate-50">$0.00</div>
+              <div class="mt-2 flex items-center gap-2">
+                <span class="text-xs text-emerald-400">↓ 68% vs direct API</span>
+                <span class="text-xs text-slate-500">• $87K saved</span>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Trading Desk Performance -->
+        <section>
+          <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-semibold text-slate-50">Trading Desk Query Flow</h2>
+              <span class="text-xs text-slate-500">Real-time transaction routing</span>
+            </div>
+            <div id="tradingFlowSankey" class="w-full" style="min-height: 400px;"></div>
+          </div>
+        </section>
+
+        <!-- Market Metrics Grid -->
+        <section>
+          <h2 class="text-lg font-semibold text-slate-50 mb-4">Market Intelligence</h2>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Cache Hit Rate by Asset Class -->
+            <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+              <h3 class="text-base font-semibold text-slate-100 mb-4">Cache Hit Rate by Asset Class</h3>
+              <div class="space-y-3">
+                <div>
+                  <div class="flex items-center justify-between text-sm mb-1">
+                    <span class="text-slate-300">Equities</span>
+                    <span class="font-semibold text-emerald-400">94%</span>
+                  </div>
+                  <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-emerald-500 rounded-full" style="width: 94%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between text-sm mb-1">
+                    <span class="text-slate-300">Fixed Income</span>
+                    <span class="font-semibold text-sky-400">89%</span>
+                  </div>
+                  <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-sky-500 rounded-full" style="width: 89%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between text-sm mb-1">
+                    <span class="text-slate-300">Derivatives</span>
+                    <span class="font-semibold text-purple-400">91%</span>
+                  </div>
+                  <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-purple-500 rounded-full" style="width: 91%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between text-sm mb-1">
+                    <span class="text-slate-300">Crypto</span>
+                    <span class="font-semibold text-amber-400">87%</span>
+                  </div>
+                  <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-amber-500 rounded-full" style="width: 87%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between text-sm mb-1">
+                    <span class="text-slate-300">Commodities</span>
+                    <span class="font-semibold text-rose-400">86%</span>
+                  </div>
+                  <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-rose-500 rounded-full" style="width: 86%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Query Latency Trend -->
+            <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+              <h3 class="text-base font-semibold text-slate-100 mb-4">Query Latency Trend (ms)</h3>
+              <div id="latencyTrend" class="w-full" style="height: 240px;"></div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Risk & Compliance Dashboard -->
+        <section>
+          <h2 class="text-lg font-semibold text-slate-50 mb-4">Risk & Compliance Intelligence</h2>
+          <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            
+            <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="h-10 w-10 rounded-lg bg-rose-500/20 flex items-center justify-center">
+                  <i data-lucide="alert-octagon" class="w-5 h-5 text-rose-400"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-slate-50" id="amlAlerts">0</div>
+                  <div class="text-xs text-slate-500">AML Alerts</div>
+                </div>
+              </div>
+              <div class="text-xs text-rose-400">Suspicious patterns detected</div>
+            </div>
+
+            <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="h-10 w-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                  <i data-lucide="scale" class="w-5 h-5 text-amber-400"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-slate-50" id="regulatoryChecks">0</div>
+                  <div class="text-xs text-slate-500">Regulatory Checks</div>
+                </div>
+              </div>
+              <div class="text-xs text-amber-400">Real-time validation</div>
+            </div>
+
+            <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="h-10 w-10 rounded-lg bg-sky-500/20 flex items-center justify-center">
+                  <i data-lucide="file-check" class="w-5 h-5 text-sky-400"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-slate-50" id="auditLogs">0</div>
+                  <div class="text-xs text-slate-500">Audit Trail Entries</div>
+                </div>
+              </div>
+              <div class="text-xs text-sky-400">Immutable ledger</div>
+            </div>
+
+            <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="h-10 w-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                  <i data-lucide="bar-chart-3" class="w-5 h-5 text-emerald-400"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-slate-50" id="tradeVolume">0</div>
+                  <div class="text-xs text-slate-500">Trade Volume (24h)</div>
+                </div>
+              </div>
+              <div class="text-xs text-emerald-400">↑ 12% vs yesterday</div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Bloomberg/Reuters Integration Health -->
+        <section>
+          <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-semibold text-slate-50">Market Data Feed Health</h2>
+              <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-xs font-medium text-emerald-300">
+                <i data-lucide="check-circle" class="w-3 h-3"></i>
+                12/12 Active
+              </span>
+            </div>
+            <div id="feedHealthNetwork" class="w-full" style="min-height: 350px;"></div>
+          </div>
+        </section>
+
+        <!-- Live Activity Feed -->
+        <section>
+          <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+            <h2 class="text-lg font-semibold text-slate-50 mb-4">Live Trading Activity</h2>
+            <div id="activityFeed" class="space-y-2 max-h-96 overflow-y-auto">
+              <!-- Activity items will be added here -->
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Simulated finance data
+    const financeData = {
+      tradeAccuracy: 100,
+      latencyP95: 12.3,
+      latencyP99: 18.7,
+      dataFreshness: 1.2,
+      fraudDetection: 47,
+      threatsBlocked: 1834,
+      complianceScore: 99.2,
+      costPerTrade: 0.0032,
+      amlAlerts: 8,
+      regulatoryChecks: 15847,
+      auditLogs: 89234,
+      tradeVolume: 2847,
+      
+      tradingFlow: {
+        nodes: [
+          { id: 'bloomberg', label: 'Bloomberg' },
+          { id: 'reuters', label: 'Reuters' },
+          { id: 'factset', label: 'FactSet' },
+          { id: 'cache', label: 'AgentCache' },
+          { id: 'equity', label: 'Equity Desk' },
+          { id: 'fixed', label: 'Fixed Income' },
+          { id: 'deriv', label: 'Derivatives' }
+        ],
+        links: [
+          { source: 'bloomberg', target: 'cache', value: 450 },
+          { source: 'reuters', target: 'cache', value: 380 },
+          { source: 'factset', target: 'cache', value: 290 },
+          { source: 'cache', target: 'equity', value: 520 },
+          { source: 'cache', target: 'fixed', value: 380 },
+          { source: 'cache', target: 'deriv', value: 220 }
+        ]
+      },
+      
+      feedHealth: {
+        nodes: [
+          { id: 'cache', label: 'AgentCache', group: 0, value: 100 },
+          { id: 'bloomberg', label: 'Bloomberg', group: 1, value: 90 },
+          { id: 'reuters', label: 'Reuters', group: 1, value: 85 },
+          { id: 'factset', label: 'FactSet', group: 1, value: 80 },
+          { id: 'iex', label: 'IEX Cloud', group: 1, value: 75 },
+          { id: 'polygon', label: 'Polygon.io', group: 1, value: 70 },
+          { id: 'alpaca', label: 'Alpaca', group: 1, value: 65 }
+        ],
+        links: [
+          { source: 'bloomberg', target: 'cache', value: 8 },
+          { source: 'reuters', target: 'cache', value: 7 },
+          { source: 'factset', target: 'cache', value: 6 },
+          { source: 'iex', target: 'cache', value: 5 },
+          { source: 'polygon', target: 'cache', value: 4 },
+          { source: 'alpaca', target: 'cache', value: 3 }
+        ]
+      },
+      
+      latencyData: generateTimeSeriesData(24),
+      
+      marketTicker: [
+        { symbol: 'SPY', price: 458.23, change: 2.34, percent: 0.51 },
+        { symbol: 'QQQ', price: 392.18, change: 4.12, percent: 1.06 },
+        { symbol: 'AAPL', price: 189.45, change: -1.23, percent: -0.65 },
+        { symbol: 'MSFT', price: 378.91, change: 3.45, percent: 0.92 },
+        { symbol: 'GOOGL', price: 142.67, change: 1.89, percent: 1.34 },
+        { symbol: 'AMZN', price: 156.32, change: -0.87, percent: -0.55 },
+        { symbol: 'TSLA', price: 234.56, change: 5.67, percent: 2.48 },
+        { symbol: 'NVDA', price: 495.78, change: 8.91, percent: 1.83 }
+      ]
+    };
+
+    function generateTimeSeriesData(hours) {
+      const data = [];
+      const now = new Date();
+      for (let i = hours; i >= 0; i--) {
+        data.push({
+          time: new Date(now - i * 3600000),
+          value: 8 + Math.random() * 12
+        });
+      }
+      return data;
+    }
+
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeDashboard();
+      startActivityFeed();
+      initializeMarketTicker();
+      
+      // Animate metric cards entrance
+      AgentCacheViz.animateCardsEntrance('.metric-card');
+    });
+
+    function initializeDashboard() {
+      // Animate count-up metrics
+      AgentCacheViz.animateCountUp('tradeAccuracy', financeData.tradeAccuracy, 2000, '%');
+      AgentCacheViz.animateCountUp('fraudDetection', financeData.fraudDetection, 1500);
+      AgentCacheViz.animateCountUp('threatsBlocked', financeData.threatsBlocked, 2000);
+      AgentCacheViz.animateCountUp('complianceScore', financeData.complianceScore, 2000, '%');
+      AgentCacheViz.animateCountUp('amlAlerts', financeData.amlAlerts, 1500);
+      AgentCacheViz.animateCountUp('regulatoryChecks', financeData.regulatoryChecks, 2000);
+      AgentCacheViz.animateCountUp('auditLogs', financeData.auditLogs, 2500);
+      AgentCacheViz.animateCountUp('tradeVolume', financeData.tradeVolume, 2000);
+      
+      // Latency metrics
+      setTimeout(() => {
+        document.getElementById('latencyP95').textContent = financeData.latencyP95.toFixed(1) + 'ms';
+        document.getElementById('latencyP99').textContent = financeData.latencyP99.toFixed(1) + 'ms';
+        document.getElementById('dataFreshness').textContent = financeData.dataFreshness.toFixed(1) + 's';
+        document.getElementById('costPerTrade').textContent = '$' + financeData.costPerTrade.toFixed(4);
+      }, 1500);
+      
+      // Create Sankey diagram for trading flow
+      setTimeout(() => {
+        AgentCacheViz.createSankeyDiagram(
+          'tradingFlowSankey',
+          financeData.tradingFlow.nodes,
+          financeData.tradingFlow.links,
+          { height: 400 }
+        );
+      }, 500);
+      
+      // Create latency trend chart
+      setTimeout(() => {
+        AgentCacheViz.createTimeSeriesChart(
+          'latencyTrend',
+          financeData.latencyData,
+          { height: 240 }
+        );
+      }, 800);
+      
+      // Create feed health network
+      setTimeout(() => {
+        AgentCacheViz.createNetworkGraph(
+          'feedHealthNetwork',
+          financeData.feedHealth.nodes,
+          financeData.feedHealth.links,
+          { height: 350 }
+        );
+      }, 1200);
+    }
+
+    // Market ticker
+    function initializeMarketTicker() {
+      const ticker = document.getElementById('marketTicker');
+      let tickerHTML = '';
+      
+      // Duplicate for seamless loop
+      for (let i = 0; i < 2; i++) {
+        financeData.marketTicker.forEach(item => {
+          const changeClass = item.change >= 0 ? 'text-emerald-400' : 'text-rose-400';
+          const arrow = item.change >= 0 ? '▲' : '▼';
+          tickerHTML += `
+            <span class="inline-flex items-center gap-2 px-4">
+              <span class="font-semibold text-slate-100">${item.symbol}</span>
+              <span class="text-slate-300">$${item.price.toFixed(2)}</span>
+              <span class="${changeClass} text-xs">${arrow} ${Math.abs(item.percent).toFixed(2)}%</span>
+            </span>
+          `;
+        });
+      }
+      
+      ticker.innerHTML = tickerHTML;
+    }
+
+    // Live activity feed
+    const activities = [
+      { icon: 'check-circle', text: 'Cache hit: SPY options chain', color: 'emerald', time: 'now' },
+      { icon: 'trending-up', text: 'Real-time quote: AAPL $189.45', color: 'sky', time: '1s ago' },
+      { icon: 'shield-check', text: 'AML check passed: Trade #87234', color: 'purple', time: '3s ago' },
+      { icon: 'alert-triangle', text: 'Fraud attempt blocked: IP 45.67.89.123', color: 'amber', time: '8s ago' },
+      { icon: 'file-check', text: 'Audit log entry: FINRA report', color: 'slate', time: '12s ago' },
+      { icon: 'zap', text: 'Low latency alert: 8.3ms response', color: 'emerald', time: '15s ago' }
+    ];
+
+    function startActivityFeed() {
+      const feed = document.getElementById('activityFeed');
+      
+      function addActivity() {
+        const activity = activities[Math.floor(Math.random() * activities.length)];
+        const item = document.createElement('div');
+        item.className = 'flex items-center gap-3 p-3 rounded-md border border-slate-800 bg-slate-900/50 opacity-0';
+        item.innerHTML = `
+          <i data-lucide="${activity.icon}" class="w-4 h-4 text-${activity.color}-400 flex-shrink-0"></i>
+          <div class="flex-1">
+            <div class="text-sm text-slate-200">${activity.text}</div>
+            <div class="text-xs text-slate-500">${new Date().toLocaleTimeString()}</div>
+          </div>
+        `;
+        
+        feed.insertBefore(item, feed.firstChild);
+        lucide.createIcons();
+        
+        // Animate entrance
+        anime({
+          targets: item,
+          opacity: [0, 1],
+          translateX: [-20, 0],
+          duration: 400,
+          easing: 'easeOutCubic'
+        });
+        
+        // Keep only last 10 items
+        if (feed.children.length > 10) {
+          feed.removeChild(feed.lastChild);
+        }
+      }
+      
+      // Initial activities
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => addActivity(), i * 500);
+      }
+      
+      // Add new activity every 2 seconds
+      setInterval(addActivity, 2000);
+    }
+
+    function refreshDashboard() {
+      console.log('[Finance Dashboard] Refreshing data...');
+      
+      const btn = event.target.closest('button');
+      btn.disabled = true;
+      anime({
+        targets: btn.querySelector('svg'),
+        rotate: '1turn',
+        duration: 800,
+        easing: 'easeInOutQuad',
+        complete: () => {
+          btn.disabled = false;
+        }
+      });
+    }
+
+    function exportReport() {
+      const report = {
+        timestamp: new Date().toISOString(),
+        sector: 'Finance',
+        metrics: financeData,
+        compliance: {
+          pci_dss: true,
+          soc2_type2: true,
+          finra_sec: true,
+          kyc_aml: true
+        }
+      };
+      
+      const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `finance-analytics-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="E-commerce Analytics Dashboard - Conversion intelligence with PCI-DSS compliance">
+  <title>E-commerce Analytics - AgentCache</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://d3js.org/d3-sankey.v0.12.min.js"></script>
+  <script src="/js/visualizations/agentcache-viz.js"></script>
+  
+  <style>
+    .metric-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .metric-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3); }
+    .status-glow { box-shadow: 0 0 10px currentColor; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+  </style>
+</head>
+
+<body class="min-h-screen bg-slate-950 text-slate-100 antialiased">
+  <div class="flex min-h-screen w-full">
+    
+    <aside class="hidden lg:flex lg:flex-col lg:w-64 border-r border-slate-800/80 bg-slate-950/90 backdrop-blur">
+      <div class="flex items-center justify-between px-6 py-5 border-b border-slate-800/80">
+        <div class="flex items-center gap-2">
+          <div class="h-7 w-7 rounded-md bg-sky-500/20 border border-sky-400/40 flex items-center justify-center">
+            <span class="text-sm font-semibold tracking-tight text-sky-300">AC</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-base font-semibold text-slate-50 tracking-tight">AgentCache</span>
+            <span class="text-xs font-medium text-slate-500 tracking-tight">E-commerce Analytics</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="flex-1 overflow-y-auto">
+        <div class="px-3 pt-4 pb-6 space-y-2 text-sm">
+          <div class="px-3 text-[0.7rem] font-medium uppercase tracking-[0.16em] text-slate-500">Navigation</div>
+          <a href="/dashboard.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm text-slate-400 hover:bg-slate-900/80 hover:text-slate-100">
+            <i data-lucide="layout-dashboard" class="w-4 h-4 stroke-[1.5]"></i>
+            <span>Main Dashboard</span>
+          </a>
+          <a href="/dashboards/ecommerce.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm font-medium bg-slate-900 text-slate-50">
+            <i data-lucide="shopping-cart" class="w-4 h-4 stroke-[1.5] text-emerald-300"></i>
+            <span>E-commerce</span>
+          </a>
+        </div>
+
+        <div class="px-3 pt-2 pb-6 space-y-2 text-sm">
+          <div class="px-3 text-[0.7rem] font-medium uppercase tracking-[0.16em] text-slate-500">Compliance</div>
+          <div class="px-3 py-2 rounded-md bg-emerald-500/10 border border-emerald-500/30">
+            <div class="flex items-center gap-2 mb-1">
+              <div class="h-2 w-2 rounded-full bg-emerald-400 status-glow"></div>
+              <span class="text-xs font-semibold text-emerald-300">PCI-DSS Level 1</span>
+            </div>
+            <p class="text-xs text-slate-400">Payment data secured</p>
+          </div>
+          <div class="px-3 py-2 rounded-md bg-sky-500/10 border border-sky-500/30">
+            <div class="flex items-center gap-2 mb-1">
+              <div class="h-2 w-2 rounded-full bg-sky-400 status-glow"></div>
+              <span class="text-xs font-semibold text-sky-300">GDPR Compliant</span>
+            </div>
+            <p class="text-xs text-slate-400">EU data protection</p>
+          </div>
+        </div>
+      </nav>
+    </aside>
+
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <header class="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur">
+        <div class="flex items-center justify-between px-6 py-3">
+          <div class="flex items-center gap-3">
+            <i data-lucide="shopping-cart" class="w-5 h-5 text-emerald-400"></i>
+            <h1 class="text-xl font-semibold tracking-tight text-slate-50">E-commerce Analytics</h1>
+            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-xs font-medium text-emerald-300">
+              <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+              Live Sales Data
+            </span>
+          </div>
+          <div class="flex items-center gap-3">
+            <select id="timeRange" class="rounded-md border border-slate-800 bg-slate-900/80 px-3 py-1.5 text-sm text-slate-100 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500/50">
+              <option value="1h">Last Hour</option>
+              <option value="24h" selected>Last 24 Hours</option>
+              <option value="7d">Last 7 Days</option>
+              <option value="30d">Last 30 Days</option>
+            </select>
+            <button onclick="refreshDashboard()" class="inline-flex items-center gap-1.5 rounded-md border border-slate-800 bg-slate-900/80 hover:bg-slate-900 px-3 py-1.5 text-sm font-medium text-slate-100">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              Refresh
+            </button>
+            <button onclick="exportReport()" class="inline-flex items-center gap-1.5 rounded-md bg-sky-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-sky-500">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              Export
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main class="flex-1 overflow-y-auto p-6 space-y-6">
+        <section>
+          <h2 class="text-lg font-semibold text-slate-50 mb-4">Mission Critical Metrics</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs uppercase tracking-wide text-slate-500">Conversion Rate</span>
+                <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i>
+              </div>
+              <div id="conversionRate" class="text-4xl font-bold text-slate-50">0%</div>
+              <div class="mt-2 flex items-center gap-2">
+                <span class="text-xs text-emerald-400">↑ 23% vs baseline</span>
+              </div>
+            </div>
+
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs uppercase tracking-wide text-slate-500">Product Rec Accuracy</span>
+                <i data-lucide="target" class="w-4 h-4 text-sky-400"></i>
+              </div>
+              <div id="recAccuracy" class="text-4xl font-bold text-slate-50">0%</div>
+              <div class="mt-2 flex items-center gap-2">
+                <span class="text-xs text-sky-400">Personalized suggestions</span>
+              </div>
+            </div>
+
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs uppercase tracking-wide text-slate-500">Cart Recovery</span>
+                <i data-lucide="shopping-bag" class="w-4 h-4 text-purple-400"></i>
+              </div>
+              <div id="cartRecovery" class="text-4xl font-bold text-slate-50">0%</div>
+              <div class="mt-2 flex items-center gap-2">
+                <span class="text-xs text-purple-400">Abandoned cart wins</span>
+              </div>
+            </div>
+
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs uppercase tracking-wide text-slate-500">Response Time</span>
+                <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i>
+              </div>
+              <div id="responseTime" class="text-4xl font-bold text-slate-50">0ms</div>
+              <div class="mt-2 flex items-center gap-2">
+                <span class="text-xs text-amber-400">Product search speed</span>
+              </div>
+            </div>
+
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs uppercase tracking-wide text-slate-500">Customer Support</span>
+                <i data-lucide="headphones" class="w-4 h-4 text-rose-400"></i>
+              </div>
+              <div id="supportSat" class="text-4xl font-bold text-slate-50">0%</div>
+              <div class="mt-2 flex items-center gap-2">
+                <span class="text-xs text-rose-400">CSAT score</span>
+              </div>
+            </div>
+
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs uppercase tracking-wide text-slate-500">Revenue Impact</span>
+                <i data-lucide="dollar-sign" class="w-4 h-4 text-green-400"></i>
+              </div>
+              <div id="revenueImpact" class="text-4xl font-bold text-slate-50">$0</div>
+              <div class="mt-2 flex items-center gap-2">
+                <span class="text-xs text-emerald-400">Attributed sales lift</span>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <section>
+          <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-semibold text-slate-50">Customer Journey Flow</h2>
+              <span class="text-xs text-slate-500">Browse → Search → Cart → Checkout</span>
+            </div>
+            <div id="journeyFlow" class="w-full" style="min-height: 400px;"></div>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-semibold text-slate-50 mb-4">Sales Intelligence</h2>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+              <h3 class="text-base font-semibold text-slate-100 mb-4">Cache Hit Rate by Category</h3>
+              <div class="space-y-3">
+                <div><div class="flex items-center justify-between text-sm mb-1"><span class="text-slate-300">Electronics</span><span class="font-semibold text-emerald-400">96%</span></div><div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-emerald-500 rounded-full" style="width: 96%"></div></div></div>
+                <div><div class="flex items-center justify-between text-sm mb-1"><span class="text-slate-300">Fashion</span><span class="font-semibold text-sky-400">93%</span></div><div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-sky-500 rounded-full" style="width: 93%"></div></div></div>
+                <div><div class="flex items-center justify-between text-sm mb-1"><span class="text-slate-300">Home & Garden</span><span class="font-semibold text-purple-400">91%</span></div><div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-purple-500 rounded-full" style="width: 91%"></div></div></div>
+                <div><div class="flex items-center justify-between text-sm mb-1"><span class="text-slate-300">Sports</span><span class="font-semibold text-amber-400">88%</span></div><div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-amber-500 rounded-full" style="width: 88%"></div></div></div>
+              </div>
+            </div>
+            <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+              <h3 class="text-base font-semibold text-slate-100 mb-4">Conversion Rate Trend</h3>
+              <div id="conversionChart" class="w-full" style="height: 240px;"></div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+            <h2 class="text-lg font-semibold text-slate-50 mb-4">Live Shopping Activity</h2>
+            <div id="activityFeed" class="space-y-2 max-h-96 overflow-y-auto"></div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+    
+    const ecomData = {
+      conversionRate: 4.8, recAccuracy: 94.2, cartRecovery: 38.5, responseTime: 87, supportSat: 92.3, revenueImpact: 287000,
+      journeyFlow: {
+        nodes: [
+          { id: 'browse', label: 'Browse' }, { id: 'search', label: 'Search' }, { id: 'cache', label: 'AgentCache' },
+          { id: 'product', label: 'Product Page' }, { id: 'cart', label: 'Cart' }, { id: 'checkout', label: 'Checkout' }
+        ],
+        links: [
+          { source: 'browse', target: 'cache', value: 850 }, { source: 'search', target: 'cache', value: 920 },
+          { source: 'cache', target: 'product', value: 1200 }, { source: 'product', target: 'cart', value: 680 },
+          { source: 'cart', target: 'checkout', value: 420 }
+        ]
+      },
+      conversionData: Array.from({length: 7}, (_, i) => ({
+        time: new Date(Date.now() - (6-i) * 86400000),
+        value: 3.5 + Math.random() * 2
+      }))
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      AgentCacheViz.animateCountUp('conversionRate', ecomData.conversionRate, 2000, '%');
+      AgentCacheViz.animateCountUp('recAccuracy', ecomData.recAccuracy, 2000, '%');
+      AgentCacheViz.animateCountUp('cartRecovery', ecomData.cartRecovery, 2000, '%');
+      AgentCacheViz.animateCountUp('supportSat', ecomData.supportSat, 2000, '%');
+      setTimeout(() => {
+        document.getElementById('responseTime').textContent = ecomData.responseTime + 'ms';
+        document.getElementById('revenueImpact').textContent = '$' + (ecomData.revenueImpact / 1000).toFixed(0) + 'K';
+      }, 1500);
+      
+      setTimeout(() => AgentCacheViz.createSankeyDiagram('journeyFlow', ecomData.journeyFlow.nodes, ecomData.journeyFlow.links, { height: 400 }), 500);
+      setTimeout(() => AgentCacheViz.createTimeSeriesChart('conversionChart', ecomData.conversionData, { height: 240 }), 800);
+      AgentCacheViz.animateCardsEntrance('.metric-card');
+      startActivityFeed();
+    });
+
+    function startActivityFeed() {
+      const activities = [
+        { icon: 'shopping-cart', text: 'Product recommendation: Wireless headphones', color: 'emerald' },
+        { icon: 'search', text: 'Search query: "best laptop 2024"', color: 'sky' },
+        { icon: 'package', text: 'Cart recovered: $247 order saved', color: 'purple' },
+        { icon: 'star', text: 'Review summary generated', color: 'amber' }
+      ];
+      const feed = document.getElementById('activityFeed');
+      function addActivity() {
+        const activity = activities[Math.floor(Math.random() * activities.length)];
+        const item = document.createElement('div');
+        item.className = 'flex items-center gap-3 p-3 rounded-md border border-slate-800 bg-slate-900/50 opacity-0';
+        item.innerHTML = `<i data-lucide="${activity.icon}" class="w-4 h-4 text-${activity.color}-400 flex-shrink-0"></i><div class="flex-1"><div class="text-sm text-slate-200">${activity.text}</div><div class="text-xs text-slate-500">${new Date().toLocaleTimeString()}</div></div>`;
+        feed.insertBefore(item, feed.firstChild);
+        lucide.createIcons();
+        anime({ targets: item, opacity: [0, 1], translateX: [-20, 0], duration: 400, easing: 'easeOutCubic' });
+        if (feed.children.length > 10) feed.removeChild(feed.lastChild);
+      }
+      for (let i = 0; i < 5; i++) setTimeout(() => addActivity(), i * 500);
+      setInterval(addActivity, 2500);
+    }
+
+    function refreshDashboard() { console.log('[E-commerce] Refreshing...'); const btn = event.target.closest('button'); btn.disabled = true; anime({ targets: btn.querySelector('svg'), rotate: '1turn', duration: 800, complete: () => btn.disabled = false }); }
+    function exportReport() { const blob = new Blob([JSON.stringify({ timestamp: new Date().toISOString(), sector: 'E-commerce', metrics: ecomData, compliance: { pci_dss: true, gdpr: true } }, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `ecommerce-analytics-${Date.now()}.json`; a.click(); URL.revokeObjectURL(url); }
+  </script>
+</body>
+</html>
