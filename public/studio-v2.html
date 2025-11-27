@@ -228,7 +228,7 @@
         <div class="border-b border-slate-800/80 bg-slate-900/50">
           <div class="flex items-center gap-1 px-6">
             <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400 active" data-tab="pipeline">
-              Pipeline Builder
+              Workspace
             </button>
             <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400" data-tab="dynamicview">
               Dynamic View
@@ -282,35 +282,29 @@
           </div>
         </div>
         
-        <!-- Pipeline Canvas Tab -->
-        <div id="pipelineTab" class="tab-content active flex-1 relative overflow-hidden bg-[radial-gradient(circle_at_1px_1px,_rgb(51,65,85)_1px,_transparent_0)] bg-[length:24px_24px]">
-          <svg id="canvas" class="absolute inset-0 w-full h-full">
-            <defs>
-              <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-                <polygon points="0 0, 10 3, 0 6" fill="#64748b" />
-              </marker>
-              <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" style="stop-color:rgb(56, 189, 248);stop-opacity:1" />
-                <stop offset="100%" style="stop-color:rgb(59, 130, 246);stop-opacity:1" />
-              </linearGradient>
-            </defs>
-            <g id="connections"></g>
-          </svg>
-          <div id="nodesContainer" class="absolute inset-0 pointer-events-none">
-            <!-- Nodes rendered here -->
+        <!-- Workspace Tab (Pipeline Cards Grid) -->
+        <div id="pipelineTab" class="tab-content active flex-1 overflow-auto p-6 bg-slate-950">
+          <div class="mb-6 flex items-center justify-between">
+            <div>
+              <h2 class="font-display text-2xl mb-1">Workspace Pipelines</h2>
+              <p class="text-sm text-slate-400">Pre-configured pipelines connected to live data sources</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <select id="workspaceFilter" class="rounded-lg border border-slate-700 bg-slate-900/50 px-3 py-2 text-sm">
+                <option value="all">All Sectors</option>
+                <option value="crypto">Crypto</option>
+                <option value="weather">Weather</option>
+                <option value="healthcare">Healthcare</option>
+                <option value="ecommerce">E-Commerce</option>
+              </select>
+              <button class="rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm hover:bg-slate-800">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+              </button>
+            </div>
           </div>
           
-          <!-- Empty State -->
-          <div id="emptyState" class="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div class="text-center">
-              <div class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-slate-800/50">
-                <svg class="h-8 w-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-              </div>
-              <h3 class="text-lg font-semibold text-slate-400 mb-2">No pipeline yet</h3>
-              <p class="text-sm text-slate-500">Click "New Pipeline" to start with AI wizard</p>
-            </div>
+          <div id="pipelineCardsGrid" class="grid grid-cols-3 gap-4">
+            <!-- Pipeline cards populated by JS -->
           </div>
         </div>
         
@@ -1971,12 +1965,212 @@
         select.appendChild(option);
       });
       
+      // Populate workspace pipeline cards
+      populateWorkspacePipelines();
+      
       // Populate scenario cards
       populateScenarioCards();
       
       // Start session timer
       startSessionTimer();
     }
+    
+    // Workspace Pipeline Templates
+    const WORKSPACE_PIPELINES = [
+      {
+        id: 'crypto-price-tracker',
+        name: 'Crypto Price Tracker',
+        description: 'Real-time cryptocurrency prices with L1/L2 caching',
+        sector: 'crypto',
+        icon: '₿',
+        dataSource: 'coingecko',
+        nodes: ['L1 Cache', 'L2 Cache', 'CoinGecko API'],
+        estimatedSavings: '$240/mo',
+        hitRate: '92%',
+        status: 'active'
+      },
+      {
+        id: 'weather-forecast',
+        name: 'Weather Forecast API',
+        description: 'Global weather data with intelligent TTL caching',
+        sector: 'weather',
+        icon: '🌤️',
+        dataSource: 'openmeteo',
+        nodes: ['L1 Cache', 'L2 Cache', 'OpenMeteo API'],
+        estimatedSavings: '$180/mo',
+        hitRate: '89%',
+        status: 'active'
+      },
+      {
+        id: 'drug-safety',
+        name: 'FDA Drug Safety Alerts',
+        description: 'HIPAA-compliant adverse event monitoring',
+        sector: 'healthcare',
+        icon: '💊',
+        dataSource: 'openfda',
+        nodes: ['L1 Cache', 'L2 Cache', 'Compliance', 'OpenFDA API'],
+        estimatedSavings: '$320/mo',
+        hitRate: '94%',
+        status: 'active'
+      },
+      {
+        id: 'ecommerce-products',
+        name: 'Product Catalog Cache',
+        description: 'High-performance product data with CDN integration',
+        sector: 'ecommerce',
+        icon: '🛍️',
+        dataSource: 'jsonplaceholder',
+        nodes: ['L1 Cache', 'L2 Cache', 'CDN', 'REST API'],
+        estimatedSavings: '$450/mo',
+        hitRate: '96%',
+        status: 'active'
+      },
+      {
+        id: 'geo-lookup',
+        name: 'Geographic Data Lookup',
+        description: 'Country information with persistent caching',
+        sector: 'general',
+        icon: '🌍',
+        dataSource: 'restcountries',
+        nodes: ['L1 Cache', 'L2 Cache', 'REST Countries API'],
+        estimatedSavings: '$160/mo',
+        hitRate: '88%',
+        status: 'active'
+      },
+      {
+        id: 'ip-geolocation',
+        name: 'IP Geolocation Service',
+        description: 'Visitor location data with rate-limit protection',
+        sector: 'general',
+        icon: '📍',
+        dataSource: 'ipapi',
+        nodes: ['L1 Cache', 'L2 Cache', 'Rate Limiter', 'ipapi.co'],
+        estimatedSavings: '$200/mo',
+        hitRate: '91%',
+        status: 'active'
+      },
+      {
+        id: 'gaming-pokedex',
+        name: 'Gaming Pokedex API',
+        description: 'Pokemon data with aggressive caching strategy',
+        sector: 'gaming',
+        icon: '🎮',
+        dataSource: 'pokeapi',
+        nodes: ['L1 Cache', 'L2 Cache', 'PokéAPI'],
+        estimatedSavings: '$140/mo',
+        hitRate: '97%',
+        status: 'active'
+      },
+      {
+        id: 'media-cdn',
+        name: 'Media CDN Pipeline',
+        description: 'Image delivery with edge caching and optimization',
+        sector: 'media',
+        icon: '🖼️',
+        dataSource: 'catapi',
+        nodes: ['L1 Cache', 'L2 Cache', 'Image Optimizer', 'The Cat API'],
+        estimatedSavings: '$380/mo',
+        hitRate: '93%',
+        status: 'active'
+      }
+    ];
+    
+    function populateWorkspacePipelines() {
+      const grid = document.getElementById('pipelineCardsGrid');
+      if (!grid) return;
+      
+      grid.innerHTML = WORKSPACE_PIPELINES.map(pipeline => `
+        <div class="glass-elevated rounded-lg p-5 cursor-pointer hover:border-sky-500 transition-all group" onclick="openPipeline('${pipeline.id}')">
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-3xl">${pipeline.icon}</div>
+            <span class="px-2 py-1 rounded-full text-xs font-mono ${pipeline.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-700 text-slate-400'}">
+              ${pipeline.status === 'active' ? '● LIVE' : '○ DRAFT'}
+            </span>
+          </div>
+          
+          <h3 class="font-display text-lg mb-1 group-hover:text-sky-400 transition-colors">${pipeline.name}</h3>
+          <p class="text-xs text-slate-400 mb-4">${pipeline.description}</p>
+          
+          <div class="flex items-center gap-2 mb-3 text-xs text-slate-500">
+            ${pipeline.nodes.map(node => `<span class="px-2 py-1 rounded bg-slate-800/50">${node}</span>`).join('')}
+          </div>
+          
+          <div class="flex items-center justify-between pt-3 border-t border-slate-800">
+            <div class="flex items-center gap-4 text-xs">
+              <div>
+                <div class="text-slate-500">Hit Rate</div>
+                <div class="font-semibold text-emerald-400">${pipeline.hitRate}</div>
+              </div>
+              <div>
+                <div class="text-slate-500">Savings</div>
+                <div class="font-semibold text-sky-400">${pipeline.estimatedSavings}</div>
+              </div>
+            </div>
+            <button class="px-3 py-1 rounded bg-sky-600 text-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation(); runPipeline('${pipeline.id}')">Run Test</button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // Open pipeline details
+    window.openPipeline = function(pipelineId) {
+      const pipeline = WORKSPACE_PIPELINES.find(p => p.id === pipelineId);
+      if (!pipeline) return;
+      
+      // Switch to Live Demo tab and select the data source
+      switchTab('livedemo');
+      
+      // Select the corresponding data source
+      const select = document.getElementById('dataSourceSelect');
+      if (select && pipeline.dataSource) {
+        select.value = pipeline.dataSource;
+        select.dispatchEvent(new Event('change'));
+      }
+    };
+    
+    // Run pipeline test
+    window.runPipeline = async function(pipelineId) {
+      const pipeline = WORKSPACE_PIPELINES.find(p => p.id === pipelineId);
+      if (!pipeline || !pipeline.dataSource) return;
+      
+      // Fetch data from the pipeline's data source
+      const result = await liveDataFetcher.fetch(pipeline.dataSource);
+      
+      if (result.error) {
+        alert(`Pipeline test failed: ${result.error}`);
+        return;
+      }
+      
+      // Track metrics
+      metricsTracker.recordCall(
+        result.metadata.cached ? 'hit' : 'miss',
+        result.metadata.latency,
+        result.metadata.cost
+      );
+      
+      // Update session stats
+      updateSessionStats();
+      
+      // Show success notification
+      const card = event.target.closest('.glass-elevated');
+      card.classList.add('ring-2', 'ring-emerald-500');
+      setTimeout(() => card.classList.remove('ring-2', 'ring-emerald-500'), 1000);
+    };
+    
+    // Workspace filter
+    document.getElementById('workspaceFilter')?.addEventListener('change', (e) => {
+      const filter = e.target.value;
+      const cards = document.querySelectorAll('#pipelineCardsGrid > div');
+      
+      cards.forEach((card, index) => {
+        const pipeline = WORKSPACE_PIPELINES[index];
+        if (filter === 'all' || pipeline.sector === filter) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
     
     // Data source selection handler
     document.getElementById('dataSourceSelect')?.addEventListener('change', (e) => {
