@@ -19,7 +19,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         studio: resolve(__dirname, 'studio.html'),
-        studio_v2: resolve(__dirname, 'public/studio-v2.html'),
+        studio_v2: resolve(__dirname, 'studio-v2.html'),
         gov_portal: resolve(__dirname, 'public/gov-portal.html'),
       },
     },
