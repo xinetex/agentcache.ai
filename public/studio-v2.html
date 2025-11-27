@@ -17,6 +17,7 @@
   <script src="/js/live-data-sources.js"></script>
   <script src="/js/demo-scenarios.js"></script>
   <script src="/js/live-metrics.js"></script>
+  <script src="/js/demo-analytics.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
     
@@ -1481,6 +1482,11 @@
     // ==============================================================
     
     function switchTab(tabName) {
+      // Track analytics
+      if (window.demoAnalytics) {
+        window.demoAnalytics.trackEvent('tab_switch', { tab: tabName });
+      }
+      
       // Update tab buttons
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
@@ -2117,6 +2123,11 @@
       const pipeline = WORKSPACE_PIPELINES.find(p => p.id === pipelineId);
       if (!pipeline) return;
       
+      // Track analytics
+      if (window.trackPipelineView) {
+        window.trackPipelineView(pipelineId);
+      }
+      
       // Switch to Live Demo tab and select the data source
       switchTab('livedemo');
       
@@ -2137,8 +2148,16 @@
       const result = await liveDataFetcher.fetch(pipeline.dataSource);
       
       if (result.error) {
+        if (window.trackError) {
+          window.trackError(new Error(result.error), 'pipeline_test');
+        }
         alert(`Pipeline test failed: ${result.error}`);
         return;
+      }
+      
+      // Track analytics
+      if (window.trackPipelineTest) {
+        window.trackPipelineTest(pipelineId, result);
       }
       
       // Track metrics
@@ -2234,7 +2253,17 @@
           statusEl.textContent = 'ERROR';
           statusEl.className = 'text-rose-400';
           viewer.textContent = JSON.stringify({ error: result.error }, null, 2);
+          
+          // Track error
+          if (window.trackError) {
+            window.trackError(new Error(result.error), 'data_fetch');
+          }
           return;
+        }
+        
+        // Track successful fetch
+        if (window.trackDataFetch) {
+          window.trackDataFetch(sourceId, result.metadata.cached, result.metadata.latency);
         }
         
         totalLatency += result.metadata.latency;
@@ -2413,6 +2442,11 @@
       btn.addEventListener('click', () => {
         const theme = btn.dataset.themeBtn;
         document.body.dataset.theme = theme;
+        
+        // Track analytics
+        if (window.demoAnalytics) {
+          window.demoAnalytics.trackEvent('theme_switch', { theme });
+        }
         
         // Update active state
         document.querySelectorAll('[data-theme-btn]').forEach(b => {
