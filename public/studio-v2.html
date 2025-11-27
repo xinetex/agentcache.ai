@@ -357,6 +357,103 @@
             </div>
           </div>
         </div>
+        
+        <!-- Live Demo Tab -->
+        <div id="liveDemoTab" class="tab-content flex-col flex-1 overflow-hidden">
+          <div class="grid grid-cols-2 gap-6 p-6 h-full">
+            <!-- Left: Data Source Selector -->
+            <div class="glass-elevated p-6 rounded-lg flex flex-col">
+              <h3 class="font-display text-lg mb-4 glow-text">⚡ Live Data Sources</h3>
+              <select id="dataSourceSelect" class="mb-4 rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-2 text-sm text-slate-100 focus:border-sky-500 focus:outline-none">
+                <option value="">Select a data source...</option>
+              </select>
+              <div id="sourceInfo" class="mb-4 text-xs text-slate-400 hidden"></div>
+              <div class="flex gap-2 mb-4">
+                <button id="fetchDataBtn" class="flex-1 rounded-lg bg-gradient-to-r from-emerald-600 to-sky-600 px-4 py-2 text-sm font-semibold text-white hover:from-emerald-500 hover:to-sky-500 disabled:opacity-50" disabled>
+                  Fetch Data
+                </button>
+                <button id="fetch10xBtn" class="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50" disabled>
+                  Run 10x
+                </button>
+              </div>
+              
+              <!-- Metrics HUD -->
+              <div class="glass p-4 rounded-lg flex-1">
+                <h4 class="font-display text-sm mb-3 text-secondary">Real-Time Metrics</h4>
+                <div id="liveMetricsDisplay" class="space-y-2 text-xs font-data">
+                  <div class="flex justify-between">
+                    <span class="text-tertiary">STATUS:</span>
+                    <span id="liveStatus" class="text-quaternary">--</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-tertiary">LATENCY:</span>
+                    <span id="liveLatency" class="text-quaternary">--</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-tertiary">COST:</span>
+                    <span id="liveCost" class="text-quaternary">--</span>
+                  </div>
+                  <div class="flex justify-between border-t border-slate-700 pt-2 mt-2">
+                    <span class="text-tertiary">SAVED:</span>
+                    <span id="liveSaved" class="text-emerald-400">$0.000</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Right: Response Viewer -->
+            <div class="glass p-6 rounded-lg flex flex-col">
+              <h3 class="font-display text-sm mb-3">Response Data</h3>
+              <pre id="responseViewer" class="flex-1 font-data text-xs overflow-auto bg-slate-900/50 p-4 rounded border border-slate-800 text-slate-300">Waiting for API call...</pre>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Scenarios Tab -->
+        <div id="scenariosTab" class="tab-content flex-col flex-1 overflow-auto p-6">
+          <div class="mb-6">
+            <h2 class="font-display text-2xl mb-2">Demo Scenarios</h2>
+            <p class="text-sm text-slate-400">Pre-built scenarios demonstrating real-world cache performance</p>
+          </div>
+          
+          <div id="scenarioCards" class="grid grid-cols-3 gap-4 mb-6">
+            <!-- Populated by JS -->
+          </div>
+          
+          <div id="scenarioProgress" class="glass-elevated p-6 rounded-lg hidden">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-display text-lg" id="scenarioName">Running Scenario...</h3>
+              <button id="stopScenarioBtn" class="text-xs text-rose-400 hover:text-rose-300">Stop</button>
+            </div>
+            <div class="mb-4">
+              <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div id="scenarioProgressBar" class="h-full bg-gradient-to-r from-emerald-500 to-sky-500 transition-all" style="width: 0%"></div>
+              </div>
+              <div class="flex justify-between text-xs text-slate-400 mt-1">
+                <span id="scenarioStep">0/0 calls</span>
+                <span id="scenarioPercent">0%</span>
+              </div>
+            </div>
+            <div class="grid grid-cols-4 gap-4 text-xs font-data">
+              <div>
+                <div class="text-slate-400">CALLS</div>
+                <div class="text-lg font-semibold" id="scenarioCalls">0</div>
+              </div>
+              <div>
+                <div class="text-slate-400">HIT RATE</div>
+                <div class="text-lg font-semibold text-emerald-400" id="scenarioHitRate">0%</div>
+              </div>
+              <div>
+                <div class="text-slate-400">AVG LATENCY</div>
+                <div class="text-lg font-semibold text-sky-400" id="scenarioLatency">0ms</div>
+              </div>
+              <div>
+                <div class="text-slate-400">SAVINGS</div>
+                <div class="text-lg font-semibold text-emerald-400" id="scenarioSavings">$0.00</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
       
       <!-- Right Sidebar: AI Assistant -->
@@ -394,6 +491,20 @@
       
     </div>
   </div>
+  
+  <!-- Session Stats Footer -->
+  <footer class="fixed bottom-0 left-0 right-0 glass border-t border-slate-800/80 h-10 flex items-center justify-between px-6 text-xs font-data z-40">
+    <div class="flex gap-6">
+      <span>SYS</span>
+      <span>SESSION: <span id="sessionTime">0m 0s</span></span>
+      <span>CALLS: <span id="sessionCalls">0</span>/50</span>
+      <span>HIT RATE: <span id="footerHitRate" class="text-emerald-400">0%</span> ⚡</span>
+      <span>SAVINGS: $<span id="footerSavings">0.00</span> 💰</span>
+    </div>
+    <div>
+      <button id="viewReportBtn" class="rounded-md border border-slate-700 bg-slate-800/50 px-3 py-1 text-xs text-slate-300 hover:bg-slate-800">📊 View Report</button>
+    </div>
+  </footer>
   
   <!-- Wizard Modal -->
   <div id="wizardModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
@@ -813,6 +924,7 @@
       await initializeStudio();
       loadSectorNodes();
       attachEventListeners();
+      initializeLiveData();
     });
     
     // Initialize Studio with demo/auth detection
@@ -1394,6 +1506,12 @@
       } else if (tabName === 'dynamicview') {
         document.getElementById('dynamicViewTab').classList.add('active');
         document.getElementById('metricsBar').style.display = 'none';
+      } else if (tabName === 'livedemo') {
+        document.getElementById('liveDemoTab').classList.add('active');
+        document.getElementById('metricsBar').style.display = 'none';
+      } else if (tabName === 'scenarios') {
+        document.getElementById('scenariosTab').classList.add('active');
+        document.getElementById('metricsBar').style.display = 'none';
       }
     }
     
@@ -1821,6 +1939,313 @@
       
       document.getElementById('sectorIcon').textContent = sectorIcons[currentSector] || '⚡';
       document.getElementById('sectorName').textContent = sectorNames[currentSector] || currentSector;
+    }
+    
+    // ==============================================================
+    // Live Demo & Scenarios Integration
+    // ==============================================================
+    
+    let liveDataFetcher;
+    let metricsTracker;
+    let scenarioRunner;
+    let sessionStartTime;
+    
+    // Initialize live data modules
+    function initializeLiveData() {
+      if (typeof LiveDataFetcher === 'undefined') {
+        console.warn('LiveDataFetcher not loaded');
+        return;
+      }
+      
+      liveDataFetcher = new LiveDataFetcher();
+      metricsTracker = new LiveMetricsTracker();
+      scenarioRunner = new ScenarioRunner(liveDataFetcher, metricsTracker);
+      sessionStartTime = Date.now();
+      
+      // Populate data source dropdown
+      const select = document.getElementById('dataSourceSelect');
+      LIVE_DATA_SOURCES.forEach(source => {
+        const option = document.createElement('option');
+        option.value = source.id;
+        option.textContent = `${source.name} (${source.category})`;
+        select.appendChild(option);
+      });
+      
+      // Populate scenario cards
+      populateScenarioCards();
+      
+      // Start session timer
+      startSessionTimer();
+    }
+    
+    // Data source selection handler
+    document.getElementById('dataSourceSelect')?.addEventListener('change', (e) => {
+      const sourceId = e.target.value;
+      const fetchBtn = document.getElementById('fetchDataBtn');
+      const fetch10xBtn = document.getElementById('fetch10xBtn');
+      const sourceInfo = document.getElementById('sourceInfo');
+      
+      if (sourceId) {
+        fetchBtn.disabled = false;
+        fetch10xBtn.disabled = false;
+        
+        const source = LIVE_DATA_SOURCES.find(s => s.id === sourceId);
+        if (source) {
+          sourceInfo.classList.remove('hidden');
+          sourceInfo.innerHTML = `
+            <div class="text-slate-300 font-medium">${source.name}</div>
+            <div>${source.description}</div>
+            <div class="mt-1 text-slate-500">Cost: $${source.costPerCall.toFixed(4)}/call • Rate: ${source.rateLimit} calls/min</div>
+          `;
+        }
+      } else {
+        fetchBtn.disabled = true;
+        fetch10xBtn.disabled = true;
+        sourceInfo.classList.add('hidden');
+      }
+    });
+    
+    // Fetch data button
+    document.getElementById('fetchDataBtn')?.addEventListener('click', async () => {
+      await fetchLiveData(1);
+    });
+    
+    // Run 10x button
+    document.getElementById('fetch10xBtn')?.addEventListener('click', async () => {
+      await fetchLiveData(10);
+    });
+    
+    async function fetchLiveData(iterations = 1) {
+      const sourceId = document.getElementById('dataSourceSelect').value;
+      if (!sourceId) return;
+      
+      const statusEl = document.getElementById('liveStatus');
+      const latencyEl = document.getElementById('liveLatency');
+      const costEl = document.getElementById('liveCost');
+      const savedEl = document.getElementById('liveSaved');
+      const viewer = document.getElementById('responseViewer');
+      
+      statusEl.textContent = 'FETCHING...';
+      statusEl.className = 'text-yellow-400';
+      
+      let totalLatency = 0;
+      let totalCost = 0;
+      let totalSaved = 0;
+      let lastResponse = null;
+      
+      for (let i = 0; i < iterations; i++) {
+        const result = await liveDataFetcher.fetch(sourceId);
+        
+        if (result.error) {
+          statusEl.textContent = 'ERROR';
+          statusEl.className = 'text-rose-400';
+          viewer.textContent = JSON.stringify({ error: result.error }, null, 2);
+          return;
+        }
+        
+        totalLatency += result.metadata.latency;
+        totalCost += result.metadata.cost;
+        
+        if (result.metadata.cached) {
+          const source = LIVE_DATA_SOURCES.find(s => s.id === sourceId);
+          totalSaved += source.costPerCall;
+        }
+        
+        lastResponse = result.data;
+        
+        // Track metrics
+        metricsTracker.recordCall(
+          result.metadata.cached ? 'hit' : 'miss',
+          result.metadata.latency,
+          result.metadata.cost
+        );
+      }
+      
+      // Update display
+      statusEl.textContent = 'SUCCESS';
+      statusEl.className = 'text-emerald-400';
+      latencyEl.textContent = `${Math.round(totalLatency / iterations)}ms avg`;
+      costEl.textContent = `$${totalCost.toFixed(4)}`;
+      savedEl.textContent = `$${totalSaved.toFixed(4)}`;
+      
+      viewer.textContent = JSON.stringify(lastResponse, null, 2);
+      
+      // Update footer
+      updateSessionStats();
+    }
+    
+    function populateScenarioCards() {
+      if (typeof DEMO_SCENARIOS === 'undefined') return;
+      
+      const container = document.getElementById('scenarioCards');
+      container.innerHTML = DEMO_SCENARIOS.map(scenario => `
+        <div class="glass-elevated p-4 rounded-lg cursor-pointer hover:border-sky-500 transition-colors" onclick="runScenario('${scenario.id}')">
+          <div class="text-2xl mb-2">${scenario.icon}</div>
+          <h4 class="font-display text-sm mb-2">${scenario.name}</h4>
+          <p class="text-xs text-slate-400 mb-3">${scenario.description}</p>
+          <div class="flex justify-between text-xs text-slate-500">
+            <span>${scenario.calls.length} calls</span>
+            <span>${scenario.cacheStrategy}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    window.runScenario = async function(scenarioId) {
+      const progress = document.getElementById('scenarioProgress');
+      const progressBar = document.getElementById('scenarioProgressBar');
+      const nameEl = document.getElementById('scenarioName');
+      const stepEl = document.getElementById('scenarioStep');
+      const percentEl = document.getElementById('scenarioPercent');
+      const callsEl = document.getElementById('scenarioCalls');
+      const hitRateEl = document.getElementById('scenarioHitRate');
+      const latencyEl = document.getElementById('scenarioLatency');
+      const savingsEl = document.getElementById('scenarioSavings');
+      
+      const scenario = DEMO_SCENARIOS.find(s => s.id === scenarioId);
+      if (!scenario) return;
+      
+      progress.classList.remove('hidden');
+      nameEl.textContent = scenario.name;
+      
+      const totalCalls = scenario.calls.length;
+      let completed = 0;
+      
+      for (const call of scenario.calls) {
+        const result = await liveDataFetcher.fetch(call.source, call.params);
+        
+        metricsTracker.recordCall(
+          result.metadata.cached ? 'hit' : 'miss',
+          result.metadata.latency,
+          result.metadata.cost
+        );
+        
+        completed++;
+        const percent = Math.round((completed / totalCalls) * 100);
+        
+        progressBar.style.width = `${percent}%`;
+        stepEl.textContent = `${completed}/${totalCalls} calls`;
+        percentEl.textContent = `${percent}%`;
+        
+        // Update metrics
+        const stats = metricsTracker.getSessionStats();
+        callsEl.textContent = stats.totalCalls;
+        hitRateEl.textContent = `${stats.hitRate}%`;
+        latencyEl.textContent = `${Math.round(stats.avgLatency)}ms`;
+        savingsEl.textContent = `$${stats.totalSavings.toFixed(2)}`;
+        
+        // Small delay for visual effect
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+      
+      // Update footer
+      updateSessionStats();
+      
+      // Hide progress after 2s
+      setTimeout(() => {
+        progress.classList.add('hidden');
+      }, 2000);
+    };
+    
+    document.getElementById('stopScenarioBtn')?.addEventListener('click', () => {
+      document.getElementById('scenarioProgress').classList.add('hidden');
+    });
+    
+    // Session timer
+    function startSessionTimer() {
+      setInterval(() => {
+        const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        document.getElementById('sessionTime').textContent = `${minutes}m ${seconds}s`;
+      }, 1000);
+    }
+    
+    function updateSessionStats() {
+      const stats = metricsTracker.getSessionStats();
+      document.getElementById('sessionCalls').textContent = stats.totalCalls;
+      document.getElementById('footerHitRate').textContent = `${stats.hitRate}%`;
+      document.getElementById('footerSavings').textContent = stats.totalSavings.toFixed(2);
+    }
+    
+    // View report button
+    document.getElementById('viewReportBtn')?.addEventListener('click', () => {
+      const report = new SessionReport(metricsTracker);
+      const reportData = report.generateReport();
+      
+      // Display in modal or new tab
+      const reportWindow = window.open('', '_blank');
+      reportWindow.document.write(`
+        <html>
+          <head>
+            <title>AgentCache Session Report</title>
+            <style>
+              body { font-family: system-ui; padding: 2rem; background: #0f172a; color: #e2e8f0; }
+              h1 { color: #38bdf8; }
+              .metric { margin: 1rem 0; padding: 1rem; background: #1e293b; border-radius: 8px; }
+              .metric-label { font-size: 0.875rem; color: #94a3b8; }
+              .metric-value { font-size: 1.5rem; font-weight: bold; }
+            </style>
+          </head>
+          <body>
+            <h1>📊 Session Report</h1>
+            <div class="metric">
+              <div class="metric-label">Total Calls</div>
+              <div class="metric-value">${reportData.totalCalls}</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Cache Hit Rate</div>
+              <div class="metric-value" style="color: #10b981">${reportData.hitRate}%</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Average Latency</div>
+              <div class="metric-value">${reportData.avgLatency}ms</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Total Savings</div>
+              <div class="metric-value" style="color: #10b981">$${reportData.totalSavings.toFixed(4)}</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Projected Monthly Savings</div>
+              <div class="metric-value" style="color: #10b981">$${reportData.projectedMonthlySavings.toFixed(2)}</div>
+            </div>
+          </body>
+        </html>
+      `);
+    });
+    
+    // Theme switching
+    document.querySelectorAll('[data-theme-btn]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const theme = btn.dataset.themeBtn;
+        document.body.dataset.theme = theme;
+        
+        // Update active state
+        document.querySelectorAll('[data-theme-btn]').forEach(b => {
+          b.classList.remove('bg-sky-600');
+          b.classList.add('bg-slate-800');
+        });
+        btn.classList.remove('bg-slate-800');
+        btn.classList.add('bg-sky-600');
+        
+        // Store preference
+        localStorage.setItem('agentcache_theme', theme);
+      });
+    });
+    
+    // Restore theme preference
+    const savedTheme = localStorage.getItem('agentcache_theme');
+    if (savedTheme) {
+      document.body.dataset.theme = savedTheme;
+      const btn = document.querySelector(`[data-theme-btn="${savedTheme}"]`);
+      if (btn) {
+        document.querySelectorAll('[data-theme-btn]').forEach(b => {
+          b.classList.remove('bg-sky-600');
+          b.classList.add('bg-slate-800');
+        });
+        btn.classList.remove('bg-slate-800');
+        btn.classList.add('bg-sky-600');
+      }
     }
   </script>
 </body>
