@@ -62,6 +62,21 @@
           <h1 class="text-lg font-semibold tracking-tight">AgentCache Studio</h1>
           <p class="text-xs text-slate-400">Sector-aware pipeline orchestration</p>
         </div>
+        <!-- Navigation -->
+        <div class="flex items-center gap-2 ml-4 pl-4 border-l border-slate-700">
+          <a href="/dashboard.html" class="px-3 py-1.5 text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-900/50 rounded-md">
+            Dashboard
+          </a>
+          <a href="/cognitive-universe.html" class="px-3 py-1.5 text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-900/50 rounded-md">
+            Cognitive Universe
+          </a>
+          <a href="/analytics.html" class="px-3 py-1.5 text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-900/50 rounded-md">
+            Analytics
+          </a>
+          <a href="/settings.html" class="px-3 py-1.5 text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-900/50 rounded-md">
+            Settings
+          </a>
+        </div>
       </div>
       
       <div class="flex items-center gap-4">
@@ -591,6 +606,23 @@
       
       // Optimize button
       document.getElementById('optimizeBtn').addEventListener('click', optimizePipeline);
+      
+      // Tab switching
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tabName = btn.dataset.tab;
+          switchTab(tabName);
+        });
+      });
+      
+      // Dynamic View generation
+      document.getElementById('generateViewBtn').addEventListener('click', generateDynamicView);
+      document.getElementById('dynamicViewPrompt').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') generateDynamicView();
+      });
+      
+      // Load templates
+      loadTemplateGallery();
     }
     
     // Wizard Flow
@@ -885,6 +917,194 @@
         </div>
       `;
     });
+    
+    // ==============================================================
+    // Dynamic View Functionality
+    // ==============================================================
+    
+    function switchTab(tabName) {
+      // Update tab buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.tab === tabName) {
+          btn.classList.add('active');
+        }
+      });
+      
+      // Update tab content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      
+      if (tabName === 'pipeline') {
+        document.getElementById('pipelineTab').classList.add('active');
+        document.getElementById('metricsBar').style.display = 'block';
+      } else if (tabName === 'dynamicview') {
+        document.getElementById('dynamicViewTab').classList.add('active');
+        document.getElementById('metricsBar').style.display = 'none';
+      }
+    }
+    
+    function loadTemplateGallery() {
+      const templates = [
+        { id: 'pipeline-dashboard', name: '📊 Pipeline Dashboard', icon: '📊' },
+        { id: 'cost-analyzer', name: '💰 Cost Analyzer', icon: '💰' },
+        { id: 'compliance-audit', name: '🔒 Compliance', icon: '🔒' },
+        { id: 'hit-rate-viz', name: '🎯 Hit Rate', icon: '🎯' },
+        { id: 'node-config', name: '⚙️ Node Config', icon: '⚙️' }
+      ];
+      
+      const gallery = document.getElementById('templateGallery');
+      gallery.innerHTML = templates.map(t => `
+        <button 
+          class="rounded-md border border-slate-700 bg-slate-900/80 hover:bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-300 whitespace-nowrap"
+          onclick="loadTemplate('${t.id}')"
+        >
+          ${t.icon} ${t.name}
+        </button>
+      `).join('');
+    }
+    
+    async function loadTemplate(templateId) {
+      const canvas = document.getElementById('dynamicViewCanvas');
+      const empty = document.getElementById('dynamicViewEmpty');
+      
+      empty.style.display = 'none';
+      canvas.innerHTML = '<div class="flex items-center justify-center h-full"><div class="text-center"><div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-sky-500 border-r-transparent"></div><p class="mt-4 text-sm text-slate-400">Loading template...</p></div></div>';
+      
+      try {
+        const response = await fetch(`/api/dynamicview/templates/${templateId}`);
+        const data = await response.json();
+        
+        if (data.schema) {
+          renderDynamicView(data.schema);
+        } else {
+          throw new Error('Invalid template response');
+        }
+      } catch (error) {
+        console.error('Template load failed:', error);
+        canvas.innerHTML = `
+          <div class="rounded-lg border-2 border-rose-500 bg-rose-500/10 p-6">
+            <h3 class="text-lg font-semibold text-rose-300 mb-2">⚠️ Failed to load template</h3>
+            <p class="text-sm text-rose-200">${error.message}</p>
+          </div>
+        `;
+      }
+    }
+    
+    async function generateDynamicView() {
+      const input = document.getElementById('dynamicViewPrompt');
+      const prompt = input.value.trim();
+      
+      if (!prompt) {
+        alert('Please enter a description');
+        return;
+      }
+      
+      const canvas = document.getElementById('dynamicViewCanvas');
+      const empty = document.getElementById('dynamicViewEmpty');
+      
+      empty.style.display = 'none';
+      canvas.innerHTML = '<div class="flex items-center justify-center h-full"><div class="text-center"><div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-sky-500 border-r-transparent"></div><p class="mt-4 text-sm text-slate-400">Generating with AI...</p></div></div>';
+      
+      try {
+        const response = await fetch('/api/dynamicview/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt,
+            sector: currentSector,
+            useCache: true
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.schema) {
+          console.log(`[DynamicView] Generated via ${data.metadata.generatedBy} in ${data.metadata.latency}ms`);
+          renderDynamicView(data.schema);
+          input.value = '';
+        } else {
+          throw new Error(data.error || 'Failed to generate view');
+        }
+      } catch (error) {
+        console.error('Dynamic View generation failed:', error);
+        canvas.innerHTML = `
+          <div class="rounded-lg border-2 border-rose-500 bg-rose-500/10 p-6">
+            <h3 class="text-lg font-semibold text-rose-300 mb-2">⚠️ Generation Failed</h3>
+            <p class="text-sm text-rose-200">${error.message}</p>
+          </div>
+        `;
+      }
+    }
+    
+    function renderDynamicView(schema) {
+      const canvas = document.getElementById('dynamicViewCanvas');
+      
+      // Validate schema first
+      if (!schema || !schema.root) {
+        canvas.innerHTML = '<div class="text-sm text-rose-400">Invalid schema: missing root component</div>';
+        return;
+      }
+      
+      // Render the view (simplified - in production, use DynamicViewRenderer React component)
+      canvas.innerHTML = renderComponent(schema.root);
+    }
+    
+    // Simplified component renderer (for demo - production should use React component)
+    function renderComponent(component) {
+      switch (component.type) {
+        case 'container':
+          return `<div class="space-y-4">${component.children?.map(c => renderComponent(c)).join('') || ''}</div>`;
+        
+        case 'grid':
+          const cols = component.columns || 3;
+          return `<div class="grid grid-cols-${cols} gap-4">${component.children?.map(c => renderComponent(c)).join('') || ''}</div>`;
+        
+        case 'card':
+          return `
+            <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              ${component.title ? `<h3 class="text-lg font-semibold text-slate-100 mb-4">${component.title}</h3>` : ''}
+              ${component.children?.map(c => renderComponent(c)).join('') || ''}
+            </div>
+          `;
+        
+        case 'heading':
+          const tag = `h${component.level}`;
+          return `<${tag} class="font-bold text-slate-100">${component.content}</${tag}>`;
+        
+        case 'text':
+          return `<p class="text-slate-300">${component.content}</p>`;
+        
+        case 'metric':
+          return `
+            <div class="flex flex-col gap-1">
+              <span class="text-xs uppercase tracking-wide text-slate-500">${component.label}</span>
+              <span class="text-3xl font-bold text-slate-50">${component.value}</span>
+              ${component.trend ? `<span class="text-sm text-${component.trend === 'up' ? 'emerald' : 'rose'}-400">${component.trend === 'up' ? '↗' : '↘'} ${component.trendValue || ''}</span>` : ''}
+            </div>
+          `;
+        
+        case 'badge':
+          const variantColors = {
+            success: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+            warning: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+            error: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+            info: 'bg-sky-500/20 text-sky-300 border-sky-500/40',
+            neutral: 'bg-slate-500/20 text-slate-300 border-slate-500/40'
+          };
+          return `<span class="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs font-medium ${variantColors[component.variant || 'neutral']}">${component.label}</span>`;
+        
+        case 'row':
+          return `<div class="flex gap-4">${component.children?.map(c => renderComponent(c)).join('') || ''}</div>`;
+        
+        case 'chart':
+          return `<div class="rounded-lg border border-slate-800 bg-slate-900/50 p-4"><h4 class="text-sm font-semibold text-slate-300 mb-3">${component.title || 'Chart'}</h4><div class="h-48 flex items-center justify-center text-slate-500 text-sm">📊 ${component.chartType} chart</div></div>`;
+        
+        default:
+          return `<div class="text-xs text-slate-500">Unknown component: ${component.type}</div>`;
+      }
+    }
   </script>
 </body>
 </html>

@@ -307,42 +307,88 @@
     // Initialize Lucide icons
     lucide.createIcons();
 
-    // Revolutionary cognitive data
-    const cognitiveData = {
-      totalHits: 145830,
-      accuracy: 94.2,
-      latentUsage: 92.3,
-      costSavings: 12847,
-      crossSectorInsights: 47,
-      hallucinationsPrevented: 127,
-      securityBlocks: 43,
-      memoryEfficiency: 87.6,
-      validationCount: 2847,
-      threatCount: 43,
-      memoryOpsCount: 145830,
-      
-      sectors: [
-        { name: 'Healthcare', icon: 'heart-pulse', hitRate: 88.5, latency: 42, compliance: 'HIPAA', health: 'excellent', color: 'emerald', url: '/dashboards/healthcare.html' },
-        { name: 'Finance', icon: 'trending-up', hitRate: 91.2, latency: 38, compliance: 'PCI-DSS', health: 'excellent', color: 'sky', url: '/dashboards/finance.html' },
-        { name: 'Legal', icon: 'scale', hitRate: 85.7, latency: 55, compliance: 'SOC2', health: 'good', color: 'amber', url: '/dashboards/legal.html' },
-        { name: 'Education', icon: 'graduation-cap', hitRate: 90.3, latency: 45, compliance: 'FERPA', health: 'excellent', color: 'purple', url: '/dashboards/education.html' },
-        { name: 'E-commerce', icon: 'shopping-cart', hitRate: 94.1, latency: 35, compliance: 'GDPR', health: 'excellent', color: 'cyan', url: '/dashboards/ecommerce.html' },
-        { name: 'Enterprise', icon: 'building-2', hitRate: 80.2, latency: 62, compliance: 'SOC2', health: 'good', color: 'sky', url: '/dashboards/enterprise.html' },
-        { name: 'Developer', icon: 'code', hitRate: 89.8, latency: 41, compliance: 'None', health: 'excellent', color: 'green', url: '/dashboards/developer.html' },
-        { name: 'Data Science', icon: 'brain', hitRate: 87.4, latency: 48, compliance: 'GDPR', health: 'good', color: 'purple', url: '/dashboards/datascience.html' },
-        { name: 'Government', icon: 'landmark', hitRate: 83.1, latency: 58, compliance: 'FedRAMP', health: 'good', color: 'blue', url: '/dashboards/government.html' },
-        { name: 'General', icon: 'globe', hitRate: 82.3, latency: 51, compliance: 'None', health: 'good', color: 'slate', url: '/dashboards/general.html' }
-      ],
-      
-      performanceHistory: generateTimeSeriesData(24),
-      cognitiveMetrics: {
-        hallucinationsPrevented: 127,
-        injectionAttempts: 43,
-        validMemories: 2847,
-        conflictsResolved: 89,
-        optimizations: 156
-      }
+    // Revolutionary cognitive data - will be populated from API
+    let cognitiveData = {
+      totalHits: 0,
+      accuracy: 0,
+      latentUsage: 0,
+      costSavings: 0,
+      crossSectorInsights: 0,
+      hallucinationsPrevented: 0,
+      securityBlocks: 0,
+      memoryEfficiency: 0,
+      validationCount: 0,
+      threatCount: 0,
+      memoryOpsCount: 0,
+      sectors: [],
+      performanceHistory: [],
+      cognitiveMetrics: {}
     };
+    
+    // Fetch data from live API
+    async function fetchCognitiveData() {
+      try {
+        const timeRange = document.getElementById('timeRange')?.value || '24h';
+        const response = await fetch(`/api/cognitive-universe?timeRange=${timeRange}`);
+        const data = await response.json();
+        
+        // Update cognitive data from API response
+        if (data.metrics) {
+          cognitiveData.totalHits = data.metrics.totalHits || 0;
+          cognitiveData.accuracy = data.metrics.accuracy || 0;
+          cognitiveData.latentUsage = data.metrics.latentUsage || 0;
+          cognitiveData.costSavings = data.metrics.costSavings || 0;
+          cognitiveData.crossSectorInsights = data.metrics.crossSectorInsights || 0;
+          cognitiveData.hallucinationsPrevented = data.metrics.hallucinationsPrevented || 0;
+          cognitiveData.securityBlocks = data.metrics.securityBlocks || 0;
+          cognitiveData.memoryEfficiency = data.metrics.memoryEfficiency || 0;
+        }
+        
+        if (data.cognitive) {
+          cognitiveData.validationCount = data.cognitive.validationCount || 0;
+          cognitiveData.threatCount = data.cognitive.threatCount || 0;
+          cognitiveData.memoryOpsCount = data.cognitive.memoryOpsCount || 0;
+        }
+        
+        if (data.sectors) {
+          cognitiveData.sectors = data.sectors;
+        }
+        
+        if (data.performanceHistory) {
+          cognitiveData.performanceHistory = data.performanceHistory;
+        }
+        
+        return data;
+      } catch (error) {
+        console.error('Error fetching cognitive data:', error);
+        // Return fallback data
+        return null;
+      }
+    }
+    
+    // Fetch latent space data
+    async function fetchLatentSpaceData() {
+      try {
+        const response = await fetch('/api/cognitive-universe?endpoint=latent-space&timeRange=24h');
+        const data = await response.json();
+        return data.latentData || [];
+      } catch (error) {
+        console.error('Error fetching latent space data:', error);
+        return [];
+      }
+    }
+    
+    // Fetch cross-sector intelligence
+    async function fetchCrossSectorData() {
+      try {
+        const response = await fetch('/api/cognitive-universe?endpoint=cross-sector');
+        const data = await response.json();
+        return data.crossSectorData || [];
+      } catch (error) {
+        console.error('Error fetching cross-sector data:', error);
+        return [];
+      }
+    }
 
     function generateTimeSeriesData(hours) {
       const data = [];
@@ -452,42 +498,41 @@
       AgentCacheViz.createSankeyDiagram(container, data);
     }
     
-    // Revolutionary Latent Space Visualization
-    function renderLatentSpace() {
+    // Revolutionary Latent Space Visualization - using live data
+    async function renderLatentSpace() {
       const container = document.getElementById('latentSpaceViz');
       if (!container) return;
       
-      // Generate simulated latent space embeddings for different sectors
+      // Fetch real embeddings from API
+      const embeddingsData = await fetchLatentSpaceData();
+      
       const sectorColors = {
-        Healthcare: '#10b981',
-        Finance: '#0ea5e9',
-        Legal: '#f59e0b',
-        Education: '#a855f7',
-        'E-commerce': '#06b6d4',
-        Enterprise: '#0ea5e9',
-        Developer: '#22c55e',
-        'Data Science': '#a855f7',
-        Government: '#3b82f6',
-        General: '#64748b'
+        healthcare: '#10b981',
+        finance: '#0ea5e9',
+        legal: '#f59e0b',
+        education: '#a855f7',
+        ecommerce: '#06b6d4',
+        enterprise: '#0ea5e9',
+        developer: '#22c55e',
+        datascience: '#a855f7',
+        government: '#3b82f6',
+        general: '#64748b'
       };
       
-      // Generate random embeddings in 2D space
-      const embeddings = [];
-      cognitiveData.sectors.forEach(sector => {
-        const numPoints = Math.floor(Math.random() * 15) + 10;
-        const centerX = Math.random() * 600 + 100;
-        const centerY = Math.random() * 300 + 50;
-        
-        for (let i = 0; i < numPoints; i++) {
-          embeddings.push({
-            x: centerX + (Math.random() - 0.5) * 120,
-            y: centerY + (Math.random() - 0.5) * 80,
-            sector: sector.name,
-            color: sectorColors[sector.name] || '#64748b',
-            query: `Query #${i + 1}`
-          });
-        }
-      });
+      // Use real embeddings or generate fallback
+      const embeddings = embeddingsData.length > 0 ? embeddingsData.map(e => ({
+        x: e.x,
+        y: e.y,
+        sector: e.sector.charAt(0).toUpperCase() + e.sector.slice(1),
+        color: sectorColors[e.sector] || '#64748b',
+        query: e.query
+      })) : [];
+      
+      // If no real data, show message
+      if (embeddings.length === 0) {
+        container.innerHTML = '<div class="flex items-center justify-center h-full text-slate-500">No latent space data available yet</div>';
+        return;
+      }
       
       // Create D3 scatter plot
       const width = container.offsetWidth;
@@ -593,31 +638,31 @@
         .attr('r', 4);
     }
     
-    // Revolutionary Cross-Sector Intelligence Network
-    function renderCrossSectorNetwork() {
+    // Revolutionary Cross-Sector Intelligence Network - using live data
+    async function renderCrossSectorNetwork() {
       const container = document.getElementById('crossSectorNetwork');
       if (!container) return;
       
-      // Generate cross-sector intelligence flows
+      // Fetch real cross-sector flows from API
+      const crossSectorFlows = await fetchCrossSectorData();
+      
+      // Generate nodes from sectors
       const nodes = cognitiveData.sectors.map(s => ({
         id: s.name,
         group: s.color
       }));
       
-      const links = [
-        { source: 'Healthcare', target: 'Finance', value: 12 },
-        { source: 'Healthcare', target: 'Legal', value: 8 },
-        { source: 'Finance', target: 'Legal', value: 15 },
-        { source: 'Finance', target: 'E-commerce', value: 10 },
-        { source: 'Legal', target: 'Government', value: 7 },
-        { source: 'Education', target: 'Healthcare', value: 5 },
-        { source: 'E-commerce', target: 'Healthcare', value: 6 },
-        { source: 'Enterprise', target: 'Developer', value: 9 },
-        { source: 'Developer', target: 'Data Science', value: 11 },
-        { source: 'Data Science', target: 'Healthcare', value: 8 },
-        { source: 'Government', target: 'Healthcare', value: 4 },
-        { source: 'General', target: 'Enterprise', value: 6 }
-      ];
+      // Use real cross-sector data or fallback
+      const links = crossSectorFlows.length > 0 ? crossSectorFlows.map(flow => ({
+        source: flow.source.charAt(0).toUpperCase() + flow.source.slice(1),
+        target: flow.target.charAt(0).toUpperCase() + flow.target.slice(1),
+        value: flow.value
+      })) : [];
+      
+      if (links.length === 0) {
+        container.innerHTML = '<div class="flex items-center justify-center h-full text-slate-500">No cross-sector intelligence data available yet</div>';
+        return;
+      }
       
       AgentCacheViz.createNetworkGraph(container, { nodes, links });
     }
@@ -784,14 +829,11 @@
       }
     }
 
-    // Auto-refresh functions
-    function refreshData() {
-      cognitiveData.totalHits += Math.floor(Math.random() * 100);
-      cognitiveData.latentUsage = 88 + Math.random() * 7;
-      cognitiveData.crossSectorInsights = 40 + Math.floor(Math.random() * 15);
-      cognitiveData.hallucinationsPrevented += Math.floor(Math.random() * 3);
-      cognitiveData.securityBlocks += Math.floor(Math.random() * 2);
+    // Auto-refresh functions - fetches live data from API
+    async function refreshData() {
+      await fetchCognitiveData();
       updateMetrics();
+      renderSectorGrid();
     }
 
     function exportReport() {
@@ -809,18 +851,27 @@
     }
 
     // Initialize revolutionary cognitive intelligence dashboard
-    updateMetrics();
-    renderSectorGrid();
-    renderActivityFeed();
+    async function initDashboard() {
+      // Fetch initial data from API
+      await fetchCognitiveData();
+      
+      // Render all components
+      updateMetrics();
+      renderSectorGrid();
+      renderActivityFeed();
+      
+      // Revolutionary visualizations
+      renderQueryFlowSankey();
+      await renderLatentSpace();
+      await renderCrossSectorNetwork();
+      
+      // Live updates
+      setInterval(addCognitiveFeedItem, 3000);
+      setInterval(refreshData, 30000); // Refresh every 30 seconds
+    }
     
-    // Revolutionary visualizations
-    renderQueryFlowSankey();
-    renderLatentSpace();
-    renderCrossSectorNetwork();
-    
-    // Live updates
-    setInterval(addCognitiveFeedItem, 3000);
-    setInterval(refreshData, 10000);
+    // Start dashboard
+    initDashboard();
   </script>
 </body>
 </html>

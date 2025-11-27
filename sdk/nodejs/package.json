@@ -1,0 +1,54 @@
+{
+  "name": "@agentcache/sdk",
+  "version": "0.1.0",
+  "description": "TypeScript/JavaScript SDK for AgentCache.ai cognitive caching platform",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "agentcache",
+    "ai",
+    "caching",
+    "llm",
+    "cognitive-cache",
+    "typescript",
+    "javascript"
+  ],
+  "author": "AgentCache Team <support@agentcache.ai>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agentcache/nodejs-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/agentcache/nodejs-sdk/issues"
+  },
+  "homepage": "https://docs.agentcache.ai",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
+}

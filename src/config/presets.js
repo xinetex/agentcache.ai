@@ -419,6 +419,278 @@ export const PIPELINE_PRESETS = {
     }
   ],
 
+  education: [
+    {
+      id: 'intelligent_tutor',
+      name: 'Intelligent Tutoring System',
+      description: 'FERPA-compliant AI tutor with pedagogical validation',
+      icon: '🎓',
+      tier: 'professional',
+      estimatedSavings: '$2,400/mo',
+      metrics: {
+        hitRate: 0.90,
+        latency: 120,
+        savingsPerRequest: 0.95
+      },
+      nodes: [
+        { type: 'input', position: { x: 100, y: 200 }, config: {} },
+        { 
+          type: 'ferpa_filter', 
+          position: { x: 350, y: 200 },
+          config: { mode: 'redact', protected_fields: ['student_id', 'grades'] }
+        },
+        { 
+          type: 'cache_l3', 
+          position: { x: 600, y: 200 },
+          config: { ttl: 2592000, storage: 'postgresql' }
+        },
+        { 
+          type: 'openai', 
+          position: { x: 850, y: 200 },
+          config: { model: 'gpt-4o', temperature: 0.7 }
+        },
+        { 
+          type: 'learning_analytics', 
+          position: { x: 1100, y: 200 },
+          config: { anonymize: true, track_metrics: ['questions_asked', 'topics'] }
+        },
+        { type: 'output', position: { x: 1350, y: 200 }, config: {} }
+      ],
+      edges: [
+        { source: 'input-0', target: 'ferpa_filter-1' },
+        { source: 'ferpa_filter-1', target: 'cache_l3-2' },
+        { source: 'cache_l3-2', target: 'openai-3', label: 'MISS' },
+        { source: 'openai-3', target: 'learning_analytics-4' },
+        { source: 'learning_analytics-4', target: 'output-5' }
+      ],
+      tags: ['education', 'ferpa', 'tutoring'],
+      useCase: 'AI tutoring, homework help, adaptive learning',
+      compliance: ['FERPA', 'COPPA'],
+      recommended: true
+    }
+  ],
+
+  enterprise: [
+    {
+      id: 'knowledge_assistant',
+      name: 'Enterprise Knowledge Assistant',
+      description: 'Internal knowledge base with department routing',
+      icon: '🏢',
+      tier: 'enterprise',
+      estimatedSavings: '$3,200/mo',
+      metrics: {
+        hitRate: 0.80,
+        latency: 150,
+        savingsPerRequest: 1.05
+      },
+      nodes: [
+        { type: 'input', position: { x: 100, y: 200 }, config: {} },
+        { 
+          type: 'sso_connector', 
+          position: { x: 350, y: 200 },
+          config: { provider: 'okta', namespace_from_group: true }
+        },
+        { 
+          type: 'department_router', 
+          position: { x: 600, y: 200 },
+          config: { departments: ['hr', 'it'], auto_detect: true }
+        },
+        { 
+          type: 'cache_l2', 
+          position: { x: 850, y: 200 },
+          config: { ttl: 86400, storage: 'redis' }
+        },
+        { 
+          type: 'openai', 
+          position: { x: 1100, y: 200 },
+          config: { model: 'gpt-4' }
+        },
+        { type: 'output', position: { x: 1350, y: 200 }, config: {} }
+      ],
+      edges: [
+        { source: 'input-0', target: 'sso_connector-1' },
+        { source: 'sso_connector-1', target: 'department_router-2' },
+        { source: 'department_router-2', target: 'cache_l2-3' },
+        { source: 'cache_l2-3', target: 'openai-4', label: 'MISS' },
+        { source: 'openai-4', target: 'output-5' }
+      ],
+      tags: ['enterprise', 'internal', 'sso'],
+      useCase: 'HR Q&A, IT support, internal documentation',
+      compliance: ['SOC2'],
+      recommended: true
+    }
+  ],
+
+  developer: [
+    {
+      id: 'code_assistant',
+      name: 'Code Intelligence',
+      description: 'Context-aware code generation with reasoning cache',
+      icon: '👨‍💻',
+      tier: 'professional',
+      estimatedSavings: '$3,800/mo',
+      metrics: {
+        hitRate: 0.90,
+        latency: 85,
+        savingsPerRequest: 2.15
+      },
+      nodes: [
+        { type: 'input', position: { x: 100, y: 200 }, config: {} },
+        { 
+          type: 'secret_scanner', 
+          position: { x: 350, y: 200 },
+          config: { mode: 'redact', patterns: ['aws', 'github', 'openai'] }
+        },
+        { 
+          type: 'reasoning_cache', 
+          position: { x: 600, y: 200 },
+          config: { cache_traces: true, ttl_days: 30 }
+        },
+        { 
+          type: 'cache_l3', 
+          position: { x: 850, y: 200 },
+          config: { ttl: 604800, storage: 'postgresql' }
+        },
+        { 
+          type: 'openai', 
+          position: { x: 1100, y: 200 },
+          config: { model: 'gpt-4o' }
+        },
+        { 
+          type: 'cost_tracker', 
+          position: { x: 1350, y: 200 },
+          config: { group_by: 'project', budget_alert: 50 }
+        },
+        { type: 'output', position: { x: 1600, y: 200 }, config: {} }
+      ],
+      edges: [
+        { source: 'input-0', target: 'secret_scanner-1' },
+        { source: 'secret_scanner-1', target: 'reasoning_cache-2' },
+        { source: 'reasoning_cache-2', target: 'cache_l3-3' },
+        { source: 'cache_l3-3', target: 'openai-4', label: 'MISS' },
+        { source: 'openai-4', target: 'cost_tracker-5' },
+        { source: 'cost_tracker-5', target: 'output-6' }
+      ],
+      tags: ['developer', 'code', 'reasoning'],
+      useCase: 'Code generation, debugging, documentation',
+      recommended: true
+    }
+  ],
+
+  datascience: [
+    {
+      id: 'rag_ml_pipeline',
+      name: 'RAG + ML Pipeline',
+      description: 'Lakehouse-connected RAG with embedding cache',
+      icon: '📊',
+      tier: 'enterprise',
+      estimatedSavings: '$5,600/mo',
+      metrics: {
+        hitRate: 0.80,
+        latency: 180,
+        savingsPerRequest: 1.85
+      },
+      nodes: [
+        { type: 'input', position: { x: 100, y: 200 }, config: {} },
+        { 
+          type: 'lakehouse_source', 
+          position: { x: 350, y: 200 },
+          config: { platform: 'databricks', catalog: 'main' }
+        },
+        { 
+          type: 'embedding_cache', 
+          position: { x: 600, y: 200 },
+          config: { model: 'text-embedding-3-small', ttl_days: 30 }
+        },
+        { 
+          type: 'cache_l2', 
+          position: { x: 850, y: 200 },
+          config: { ttl: 86400, storage: 'redis' }
+        },
+        { 
+          type: 'openai', 
+          position: { x: 1100, y: 200 },
+          config: { model: 'gpt-4o' }
+        },
+        { 
+          type: 'experiment_tracker', 
+          position: { x: 1350, y: 200 },
+          config: { platform: 'mlflow', log_metrics: true }
+        },
+        { type: 'output', position: { x: 1600, y: 200 }, config: {} }
+      ],
+      edges: [
+        { source: 'input-0', target: 'lakehouse_source-1' },
+        { source: 'lakehouse_source-1', target: 'embedding_cache-2' },
+        { source: 'embedding_cache-2', target: 'cache_l2-3' },
+        { source: 'cache_l2-3', target: 'openai-4', label: 'MISS' },
+        { source: 'openai-4', target: 'experiment_tracker-5' },
+        { source: 'experiment_tracker-5', target: 'output-6' }
+      ],
+      tags: ['datascience', 'rag', 'ml', 'embeddings'],
+      useCase: 'RAG systems, data analysis, feature engineering',
+      compliance: ['SOC2'],
+      recommended: true
+    }
+  ],
+
+  government: [
+    {
+      id: 'secure_gov_intelligence',
+      name: 'Secure Government Intelligence',
+      description: 'FedRAMP-compliant pipeline with IL2/IL4/IL5 support',
+      icon: '🏛️',
+      tier: 'enterprise',
+      estimatedSavings: '$8,400/mo',
+      metrics: {
+        hitRate: 0.75,
+        latency: 200,
+        savingsPerRequest: 2.80
+      },
+      nodes: [
+        { type: 'input', position: { x: 100, y: 200 }, config: {} },
+        { 
+          type: 'security_gate', 
+          position: { x: 350, y: 200 },
+          config: { impact_level: 'IL4', classification_check: true }
+        },
+        { 
+          type: 'cui_filter', 
+          position: { x: 600, y: 200 },
+          config: { mode: 'block', cui_detection: true }
+        },
+        { 
+          type: 'cache_l2', 
+          position: { x: 850, y: 200 },
+          config: { ttl: 3600, storage: 'postgresql', region: 'us-gov-west-1' }
+        },
+        { 
+          type: 'openai', 
+          position: { x: 1100, y: 200 },
+          config: { model: 'gpt-4o' }
+        },
+        { 
+          type: 'fedramp_audit', 
+          position: { x: 1350, y: 200 },
+          config: { nist_controls: true, oscal_export: true }
+        },
+        { type: 'output', position: { x: 1600, y: 200 }, config: {} }
+      ],
+      edges: [
+        { source: 'input-0', target: 'security_gate-1' },
+        { source: 'security_gate-1', target: 'cui_filter-2' },
+        { source: 'cui_filter-2', target: 'cache_l2-3' },
+        { source: 'cache_l2-3', target: 'openai-4', label: 'MISS' },
+        { source: 'openai-4', target: 'fedramp_audit-5' },
+        { source: 'fedramp_audit-5', target: 'output-6' }
+      ],
+      tags: ['government', 'fedramp', 'fisma', 'classified'],
+      useCase: 'Citizen services, scientific research, national security',
+      compliance: ['FedRAMP', 'FISMA', 'NIST 800-53'],
+      recommended: true
+    }
+  ],
+
   general: [
     {
       id: 'basic_llm_cache',
