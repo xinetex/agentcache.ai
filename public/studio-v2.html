@@ -9,6 +9,14 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="/dynamicview-renderer.js"></script>
   <script src="/js/workspace-manager.js"></script>
+  
+  <!-- Console Theme CSS -->
+  <link rel="stylesheet" href="/css/console-base.css">
+  
+  <!-- Live Data Integration -->
+  <script src="/js/live-data-sources.js"></script>
+  <script src="/js/demo-scenarios.js"></script>
+  <script src="/js/live-metrics.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
     
@@ -48,7 +56,7 @@
     .template-card:hover { transform: translateY(-2px); border-color: rgb(14 165 233); }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 antialiased">
+<body class="scanlines noise bg-slate-950 text-slate-100 antialiased" data-theme="console">
   
   <!-- Main Layout -->
   <div class="flex h-screen flex-col">
@@ -107,6 +115,13 @@
             <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
             HIPAA
           </span>
+        </div>
+        
+        <!-- Theme Selector -->
+        <div class="theme-selector">
+          <button class="theme-btn active" data-theme="console">Console</button>
+          <button class="theme-btn" data-theme="corporate">Corporate</button>
+          <button class="theme-btn" data-theme="tactical">Tactical</button>
         </div>
         
         <!-- Actions -->
