@@ -79,9 +79,13 @@
       "destination": "/api/pii.js"
     },
     {
+      "source": "/api/cognitive-universe",
+      "destination": "/api/cognitive-universe.js"
+    },
+    {
       "source": "/daily",
       "destination": "/daily.html"
-    },
+    }
     {
       "source": "/visualizations",
       "destination": "/visualizations.html"
