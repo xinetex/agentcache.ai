@@ -9,6 +9,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://d3js.org/d3-sankey.v0.12.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="/js/visualizations/agentcache-viz.js"></script>
   
   <style>
@@ -293,10 +294,26 @@
           </div>
         </div>
 
+        <!-- Performance History Chart -->
+        <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+          <h2 class="text-lg font-semibold text-slate-50 mb-4">Performance Trends</h2>
+          <div style="height: 300px;">
+            <canvas id="performanceChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Cognitive Operations Chart -->
+        <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+          <h2 class="text-lg font-semibold text-slate-50 mb-4">Cognitive Operations Distribution</h2>
+          <div style="height: 300px;">
+            <canvas id="cognitiveChart"></canvas>
+          </div>
+        </div>
+
         <!-- Live Activity Feed -->
         <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
           <h2 class="text-lg font-semibold text-slate-50 mb-4">Live Activity Feed</h2>
-          <div id="liveFeed" class="space-y-2 max-h-96 overflow-y-auto"></div>
+          <div id="liveFeed" id="activityFeed" class="space-y-2 max-h-96 overflow-y-auto"></div>
         </div>
 
       </main>
@@ -320,9 +337,26 @@
       validationCount: 0,
       threatCount: 0,
       memoryOpsCount: 0,
-      sectors: [],
-      performanceHistory: [],
-      cognitiveMetrics: {}
+      sectors: [
+        { name: 'Healthcare', hitRate: 91, latency: 127, color: 'emerald', health: 'excellent', icon: 'heart-pulse', compliance: 'HIPAA', url: '/dashboards/healthcare.html' },
+        { name: 'Finance', hitRate: 87, latency: 145, color: 'sky', health: 'excellent', icon: 'trending-up', compliance: 'PCI-DSS', url: '/dashboards/finance.html' },
+        { name: 'Legal', hitRate: 94, latency: 112, color: 'amber', health: 'excellent', icon: 'scale', compliance: 'ABA', url: '/dashboards/legal.html' },
+        { name: 'Education', hitRate: 89, latency: 135, color: 'purple', health: 'good', icon: 'graduation-cap', compliance: 'FERPA', url: '/dashboards/education.html' },
+        { name: 'Ecommerce', hitRate: 85, latency: 156, color: 'cyan', health: 'good', icon: 'shopping-cart', compliance: 'GDPR', url: '/dashboards/ecommerce.html' },
+        { name: 'Enterprise', hitRate: 92, latency: 98, color: 'blue', health: 'excellent', icon: 'building', compliance: 'SOC2', url: '/dashboards/enterprise.html' },
+        { name: 'Developer', hitRate: 88, latency: 142, color: 'green', health: 'good', icon: 'code', compliance: 'SOC2', url: '/dashboards/developer.html' },
+        { name: 'Data Science', hitRate: 90, latency: 128, color: 'violet', health: 'excellent', icon: 'bar-chart', compliance: 'ISO27001', url: '/dashboards/datascience.html' },
+        { name: 'Government', hitRate: 95, latency: 115, color: 'indigo', health: 'excellent', icon: 'landmark', compliance: 'FedRAMP', url: '/dashboards/government.html' },
+        { name: 'General', hitRate: 83, latency: 167, color: 'slate', health: 'good', icon: 'globe', compliance: 'SOC2', url: '/dashboards/general.html' }
+      ],
+      performanceHistory: generateTimeSeriesData(24),
+      cognitiveMetrics: {
+        hallucinationsPrevented: 47,
+        injectionAttempts: 12,
+        validMemories: 8945,
+        conflictsResolved: 23,
+        optimizations: 156
+      }
     };
     
     // Fetch data from live API
