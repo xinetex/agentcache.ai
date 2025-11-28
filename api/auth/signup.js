@@ -5,6 +5,11 @@ import { query } from '../../lib/db.js';
 const BCRYPT_ROUNDS = 10;
 
 export default async function handler(req, res) {
+  // CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
   if (req.method === 'OPTIONS') {
     return res.status(200).json({ ok: true });
   }
@@ -14,7 +19,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { email, password, full_name } = req.body;
+    // Parse body if it's a string (Vercel edge function format)
+    let body = req.body;
+    if (typeof body === 'string') {
+      body = JSON.parse(body);
+    }
+    const { email, password, full_name } = body;
 
     // Validate input
     if (!email || !password || !full_name) {
