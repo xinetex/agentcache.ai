@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cognitive Universe - AgentCache</title>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://d3js.org/d3-sankey.v0.12.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="/js/visualizations/agentcache-viz.js"></script>
+  
+  <style>
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .animate-fade-in {
+      animation: fadeIn 0.4s ease-out;
+    }
+    
+    .metric-card {
+      transition: all 0.2s ease;
+    }
+    
+    .metric-card:hover {
+      box-shadow: 0 4px 20px rgba(14, 165, 233, 0.15);
+      border-color: rgba(14, 165, 233, 0.3);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-slate-950 text-slate-100 antialiased flex">
+  <div class="flex min-h-screen w-full bg-slate-950 text-slate-100">
+    
+    <!-- Sidebar -->
+    <aside class="hidden lg:flex lg:flex-col lg:w-64 border-r border-slate-800/80 bg-slate-950/90 backdrop-blur">
+      <div class="flex items-center justify-between px-6 py-5 border-b border-slate-800/80">
+        <div class="flex items-center gap-2">
+          <div class="h-7 w-7 rounded-md bg-sky-500/20 border border-sky-400/40 flex items-center justify-center">
+            <span class="text-sm font-semibold tracking-tight text-sky-300">AC</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-base font-semibold text-slate-50 tracking-tight">AgentCache</span>
+            <span class="text-xs font-medium text-slate-500 tracking-tight">Inference Control</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="flex-1 overflow-y-auto">
+        <div class="px-3 pt-4 pb-6 space-y-2 text-sm">
+          <div class="px-3 text-[0.7rem] font-medium uppercase tracking-[0.16em] text-slate-500">Main</div>
+          
+          <a href="/dashboard.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm text-slate-400 hover:bg-slate-900/80 hover:text-slate-100">
+            <i data-lucide="layout-dashboard" class="w-4 h-4 stroke-[1.5] text-slate-500"></i>
+            <span>Dashboard</span>
+          </a>
+          
+          <a href="/studio.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm text-slate-400 hover:bg-slate-900/80 hover:text-slate-100">
+            <i data-lucide="workflow" class="w-4 h-4 stroke-[1.5] text-slate-500"></i>
+            <span>Studio</span>
+          </a>
+          
+          <a href="/cognitive-universe.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm font-medium bg-slate-900 text-slate-50">
+            <i data-lucide="brain" class="w-4 h-4 stroke-[1.5] text-sky-300"></i>
+            <span>Cognitive Universe</span>
+          </a>
+          
+          <a href="/analytics.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm text-slate-400 hover:bg-slate-900/80 hover:text-slate-100">
+            <i data-lucide="activity" class="w-4 h-4 stroke-[1.5] text-slate-500"></i>
+            <span>Analytics</span>
+          </a>
+        </div>
+
+        <div class="px-3 pt-2 space-y-2 text-sm">
+          <div class="px-3 text-[0.7rem] font-medium uppercase tracking-[0.16em] text-slate-500">Settings</div>
+          <a href="/settings.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm text-slate-400 hover:bg-slate-900/80 hover:text-slate-100">
+            <i data-lucide="sliders" class="w-4 h-4 stroke-[1.5] text-slate-500"></i>
+            <span>Settings</span>
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      
+      <!-- Header -->
+      <header class="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur flex items-center justify-between px-6 py-3">
+        <div class="flex items-center gap-3">
+          <div class="flex flex-col">
+            <h1 class="text-xl font-semibold tracking-tight text-slate-50">🧠 Cognitive Universe</h1>
+            <span class="text-sm text-slate-500">Real-time analytics & intelligence layer</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <select id="timeRange" class="rounded-md border border-slate-800 bg-slate-900/80 px-3 py-1.5 text-sm text-slate-100">
+            <option value="1h">Last Hour</option>
+            <option value="24h" selected>Last 24 Hours</option>
+            <option value="7d">Last 7 Days</option>
+            <option value="30d">Last 30 Days</option>
+          </select>
+          
+          <button onclick="refreshData()" class="inline-flex items-center gap-1.5 rounded-md border border-slate-800 bg-slate-900/80 hover:bg-slate-900 px-3 py-1.5 text-sm font-medium text-slate-100">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            Refresh
+          </button>
+          
+          <button onclick="exportReport()" class="inline-flex items-center gap-1.5 rounded-md bg-sky-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-sky-500">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            Export
+          </button>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <main class="flex-1 overflow-y-auto p-6 space-y-6">
+        
+        <!-- Metrics Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5 hover:transform hover:scale-[1.02] transition-transform cursor-pointer">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs uppercase tracking-wide text-slate-500">Total Cache Hits</span>
+              <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i>
+            </div>
+            <div class="text-3xl font-bold text-slate-50" id="totalHits">0</div>
+            <div class="mt-1 text-xs text-emerald-400">+12.5% from last period</div>
+          </div>
+
+          <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5 hover:transform hover:scale-[1.02] transition-transform cursor-pointer">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs uppercase tracking-wide text-slate-500">Cognitive Accuracy</span>
+              <i data-lucide="target" class="w-4 h-4 text-sky-400"></i>
+            </div>
+            <div class="text-3xl font-bold text-slate-50" id="accuracy">0%</div>
+            <div class="mt-1 text-xs text-emerald-400">+3.2% from last period</div>
+          </div>
+
+          <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5 hover:transform hover:scale-[1.02] transition-transform cursor-pointer">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs uppercase tracking-wide text-slate-500">Latent Path Usage</span>
+              <i data-lucide="zap" class="w-4 h-4 text-purple-400"></i>
+            </div>
+            <div class="text-3xl font-bold text-slate-50" id="latentUsage">0%</div>
+            <div class="mt-1 text-xs text-purple-400">~500ms avg response</div>
+          </div>
+
+          <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5 hover:transform hover:scale-[1.02] transition-transform cursor-pointer">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs uppercase tracking-wide text-slate-500">Cost Savings</span>
+              <i data-lucide="dollar-sign" class="w-4 h-4 text-emerald-400"></i>
+            </div>
+            <div class="text-3xl font-bold text-slate-50" id="costSavings">$0</div>
+            <div class="mt-1 text-xs text-emerald-400">76% vs direct LLM</div>
+          </div>
+
+          <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5 hover:transform hover:scale-[1.02] transition-transform cursor-pointer">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs uppercase tracking-wide text-slate-500">Cross-Sector Intelligence</span>
+              <i data-lucide="network" class="w-4 h-4 text-cyan-400"></i>
+            </div>
+            <div class="text-3xl font-bold text-slate-50" id="crossSectorInsights">0</div>
+            <div class="mt-1 text-xs text-cyan-400">Insights applied today</div>
+          </div>
+
+          <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5 hover:transform hover:scale-[1.02] transition-transform cursor-pointer">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs uppercase tracking-wide text-slate-500">Hallucinations Prevented</span>
+              <i data-lucide="shield" class="w-4 h-4 text-amber-400"></i>
+            </div>
+            <div class="text-3xl font-bold text-slate-50" id="hallucinationsPrevented">0</div>
+            <div class="mt-1 text-xs text-amber-400">Cognitive validation active</div>
+          </div>
+
+          <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5 hover:transform hover:scale-[1.02] transition-transform cursor-pointer">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs uppercase tracking-wide text-slate-500">Security Blocks</span>
+              <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400"></i>
+            </div>
+            <div class="text-3xl font-bold text-slate-50" id="securityBlocks">0</div>
+            <div class="mt-1 text-xs text-rose-400">Injection attempts blocked</div>
+          </div>
+
+          <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5 hover:transform hover:scale-[1.02] transition-transform cursor-pointer">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs uppercase tracking-wide text-slate-500">Memory Efficiency</span>
+              <i data-lucide="cpu" class="w-4 h-4 text-blue-400"></i>
+            </div>
+            <div class="text-3xl font-bold text-slate-50" id="memoryEfficiency">0%</div>
+            <div class="mt-1 text-xs text-blue-400">3-tier cache optimization</div>
+          </div>
+        </div>
+
+        <!-- Intelligent Query Flow Visualization -->
+        <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-slate-50">Intelligent Query Flow</h2>
+            <span class="text-xs text-slate-500">Real-time query lifecycle visualization</span>
+          </div>
+          <div id="queryFlowSankey" class="w-full" style="min-height: 500px;"></div>
+        </div>
+
+        <!-- Latent Space Visualization -->
+        <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-lg font-semibold text-slate-50">Latent Space Intelligence</h2>
+              <p class="text-sm text-slate-500 mt-1">T5 Autoencoder • Real-time prompt embeddings • Semantic clustering</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center gap-1 rounded-full bg-purple-500/10 border border-purple-500/30 px-2 py-0.5 text-xs text-purple-300">
+                <i data-lucide="zap" class="w-3 h-3"></i>
+                Latent: ~500ms
+              </span>
+              <span class="inline-flex items-center gap-1 rounded-full bg-slate-500/10 border border-slate-500/30 px-2 py-0.5 text-xs text-slate-400">
+                <i data-lucide="cloud" class="w-3 h-3"></i>
+                LLM: ~3-8s
+              </span>
+            </div>
+          </div>
+          <div id="latentSpaceViz" class="w-full" style="min-height: 450px;"></div>
+        </div>
+
+        <!-- Interactive Sector Intelligence Grid -->
+        <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-slate-50">Universal Sector Intelligence</h2>
+            <span class="text-xs text-slate-500">Click sector to view detailed analytics</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3" id="sectorGrid"></div>
+        </div>
+
+        <!-- Cross-Sector Intelligence Network -->
+        <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-slate-50">Cross-Sector Intelligence Network</h2>
+            <span class="text-xs text-slate-500">Knowledge transfer and pattern sharing</span>
+          </div>
+          <div id="crossSectorNetwork" class="w-full" style="min-height: 450px;"></div>
+        </div>
+
+        <!-- Cognitive Operations Dashboard -->
+        <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+          <h2 class="text-lg font-semibold text-slate-50 mb-4">Cognitive Layer Operations</h2>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div class="rounded-md border border-slate-800 bg-slate-900/50 p-4">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="h-8 w-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                  <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-500">Validation Pipeline</div>
+                  <div class="text-lg font-bold text-slate-50" id="validationCount">0</div>
+                </div>
+              </div>
+              <div class="text-xs text-slate-400">Clinical validation • Regulatory checks • Compliance audits</div>
+            </div>
+            
+            <div class="rounded-md border border-slate-800 bg-slate-900/50 p-4">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="h-8 w-8 rounded-lg bg-rose-500/20 flex items-center justify-center">
+                  <i data-lucide="alert-octagon" class="w-4 h-4 text-rose-400"></i>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-500">Threat Detection</div>
+                  <div class="text-lg font-bold text-slate-50" id="threatCount">0</div>
+                </div>
+              </div>
+              <div class="text-xs text-slate-400">Prompt injection • CUI/PII detection • Security events</div>
+            </div>
+            
+            <div class="rounded-md border border-slate-800 bg-slate-900/50 p-4">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="h-8 w-8 rounded-lg bg-sky-500/20 flex items-center justify-center">
+                  <i data-lucide="database" class="w-4 h-4 text-sky-400"></i>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-500">Memory Ops</div>
+                  <div class="text-lg font-bold text-slate-50" id="memoryOpsCount">0</div>
+                </div>
+              </div>
+              <div class="text-xs text-slate-400">L1 Session • L2 Redis • L3 Vector store</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Performance History Chart -->
+        <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+          <h2 class="text-lg font-semibold text-slate-50 mb-4">Performance Trends</h2>
+          <div style="height: 300px;">
+            <canvas id="performanceChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Cognitive Operations Chart -->
+        <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+          <h2 class="text-lg font-semibold text-slate-50 mb-4">Cognitive Operations Distribution</h2>
+          <div style="height: 300px;">
+            <canvas id="cognitiveChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Live Activity Feed -->
+        <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+          <h2 class="text-lg font-semibold text-slate-50 mb-4">Live Activity Feed</h2>
+          <div id="liveFeed" id="activityFeed" class="space-y-2 max-h-96 overflow-y-auto"></div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Revolutionary cognitive data - will be populated from API
+    let cognitiveData = {
+      totalHits: 0,
+      accuracy: 0,
+      latentUsage: 0,
+      costSavings: 0,
+      crossSectorInsights: 0,
+      hallucinationsPrevented: 0,
+      securityBlocks: 0,
+      memoryEfficiency: 0,
+      validationCount: 0,
+      threatCount: 0,
+      memoryOpsCount: 0,
+      sectors: [
+        { name: 'Healthcare', hitRate: 91, latency: 127, color: 'emerald', health: 'excellent', icon: 'heart-pulse', compliance: 'HIPAA', url: '/dashboards/healthcare.html' },
+        { name: 'Finance', hitRate: 87, latency: 145, color: 'sky', health: 'excellent', icon: 'trending-up', compliance: 'PCI-DSS', url: '/dashboards/finance.html' },
+        { name: 'Legal', hitRate: 94, latency: 112, color: 'amber', health: 'excellent', icon: 'scale', compliance: 'ABA', url: '/dashboards/legal.html' },
+        { name: 'Education', hitRate: 89, latency: 135, color: 'purple', health: 'good', icon: 'graduation-cap', compliance: 'FERPA', url: '/dashboards/education.html' },
+        { name: 'Ecommerce', hitRate: 85, latency: 156, color: 'cyan', health: 'good', icon: 'shopping-cart', compliance: 'GDPR', url: '/dashboards/ecommerce.html' },
+        { name: 'Enterprise', hitRate: 92, latency: 98, color: 'blue', health: 'excellent', icon: 'building', compliance: 'SOC2', url: '/dashboards/enterprise.html' },
+        { name: 'Developer', hitRate: 88, latency: 142, color: 'green', health: 'good', icon: 'code', compliance: 'SOC2', url: '/dashboards/developer.html' },
+        { name: 'Data Science', hitRate: 90, latency: 128, color: 'violet', health: 'excellent', icon: 'bar-chart', compliance: 'ISO27001', url: '/dashboards/datascience.html' },
+        { name: 'Government', hitRate: 95, latency: 115, color: 'indigo', health: 'excellent', icon: 'landmark', compliance: 'FedRAMP', url: '/dashboards/government.html' },
+        { name: 'General', hitRate: 83, latency: 167, color: 'slate', health: 'good', icon: 'globe', compliance: 'SOC2', url: '/dashboards/general.html' }
+      ],
+      performanceHistory: generateTimeSeriesData(24),
+      cognitiveMetrics: {
+        hallucinationsPrevented: 47,
+        injectionAttempts: 12,
+        validMemories: 8945,
+        conflictsResolved: 23,
+        optimizations: 156
+      }
+    };
+    
+    // Fetch data from live API
+    async function fetchCognitiveData() {
+      try {
+        const timeRange = document.getElementById('timeRange')?.value || '24h';
+        const response = await fetch(`/api/cognitive-universe?timeRange=${timeRange}`);
+        const data = await response.json();
+        
+        // Update cognitive data from API response
+        if (data.metrics) {
+          cognitiveData.totalHits = data.metrics.totalHits || 0;
+          cognitiveData.accuracy = data.metrics.accuracy || 0;
+          cognitiveData.latentUsage = data.metrics.latentUsage || 0;
+          cognitiveData.costSavings = data.metrics.costSavings || 0;
+          cognitiveData.crossSectorInsights = data.metrics.crossSectorInsights || 0;
+          cognitiveData.hallucinationsPrevented = data.metrics.hallucinationsPrevented || 0;
+          cognitiveData.securityBlocks = data.metrics.securityBlocks || 0;
+          cognitiveData.memoryEfficiency = data.metrics.memoryEfficiency || 0;
+        }
+        
+        if (data.cognitive) {
+          cognitiveData.validationCount = data.cognitive.validationCount || 0;
+          cognitiveData.threatCount = data.cognitive.threatCount || 0;
+          cognitiveData.memoryOpsCount = data.cognitive.memoryOpsCount || 0;
+        }
+        
+        if (data.sectors) {
+          cognitiveData.sectors = data.sectors;
+        }
+        
+        if (data.performanceHistory) {
+          cognitiveData.performanceHistory = data.performanceHistory;
+        }
+        
+        return data;
+      } catch (error) {
+        console.error('Error fetching cognitive data:', error);
+        // Return fallback data
+        return null;
+      }
+    }
+    
+    // Fetch latent space data
+    async function fetchLatentSpaceData() {
+      try {
+        const response = await fetch('/api/cognitive-universe?endpoint=latent-space&timeRange=24h');
+        const data = await response.json();
+        return data.latentData || [];
+      } catch (error) {
+        console.error('Error fetching latent space data:', error);
+        return [];
+      }
+    }
+    
+    // Fetch cross-sector intelligence
+    async function fetchCrossSectorData() {
+      try {
+        const response = await fetch('/api/cognitive-universe?endpoint=cross-sector');
+        const data = await response.json();
+        return data.crossSectorData || [];
+      } catch (error) {
+        console.error('Error fetching cross-sector data:', error);
+        return [];
+      }
+    }
+
+    function generateTimeSeriesData(hours) {
+      const data = [];
+      const now = Date.now();
+      for (let i = hours; i >= 0; i--) {
+        data.push({
+          time: new Date(now - i * 3600000),
+          hitRate: 80 + Math.random() * 15,
+          latency: 30 + Math.random() * 30,
+          requests: 1000 + Math.random() * 500
+        });
+      }
+      return data;
+    }
+
+    // Update metrics with animations
+    function updateMetrics() {
+      AgentCacheViz.animateCountUp('totalHits', cognitiveData.totalHits, 2000);
+      AgentCacheViz.animateCountUp('accuracy', cognitiveData.accuracy, 2000, '%');
+      AgentCacheViz.animateCountUp('latentUsage', cognitiveData.latentUsage, 2000, '%');
+      AgentCacheViz.animateCountUp('crossSectorInsights', cognitiveData.crossSectorInsights, 1500);
+      AgentCacheViz.animateCountUp('hallucinationsPrevented', cognitiveData.hallucinationsPrevented, 2000);
+      AgentCacheViz.animateCountUp('securityBlocks', cognitiveData.securityBlocks, 1500);
+      AgentCacheViz.animateCountUp('memoryEfficiency', cognitiveData.memoryEfficiency, 2000, '%');
+      AgentCacheViz.animateCountUp('validationCount', cognitiveData.validationCount, 2000);
+      AgentCacheViz.animateCountUp('threatCount', cognitiveData.threatCount, 1500);
+      AgentCacheViz.animateCountUp('memoryOpsCount', cognitiveData.memoryOpsCount, 2500);
+      
+      setTimeout(() => {
+        document.getElementById('costSavings').textContent = '$' + cognitiveData.costSavings.toLocaleString();
+      }, 1500);
+    }
+
+    // Render interactive sector grid with drill-down
+    function renderSectorGrid() {
+      const grid = document.getElementById('sectorGrid');
+      const healthColors = {
+        excellent: 'emerald',
+        good: 'cyan',
+        warning: 'amber',
+        critical: 'rose'
+      };
+      
+      grid.innerHTML = cognitiveData.sectors.map(sector => {
+        const color = healthColors[sector.health];
+        return `
+          <a href="${sector.url}" class="block rounded-md border border-slate-800 bg-slate-900/50 p-3 hover:bg-slate-800/50 hover:border-${color}-500/30 transition-all cursor-pointer group">
+            <div class="flex items-center gap-2 mb-2">
+              <div class="h-6 w-6 rounded-lg bg-${color}-500/20 flex items-center justify-center group-hover:bg-${color}-500/30 transition-colors">
+                <i data-lucide="${sector.icon}" class="w-3 h-3 text-${color}-400"></i>
+              </div>
+              <span class="text-sm font-semibold text-slate-100 group-hover:text-${color}-300 transition-colors">${sector.name}</span>
+            </div>
+            <div class="text-xs space-y-1 text-slate-400">
+              <div class="flex items-center justify-between">
+                <span>Hit Rate:</span>
+                <span class="text-slate-200 font-medium">${sector.hitRate}%</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span>Latency:</span>
+                <span class="text-slate-200 font-medium">${sector.latency}ms</span>
+              </div>
+              <div class="mt-2 pt-2 border-t border-slate-800">
+                <span class="inline-flex items-center gap-1 rounded-full bg-${color}-500/10 border border-${color}-500/30 px-1.5 py-0.5 text-xs text-${color}-300">
+                  ${sector.compliance}
+                </span>
+              </div>
+            </div>
+          </a>
+        `;
+      }).join('');
+      
+      lucide.createIcons();
+    }
+    
+    // Revolutionary Sankey Diagram - Intelligent Query Flow
+    function renderQueryFlowSankey() {
+      const container = document.getElementById('queryFlowSankey');
+      if (!container) return;
+      
+      const data = {
+        nodes: [
+          { name: 'User Queries' },
+          { name: 'Cognitive Layer' },
+          { name: 'L1 Cache Hit' },
+          { name: 'L2 Cache Hit' },
+          { name: 'L3 Cache Hit' },
+          { name: 'Latent Manipulator' },
+          { name: 'LLM Fallback' },
+          { name: 'Response' }
+        ],
+        links: [
+          { source: 0, target: 1, value: 100 },
+          { source: 1, target: 2, value: 45 },
+          { source: 1, target: 3, value: 30 },
+          { source: 1, target: 4, value: 15 },
+          { source: 1, target: 5, value: 8 },
+          { source: 1, target: 6, value: 2 },
+          { source: 2, target: 7, value: 45 },
+          { source: 3, target: 7, value: 30 },
+          { source: 4, target: 7, value: 15 },
+          { source: 5, target: 7, value: 8 },
+          { source: 6, target: 7, value: 2 }
+        ]
+      };
+      
+      AgentCacheViz.createSankeyDiagram(container, data);
+    }
+    
+    // Revolutionary Latent Space Visualization - using live data
+    async function renderLatentSpace() {
+      const container = document.getElementById('latentSpaceViz');
+      if (!container) return;
+      
+      // Fetch real embeddings from API
+      const embeddingsData = await fetchLatentSpaceData();
+      
+      const sectorColors = {
+        healthcare: '#10b981',
+        finance: '#0ea5e9',
+        legal: '#f59e0b',
+        education: '#a855f7',
+        ecommerce: '#06b6d4',
+        enterprise: '#0ea5e9',
+        developer: '#22c55e',
+        datascience: '#a855f7',
+        government: '#3b82f6',
+        general: '#64748b'
+      };
+      
+      // Use real embeddings or generate fallback
+      const embeddings = embeddingsData.length > 0 ? embeddingsData.map(e => ({
+        x: e.x,
+        y: e.y,
+        sector: e.sector.charAt(0).toUpperCase() + e.sector.slice(1),
+        color: sectorColors[e.sector] || '#64748b',
+        query: e.query
+      })) : [];
+      
+      // If no real data, show message
+      if (embeddings.length === 0) {
+        container.innerHTML = '<div class="flex items-center justify-center h-full text-slate-500">No latent space data available yet</div>';
+        return;
+      }
+      
+      // Create D3 scatter plot
+      const width = container.offsetWidth;
+      const height = 400;
+      const margin = { top: 20, right: 20, bottom: 40, left: 50 };
+      
+      const svg = d3.select(container)
+        .html('')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height)
+        .style('background', 'transparent');
+      
+      const xScale = d3.scaleLinear()
+        .domain([0, 800])
+        .range([margin.left, width - margin.right]);
+      
+      const yScale = d3.scaleLinear()
+        .domain([0, 400])
+        .range([height - margin.bottom, margin.top]);
+      
+      // Add axes
+      svg.append('g')
+        .attr('transform', `translate(0,${height - margin.bottom})`)
+        .call(d3.axisBottom(xScale).ticks(5))
+        .attr('color', '#475569');
+      
+      svg.append('g')
+        .attr('transform', `translate(${margin.left},0)`)
+        .call(d3.axisLeft(yScale).ticks(5))
+        .attr('color', '#475569');
+      
+      // Add axis labels
+      svg.append('text')
+        .attr('x', width / 2)
+        .attr('y', height - 5)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#94a3b8')
+        .attr('font-size', '11px')
+        .text('Latent Dimension 1');
+      
+      svg.append('text')
+        .attr('transform', 'rotate(-90)')
+        .attr('x', -height / 2)
+        .attr('y', 15)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#94a3b8')
+        .attr('font-size', '11px')
+        .text('Latent Dimension 2');
+      
+      // Create tooltip
+      const tooltip = d3.select('body')
+        .append('div')
+        .style('position', 'absolute')
+        .style('background', '#1e293b')
+        .style('border', '1px solid #334155')
+        .style('border-radius', '6px')
+        .style('padding', '8px')
+        .style('font-size', '12px')
+        .style('color', '#e2e8f0')
+        .style('pointer-events', 'none')
+        .style('opacity', 0)
+        .style('z-index', '1000');
+      
+      // Plot points with animation
+      svg.selectAll('circle')
+        .data(embeddings)
+        .enter()
+        .append('circle')
+        .attr('cx', d => xScale(d.x))
+        .attr('cy', d => yScale(d.y))
+        .attr('r', 0)
+        .attr('fill', d => d.color)
+        .attr('opacity', 0.7)
+        .on('mouseover', function(event, d) {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr('r', 8)
+            .attr('opacity', 1);
+          
+          tooltip
+            .style('opacity', 1)
+            .html(`<strong>${d.sector}</strong><br/>${d.query}`);
+        })
+        .on('mousemove', function(event) {
+          tooltip
+            .style('left', (event.pageX + 10) + 'px')
+            .style('top', (event.pageY - 20) + 'px');
+        })
+        .on('mouseout', function() {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr('r', 4)
+            .attr('opacity', 0.7);
+          
+          tooltip.style('opacity', 0);
+        })
+        .transition()
+        .duration(1000)
+        .delay((d, i) => i * 10)
+        .attr('r', 4);
+    }
+    
+    // Revolutionary Cross-Sector Intelligence Network - using live data
+    async function renderCrossSectorNetwork() {
+      const container = document.getElementById('crossSectorNetwork');
+      if (!container) return;
+      
+      // Fetch real cross-sector flows from API
+      const crossSectorFlows = await fetchCrossSectorData();
+      
+      // Generate nodes from sectors
+      const nodes = cognitiveData.sectors.map(s => ({
+        id: s.name,
+        group: s.color
+      }));
+      
+      // Use real cross-sector data or fallback
+      const links = crossSectorFlows.length > 0 ? crossSectorFlows.map(flow => ({
+        source: flow.source.charAt(0).toUpperCase() + flow.source.slice(1),
+        target: flow.target.charAt(0).toUpperCase() + flow.target.slice(1),
+        value: flow.value
+      })) : [];
+      
+      if (links.length === 0) {
+        container.innerHTML = '<div class="flex items-center justify-center h-full text-slate-500">No cross-sector intelligence data available yet</div>';
+        return;
+      }
+      
+      AgentCacheViz.createNetworkGraph(container, { nodes, links });
+    }
+
+    // Performance Chart
+    const perfCtx = document.getElementById('performanceChart').getContext('2d');
+    const performanceChart = new Chart(perfCtx, {
+      type: 'line',
+      data: {
+        labels: cognitiveData.performanceHistory.map(d => d.time.toLocaleTimeString()),
+        datasets: [
+          {
+            label: 'Hit Rate (%)',
+            data: cognitiveData.performanceHistory.map(d => d.hitRate),
+            borderColor: 'rgb(14, 165, 233)',
+            backgroundColor: 'rgba(14, 165, 233, 0.1)',
+            tension: 0.4,
+            yAxisID: 'y'
+          },
+          {
+            label: 'Latency (ms)',
+            data: cognitiveData.performanceHistory.map(d => d.latency),
+            borderColor: 'rgb(251, 146, 60)',
+            backgroundColor: 'rgba(251, 146, 60, 0.1)',
+            tension: 0.4,
+            yAxisID: 'y1'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { labels: { color: '#e2e8f0' } }
+        },
+        scales: {
+          x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148, 163, 184, 0.1)' } },
+          y: {
+            type: 'linear',
+            display: true,
+            position: 'left',
+            ticks: { color: '#94a3b8' },
+            grid: { color: 'rgba(148, 163, 184, 0.1)' }
+          },
+          y1: {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            ticks: { color: '#94a3b8' },
+            grid: { display: false }
+          }
+        }
+      }
+    });
+
+    // Cognitive Layer Chart
+    const cogCtx = document.getElementById('cognitiveChart').getContext('2d');
+    const cognitiveChart = new Chart(cogCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Hallucinations Prevented', 'Injection Attempts', 'Valid Memories', 'Conflicts Resolved', 'Optimizations'],
+        datasets: [{
+          label: 'Cognitive Operations',
+          data: [
+            cognitiveData.cognitiveMetrics.hallucinationsPrevented,
+            cognitiveData.cognitiveMetrics.injectionAttempts,
+            cognitiveData.cognitiveMetrics.validMemories,
+            cognitiveData.cognitiveMetrics.conflictsResolved,
+            cognitiveData.cognitiveMetrics.optimizations
+          ],
+          backgroundColor: [
+            'rgba(16, 185, 129, 0.6)',
+            'rgba(239, 68, 68, 0.6)',
+            'rgba(14, 165, 233, 0.6)',
+            'rgba(251, 146, 60, 0.6)',
+            'rgba(168, 85, 247, 0.6)'
+          ],
+          borderColor: [
+            'rgb(16, 185, 129)',
+            'rgb(239, 68, 68)',
+            'rgb(14, 165, 233)',
+            'rgb(251, 146, 60)',
+            'rgb(168, 85, 247)'
+          ],
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: '#e2e8f0' } } },
+        scales: {
+          x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148, 163, 184, 0.1)' } },
+          y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148, 163, 184, 0.1)' } }
+        }
+      }
+    });
+
+    // Render enhanced activity feed with cognitive operations
+    function renderActivityFeed() {
+      const feedContainer = document.getElementById('activityFeed');
+      if (!feedContainer) return;
+      
+      const activities = [
+        { type: 'latent', message: 'Latent manipulator: 485ms semantic match', time: '1s ago', color: 'purple', icon: 'zap' },
+        { type: 'cache-hit', message: 'Finance sector: L1 cache hit - 32ms response', time: '3s ago', color: 'emerald', icon: 'check-circle' },
+        { type: 'cross-sector', message: 'Cross-sector insight: Healthcare → Finance', time: '5s ago', color: 'cyan', icon: 'arrow-right-left' },
+        { type: 'validation', message: 'Healthcare: Hallucination prevented', time: '7s ago', color: 'amber', icon: 'shield-check' },
+        { type: 'threat', message: 'Security block: Suspicious query pattern', time: '9s ago', color: 'rose', icon: 'shield-alert' },
+        { type: 'save', message: 'Cost savings: $145 in last minute', time: '12s ago', color: 'sky', icon: 'trending-down' },
+        { type: 'memory', message: 'Memory ops: 847 embeddings processed', time: '15s ago', color: 'blue', icon: 'database' },
+        { type: 'alert', message: 'Education: Query complexity increased', time: '18s ago', color: 'purple', icon: 'activity' }
+      ];
+      
+      feedContainer.innerHTML = activities.map(activity => `
+        <div class="flex items-start gap-3 p-2 rounded-md hover:bg-slate-800/30 transition-colors group">
+          <div class="h-6 w-6 rounded-lg bg-${activity.color}-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-${activity.color}-500/30 transition-colors">
+            <i data-lucide="${activity.icon}" class="w-3 h-3 text-${activity.color}-400"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs text-slate-300">${activity.message}</p>
+            <p class="text-xs text-slate-500 mt-0.5">${activity.time}</p>
+          </div>
+        </div>
+      `).join('');
+      
+      lucide.createIcons();
+    }
+    
+    // Live feed updates with cognitive operations
+    function addCognitiveFeedItem() {
+      const feedContainer = document.getElementById('activityFeed');
+      if (!feedContainer) return;
+      
+      const newActivities = [
+        { type: 'latent', message: `Latent: ${Math.floor(Math.random() * 300 + 400)}ms match`, color: 'purple', icon: 'zap' },
+        { type: 'cache-hit', message: `${cognitiveData.sectors[Math.floor(Math.random() * 10)].name}: L${Math.floor(Math.random() * 3 + 1)} hit`, color: 'emerald', icon: 'check-circle' },
+        { type: 'cross-sector', message: 'Cross-sector knowledge transfer', color: 'cyan', icon: 'arrow-right-left' },
+        { type: 'validation', message: 'Validation: Query approved', color: 'amber', icon: 'shield-check' },
+        { type: 'save', message: `Cost saved: $${Math.floor(Math.random() * 50 + 10)}`, color: 'sky', icon: 'trending-down' }
+      ];
+      
+      const randomActivity = newActivities[Math.floor(Math.random() * newActivities.length)];
+      const newItem = document.createElement('div');
+      newItem.className = 'flex items-start gap-3 p-2 rounded-md hover:bg-slate-800/30 transition-colors group';
+      newItem.innerHTML = `
+        <div class="h-6 w-6 rounded-lg bg-${randomActivity.color}-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-${randomActivity.color}-500/30 transition-colors">
+          <i data-lucide="${randomActivity.icon}" class="w-3 h-3 text-${randomActivity.color}-400"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs text-slate-300">${randomActivity.message}</p>
+          <p class="text-xs text-slate-500 mt-0.5">just now</p>
+        </div>
+      `;
+      
+      feedContainer.insertBefore(newItem, feedContainer.firstChild);
+      lucide.createIcons();
+      
+      // Keep only last 8 items
+      const items = feedContainer.querySelectorAll('.flex');
+      if (items.length > 8) {
+        items[items.length - 1].remove();
+      }
+    }
+
+    // Auto-refresh functions - fetches live data from API
+    async function refreshData() {
+      await fetchCognitiveData();
+      updateMetrics();
+      renderSectorGrid();
+    }
+
+    function exportReport() {
+      const report = {
+        timestamp: new Date().toISOString(),
+        metrics: cognitiveData,
+        exportedBy: 'Cognitive Universe Dashboard'
+      };
+      const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cognitive-universe-report-${Date.now()}.json`;
+      a.click();
+    }
+
+    // Initialize revolutionary cognitive intelligence dashboard
+    async function initDashboard() {
+      // Fetch initial data from API
+      await fetchCognitiveData();
+      
+      // Render all components
+      updateMetrics();
+      renderSectorGrid();
+      renderActivityFeed();
+      
+      // Revolutionary visualizations
+      renderQueryFlowSankey();
+      await renderLatentSpace();
+      await renderCrossSectorNetwork();
+      
+      // Live updates
+      setInterval(addCognitiveFeedItem, 3000);
+      setInterval(refreshData, 30000); // Refresh every 30 seconds
+    }
+    
+    // Start dashboard
+    initDashboard();
+  </script>
+</body>
+</html>

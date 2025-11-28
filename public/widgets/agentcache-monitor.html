@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgentCache Monitor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    .sparkline {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 32px;
+    }
+    
+    .sparkline-bar {
+      flex: 1;
+      background: rgb(14, 165, 233);
+      border-radius: 2px 2px 0 0;
+      transition: height 0.3s ease;
+    }
+    
+    .pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    
+    .status-connected { background-color: rgb(34, 197, 94); }
+    .status-degraded { background-color: rgb(250, 204, 21); }
+    .status-offline { background-color: rgb(239, 68, 68); }
+    
+    .activity-item {
+      border-left: 2px solid rgb(59, 130, 246);
+      padding-left: 12px;
+      margin-bottom: 12px;
+      animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    
+    .progress-bar {
+      height: 4px;
+      background: rgb(30, 41, 59);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, rgb(14, 165, 233), rgb(59, 130, 246));
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100">
+  <div id="monitor-root" class="p-4 space-y-4">
+    <!-- Connection Status -->
+    <div class="bg-slate-900/50 border border-slate-800 rounded-lg p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold text-slate-300">AgentCache CDN</h3>
+        <div id="connection-status" class="flex items-center gap-2">
+          <span class="status-dot status-offline"></span>
+          <span class="text-xs text-slate-400">Connecting...</span>
+        </div>
+      </div>
+      
+      <div id="edge-list" class="space-y-2 text-xs">
+        <div class="text-slate-500">Loading edge locations...</div>
+      </div>
+      
+      <div class="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between text-xs">
+        <span class="text-slate-400">Avg Latency</span>
+        <span id="avg-latency" class="font-mono text-sky-400">--ms</span>
+      </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="bg-slate-900/50 border border-slate-800 rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-slate-300 mb-3">Performance (24h)</h3>
+      
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <div class="text-xs text-slate-400">Cache Hit Rate</div>
+          <div id="hit-rate" class="text-xl font-bold text-emerald-400">--%</div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-400">Bandwidth Saved</div>
+          <div id="bandwidth-saved" class="text-xl font-bold text-sky-400">-- GB</div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-400">Avg Download</div>
+          <div id="avg-download" class="text-xl font-bold text-violet-400">--ms</div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-400">Upload Accel</div>
+          <div id="upload-accel" class="text-xl font-bold text-amber-400">--x</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Transfers -->
+    <div class="bg-slate-900/50 border border-slate-800 rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-slate-300 mb-3">Active Transfers</h3>
+      <div id="active-transfers" class="space-y-3 text-xs">
+        <div class="text-slate-500">No active transfers</div>
+      </div>
+    </div>
+
+    <!-- Recent Activity Feed -->
+    <div class="bg-slate-900/50 border border-slate-800 rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-slate-300 mb-3">Recent Activity</h3>
+      <div id="activity-feed" class="space-y-2 max-h-64 overflow-y-auto">
+        <div class="text-slate-500 text-xs">Loading activity...</div>
+      </div>
+    </div>
+
+    <!-- Cache Status -->
+    <div class="bg-slate-900/50 border border-slate-800 rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-slate-300 mb-3">Cache Status</h3>
+      <div class="flex items-center justify-between mb-2 text-xs">
+        <span class="text-slate-400">Cached Files</span>
+        <span id="cached-files" class="font-mono text-sky-400">--</span>
+      </div>
+      <div class="flex items-center justify-between mb-2 text-xs">
+        <span class="text-slate-400">Cached Chunks</span>
+        <span id="cached-chunks" class="font-mono text-sky-400">--</span>
+      </div>
+      <div class="flex items-center justify-between text-xs">
+        <span class="text-slate-400">Total Size</span>
+        <span id="cached-size" class="font-mono text-sky-400">-- GB</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Configuration - should be passed via URL params or postMessage
+    const CONFIG = {
+      apiUrl: 'https://agentcache.ai/api/jetty/user-stats',
+      apiKey: new URLSearchParams(window.location.search).get('apiKey') || '',
+      userId: new URLSearchParams(window.location.search).get('userId') || '',
+      refreshInterval: 5000, // 5 seconds
+    };
+
+    let statsCache = null;
+
+    // Format bytes to human readable
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Format time ago
+    function timeAgo(timestamp) {
+      const seconds = Math.floor((new Date() - new Date(timestamp)) / 1000);
+      if (seconds < 60) return `${seconds}s ago`;
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `${minutes}m ago`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.floor(hours / 24);
+      return `${days}d ago`;
+    }
+
+    // Fetch stats from API
+    async function fetchStats() {
+      if (!CONFIG.apiKey || !CONFIG.userId) {
+        console.error('Missing apiKey or userId');
+        return null;
+      }
+
+      try {
+        const response = await fetch(`${CONFIG.apiUrl}?userId=${CONFIG.userId}&period=24h`, {
+          headers: {
+            'Authorization': `Bearer ${CONFIG.apiKey}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        statsCache = data;
+        return data;
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+        return null;
+      }
+    }
+
+    // Update connection status
+    function updateConnectionStatus(stats) {
+      const statusEl = document.getElementById('connection-status');
+      const edgeListEl = document.getElementById('edge-list');
+      const avgLatencyEl = document.getElementById('avg-latency');
+
+      if (!stats?.connection) return;
+
+      const { status, active_edges, average_latency_ms } = stats.connection;
+
+      // Update status indicator
+      const statusDot = statusEl.querySelector('.status-dot');
+      const statusText = statusEl.querySelector('span:last-child');
+      
+      statusDot.className = `status-dot status-${status}`;
+      statusText.textContent = status === 'connected' 
+        ? `${active_edges.length} edges active`
+        : status.charAt(0).toUpperCase() + status.slice(1);
+
+      // Update edge list
+      if (active_edges.length > 0) {
+        edgeListEl.innerHTML = active_edges.map(edge => `
+          <div class="flex items-center justify-between">
+            <span class="text-slate-300">📍 ${edge.city}</span>
+            <div class="flex items-center gap-3">
+              <span class="text-sky-400">${edge.latency_ms}ms</span>
+              <div class="w-16 h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div class="h-full bg-sky-500" style="width: ${edge.utilization_percent}%"></div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        edgeListEl.innerHTML = '<div class="text-slate-500">No active edges</div>';
+      }
+
+      // Update average latency
+      avgLatencyEl.textContent = average_latency_ms > 0 ? `${average_latency_ms}ms` : '--ms';
+    }
+
+    // Update performance metrics
+    function updatePerformanceMetrics(stats) {
+      if (!stats?.performance) return;
+
+      const { cache_hit_rate_percent, bandwidth_saved_gb, average_download_ms, upload_acceleration } = stats.performance;
+
+      document.getElementById('hit-rate').textContent = `${cache_hit_rate_percent.toFixed(1)}%`;
+      document.getElementById('bandwidth-saved').textContent = `${bandwidth_saved_gb.toFixed(2)} GB`;
+      document.getElementById('avg-download').textContent = average_download_ms > 0 ? `${average_download_ms}ms` : '--ms';
+      document.getElementById('upload-accel').textContent = `${upload_acceleration.toFixed(1)}x`;
+    }
+
+    // Update active transfers
+    function updateActiveTransfers(stats) {
+      const transfersEl = document.getElementById('active-transfers');
+      
+      if (!stats?.file_transfers?.active_transfers?.length) {
+        transfersEl.innerHTML = '<div class="text-slate-500">No active transfers</div>';
+        return;
+      }
+
+      transfersEl.innerHTML = stats.file_transfers.active_transfers.map(transfer => `
+        <div class="space-y-1">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-300 truncate">${transfer.file_name}</span>
+            <span class="text-sky-400">${transfer.speed_mbps} MB/s</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${transfer.progress_percent}%"></div>
+          </div>
+          <div class="flex items-center justify-between text-slate-500">
+            <span>${transfer.progress_percent}%</span>
+            <span>${transfer.edges_used.length} edges</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Update recent activity feed
+    function updateActivityFeed(stats) {
+      const feedEl = document.getElementById('activity-feed');
+      
+      if (!stats?.file_transfers?.recent_activity?.length) {
+        feedEl.innerHTML = '<div class="text-slate-500">No recent activity</div>';
+        return;
+      }
+
+      feedEl.innerHTML = stats.file_transfers.recent_activity.map(activity => {
+        const icon = activity.type === 'upload' ? '⬆' : '⬇';
+        const accelText = activity.speed_multiplier > 1 
+          ? `${activity.speed_multiplier.toFixed(1)}x faster` 
+          : '';
+        
+        return `
+          <div class="activity-item">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <span>${icon}</span>
+                  <span class="text-slate-300 truncate">${activity.file_name}</span>
+                </div>
+                <div class="text-slate-500 text-xs">
+                  ${formatBytes(activity.file_size)} • ${activity.duration_seconds}s
+                  ${accelText ? `• <span class="text-emerald-400">${accelText}</span>` : ''}
+                  ${activity.edges_used.length > 0 ? `• ${activity.edges_used.length} edges` : ''}
+                </div>
+              </div>
+              <span class="text-xs text-slate-500 whitespace-nowrap">${timeAgo(activity.timestamp)}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Update cache status
+    function updateCacheStatus(stats) {
+      if (!stats?.cache_status) return;
+
+      const { cached_files, cached_chunks, total_cached_size_gb } = stats.cache_status;
+
+      document.getElementById('cached-files').textContent = cached_files;
+      document.getElementById('cached-chunks').textContent = cached_chunks;
+      document.getElementById('cached-size').textContent = `${total_cached_size_gb.toFixed(2)} GB`;
+    }
+
+    // Main update function
+    async function updateDashboard() {
+      const stats = await fetchStats();
+      
+      if (stats) {
+        updateConnectionStatus(stats);
+        updatePerformanceMetrics(stats);
+        updateActiveTransfers(stats);
+        updateActivityFeed(stats);
+        updateCacheStatus(stats);
+      }
+    }
+
+    // Initialize
+    if (CONFIG.apiKey && CONFIG.userId) {
+      updateDashboard();
+      setInterval(updateDashboard, CONFIG.refreshInterval);
+    } else {
+      document.getElementById('monitor-root').innerHTML = `
+        <div class="bg-red-900/20 border border-red-800 rounded-lg p-4 text-center">
+          <p class="text-red-400 text-sm">⚠️ Missing configuration</p>
+          <p class="text-slate-400 text-xs mt-2">Add ?apiKey=YOUR_KEY&userId=YOUR_ID to the URL</p>
+        </div>
+      `;
+    }
+
+    // Initialize Lucide icons
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  </script>
+</body>
+</html>

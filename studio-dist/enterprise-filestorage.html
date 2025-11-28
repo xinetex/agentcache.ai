@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Storage AI Intelligence | AgentCache</title>
+  <meta name="description" content="Cache your file storage AI layer. Reduce LLM costs by 98% while speeding up file operations. Works with Seagate Lyve, Backblaze, Wasabi, and any storage platform.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-fade-in {
+      animation: fadeIn 0.6s ease-out;
+    }
+    
+    .gradient-text {
+      background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+    
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(14, 165, 233, 0.2);
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 antialiased">
+  
+  <!-- Navigation -->
+  <nav class="border-b border-slate-800 bg-slate-950/90 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-2">
+          <div class="h-8 w-8 rounded-lg bg-sky-500/20 border border-sky-400/40 flex items-center justify-center">
+            <span class="text-lg font-bold text-sky-300">AC</span>
+          </div>
+          <span class="text-xl font-bold text-slate-50">AgentCache</span>
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <a href="/how-it-works.html" class="text-sm text-slate-400 hover:text-slate-100">How It Works</a>
+          <a href="/launch-wizard.html" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-semibold text-sm">
+            Start Free Trial
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-sky-500/10 via-transparent to-purple-500/10"></div>
+    
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+      <div class="text-center animate-fade-in">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-sky-500/30 bg-sky-500/10 text-sky-300 text-sm font-medium mb-6">
+          <i data-lucide="database" class="w-4 h-4"></i>
+          File Storage & CDN Intelligence
+        </div>
+        
+        <h1 class="text-5xl md:text-6xl font-bold tracking-tight mb-6">
+          Managing <span class="gradient-text">Billions of Files</span><br/>
+          With AI? Cache Your Intelligence Layer
+        </h1>
+        
+        <p class="text-xl text-slate-400 max-w-3xl mx-auto mb-8">
+          Your file management AI costs <strong class="text-slate-200">$50,000/month</strong> in LLM calls. 
+          AgentCache reduces that to <strong class="text-emerald-400">$1,200</strong> while making responses 15x faster.
+        </p>
+        
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a href="/launch-wizard.html" class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-semibold text-lg shadow-lg shadow-sky-500/30">
+            Start Free Trial
+            <i data-lucide="arrow-right" class="w-5 h-5"></i>
+          </a>
+          
+          <a href="#calculator" class="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-slate-700 hover:border-slate-600 bg-slate-900/50 text-slate-100 font-semibold text-lg">
+            Calculate Your Savings
+            <i data-lucide="calculator" class="w-5 h-5"></i>
+          </a>
+        </div>
+        
+        <div class="mt-12 flex items-center justify-center gap-8 text-sm text-slate-500">
+          <div class="flex items-center gap-2">
+            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+            <span>Works with Seagate Lyve</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+            <span>Backblaze B2</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+            <span>Wasabi, S3, Azure</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem Section -->
+  <section class="py-20 border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl font-bold text-slate-50 mb-4">The File Storage AI Problem</h2>
+        <p class="text-lg text-slate-400 max-w-2xl mx-auto">
+          Every file operation with AI costs money and takes time. At scale, this becomes unsustainable.
+        </p>
+      </div>
+      
+      <div class="grid md:grid-cols-3 gap-8">
+        <!-- Problem 1 -->
+        <div class="p-6 rounded-xl border border-rose-500/30 bg-rose-500/5">
+          <div class="h-12 w-12 rounded-lg bg-rose-500/20 flex items-center justify-center mb-4">
+            <i data-lucide="dollar-sign" class="w-6 h-6 text-rose-400"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-slate-50 mb-2">Expensive LLM Calls</h3>
+          <p class="text-slate-400">
+            Every file metadata query, deduplication check, or audit log search costs $0.002-0.02. 
+            At 1M requests/day, that's <strong class="text-rose-400">$60K/month</strong>.
+          </p>
+        </div>
+        
+        <!-- Problem 2 -->
+        <div class="p-6 rounded-xl border border-amber-500/30 bg-amber-500/5">
+          <div class="h-12 w-12 rounded-lg bg-amber-500/20 flex items-center justify-center mb-4">
+            <i data-lucide="clock" class="w-6 h-6 text-amber-400"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-slate-50 mb-2">Slow Response Times</h3>
+          <p class="text-slate-400">
+            GPT-4 takes 3-8 seconds per query. Users expect sub-second file operations. 
+            <strong class="text-amber-400">Your UX suffers</strong>.
+          </p>
+        </div>
+        
+        <!-- Problem 3 -->
+        <div class="p-6 rounded-xl border border-purple-500/30 bg-purple-500/5">
+          <div class="h-12 w-12 rounded-lg bg-purple-500/20 flex items-center justify-center mb-4">
+            <i data-lucide="trending-up" class="w-6 h-6 text-purple-400"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-slate-50 mb-2">Can't Scale Profitably</h3>
+          <p class="text-slate-400">
+            Each new customer multiplies your LLM costs. You're stuck between 
+            <strong class="text-purple-400">high prices or low margins</strong>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Solution Section -->
+  <section class="py-20 border-t border-slate-800 bg-gradient-to-b from-transparent to-slate-900/50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl font-bold text-slate-50 mb-4">AgentCache: The Solution</h2>
+        <p class="text-lg text-slate-400 max-w-2xl mx-auto">
+          Cache your AI intelligence layer. Stop re-computing the same file operations thousands of times.
+        </p>
+      </div>
+      
+      <div class="grid md:grid-cols-2 gap-12 items-center">
+        <!-- Left: Benefits -->
+        <div class="space-y-6">
+          <div class="flex items-start gap-4">
+            <div class="h-10 w-10 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="trending-down" class="w-5 h-5 text-emerald-400"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-semibold text-slate-50 mb-2">98% Cost Reduction</h3>
+              <p class="text-slate-400">
+                Cache hit rate of 92%+ means you only pay for LLM calls 8% of the time. 
+                <strong class="text-emerald-400">$60K → $1.2K/month</strong>.
+              </p>
+            </div>
+          </div>
+          
+          <div class="flex items-start gap-4">
+            <div class="h-10 w-10 rounded-lg bg-sky-500/20 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="zap" class="w-5 h-5 text-sky-400"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-semibold text-slate-50 mb-2">15x Faster Responses</h3>
+              <p class="text-slate-400">
+                Cache hits return in <strong class="text-sky-400">50ms</strong> instead of 3-8 seconds. 
+                Your users get instant results.
+              </p>
+            </div>
+          </div>
+          
+          <div class="flex items-start gap-4">
+            <div class="h-10 w-10 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="shield" class="w-5 h-5 text-purple-400"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-semibold text-slate-50 mb-2">Compliance Ready</h3>
+              <p class="text-slate-400">
+                SOC 2 Type II, GDPR compliant. Audit logs, data retention policies, and 
+                <strong class="text-purple-400">customer data isolation</strong> built-in.
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Right: How It Works Diagram -->
+        <div class="p-8 rounded-2xl border border-slate-800 bg-slate-900/50">
+          <h3 class="text-lg font-semibold text-slate-50 mb-6 text-center">How AgentCache Works</h3>
+          
+          <div class="space-y-4">
+            <div class="flex items-center gap-4">
+              <div class="h-10 w-10 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 text-emerald-400 font-bold">1</div>
+              <div class="flex-1">
+                <p class="text-sm text-slate-300">Query: "Find duplicate files in /storage"</p>
+                <p class="text-xs text-slate-500">Your app → AgentCache</p>
+              </div>
+              <div class="text-xs text-emerald-400 font-semibold">50ms</div>
+            </div>
+            
+            <div class="pl-14 border-l-2 border-slate-700 ml-5 py-2">
+              <p class="text-xs text-slate-400">Check cache → <strong class="text-emerald-400">HIT (92%)</strong></p>
+            </div>
+            
+            <div class="flex items-center gap-4">
+              <div class="h-10 w-10 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 text-amber-400 font-bold">2</div>
+              <div class="flex-1">
+                <p class="text-sm text-slate-300">Cache miss? Try latent manipulator</p>
+                <p class="text-xs text-slate-500">Semantic search in cached embeddings</p>
+              </div>
+              <div class="text-xs text-amber-400 font-semibold">500ms</div>
+            </div>
+            
+            <div class="flex items-center gap-4 opacity-50">
+              <div class="h-10 w-10 rounded-full bg-slate-700/20 flex items-center justify-center flex-shrink-0 text-slate-500 font-bold">3</div>
+              <div class="flex-1">
+                <p class="text-sm text-slate-400">Still miss? Fallback to LLM</p>
+                <p class="text-xs text-slate-600">Only happens 8% of the time</p>
+              </div>
+              <div class="text-xs text-slate-600">3-8s</div>
+            </div>
+          </div>
+          
+          <div class="mt-6 pt-6 border-t border-slate-800 text-center">
+            <p class="text-sm text-slate-400">Result: <strong class="text-emerald-400">98% cheaper, 15x faster</strong></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Use Cases Section -->
+  <section class="py-20 border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl font-bold text-slate-50 mb-4">File Storage AI Use Cases</h2>
+        <p class="text-lg text-slate-400 max-w-2xl mx-auto">
+          AgentCache optimizes every AI-powered file operation in your platform.
+        </p>
+      </div>
+      
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Use Case 1 -->
+        <div class="p-6 rounded-xl border border-slate-800 bg-slate-900/30 card-hover">
+          <div class="h-12 w-12 rounded-lg bg-sky-500/20 flex items-center justify-center mb-4">
+            <i data-lucide="copy" class="w-6 h-6 text-sky-400"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-slate-50 mb-2">File Deduplication</h3>
+          <p class="text-sm text-slate-400 mb-4">
+            AI-powered duplicate detection across millions of files. Cache checksums and metadata.
+          </p>
+          <div class="text-xs text-emerald-400 font-semibold">92% cache hit rate</div>
+        </div>
+        
+        <!-- Use Case 2 -->
+        <div class="p-6 rounded-xl border border-slate-800 bg-slate-900/30 card-hover">
+          <div class="h-12 w-12 rounded-lg bg-purple-500/20 flex items-center justify-center mb-4">
+            <i data-lucide="search" class="w-6 h-6 text-purple-400"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-slate-50 mb-2">Metadata Search</h3>
+          <p class="text-sm text-slate-400 mb-4">
+            Natural language queries on file metadata. "Show me all PDFs from Q4 2023"
+          </p>
+          <div class="text-xs text-emerald-400 font-semibold">88% cache hit rate</div>
+        </div>
+        
+        <!-- Use Case 3 -->
+        <div class="p-6 rounded-xl border border-slate-800 bg-slate-900/30 card-hover">
+          <div class="h-12 w-12 rounded-lg bg-amber-500/20 flex items-center justify-center mb-4">
+            <i data-lucide="file-text" class="w-6 h-6 text-amber-400"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-slate-50 mb-2">Audit Log Queries</h3>
+          <p class="text-sm text-slate-400 mb-4">
+            AI analyzes access logs for compliance. Cache frequent audit queries.
+          </p>
+          <div class="text-xs text-emerald-400 font-semibold">95% cache hit rate</div>
+        </div>
+        
+        <!-- Use Case 4 -->
+        <div class="p-6 rounded-xl border border-slate-800 bg-slate-900/30 card-hover">
+          <div class="h-12 w-12 rounded-lg bg-emerald-500/20 flex items-center justify-center mb-4">
+            <i data-lucide="zap" class="w-6 h-6 text-emerald-400"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-slate-50 mb-2">CDN Intelligence</h3>
+          <p class="text-sm text-slate-400 mb-4">
+            Cache content delivery decisions. Optimize routing based on file type and location.
+          </p>
+          <div class="text-xs text-emerald-400 font-semibold">90% cache hit rate</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROI Calculator Section -->
+  <section id="calculator" class="py-20 border-t border-slate-800 bg-gradient-to-b from-slate-900/50 to-transparent">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-slate-50 mb-4">Calculate Your Savings</h2>
+        <p class="text-lg text-slate-400">
+          See how much AgentCache will save your file storage platform
+        </p>
+      </div>
+      
+      <div class="p-8 rounded-2xl border border-slate-800 bg-slate-900/50">
+        <div class="grid md:grid-cols-2 gap-8 mb-8">
+          <!-- Input Section -->
+          <div class="space-y-6">
+            <div>
+              <label class="block text-sm font-medium text-slate-300 mb-2">
+                AI Requests Per Day
+              </label>
+              <input 
+                type="number" 
+                id="requests" 
+                value="1000000"
+                class="w-full px-4 py-3 rounded-lg border border-slate-700 bg-slate-800 text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                oninput="calculateROI()"
+              />
+              <p class="text-xs text-slate-500 mt-1">File operations with AI per day</p>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-slate-300 mb-2">
+                Average Cost Per Request
+              </label>
+              <input 
+                type="number" 
+                id="costPerRequest" 
+                value="0.002"
+                step="0.001"
+                class="w-full px-4 py-3 rounded-lg border border-slate-700 bg-slate-800 text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                oninput="calculateROI()"
+              />
+              <p class="text-xs text-slate-500 mt-1">Typical GPT-4 cost: $0.002-0.02</p>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-slate-300 mb-2">
+                Expected Cache Hit Rate
+              </label>
+              <input 
+                type="number" 
+                id="hitRate" 
+                value="92"
+                min="0"
+                max="100"
+                class="w-full px-4 py-3 rounded-lg border border-slate-700 bg-slate-800 text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                oninput="calculateROI()"
+              />
+              <p class="text-xs text-slate-500 mt-1">File storage typically gets 88-95%</p>
+            </div>
+          </div>
+          
+          <!-- Output Section -->
+          <div class="space-y-6">
+            <div class="p-6 rounded-xl border border-rose-500/30 bg-rose-500/5">
+              <div class="text-sm text-slate-400 mb-1">Current Monthly Cost</div>
+              <div class="text-4xl font-bold text-rose-400" id="currentCost">$60,000</div>
+            </div>
+            
+            <div class="p-6 rounded-xl border border-emerald-500/30 bg-emerald-500/5">
+              <div class="text-sm text-slate-400 mb-1">With AgentCache</div>
+              <div class="text-4xl font-bold text-emerald-400" id="newCost">$4,800</div>
+            </div>
+            
+            <div class="p-6 rounded-xl border border-sky-500/30 bg-sky-500/10">
+              <div class="flex items-center justify-between mb-2">
+                <div class="text-sm text-slate-400">Monthly Savings</div>
+                <div class="text-sm text-emerald-400 font-semibold" id="percentSaved">92%</div>
+              </div>
+              <div class="text-3xl font-bold text-sky-300" id="savings">$55,200</div>
+              <div class="text-xs text-slate-500 mt-2">Annual savings: <span id="annualSavings">$662,400</span></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="text-center pt-6 border-t border-slate-800">
+          <a href="/launch-wizard.html" class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-semibold">
+            Start Saving Now
+            <i data-lucide="arrow-right" class="w-5 h-5"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Integration Section -->
+  <section class="py-20 border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl font-bold text-slate-50 mb-4">Works With Your Stack</h2>
+        <p class="text-lg text-slate-400 max-w-2xl mx-auto">
+          AgentCache integrates with any file storage platform or CDN in minutes.
+        </p>
+      </div>
+      
+      <div class="grid md:grid-cols-3 lg:grid-cols-6 gap-8">
+        <div class="flex flex-col items-center gap-3">
+          <div class="h-16 w-16 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center justify-center">
+            <span class="text-2xl">💾</span>
+          </div>
+          <span class="text-sm text-slate-400">Seagate Lyve</span>
+        </div>
+        
+        <div class="flex flex-col items-center gap-3">
+          <div class="h-16 w-16 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center justify-center">
+            <span class="text-2xl">🔷</span>
+          </div>
+          <span class="text-sm text-slate-400">Backblaze B2</span>
+        </div>
+        
+        <div class="flex flex-col items-center gap-3">
+          <div class="h-16 w-16 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center justify-center">
+            <span class="text-2xl">🗄️</span>
+          </div>
+          <span class="text-sm text-slate-400">Wasabi</span>
+        </div>
+        
+        <div class="flex flex-col items-center gap-3">
+          <div class="h-16 w-16 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center justify-center">
+            <span class="text-2xl">☁️</span>
+          </div>
+          <span class="text-sm text-slate-400">AWS S3</span>
+        </div>
+        
+        <div class="flex flex-col items-center gap-3">
+          <div class="h-16 w-16 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center justify-center">
+            <span class="text-2xl">🔷</span>
+          </div>
+          <span class="text-sm text-slate-400">Azure Blob</span>
+        </div>
+        
+        <div class="flex flex-col items-center gap-3">
+          <div class="h-16 w-16 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center justify-center">
+            <span class="text-2xl">☁️</span>
+          </div>
+          <span class="text-sm text-slate-400">GCS</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Social Proof Section (Placeholder) -->
+  <section class="py-20 border-t border-slate-800 bg-slate-900/30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl font-bold text-slate-50 mb-4">Trusted by File Storage Leaders</h2>
+        <p class="text-lg text-slate-400">Join enterprise customers caching billions of file operations</p>
+      </div>
+      
+      <div class="grid md:grid-cols-3 gap-8">
+        <!-- Testimonial Placeholder 1 -->
+        <div class="p-8 rounded-xl border border-slate-800 bg-slate-900/50">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="h-12 w-12 rounded-full bg-slate-700"></div>
+            <div>
+              <div class="h-4 w-32 bg-slate-700 rounded mb-2"></div>
+              <div class="h-3 w-24 bg-slate-800 rounded"></div>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <div class="h-3 w-full bg-slate-800 rounded"></div>
+            <div class="h-3 w-full bg-slate-800 rounded"></div>
+            <div class="h-3 w-3/4 bg-slate-800 rounded"></div>
+          </div>
+        </div>
+        
+        <!-- Testimonial Placeholder 2 -->
+        <div class="p-8 rounded-xl border border-slate-800 bg-slate-900/50">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="h-12 w-12 rounded-full bg-slate-700"></div>
+            <div>
+              <div class="h-4 w-32 bg-slate-700 rounded mb-2"></div>
+              <div class="h-3 w-24 bg-slate-800 rounded"></div>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <div class="h-3 w-full bg-slate-800 rounded"></div>
+            <div class="h-3 w-full bg-slate-800 rounded"></div>
+            <div class="h-3 w-3/4 bg-slate-800 rounded"></div>
+          </div>
+        </div>
+        
+        <!-- Testimonial Placeholder 3 -->
+        <div class="p-8 rounded-xl border border-slate-800 bg-slate-900/50">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="h-12 w-12 rounded-full bg-slate-700"></div>
+            <div>
+              <div class="h-4 w-32 bg-slate-700 rounded mb-2"></div>
+              <div class="h-3 w-24 bg-slate-800 rounded"></div>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <div class="h-3 w-full bg-slate-800 rounded"></div>
+            <div class="h-3 w-full bg-slate-800 rounded"></div>
+            <div class="h-3 w-3/4 bg-slate-800 rounded"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-20 border-t border-slate-800">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h2 class="text-4xl font-bold text-slate-50 mb-6">
+        Ready to Cut Your AI Costs by 98%?
+      </h2>
+      <p class="text-xl text-slate-400 mb-8">
+        Start your free trial. No credit card required. Deploy in 5 minutes.
+      </p>
+      
+      <a href="/launch-wizard.html" class="inline-flex items-center gap-2 px-8 py-4 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-semibold text-lg shadow-xl shadow-sky-500/30">
+        Start Free Trial
+        <i data-lucide="arrow-right" class="w-6 h-6"></i>
+      </a>
+      
+      <p class="text-sm text-slate-500 mt-6">
+        Free 14-day trial • 92% average cache hit rate • Deploy in minutes
+      </p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 py-12 bg-slate-900/50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <div class="h-8 w-8 rounded-lg bg-sky-500/20 border border-sky-400/40 flex items-center justify-center">
+              <span class="text-lg font-bold text-sky-300">AC</span>
+            </div>
+            <span class="text-lg font-bold text-slate-50">AgentCache</span>
+          </div>
+          <p class="text-sm text-slate-500">
+            The world's first cognitive memory OS for AI systems.
+          </p>
+        </div>
+        
+        <div>
+          <h3 class="text-sm font-semibold text-slate-300 mb-4">Product</h3>
+          <ul class="space-y-2 text-sm text-slate-500">
+            <li><a href="/how-it-works.html" class="hover:text-slate-300">How It Works</a></li>
+            <li><a href="/launch-wizard.html" class="hover:text-slate-300">Get Started</a></li>
+            <li><a href="/dashboard.html" class="hover:text-slate-300">Dashboard</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-sm font-semibold text-slate-300 mb-4">Sectors</h3>
+          <ul class="space-y-2 text-sm text-slate-500">
+            <li><a href="/enterprise-filestorage.html" class="hover:text-slate-300">File Storage</a></li>
+            <li><a href="/enterprise-healthcare.html" class="hover:text-slate-300">Healthcare</a></li>
+            <li><a href="/enterprise-finance.html" class="hover:text-slate-300">Finance</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-sm font-semibold text-slate-300 mb-4">Company</h3>
+          <ul class="space-y-2 text-sm text-slate-500">
+            <li><a href="/about.html" class="hover:text-slate-300">About</a></li>
+            <li><a href="/contact.html" class="hover:text-slate-300">Contact</a></li>
+            <li><a href="/privacy.html" class="hover:text-slate-300">Privacy</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="mt-12 pt-8 border-t border-slate-800 text-center text-sm text-slate-500">
+        © 2024 AgentCache. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+    
+    // ROI Calculator
+    function calculateROI() {
+      const requests = parseInt(document.getElementById('requests').value) || 0;
+      const costPerRequest = parseFloat(document.getElementById('costPerRequest').value) || 0;
+      const hitRate = parseInt(document.getElementById('hitRate').value) || 0;
+      
+      // Calculate costs
+      const dailyCost = requests * costPerRequest;
+      const monthlyCost = dailyCost * 30;
+      
+      // With AgentCache (only pay for misses + small cache fee)
+      const missRate = (100 - hitRate) / 100;
+      const llmCost = monthlyCost * missRate;
+      const cacheFee = requests * 30 * 0.00001; // $0.00001 per cached request
+      const newCost = llmCost + cacheFee;
+      
+      const savings = monthlyCost - newCost;
+      const percentSaved = ((savings / monthlyCost) * 100).toFixed(0);
+      
+      // Update UI
+      document.getElementById('currentCost').textContent = '$' + monthlyCost.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+      document.getElementById('newCost').textContent = '$' + newCost.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+      document.getElementById('savings').textContent = '$' + savings.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+      document.getElementById('percentSaved').textContent = percentSaved + '%';
+      document.getElementById('annualSavings').textContent = '$' + (savings * 12).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+    }
+    
+    // Initialize calculator on page load
+    calculateROI();
+  </script>
+</body>
+</html>

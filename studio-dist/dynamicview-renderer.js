@@ -458,7 +458,17 @@ class DynamicViewRenderer {
       // Simplified chart rendering (would integrate with Chart.js or D3 in production)
       const div = document.createElement('div');
       div.className = 'rounded-lg bg-slate-800/50 p-4 text-center';
-      div.innerHTML = `<p class="text-sm text-slate-400">Chart: ${comp.chartType}</p><p class="text-xs text-slate-500 mt-1">${comp.data?.length || 0} data points</p>`;
+      
+      const p1 = document.createElement('p');
+      p1.className = 'text-sm text-slate-400';
+      p1.textContent = `Chart: ${comp.chartType || 'unknown'}`;
+      
+      const p2 = document.createElement('p');
+      p2.className = 'text-xs text-slate-500 mt-1';
+      p2.textContent = `${comp.data?.length || 0} data points`;
+      
+      div.appendChild(p1);
+      div.appendChild(p2);
       return div;
     },
 
@@ -532,17 +542,42 @@ class DynamicViewRenderer {
   };
 
   /**
-   * Apply inline styles from schema
+   * Apply inline styles from schema (with sanitization)
    */
   applyStyles(element, styles) {
-    if (styles.backgroundColor) element.style.backgroundColor = styles.backgroundColor;
-    if (styles.borderColor) element.style.borderColor = styles.borderColor;
-    if (styles.textColor) element.style.color = styles.textColor;
-    if (styles.padding) element.style.padding = styles.padding;
-    if (styles.margin) element.style.margin = styles.margin;
-    if (styles.width) element.style.width = styles.width;
-    if (styles.height) element.style.height = styles.height;
-    if (styles.className) element.className += ` ${styles.className}`;
+    // Sanitize style values to prevent CSS injection
+    const sanitizeStyleValue = (value) => {
+      if (typeof value !== 'string') return '';
+      // Remove javascript: URLs and other dangerous content
+      const dangerous = /javascript:|expression\(|@import|<|>/gi;
+      return dangerous.test(value) ? '' : value;
+    };
+    
+    // Whitelist of safe CSS properties
+    const safeStyles = {
+      backgroundColor: styles.backgroundColor,
+      borderColor: styles.borderColor,
+      color: styles.textColor,
+      padding: styles.padding,
+      margin: styles.margin,
+      width: styles.width,
+      height: styles.height,
+    };
+    
+    Object.entries(safeStyles).forEach(([prop, value]) => {
+      if (value) {
+        const sanitized = sanitizeStyleValue(value);
+        if (sanitized) {
+          element.style[prop] = sanitized;
+        }
+      }
+    });
+    
+    // Sanitize className to prevent injection
+    if (styles.className) {
+      const safeClassName = styles.className.replace(/[<>"']/g, '');
+      element.className += ` ${safeClassName}`;
+    }
   }
 
   /**
@@ -556,12 +591,22 @@ class DynamicViewRenderer {
    * Render error message
    */
   renderError(message) {
-    this.container.innerHTML = `
-      <div class="rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-red-300">
-        <p class="font-semibold">Error rendering Dynamic View</p>
-        <p class="text-sm mt-1">${message}</p>
-      </div>
-    `;
+    this.container.innerHTML = '';
+    
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-red-300';
+    
+    const title = document.createElement('p');
+    title.className = 'font-semibold';
+    title.textContent = 'Error rendering Dynamic View';
+    
+    const msg = document.createElement('p');
+    msg.className = 'text-sm mt-1';
+    msg.textContent = message; // Safe: uses textContent, not innerHTML
+    
+    errorDiv.appendChild(title);
+    errorDiv.appendChild(msg);
+    this.container.appendChild(errorDiv);
   }
 
   /**

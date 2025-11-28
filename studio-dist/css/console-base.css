@@ -1,0 +1,459 @@
+/**
+ * AgentCache Console Base - Themeable Design System
+ * Gaming-quality UI for serious business applications
+ */
+
+/* ========================================
+   CSS VARIABLES - THEME SYSTEM
+   ======================================== */
+
+:root {
+  /* Theme selector: console | corporate | tactical */
+  --theme: 'console';
+  
+  /* Typography */
+  --font-display: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-ui: 'Inter', -apple-system, system-ui, sans-serif;
+  --font-data: 'Courier New', monospace;
+  
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 20px currentColor;
+  
+  /* Animation */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========================================
+   THEME: CONSOLE (Gaming)
+   ======================================== */
+
+[data-theme="console"] {
+  /* Base Colors */
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #121826;
+  --bg-tertiary: #1a2234;
+  --bg-elevated: #232d42;
+  
+  /* Surface Colors */
+  --surface-base: rgba(18, 24, 38, 0.8);
+  --surface-elevated: rgba(35, 45, 66, 0.9);
+  --surface-hover: rgba(45, 55, 76, 0.7);
+  
+  /* Border Colors */
+  --border-base: rgba(30, 41, 59, 0.4);
+  --border-elevated: rgba(51, 65, 85, 0.6);
+  --border-focus: rgba(14, 165, 233, 0.8);
+  
+  /* Text Colors */
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --text-quaternary: #64748b;
+  
+  /* Accent Colors - HUD Elements */
+  --accent-primary: #00f0ff;    /* Cyan glow */
+  --accent-secondary: #ff00ff;  /* Magenta */
+  --accent-success: #00ff88;    /* Green */
+  --accent-warning: #ffaa00;    /* Amber */
+  --accent-danger: #ff0044;     /* Red */
+  
+  /* Sector Colors */
+  --sector-finance: #06b6d4;
+  --sector-healthcare: #10b981;
+  --sector-legal: #f59e0b;
+  --sector-government: #ef4444;
+  --sector-education: #8b5cf6;
+  --sector-retail: #ec4899;
+  --sector-media: #f97316;
+  --sector-gaming: #14b8a6;
+  --sector-iot: #3b82f6;
+  --sector-security: #dc2626;
+  
+  /* Effects */
+  --glow-color: rgba(0, 240, 255, 0.3);
+  --scanline-opacity: 0.03;
+  --noise-opacity: 0.02;
+}
+
+/* ========================================
+   THEME: CORPORATE (Professional)
+   ======================================== */
+
+[data-theme="corporate"] {
+  /* Base Colors - Clean whites and grays */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #e9ecef;
+  --bg-elevated: #ffffff;
+  
+  /* Surface Colors */
+  --surface-base: rgba(255, 255, 255, 0.95);
+  --surface-elevated: rgba(255, 255, 255, 1);
+  --surface-hover: rgba(248, 249, 250, 0.8);
+  
+  /* Border Colors */
+  --border-base: rgba(222, 226, 230, 1);
+  --border-elevated: rgba(206, 212, 218, 1);
+  --border-focus: rgba(13, 110, 253, 0.8);
+  
+  /* Text Colors */
+  --text-primary: #212529;
+  --text-secondary: #495057;
+  --text-tertiary: #6c757d;
+  --text-quaternary: #adb5bd;
+  
+  /* Accent Colors - Professional blues */
+  --accent-primary: #0d6efd;
+  --accent-secondary: #6610f2;
+  --accent-success: #198754;
+  --accent-warning: #ffc107;
+  --accent-danger: #dc3545;
+  
+  /* Sector Colors - Muted professional palette */
+  --sector-finance: #0d6efd;
+  --sector-healthcare: #198754;
+  --sector-legal: #fd7e14;
+  --sector-government: #dc3545;
+  --sector-education: #6610f2;
+  --sector-retail: #d63384;
+  --sector-media: #fd7e14;
+  --sector-gaming: #20c997;
+  --sector-iot: #0dcaf0;
+  --sector-security: #dc3545;
+  
+  /* Effects - Minimal */
+  --glow-color: rgba(13, 110, 253, 0.1);
+  --scanline-opacity: 0;
+  --noise-opacity: 0;
+}
+
+/* ========================================
+   THEME: TACTICAL (Military/Government)
+   ======================================== */
+
+[data-theme="tactical"] {
+  /* Base Colors - Dark olive/military greens */
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #1f2428;
+  --bg-elevated: #282e33;
+  
+  /* Surface Colors */
+  --surface-base: rgba(22, 27, 34, 0.9);
+  --surface-elevated: rgba(40, 46, 51, 0.95);
+  --surface-hover: rgba(48, 54, 61, 0.8);
+  
+  /* Border Colors */
+  --border-base: rgba(48, 54, 61, 0.5);
+  --border-elevated: rgba(68, 77, 86, 0.7);
+  --border-focus: rgba(84, 174, 255, 0.8);
+  
+  /* Text Colors */
+  --text-primary: #e6edf3;
+  --text-secondary: #c9d1d9;
+  --text-tertiary: #8b949e;
+  --text-quaternary: #6e7681;
+  
+  /* Accent Colors - Military tactical */
+  --accent-primary: #54aeff;    /* Tactical blue */
+  --accent-secondary: #a371f7;  /* Command purple */
+  --accent-success: #3fb950;    /* Op success green */
+  --accent-warning: #d29922;    /* Alert amber */
+  --accent-danger: #f85149;     /* Threat red */
+  
+  /* Sector Colors - Tactical variants */
+  --sector-finance: #54aeff;
+  --sector-healthcare: #3fb950;
+  --sector-legal: #d29922;
+  --sector-government: #f85149;
+  --sector-education: #a371f7;
+  --sector-retail: #ff7b72;
+  --sector-media: #ffa657;
+  --sector-gaming: #56d4dd;
+  --sector-iot: #79c0ff;
+  --sector-security: #f85149;
+  
+  /* Effects */
+  --glow-color: rgba(84, 174, 255, 0.2);
+  --scanline-opacity: 0.04;
+  --noise-opacity: 0.03;
+}
+
+/* ========================================
+   BASE STYLES
+   ======================================== */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-ui);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+
+/* ========================================
+   TYPOGRAPHY
+   ======================================== */
+
+.font-display {
+  font-family: var(--font-display);
+  font-feature-settings: 'ss01', 'ss02', 'ss03';
+}
+
+.font-data {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+}
+
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-tertiary { color: var(--text-tertiary); }
+.text-quaternary { color: var(--text-quaternary); }
+
+/* ========================================
+   GLASS MORPHISM
+   ======================================== */
+
+.glass {
+  background: var(--surface-base);
+  backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-md);
+}
+
+.glass-elevated {
+  background: var(--surface-elevated);
+  backdrop-filter: blur(16px) saturate(200%);
+  border: 1px solid var(--border-elevated);
+  box-shadow: var(--shadow-md);
+}
+
+/* ========================================
+   CONSOLE EFFECTS (Gaming Theme Only)
+   ======================================== */
+
+[data-theme="console"] .scanlines::before,
+[data-theme="tactical"] .scanlines::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0px,
+    transparent 1px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.15) 3px
+  );
+  opacity: var(--scanline-opacity);
+  pointer-events: none;
+  z-index: 10000;
+}
+
+[data-theme="console"] .noise::after,
+[data-theme="tactical"] .noise::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: var(--noise-opacity);
+  pointer-events: none;
+  z-index: 10001;
+}
+
+/* ========================================
+   GLOW EFFECTS (Gaming/Tactical Only)
+   ======================================== */
+
+[data-theme="console"] .glow,
+[data-theme="tactical"] .glow {
+  box-shadow: 0 0 10px var(--glow-color), 
+              0 0 20px var(--glow-color),
+              inset 0 0 10px var(--glow-color);
+}
+
+[data-theme="console"] .glow-text,
+[data-theme="tactical"] .glow-text {
+  text-shadow: 0 0 10px currentColor,
+               0 0 20px currentColor;
+}
+
+/* Corporate theme: subtle shadows only */
+[data-theme="corporate"] .glow {
+  box-shadow: var(--shadow-sm);
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-slide-in {
+  animation: slide-in var(--transition-base) ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in var(--transition-base) ease-out;
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+.transition-fast { transition: all var(--transition-fast); }
+.transition-base { transition: all var(--transition-base); }
+.transition-slow { transition: all var(--transition-slow); }
+
+.cursor-pointer { cursor: pointer; }
+.cursor-grab { cursor: grab; }
+.cursor-grabbing { cursor: grabbing; }
+
+.select-none { user-select: none; }
+.select-text { user-select: text; }
+
+.overflow-hidden { overflow: hidden; }
+.overflow-auto { overflow: auto; }
+.overflow-scroll { overflow: scroll; }
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 1024px) {
+  :root {
+    --spacing-lg: 16px;
+    --spacing-xl: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --spacing-md: 12px;
+    --spacing-lg: 16px;
+    --spacing-xl: 20px;
+  }
+  
+  body {
+    font-size: 14px;
+  }
+}
+
+/* ========================================
+   THEME TOGGLE BUTTON
+   ======================================== */
+
+.theme-selector {
+  display: flex;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs);
+  background: var(--surface-base);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-lg);
+}
+
+.theme-btn {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.theme-btn:hover {
+  color: var(--text-primary);
+  background: var(--surface-hover);
+}
+
+.theme-btn.active {
+  color: var(--accent-primary);
+  background: var(--surface-elevated);
+  border-color: var(--accent-primary);
+}
+
+/* ========================================
+   SCROLLBAR STYLING
+   ======================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-elevated);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-quaternary);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-elevated) var(--bg-secondary);
+}

@@ -93,6 +93,7 @@
                     </div>
                 </form>
 
+                <!-- OAuth section temporarily hidden
                 <div class="mt-6">
                     <div class="relative">
                         <div class="absolute inset-0 flex items-center">
@@ -104,7 +105,7 @@
                     </div>
 
                     <div class="mt-6 grid grid-cols-2 gap-3">
-                        <button type="button"
+                        <button type="button" id="github-signup-btn"
                             class="flex w-full items-center justify-center rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-colors">
                             <svg class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
                                 <path
@@ -112,7 +113,7 @@
                             </svg>
                             GitHub
                         </button>
-                        <button type="button"
+                        <button type="button" id="google-signup-btn"
                             class="flex w-full items-center justify-center rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-colors">
                             <svg class="h-5 w-5 mr-2" viewBox="0 0 24 24">
                                 <path
@@ -132,6 +133,7 @@
                         </button>
                     </div>
                 </div>
+                -->
             </div>
 
             <p class="text-center text-sm text-slate-500">
@@ -142,6 +144,17 @@
     </main>
 
     <script>
+        // OAuth button handlers (temporarily disabled)
+        /*
+        document.getElementById('github-signup-btn').addEventListener('click', () => {
+            window.location.href = '/api/auth/github/login';
+        });
+
+        document.getElementById('google-signup-btn').addEventListener('click', () => {
+            window.location.href = '/api/auth/google/login';
+        });
+        */
+
         document.getElementById('signup-form').addEventListener('submit', async function (e) {
             e.preventDefault();
 

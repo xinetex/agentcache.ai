@@ -248,6 +248,32 @@ export class JettySpeedDb {
     `;
     return result;
   }
+
+  // Get recent uploads for a user (for monitoring dashboard)
+  async getRecentUploads(userId: string, limit: number = 10): Promise<any[]> {
+    const result = await client`
+      SELECT 
+        id,
+        file_name,
+        file_size,
+        file_hash,
+        edges_used,
+        completed_at,
+        EXTRACT(EPOCH FROM (completed_at - created_at)) as duration_seconds,
+        CASE 
+          WHEN jetty_speed_enabled THEN 
+            LEAST(file_size::float / EXTRACT(EPOCH FROM (completed_at - created_at)) / 1024 / 1024 / 10, 14.0)
+          ELSE 1.0
+        END as speed_multiplier
+      FROM upload_sessions
+      WHERE user_id = ${userId}
+        AND status = 'completed'
+        AND completed_at IS NOT NULL
+      ORDER BY completed_at DESC
+      LIMIT ${limit}
+    `;
+    return result;
+  }
 }
 
 export const jettySpeedDb = new JettySpeedDb();

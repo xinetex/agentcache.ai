@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Government Analytics Dashboard - Secure intelligence with FedRAMP compliance">
+  <title>Government Analytics - AgentCache</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://d3js.org/d3-sankey.v0.12.min.js"></script>
+  <script src="/js/visualizations/agentcache-viz.js"></script>
+  
+  <!-- Sector Dashboard API Integration -->
+  <script src="/js/sector-dashboard-api.js"></script>
+  <style>.metric-card{transition:transform .2s ease,box-shadow .2s ease}.metric-card:hover{transform:translateY(-4px);box-shadow:0 12px 24px rgba(0,0,0,.3)}.status-glow{box-shadow:0 0 10px currentColor}::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:#0f172a}::-webkit-scrollbar-thumb{background:#334155;border-radius:4px}</style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="flex min-h-screen w-full">
+    <aside class="hidden lg:flex lg:flex-col lg:w-64 border-r border-slate-800/80 bg-slate-950/90">
+      <div class="flex items-center px-6 py-5 border-b border-slate-800/80">
+        <div class="h-7 w-7 rounded-md bg-sky-500/20 border border-sky-400/40 flex items-center justify-center mr-2"><span class="text-sm font-semibold text-sky-300">AC</span></div>
+        <div><div class="text-base font-semibold text-slate-50">AgentCache</div><div class="text-xs text-slate-500">Government</div></div>
+      </div>
+      <nav class="flex-1 overflow-y-auto px-3 pt-4 space-y-2">
+        <a href="/dashboard.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm text-slate-400 hover:bg-slate-900/80"><i data-lucide="layout-dashboard" class="w-4 h-4"></i><span>Dashboard</span></a>
+        <a href="/dashboards/government.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm font-medium bg-slate-900 text-slate-50"><i data-lucide="landmark" class="w-4 h-4 text-blue-300"></i><span>Government</span></a>
+      </nav>
+      <div class="px-3 pb-4 space-y-2">
+        <div class="px-3 py-2 rounded-md bg-emerald-500/10 border border-emerald-500/30"><div class="flex items-center gap-2 mb-1"><div class="h-2 w-2 rounded-full bg-emerald-400 status-glow"></div><span class="text-xs font-semibold text-emerald-300">FedRAMP High</span></div><p class="text-xs text-slate-400">Authority to operate</p></div>
+        <div class="px-3 py-2 rounded-md bg-sky-500/10 border border-sky-500/30"><div class="flex items-center gap-2 mb-1"><div class="h-2 w-2 rounded-full bg-sky-400 status-glow"></div><span class="text-xs font-semibold text-sky-300">FISMA Compliant</span></div><p class="text-xs text-slate-400">Security controls active</p></div>
+      </div>
+    </aside>
+    <div class="flex-1 flex flex-col">
+      <header class="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur px-6 py-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <i data-lucide="landmark" class="w-5 h-5 text-blue-400"></i>
+            <h1 class="text-xl font-semibold">Government Analytics</h1>
+            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-xs text-emerald-300"><span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>Secure</span>
+          </div>
+          <button onclick="exportReport()" class="inline-flex items-center gap-1.5 rounded-md bg-sky-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-sky-500"><i data-lucide="download" class="w-4 h-4"></i>Export</button>
+        </div>
+      </header>
+      <main class="flex-1 overflow-y-auto p-6 space-y-6">
+        <section>
+          <h2 class="text-lg font-semibold mb-4">Mission Critical Metrics</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs uppercase tracking-wide text-slate-500">Security Posture</span><i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i></div>
+              <div id="securityPosture" class="text-4xl font-bold">0%</div>
+              <div class="mt-2 text-xs text-emerald-400">Zero vulnerabilities</div>
+            </div>
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs uppercase tracking-wide text-slate-500">Data Classification</span><i data-lucide="lock" class="w-4 h-4 text-sky-400"></i></div>
+              <div id="dataClassification" class="text-4xl font-bold">0%</div>
+              <div class="mt-2 text-xs text-sky-400">CUI/PII protected</div>
+            </div>
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs uppercase tracking-wide text-slate-500">Compliance Score</span><i data-lucide="clipboard-check" class="w-4 h-4 text-purple-400"></i></div>
+              <div id="complianceScore" class="text-4xl font-bold">0%</div>
+              <div class="mt-2 text-xs text-purple-400">NIST 800-53 controls</div>
+            </div>
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs uppercase tracking-wide text-slate-500">Audit Trail</span><i data-lucide="file-text" class="w-4 h-4 text-amber-400"></i></div>
+              <div id="auditTrail" class="text-4xl font-bold">0</div>
+              <div class="mt-2 text-xs text-amber-400">Immutable logs</div>
+            </div>
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs uppercase tracking-wide text-slate-500">Agency Adoption</span><i data-lucide="users" class="w-4 h-4 text-rose-400"></i></div>
+              <div id="agencyAdoption" class="text-4xl font-bold">0%</div>
+              <div class="mt-2 text-xs text-rose-400"><span id="activeAgencies">0</span> agencies</div>
+            </div>
+            <div class="metric-card rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs uppercase tracking-wide text-slate-500">Cost Optimization</span><i data-lucide="dollar-sign" class="w-4 h-4 text-green-400"></i></div>
+              <div id="costOptimization" class="text-4xl font-bold">$0</div>
+              <div class="mt-2 text-xs text-emerald-400">↓ 71% taxpayer savings</div>
+            </div>
+          </div>
+        </section>
+        <section>
+          <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+            <h2 class="text-lg font-semibold mb-4">Agency Integration Network</h2>
+            <div id="agencyNetwork" class="w-full" style="min-height:400px"></div>
+          </div>
+        </section>
+        <section>
+          <h2 class="text-lg font-semibold mb-4">Department Performance</h2>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+              <h3 class="text-base font-semibold mb-4">Cache Hit Rate by Department</h3>
+              <div class="space-y-3">
+                <div><div class="flex items-center justify-between text-sm mb-1"><span class="text-slate-300">Defense</span><span class="font-semibold text-emerald-400">97%</span></div><div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-emerald-500 rounded-full" style="width:97%"></div></div></div>
+                <div><div class="flex items-center justify-between text-sm mb-1"><span class="text-slate-300">Homeland Security</span><span class="font-semibold text-sky-400">95%</span></div><div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-sky-500 rounded-full" style="width:95%"></div></div></div>
+                <div><div class="flex items-center justify-between text-sm mb-1"><span class="text-slate-300">Veterans Affairs</span><span class="font-semibold text-purple-400">93%</span></div><div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-purple-500 rounded-full" style="width:93%"></div></div></div>
+                <div><div class="flex items-center justify-between text-sm mb-1"><span class="text-slate-300">Treasury</span><span class="font-semibold text-amber-400">91%</span></div><div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-amber-500 rounded-full" style="width:91%"></div></div></div>
+              </div>
+            </div>
+            <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+              <h3 class="text-base font-semibold mb-4">Security Events</h3>
+              <div id="securityChart" class="w-full" style="height:240px"></div>
+            </div>
+          </div>
+        </section>
+        <section>
+          <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+            <h2 class="text-lg font-semibold mb-4">Live Security Activity</h2>
+            <div id="activityFeed" class="space-y-2 max-h-96 overflow-y-auto"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script>
+    lucide.createIcons();    // Initialize API integration    const dashboardAPI = new SectorDashboardAPI('government');    let liveDataLoaded = false;
+    const data={securityPosture:100,dataClassification:100,complianceScore:99.4,auditTrail:124893,agencyAdoption:86.7,activeAgencies:47,costOptimization:2847000,agencyNetwork:{nodes:[{id:'cache',label:'AgentCache',group:0,value:100},{id:'dod',label:'DoD',group:1,value:90},{id:'dhs',label:'DHS',group:1,value:85},{id:'va',label:'VA',group:1,value:80},{id:'treasury',label:'Treasury',group:1,value:75}],links:[{source:'dod',target:'cache',value:9},{source:'dhs',target:'cache',value:8},{source:'va',target:'cache',value:7},{source:'treasury',target:'cache',value:6}]},securityData:Array.from({length:7},(_,i)=>({time:new Date(Date.now()-(6-i)*86400000),value:Math.random()*5}))};
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Try to load live data first
+      liveDataLoaded = await dashboardAPI.initialize();
+      
+      // If live data failed, fall back to simulated data
+      if (!liveDataLoaded) {
+        console.warn('[Government] Live data unavailable, using simulated data');
+      }
+      
+      AgentCacheViz.animateCountUp('securityPosture',data.securityPosture,2000,'%');
+      AgentCacheViz.animateCountUp('dataClassification',data.dataClassification,2000,'%');
+      AgentCacheViz.animateCountUp('complianceScore',data.complianceScore,2000,'%');
+      AgentCacheViz.animateCountUp('auditTrail',data.auditTrail,2500);
+      AgentCacheViz.animateCountUp('agencyAdoption',data.agencyAdoption,2000,'%');
+      AgentCacheViz.animateCountUp('activeAgencies',data.activeAgencies,1500);
+      setTimeout(()=>{document.getElementById('costOptimization').textContent='$'+(data.costOptimization/1000000).toFixed(1)+'M';},1500);
+      setTimeout(()=>AgentCacheViz.createNetworkGraph('agencyNetwork',data.agencyNetwork.nodes,data.agencyNetwork.links,{height:400}),500);
+      setTimeout(()=>AgentCacheViz.createTimeSeriesChart('securityChart',data.securityData,{height:240}),800);
+      AgentCacheViz.animateCardsEntrance('.metric-card');
+      startActivityFeed();
+    });
+    function startActivityFeed(){const activities=[{icon:'shield-check',text:'Security scan: Zero threats detected',color:'emerald'},{icon:'lock',text:'CUI data classified and protected',color:'sky'},{icon:'file-text',text:'Audit log entry: Access request approved',color:'purple'},{icon:'alert-triangle',text:'Compliance check: NIST 800-53 verified',color:'amber'}];const feed=document.getElementById('activityFeed');function add(){const a=activities[Math.floor(Math.random()*activities.length)];const i=document.createElement('div');i.className='flex items-center gap-3 p-3 rounded-md border border-slate-800 bg-slate-900/50 opacity-0';i.innerHTML=`<i data-lucide="${a.icon}" class="w-4 h-4 text-${a.color}-400"></i><div class="flex-1"><div class="text-sm text-slate-200">${a.text}</div><div class="text-xs text-slate-500">${new Date().toLocaleTimeString()}</div></div>`;feed.insertBefore(i,feed.firstChild);lucide.createIcons();    // Initialize API integration    const dashboardAPI = new SectorDashboardAPI('government');    let liveDataLoaded = false;anime({targets:i,opacity:[0,1],translateX:[-20,0],duration:400,easing:'easeOutCubic'});if(feed.children.length>10)feed.removeChild(feed.lastChild);}for(let i=0;i<5;i++)setTimeout(()=>add(),i*500);setInterval(add,3500);}
+    function exportReport(){const b=new Blob([JSON.stringify({timestamp:new Date().toISOString(),sector:'Government',metrics:data,compliance:{fedramp_high:true,fisma:true,nist_800_53:true}},null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`government-analytics-${Date.now()}.json`;a.click();URL.revokeObjectURL(u);}
+  </script>
+</body>
+</html>

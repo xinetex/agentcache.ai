@@ -8,7 +8,5 @@ node_modules
 scripts/verify_*
 tests
 
-# Exclude local dev server (Hono)
+# Exclude local dev server (Hono) - NOT the Vite build!
 dist/
-src/
-studio-dist/
