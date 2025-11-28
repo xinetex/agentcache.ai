@@ -136,7 +136,7 @@ class CacheAnalyticsDashboard {
     const svg = d3.select('#timeSeriesChart');
     const container = svg.node().parentElement;
     const width = container.clientWidth;
-    const height = 300;
+    const height = 220;
     
     svg.attr('width', width).attr('height', height);
     

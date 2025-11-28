@@ -14,10 +14,11 @@
 .analytics-grid {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 16px;
+  gap: 12px;
+  padding: 12px;
   background: #0f172a;
-  min-height: 100vh;
+  min-height: auto;
+  max-width: 100%;
 }
 
 /* ===== METRICS ROW ===== */
@@ -64,8 +65,9 @@
 .chart-panel {
   background: #1e293b;
   border: 1px solid #334155;
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 6px;
+  padding: 12px;
+  max-height: 280px;
 }
 
 .chart-header {
@@ -142,8 +144,9 @@
 .hierarchy-panel {
   background: #1e293b;
   border: 1px solid #334155;
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 6px;
+  padding: 12px;
+  max-height: 320px;
 }
 
 .hierarchy-panel h3 {
@@ -158,8 +161,9 @@
 .data-grid {
   background: #1e293b;
   border: 1px solid #334155;
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
+  max-height: 450px;
 }
 
 .grid-filter {
@@ -252,7 +256,7 @@
 .grid-table-container {
   overflow-x: auto;
   overflow-y: auto;
-  max-height: 600px;
+  max-height: 380px;
 }
 
 .grid-table {
