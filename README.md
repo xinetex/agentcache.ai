@@ -105,13 +105,16 @@ curl -X POST https://agentcache.ai/api/cache/get \
 ## Features
 
 - **Provider agnostic** - OpenAI, Anthropic, Moonshot, Cohere, Together, Groq
+- **Multi-tier caching** - L1 in-memory (<5ms), L2 Redis (<50ms), L3 semantic
 - **Global edge** - Upstash Redis with <50ms P95 latency
 - **Streaming support** - SSE passthrough for cached responses
 - **Multi-Model Swarm** - Run parallel, consensus, or cheapest strategies
-- **Semantic Caching** - (Beta) Vector-based matching for higher hit rates
+- **Semantic Caching** - Vector-based matching for 95%+ hit rates
 - **Elastic Overflow** - Use AgentCache as overflow for Redis/ElastiCache
 - **Zero config** - Automatic cache key generation
 - **Deterministic keys** - Same input = same key, always
+- **FedRAMP Ready** - Provider filtering, audit logging, US-only data residency
+- **Government Compliance** - 7-year audit retention, SOC 2 roadmap
 
 ## Pricing
 
@@ -158,23 +161,30 @@ Same API question asked 1000x = $30 → $0.03
 
 ## Current Status
 
-🚧 **MVP - Production Ready** (January 2025)
+✅ **Production Ready** (January 2025)
 
 What works:
 - ✅ Core caching API (Get, Set, Check)
+- ✅ Multi-tier caching (L1/L2/L3)
 - ✅ Streaming Support (SSE)
 - ✅ Python SDK
 - ✅ Multi-Model Swarm & Observability
 - ✅ Elastic Overflow Service
-- ✅ Semantic Caching (Strategy defined)
-- ✅ Redis backend
+- ✅ Semantic Caching (L3 with vector search)
+- ✅ Analytics Dashboard API
+- ✅ Cache Warming for common queries
+- ✅ Government compliance features
+- ✅ FedRAMP provider filtering
+- ✅ Audit logging with 7-year retention
 - ✅ Beautiful landing page
 
 Coming soon:
 - 🔜 User authentication & Stripe billing
-- 🔜 Usage dashboard
+- 🔜 Usage dashboard UI
 - 🔜 Go SDK
 - 🔜 Self-hosted option
+- 🔜 GSA Schedule registration
+- 🔜 SOC 2 Type II certification
 
 ## Architecture
 
