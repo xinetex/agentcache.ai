@@ -57,16 +57,7 @@
 
     <!-- Footer -->
     <div class="auth-footer">
-      <div class="auth-footer-grid">
-        <button type="button" id="generate-btn" class="auth-demo-badge">
-          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
-          </svg>
-          Generate Demo Key
-        </button>
-        <a href="/pricing.html" class="auth-link-muted auth-text-center">View Pricing</a>
-      </div>
-      <p class="auth-footer-text auth-mt-4">
+      <p class="auth-footer-text">
         Don't have an account?
         <a href="/signup.html" class="auth-link">Sign up</a>
       </p>
@@ -147,7 +138,7 @@
           localStorage.setItem('agentcache_user', JSON.stringify(data.user));
           window.location.href = REDIRECT_URL;
         } else {
-          showError(data.message || 'Invalid email or password');
+          showError(data.error || data.message || 'Invalid email or password');
           submitBtn.innerHTML = originalText;
           submitBtn.disabled = false;
         }
@@ -159,22 +150,6 @@
       }
     });
 
-    // Demo Key Generation
-    document.getElementById('generate-btn').addEventListener('click', () => {
-      const demoKey = 'ac_demo_' + Math.random().toString(36).substring(2, 15);
-      localStorage.setItem('agentcache_api_key', demoKey);
-      localStorage.setItem('agentcache_user', JSON.stringify({ email: 'demo@agentcache.ai', name: 'Demo User' }));
-
-      const btn = document.getElementById('generate-btn');
-      btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Demo Key Generated!';
-      btn.style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15))';
-      btn.style.borderColor = 'rgba(16, 185, 129, 0.3)';
-      btn.style.color = '#6ee7b7';
-
-      setTimeout(() => {
-        window.location.href = REDIRECT_URL;
-      }, 800);
-    });
 
     // Helper functions
     function showError(msg) {
