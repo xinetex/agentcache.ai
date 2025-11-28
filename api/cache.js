@@ -1,6 +1,28 @@
 export const config = { runtime: 'nodejs' };
 
-import { logAuditEvent } from './lib/audit.js';
+// Inline audit logging (simplified to avoid import issues)
+async function logAuditEvent(redis, event) {
+  try {
+    const timestamp = new Date().toISOString();
+    const day = timestamp.slice(0, 10);
+    const auditKey = `audit:${day}:${Date.now()}:${Math.random().toString(36).slice(2, 9)}`;
+    await redis('HSET', auditKey,
+      'timestamp', timestamp,
+      'event_type', event.type || 'unknown',
+      'api_key_hash', event.keyHash || 'anonymous',
+      'provider', event.provider || 'N/A',
+      'model', event.model || 'N/A',
+      'cache_hit', event.hit ? '1' : '0',
+      'compliance_mode', event.complianceMode || 'standard',
+      'ip_address', event.ip || 'unknown',
+      'namespace', event.namespace || 'default',
+      'latency_ms', event.latency || 0
+    );
+    await redis('EXPIRE', auditKey, 60 * 60 * 24 * 365 * 7); // 7 years
+  } catch (error) {
+    console.error('Audit error:', error);
+  }
+}
 
 // L1 Session Cache (in-memory, <5ms, zero cost)
 // This is a global Map that persists across requests in the same serverless instance
@@ -105,6 +127,37 @@ async function auth(req) {
   const email = await res.text();
   if (!email) return { ok: false };
   return { ok: true, kind: 'live', hash, email };
+}
+
+// Provider compliance database
+const PROVIDER_COMPLIANCE = {
+  openai: { region: 'US', chinese: false, compliance: ['FedRAMP-Moderate', 'SOC2', 'ISO27001'], fedramp: true },
+  anthropic: { region: 'US', chinese: false, compliance: ['SOC2', 'ISO27001'], fedramp: true },
+  cohere: { region: 'US', chinese: false, compliance: ['SOC2'], fedramp: true },
+  groq: { region: 'US', chinese: false, compliance: ['SOC2'], fedramp: true },
+  together: { region: 'US', chinese: false, compliance: ['SOC2'], fedramp: true },
+  deepseek: { region: 'CN', chinese: true, compliance: [], fedramp: false },
+  moonshot: { region: 'CN', chinese: true, compliance: [], fedramp: false },
+};
+
+function checkCompliance(provider, complianceMode) {
+  const info = PROVIDER_COMPLIANCE[provider];
+  if (!info) {
+    return { 
+      allowed: false, 
+      reason: `Unknown provider: ${provider}`,
+      alternatives: Object.keys(PROVIDER_COMPLIANCE).filter(p => PROVIDER_COMPLIANCE[p].fedramp)
+    };
+  }
+  if (complianceMode === 'fedramp' && info.chinese) {
+    return { 
+      allowed: false, 
+      reason: 'Chinese AI providers are not authorized in FedRAMP compliance mode',
+      provider_region: info.region,
+      alternatives: Object.keys(PROVIDER_COMPLIANCE).filter(p => PROVIDER_COMPLIANCE[p].fedramp)
+    };
+  }
+  return { allowed: true, info };
 }
 
 // Helper to stream cached response (OpenAI-compatible SSE)
