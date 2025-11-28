@@ -155,8 +155,8 @@
     <!-- Main Content -->
     <div class="flex flex-1 overflow-hidden">
       
-      <!-- Left Sidebar: Node Palette -->
-      <aside class="w-72 border-r border-slate-800/80 bg-slate-950/50 overflow-y-auto">
+      <!-- Left Sidebar: Node Palette (only visible in Builder tab) -->
+      <aside id="nodePalette" class="w-72 border-r border-slate-800/80 bg-slate-950/50 overflow-y-auto hidden">
         <div class="p-4">
           <div class="mb-4">
             <h2 class="text-sm font-semibold text-slate-300 mb-2">Node Palette</h2>
@@ -239,8 +239,11 @@
         <!-- Tab Navigation -->
         <div class="border-b border-slate-800/80 bg-slate-900/50">
           <div class="flex items-center gap-1 px-6">
-            <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400 active" data-tab="pipeline">
-              Workspace
+            <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400 active" data-tab="workspace">
+              Gallery
+            </button>
+            <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400" data-tab="builder">
+              <span class="glow-text">🔧</span> Builder
             </button>
             <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400" data-tab="dynamicview">
               Dynamic View
@@ -297,8 +300,8 @@
           </div>
         </div>
         
-        <!-- Workspace Tab (Pipeline Cards Grid) -->
-        <div id="pipelineTab" class="tab-content active flex-1 overflow-auto p-6 bg-slate-950">
+        <!-- Workspace/Gallery Tab (Pipeline Cards Grid) -->
+        <div id="workspaceTab" class="tab-content active flex-1 overflow-auto p-6 bg-slate-950">
           <div class="mb-6 flex items-center justify-between">
             <div>
               <h2 class="font-display text-2xl mb-1">Workspace Pipelines</h2>
@@ -320,6 +323,26 @@
           
           <div id="pipelineCardsGrid" class="grid grid-cols-3 gap-4">
             <!-- Pipeline cards populated by JS -->
+          </div>
+        </div>
+        
+        <!-- Builder Tab (Drag-n-Drop Canvas) -->
+        <div id="builderTab" class="tab-content flex-col flex-1 overflow-hidden">
+          <div class="flex-1 overflow-auto p-6 bg-slate-950">
+            <div id="pipelineCanvas" class="w-full h-full">
+              <!-- Pipeline visualization will be rendered here -->
+              <div id="canvasEmpty" class="flex items-center justify-center h-full">
+                <div class="text-center max-w-md">
+                  <div class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-slate-800/50">
+                    <svg class="h-8 w-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                  </div>
+                  <h3 class="text-lg font-semibold text-slate-300 mb-2">No Pipeline Loaded</h3>
+                  <p class="text-sm text-slate-500 mb-4">Click a pipeline card in the Gallery to see how it works, or drag nodes from the palette to create your own.</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -1521,18 +1544,34 @@
         content.classList.remove('active');
       });
       
-      if (tabName === 'pipeline') {
-        document.getElementById('pipelineTab').classList.add('active');
+      // Get node palette element
+      const nodePalette = document.getElementById('nodePalette');
+      
+      // Handle tab-specific logic
+      if (tabName === 'workspace') {
+        document.getElementById('workspaceTab').classList.add('active');
+        document.getElementById('metricsBar').style.display = 'none';
+        nodePalette.classList.add('hidden');
+      } else if (tabName === 'builder') {
+        document.getElementById('builderTab').classList.add('active');
         document.getElementById('metricsBar').style.display = 'block';
+        nodePalette.classList.remove('hidden');
       } else if (tabName === 'dynamicview') {
         document.getElementById('dynamicViewTab').classList.add('active');
         document.getElementById('metricsBar').style.display = 'none';
-      } else if (tabName === 'livedemo') {
+        nodePalette.classList.add('hidden');
+      } else if (tabName === 'livedemo' || tabName === 'liveDemo') {
         document.getElementById('liveDemoTab').classList.add('active');
         document.getElementById('metricsBar').style.display = 'none';
+        nodePalette.classList.add('hidden');
       } else if (tabName === 'scenarios') {
         document.getElementById('scenariosTab').classList.add('active');
         document.getElementById('metricsBar').style.display = 'none';
+        nodePalette.classList.add('hidden');
+      } else if (tabName === 'analytics') {
+        document.getElementById('analyticsTab').classList.add('active');
+        document.getElementById('metricsBar').style.display = 'none';
+        nodePalette.classList.add('hidden');
       }
     }
     
@@ -2243,15 +2282,103 @@
         window.trackPipelineView(pipelineId);
       }
       
-      // Switch to Live Demo tab and select the data source
-      switchTab('livedemo');
+      // Switch to Builder tab
+      switchTab('builder');
       
-      // Select the corresponding data source
-      const select = document.getElementById('dataSourceSelect');
-      if (select && pipeline.dataSource) {
-        select.value = pipeline.dataSource;
-        select.dispatchEvent(new Event('change'));
-      }
+      // Update metrics bar with pipeline name
+      document.getElementById('pipelineName').textContent = pipeline.name;
+      document.getElementById('metricHitRate').textContent = pipeline.hitRate;
+      document.getElementById('metricLatency').textContent = '~50ms';
+      document.getElementById('metricSavings').textContent = pipeline.estimatedSavings;
+      
+      // Render pipeline visualization on canvas
+      renderPipelineVisualization(pipeline);
+    };
+    
+    // Render pipeline visualization showing how nodes are connected
+    function renderPipelineVisualization(pipeline) {
+      const canvas = document.getElementById('pipelineCanvas');
+      const empty = document.getElementById('canvasEmpty');
+      
+      // Hide empty state
+      if (empty) empty.style.display = 'none';
+      
+      // Create visual node graph
+      canvas.innerHTML = `
+        <div class="flex flex-col gap-6 p-8">
+          <div class="mb-4">
+            <h2 class="text-2xl font-bold mb-2">${pipeline.icon} ${pipeline.name}</h2>
+            <p class="text-slate-400">${pipeline.description}</p>
+          </div>
+          
+          <div class="flex items-center justify-center gap-8 p-8 bg-slate-900/50 rounded-lg">
+            <!-- Visual flow diagram -->
+            <div class="flex items-center gap-4">
+              ${pipeline.nodes.map((node, index) => `
+                <div class="flex items-center gap-4">
+                  <div class="flex flex-col items-center">
+                    <div class="w-32 h-32 rounded-lg bg-gradient-to-br ${
+                      node.includes('L1') ? 'from-emerald-500/20 to-emerald-600/20 border-emerald-500' :
+                      node.includes('L2') ? 'from-sky-500/20 to-sky-600/20 border-sky-500' :
+                      node.includes('L3') ? 'from-purple-500/20 to-purple-600/20 border-purple-500' :
+                      'from-slate-500/20 to-slate-600/20 border-slate-500'
+                    } border-2 flex items-center justify-center">
+                      <div class="text-center">
+                        <div class="text-2xl mb-2">${
+                          node.includes('L1') ? '⚡' :
+                          node.includes('L2') ? '💾' :
+                          node.includes('L3') ? '🔮' :
+                          '🌐'
+                        }</div>
+                        <div class="text-sm font-semibold">${node}</div>
+                        <div class="text-xs text-slate-400 mt-1">${
+                          node.includes('L1') ? '<5ms' :
+                          node.includes('L2') ? '15ms' :
+                          node.includes('L3') ? '50ms' :
+                          '800ms'
+                        }</div>
+                      </div>
+                    </div>
+                  </div>
+                  ${index < pipeline.nodes.length - 1 ? `
+                    <div class="flex flex-col items-center">
+                      <svg class="w-12 h-8" viewBox="0 0 48 32" fill="none">
+                        <path d="M4 16 H40 M40 16 L32 8 M40 16 L32 24" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round"/>
+                      </svg>
+                      <span class="text-xs text-slate-500 mt-1">→ miss</span>
+                    </div>
+                  ` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4 mt-4">
+            <div class="p-4 bg-slate-900/50 rounded-lg">
+              <h4 class="text-sm font-semibold mb-2 text-emerald-400">How It Works</h4>
+              <p class="text-xs text-slate-400">Requests flow through cache tiers (L1→L2→L3) before hitting the API. ${pipeline.hitRate} of requests are served from cache, avoiding expensive API calls.</p>
+            </div>
+            <div class="p-4 bg-slate-900/50 rounded-lg">
+              <h4 class="text-sm font-semibold mb-2 text-sky-400">Performance Metrics</h4>
+              <ul class="text-xs text-slate-400 space-y-1">
+                <li>• <strong>Hit Rate:</strong> ${pipeline.hitRate}</li>
+                <li>• <strong>Savings:</strong> ${pipeline.estimatedSavings}</li>
+                <li>• <strong>Nodes:</strong> ${pipeline.nodes.length} connected</li>
+                <li>• <strong>Status:</strong> ${pipeline.status === 'active' ? '🟢 Live' : '⚪ Draft'}</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="flex gap-3 mt-4">
+            <button onclick="runPipeline('${pipeline.id}')" class="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-semibold">
+              🧪 Run Test
+            </button>
+            <button onclick="switchTab('workspace')" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg">
+              ← Back to Gallery
+            </button>
+          </div>
+        </div>
+      `;
     };
     
     // Run pipeline test
