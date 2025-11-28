@@ -1958,8 +1958,14 @@
       }
       
       liveDataFetcher = new LiveDataFetcher();
-      metricsTracker = new LiveMetricsTracker();
-      scenarioRunner = new ScenarioRunner(liveDataFetcher, metricsTracker);
+      metricsTracker = new LiveMetricsTracker(liveDataFetcher);
+      
+      // Create scenario update callback
+      const onScenarioUpdate = (update) => {
+        updateScenarioProgress(update);
+      };
+      scenarioRunner = new ScenarioRunner(liveDataFetcher, onScenarioUpdate);
+      
       sessionStartTime = Date.now();
       
       // Populate data source dropdown
@@ -1967,7 +1973,7 @@
       LIVE_DATA_SOURCES.forEach(source => {
         const option = document.createElement('option');
         option.value = source.id;
-        option.textContent = `${source.name} (${source.category})`;
+        option.textContent = `${source.icon} ${source.name}`;
         select.appendChild(option);
       });
       
@@ -1979,6 +1985,8 @@
       
       // Start session timer
       startSessionTimer();
+      
+      console.log('[Studio] Live data modules initialized');
     }
     
     // Workspace Pipeline Templates
@@ -1989,7 +1997,7 @@
         description: 'Real-time cryptocurrency prices with L1/L2 caching',
         sector: 'crypto',
         icon: '₿',
-        dataSource: 'coingecko',
+        dataSource: 'crypto-prices', // Matches LIVE_DATA_SOURCES id
         nodes: ['L1 Cache', 'L2 Cache', 'CoinGecko API'],
         estimatedSavings: '$240/mo',
         hitRate: '92%',
@@ -2001,7 +2009,7 @@
         description: 'Global weather data with intelligent TTL caching',
         sector: 'weather',
         icon: '🌤️',
-        dataSource: 'openmeteo',
+        dataSource: 'weather-data', // Matches LIVE_DATA_SOURCES id
         nodes: ['L1 Cache', 'L2 Cache', 'OpenMeteo API'],
         estimatedSavings: '$180/mo',
         hitRate: '89%',
@@ -2013,7 +2021,7 @@
         description: 'HIPAA-compliant adverse event monitoring',
         sector: 'healthcare',
         icon: '💊',
-        dataSource: 'openfda',
+        dataSource: 'fda-drugs', // Matches LIVE_DATA_SOURCES id
         nodes: ['L1 Cache', 'L2 Cache', 'Compliance', 'OpenFDA API'],
         estimatedSavings: '$320/mo',
         hitRate: '94%',
@@ -2025,7 +2033,7 @@
         description: 'High-performance product data with CDN integration',
         sector: 'ecommerce',
         icon: '🛍️',
-        dataSource: 'jsonplaceholder',
+        dataSource: 'json-placeholder', // Matches LIVE_DATA_SOURCES id
         nodes: ['L1 Cache', 'L2 Cache', 'CDN', 'REST API'],
         estimatedSavings: '$450/mo',
         hitRate: '96%',
@@ -2037,7 +2045,7 @@
         description: 'Country information with persistent caching',
         sector: 'general',
         icon: '🌍',
-        dataSource: 'restcountries',
+        dataSource: 'rest-countries', // Matches LIVE_DATA_SOURCES id
         nodes: ['L1 Cache', 'L2 Cache', 'REST Countries API'],
         estimatedSavings: '$160/mo',
         hitRate: '88%',
@@ -2049,7 +2057,7 @@
         description: 'Visitor location data with rate-limit protection',
         sector: 'general',
         icon: '📍',
-        dataSource: 'ipapi',
+        dataSource: 'ip-geolocation', // Matches LIVE_DATA_SOURCES id
         nodes: ['L1 Cache', 'L2 Cache', 'Rate Limiter', 'ipapi.co'],
         estimatedSavings: '$200/mo',
         hitRate: '91%',
@@ -2061,7 +2069,7 @@
         description: 'Pokemon data with aggressive caching strategy',
         sector: 'gaming',
         icon: '🎮',
-        dataSource: 'pokeapi',
+        dataSource: 'pokemon-api', // Matches LIVE_DATA_SOURCES id
         nodes: ['L1 Cache', 'L2 Cache', 'PokéAPI'],
         estimatedSavings: '$140/mo',
         hitRate: '97%',
@@ -2073,7 +2081,7 @@
         description: 'Image delivery with edge caching and optimization',
         sector: 'media',
         icon: '🖼️',
-        dataSource: 'catapi',
+        dataSource: 'cat-images', // Matches LIVE_DATA_SOURCES id
         nodes: ['L1 Cache', 'L2 Cache', 'Image Optimizer', 'The Cat API'],
         estimatedSavings: '$380/mo',
         hitRate: '93%',
@@ -2144,28 +2152,24 @@
       const pipeline = WORKSPACE_PIPELINES.find(p => p.id === pipelineId);
       if (!pipeline || !pipeline.dataSource) return;
       
-      // Fetch data from the pipeline's data source
-      const result = await liveDataFetcher.fetch(pipeline.dataSource);
-      
-      if (result.error) {
-        if (window.trackError) {
-          window.trackError(new Error(result.error), 'pipeline_test');
+      try {
+        // Fetch data from the pipeline's data source
+        const result = await liveDataFetcher.fetch(pipeline.dataSource);
+        
+        // Track analytics
+        if (window.trackPipelineTest) {
+          window.trackPipelineTest(pipelineId, result);
         }
-        alert(`Pipeline test failed: ${result.error}`);
+        
+        // Track metrics
+        metricsTracker.recordCall(result);
+      } catch (error) {
+        if (window.trackError) {
+          window.trackError(error, 'pipeline_test');
+        }
+        alert(`Pipeline test failed: ${error.message}`);
         return;
       }
-      
-      // Track analytics
-      if (window.trackPipelineTest) {
-        window.trackPipelineTest(pipelineId, result);
-      }
-      
-      // Track metrics
-      metricsTracker.recordCall(
-        result.metadata.cached ? 'hit' : 'miss',
-        result.metadata.latency,
-        result.metadata.cost
-      );
       
       // Update session stats
       updateSessionStats();
@@ -2206,9 +2210,9 @@
         if (source) {
           sourceInfo.classList.remove('hidden');
           sourceInfo.innerHTML = `
-            <div class="text-slate-300 font-medium">${source.name}</div>
-            <div>${source.description}</div>
-            <div class="mt-1 text-slate-500">Cost: $${source.costPerCall.toFixed(4)}/call • Rate: ${source.rateLimit} calls/min</div>
+            <div class="text-slate-300 font-medium">${source.icon} ${source.name}</div>
+            <div class="text-slate-400">${source.description}</div>
+            <div class="mt-1 text-slate-500">Cost: $${source.costPerCall.toFixed(4)}/call • TTL: ${source.cacheStrategy.ttl}s</div>
           `;
         }
       } else {
@@ -2247,74 +2251,110 @@
       let lastResponse = null;
       
       for (let i = 0; i < iterations; i++) {
-        const result = await liveDataFetcher.fetch(sourceId);
-        
-        if (result.error) {
+        try {
+          const result = await liveDataFetcher.fetch(sourceId);
+          
+          // Track successful fetch
+          if (window.trackDataFetch) {
+            window.trackDataFetch(sourceId, result.hit, result.latency);
+          }
+          
+          totalLatency += result.latency;
+          totalCost += result.cost;
+          totalSaved += result.savedCost || 0;
+          
+          lastResponse = result.data;
+          
+          // Track metrics
+          metricsTracker.recordCall(result);
+          
+        } catch (error) {
           statusEl.textContent = 'ERROR';
           statusEl.className = 'text-rose-400';
-          viewer.textContent = JSON.stringify({ error: result.error }, null, 2);
+          viewer.textContent = JSON.stringify({ error: error.message }, null, 2);
           
           // Track error
           if (window.trackError) {
-            window.trackError(new Error(result.error), 'data_fetch');
+            window.trackError(error, 'data_fetch');
           }
           return;
         }
-        
-        // Track successful fetch
-        if (window.trackDataFetch) {
-          window.trackDataFetch(sourceId, result.metadata.cached, result.metadata.latency);
-        }
-        
-        totalLatency += result.metadata.latency;
-        totalCost += result.metadata.cost;
-        
-        if (result.metadata.cached) {
-          const source = LIVE_DATA_SOURCES.find(s => s.id === sourceId);
-          totalSaved += source.costPerCall;
-        }
-        
-        lastResponse = result.data;
-        
-        // Track metrics
-        metricsTracker.recordCall(
-          result.metadata.cached ? 'hit' : 'miss',
-          result.metadata.latency,
-          result.metadata.cost
-        );
       }
       
       // Update display
-      statusEl.textContent = 'SUCCESS';
-      statusEl.className = 'text-emerald-400';
-      latencyEl.textContent = `${Math.round(totalLatency / iterations)}ms avg`;
+      const avgLatency = Math.round(totalLatency / iterations);
+      statusEl.textContent = totalCost === 0 ? 'CACHE HIT' : 'CACHE MISS';
+      statusEl.className = totalCost === 0 ? 'text-emerald-400' : 'text-amber-400';
+      latencyEl.textContent = `${avgLatency}ms`;
       costEl.textContent = `$${totalCost.toFixed(4)}`;
       savedEl.textContent = `$${totalSaved.toFixed(4)}`;
       
-      viewer.textContent = JSON.stringify(lastResponse, null, 2);
+      // Format response viewer with syntax highlighting
+      try {
+        viewer.textContent = JSON.stringify(lastResponse, null, 2);
+      } catch (e) {
+        viewer.textContent = String(lastResponse);
+      }
       
       // Update footer
       updateSessionStats();
     }
     
     function populateScenarioCards() {
-      if (typeof DEMO_SCENARIOS === 'undefined') return;
+      if (typeof DEMO_SCENARIOS === 'undefined') {
+        console.warn('DEMO_SCENARIOS not loaded');
+        return;
+      }
       
       const container = document.getElementById('scenarioCards');
+      if (!container) return;
+      
       container.innerHTML = DEMO_SCENARIOS.map(scenario => `
         <div class="glass-elevated p-4 rounded-lg cursor-pointer hover:border-sky-500 transition-colors" onclick="runScenario('${scenario.id}')">
           <div class="text-2xl mb-2">${scenario.icon}</div>
           <h4 class="font-display text-sm mb-2">${scenario.name}</h4>
           <p class="text-xs text-slate-400 mb-3">${scenario.description}</p>
           <div class="flex justify-between text-xs text-slate-500">
-            <span>${scenario.calls.length} calls</span>
-            <span>${scenario.cacheStrategy}</span>
+            <span>${scenario.duration}s duration</span>
+            <span>${scenario.expectedMetrics.hitRate}% hit rate</span>
           </div>
         </div>
       `).join('');
     }
     
     window.runScenario = async function(scenarioId) {
+      const scenario = DEMO_SCENARIOS.find(s => s.id === scenarioId);
+      if (!scenario) {
+        console.error('Scenario not found:', scenarioId);
+        return;
+      }
+      
+      // Track analytics
+      if (window.trackScenarioRun) {
+        window.trackScenarioRun(scenarioId);
+      }
+      
+      try {
+        await scenarioRunner.run(scenarioId);
+        
+        // Update footer stats
+        updateSessionStats();
+        
+        // Show completion message
+        addAIMessage(`✅ Scenario "${scenario.name}" completed!`, 'assistant');
+        
+      } catch (error) {
+        console.error('Scenario failed:', error);
+        alert(`Scenario failed: ${error.message}`);
+        
+        if (window.trackError) {
+          window.trackError(error, 'scenario_run');
+        }
+      }
+    };
+    
+    // Update scenario progress during execution
+    function updateScenarioProgress(update) {
       const progress = document.getElementById('scenarioProgress');
       const progressBar = document.getElementById('scenarioProgressBar');
       const nameEl = document.getElementById('scenarioName');
@@ -2325,50 +2365,34 @@
       const latencyEl = document.getElementById('scenarioLatency');
       const savingsEl = document.getElementById('scenarioSavings');
       
-      const scenario = DEMO_SCENARIOS.find(s => s.id === scenarioId);
-      if (!scenario) return;
-      
-      progress.classList.remove('hidden');
-      nameEl.textContent = scenario.name;
-      
-      const totalCalls = scenario.calls.length;
-      let completed = 0;
-      
-      for (const call of scenario.calls) {
-        const result = await liveDataFetcher.fetch(call.source, call.params);
+      if (update.status === 'running') {
+        progress.classList.remove('hidden');
+        nameEl.textContent = update.scenario.name;
         
-        metricsTracker.recordCall(
-          result.metadata.cached ? 'hit' : 'miss',
-          result.metadata.latency,
-          result.metadata.cost
-        );
+        progressBar.style.width = `${update.progress}%`;
+        stepEl.textContent = `${update.currentCall || 0}/${update.totalCalls || 0} calls`;
+        percentEl.textContent = `${update.progress}%`;
         
-        completed++;
-        const percent = Math.round((completed / totalCalls) * 100);
-        
-        progressBar.style.width = `${percent}%`;
-        stepEl.textContent = `${completed}/${totalCalls} calls`;
-        percentEl.textContent = `${percent}%`;
-        
-        // Update metrics
-        const stats = metricsTracker.getSessionStats();
-        callsEl.textContent = stats.totalCalls;
-        hitRateEl.textContent = `${stats.hitRate}%`;
-        latencyEl.textContent = `${Math.round(stats.avgLatency)}ms`;
-        savingsEl.textContent = `$${stats.totalSavings.toFixed(2)}`;
-        
-        // Small delay for visual effect
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
-      
-      // Update footer
-      updateSessionStats();
-      
-      // Hide progress after 2s
-      setTimeout(() => {
+        // Update metrics from results
+        if (update.results && update.results.length > 0) {
+          const hits = update.results.filter(r => r.hit).length;
+          const totalLatency = update.results.reduce((sum, r) => sum + r.latency, 0);
+          const totalSaved = update.results.reduce((sum, r) => sum + (r.savedCost || 0), 0);
+          
+          callsEl.textContent = update.results.length;
+          hitRateEl.textContent = `${Math.round((hits / update.results.length) * 100)}%`;
+          latencyEl.textContent = `${Math.round(totalLatency / update.results.length)}ms`;
+          savingsEl.textContent = `$${totalSaved.toFixed(3)}`;
+        }
+      } else if (update.status === 'completed') {
+        // Hide progress after 3s
+        setTimeout(() => {
+          progress.classList.add('hidden');
+        }, 3000);
+      } else if (update.status === 'error') {
         progress.classList.add('hidden');
-      }, 2000);
-    };
+      }
+    }
     
     document.getElementById('stopScenarioBtn')?.addEventListener('click', () => {
       document.getElementById('scenarioProgress').classList.add('hidden');
@@ -2385,16 +2409,25 @@
     }
     
     function updateSessionStats() {
-      const stats = metricsTracker.getSessionStats();
-      document.getElementById('sessionCalls').textContent = stats.totalCalls;
-      document.getElementById('footerHitRate').textContent = `${stats.hitRate}%`;
-      document.getElementById('footerSavings').textContent = stats.totalSavings.toFixed(2);
+      if (!metricsTracker) return;
+      
+      const snapshot = metricsTracker.getSnapshot();
+      const metrics = liveDataFetcher.getMetrics();
+      
+      document.getElementById('sessionCalls').textContent = metrics.totalCalls;
+      document.getElementById('footerHitRate').textContent = `${metrics.hitRate.toFixed(0)}%`;
+      document.getElementById('footerSavings').textContent = metrics.totalSaved.toFixed(2);
     }
     
     // View report button
     document.getElementById('viewReportBtn')?.addEventListener('click', () => {
-      const report = new SessionReport(metricsTracker);
-      const reportData = report.generateReport();
+      if (!metricsTracker || !liveDataFetcher) {
+        alert('No session data available yet. Try fetching some data first!');
+        return;
+      }
+      
+      const sessionReport = new SessionReport(liveDataFetcher, metricsTracker);
+      const reportData = sessionReport.generateReport();
       
       // Display in modal or new tab
       const reportWindow = window.open('', '_blank');
@@ -2404,34 +2437,84 @@
             <title>AgentCache Session Report</title>
             <style>
               body { font-family: system-ui; padding: 2rem; background: #0f172a; color: #e2e8f0; }
-              h1 { color: #38bdf8; }
+              h1 { color: #38bdf8; margin-bottom: 2rem; }
+              h2 { color: #38bdf8; margin-top: 2rem; font-size: 1.25rem; }
               .metric { margin: 1rem 0; padding: 1rem; background: #1e293b; border-radius: 8px; }
-              .metric-label { font-size: 0.875rem; color: #94a3b8; }
+              .metric-label { font-size: 0.875rem; color: #94a3b8; margin-bottom: 0.5rem; }
               .metric-value { font-size: 1.5rem; font-weight: bold; }
+              .section { margin-bottom: 2rem; }
             </style>
           </head>
           <body>
-            <h1>📊 Session Report</h1>
-            <div class="metric">
-              <div class="metric-label">Total Calls</div>
-              <div class="metric-value">${reportData.totalCalls}</div>
+            <h1>📊 AgentCache Session Report</h1>
+            
+            <div class="section">
+              <h2>Summary</h2>
+              <div class="metric">
+                <div class="metric-label">Data Sources Tested</div>
+                <div class="metric-value">${reportData.summary.dataSourcesTested}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Scenarios Run</div>
+                <div class="metric-value">${reportData.summary.scenariosRun}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Total API Calls</div>
+                <div class="metric-value">${reportData.summary.totalCalls}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Session Duration</div>
+                <div class="metric-value">${reportData.summary.sessionDuration}</div>
+              </div>
             </div>
-            <div class="metric">
-              <div class="metric-label">Cache Hit Rate</div>
-              <div class="metric-value" style="color: #10b981">${reportData.hitRate}%</div>
+            
+            <div class="section">
+              <h2>Performance</h2>
+              <div class="metric">
+                <div class="metric-label">Cache Hit Rate</div>
+                <div class="metric-value" style="color: #10b981">${reportData.performance.cacheHitRate}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Avg Latency (Hit)</div>
+                <div class="metric-value" style="color: #38bdf8">${reportData.performance.avgLatencyHit}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Avg Latency (Miss)</div>
+                <div class="metric-value">${reportData.performance.avgLatencyMiss}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Latency Improvement</div>
+                <div class="metric-value" style="color: #10b981">${reportData.performance.latencyImprovement}</div>
+              </div>
             </div>
-            <div class="metric">
-              <div class="metric-label">Average Latency</div>
-              <div class="metric-value">${reportData.avgLatency}ms</div>
+            
+            <div class="section">
+              <h2>Cost Analysis</h2>
+              <div class="metric">
+                <div class="metric-label">Total Spent (This Session)</div>
+                <div class="metric-value">${reportData.cost.totalSpent}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Total Saved (This Session)</div>
+                <div class="metric-value" style="color: #10b981">${reportData.cost.totalSaved}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Projected Monthly (Without Cache)</div>
+                <div class="metric-value">${reportData.cost.projectedMonthlyWithout}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Projected Monthly (With Cache)</div>
+                <div class="metric-value" style="color: #38bdf8">${reportData.cost.projectedMonthlyWith}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Projected Monthly Savings</div>
+                <div class="metric-value" style="color: #10b981">${reportData.cost.projectedMonthlySavings}</div>
+              </div>
             </div>
-            <div class="metric">
-              <div class="metric-label">Total Savings</div>
-              <div class="metric-value" style="color: #10b981">$${reportData.totalSavings.toFixed(4)}</div>
-            </div>
-            <div class="metric">
-              <div class="metric-label">Projected Monthly Savings</div>
-              <div class="metric-value" style="color: #10b981">$${reportData.projectedMonthlySavings.toFixed(2)}</div>
-            </div>
+            
+            <p style="margin-top: 3rem; text-align: center; color: #64748b; font-size: 0.875rem;">
+              Generated at ${reportData.summary.timestamp}
+            </p>
           </body>
         </html>
       `);
