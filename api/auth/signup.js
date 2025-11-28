@@ -2,6 +2,10 @@ import bcryptjs from 'bcryptjs';
 import { generateToken } from '../../lib/jwt.js';
 import { query } from '../../lib/db.js';
 
+export const config = {
+  runtime: 'nodejs'
+};
+
 const BCRYPT_ROUNDS = 10;
 
 export default async function handler(req, res) {

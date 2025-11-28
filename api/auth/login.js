@@ -2,6 +2,10 @@ import bcrypt from 'bcryptjs';
 import { generateToken } from '../../lib/jwt.js';
 import { query } from '../../lib/db.js';
 
+export const config = {
+  runtime: 'nodejs'
+};
+
 /**
  * POST /api/auth/login
  * Authenticate customer and return JWT token
