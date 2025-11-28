@@ -292,18 +292,14 @@ export default async function handler(req) {
 
       // Also store in L3 semantic cache if enabled (fire-and-forget)
       if (semantic && process.env.UPSTASH_VECTOR_REST_URL && messages) {
-        try {
-          import('./cache/semantic.js').then(({ semanticStore }) => {
-            semanticStore(messages, finalResponse, {
-              provider,
-              model,
-              namespace: namespace || 'default',
-              cacheKey,
-            }).catch(err => console.error('L3 store error:', err));
-          }).catch(err => console.error('L3 import error:', err));
-        } catch (err) {
-          console.error('L3 semantic cache not available:', err);
-        }
+        import('./cache/semantic.js').then(({ semanticStore }) => {
+          semanticStore(messages, finalResponse, {
+            provider,
+            model,
+            namespace: namespace || 'default',
+            cacheKey,
+          }).catch(err => console.error('L3 store error:', err));
+        }).catch(() => {});
       }
 
       return json({ success: true, key: cacheKey.slice(-16), ttl });
@@ -362,9 +358,52 @@ export default async function handler(req) {
         // ============================================
         // L3 Check: Semantic Cache (Vector Store)
         // ============================================
-        // L3 semantic cache is disabled for now due to Edge runtime compatibility
-        // Will be re-enabled after testing dynamic imports
-        // if (semantic && process.env.UPSTASH_VECTOR_REST_URL) { ... }
+        if (semantic && process.env.UPSTASH_VECTOR_REST_URL) {
+          try {
+            const { semanticSearch } = await import('./cache/semantic.js');
+            const semanticResult = await semanticSearch(messages, {
+              threshold: similarity_threshold,
+              provider,
+              model,
+              namespace: namespace || 'default',
+            });
+            
+            if (semanticResult.hit) {
+              const l3Latency = Date.now() - startTime;
+              
+              // L3 HIT: Promote to L2 and L1
+              await redis('SETEX', cacheKey, ttl, semanticResult.response);
+              setL1Cache(sessionId, cacheKey, semanticResult.response);
+              
+              // Track L3 hits
+              const today = new Date().toISOString().slice(0, 10);
+              redis('INCR', `stats:global:hits:l3:d:${today}`).catch(() => {});
+              redis('EXPIRE', `stats:global:hits:l3:d:${today}`, 60 * 60 * 24 * 7).catch(() => {});
+              
+              // Update L3 access count (fire-and-forget)
+              import('./cache/semantic.js').then(({ updateSemanticAccessCount }) => {
+                updateSemanticAccessCount(semanticResult.cacheKey).catch(() => {});
+              });
+              
+              if (stream) {
+                return streamCachedResponse(semanticResult.response, model);
+              }
+              
+              return json({
+                hit: true,
+                response: semanticResult.response,
+                tier: 'L3',
+                similarity: semanticResult.similarity,
+                latency: l3Latency,
+                embeddingTokens: semanticResult.embeddingTokens,
+                matchedQuery: semanticResult.matchedQuery,
+              });
+            }
+          } catch (error) {
+            console.error('L3 semantic cache error:', error);
+            // Fall through to cache miss
+          }
+        }
         return json({ hit: false, tier: 'miss' }, 404);
       }
 
