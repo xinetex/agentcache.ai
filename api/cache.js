@@ -2,6 +2,47 @@ export const config = { runtime: 'nodejs' };
 
 import { logAuditEvent } from './lib/audit.js';
 
+// L1 Session Cache (in-memory, <5ms, zero cost)
+// This is a global Map that persists across requests in the same serverless instance
+const L1_CACHE = new Map();
+const L1_MAX_SIZE = 1000; // Limit memory usage
+const L1_TTL_MS = 60 * 1000; // 1 minute TTL for L1
+
+function cleanL1Cache() {
+  const now = Date.now();
+  for (const [key, entry] of L1_CACHE.entries()) {
+    if (now > entry.expiresAt) {
+      L1_CACHE.delete(key);
+    }
+  }
+  // If still over max size, remove oldest entries
+  if (L1_CACHE.size > L1_MAX_SIZE) {
+    const sortedEntries = Array.from(L1_CACHE.entries())
+      .sort((a, b) => a[1].expiresAt - b[1].expiresAt);
+    const toRemove = sortedEntries.slice(0, L1_CACHE.size - L1_MAX_SIZE);
+    toRemove.forEach(([key]) => L1_CACHE.delete(key));
+  }
+}
+
+function getL1(key) {
+  const entry = L1_CACHE.get(key);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) {
+    L1_CACHE.delete(key);
+    return null;
+  }
+  return entry.value;
+}
+
+function setL1(key, value) {
+  L1_CACHE.set(key, {
+    value,
+    expiresAt: Date.now() + L1_TTL_MS
+  });
+  // Periodic cleanup (every 10th write)
+  if (Math.random() < 0.1) cleanL1Cache();
+}
+
 function json(data, status = 200, complianceInfo = {}) {
   const headers = {
     'content-type': 'application/json; charset=utf-8',
@@ -244,6 +285,9 @@ export default async function handler(req) {
 
       if (!pipelineRes.ok) throw new Error(`Upstash pipeline failed: ${pipelineRes.status}`);
 
+      // Populate L1 cache on SET
+      setL1(cacheKey, finalResponse);
+
       // Audit log: cache_set event
       await logAuditEvent(redis, {
         type: 'cache_set',
@@ -262,7 +306,37 @@ export default async function handler(req) {
     }
 
     if (req.method === 'POST' && req.url.endsWith('/get')) {
-      // Fetch cache and metadata in parallel
+      const startL1Check = Date.now();
+      
+      // L1 Cache Check (in-memory, <5ms)
+      const l1Hit = getL1(cacheKey);
+      if (l1Hit) {
+        const l1Latency = Date.now() - startL1Check;
+        
+        // Audit log: L1 cache hit
+        await logAuditEvent(redis, {
+          type: 'cache_get',
+          keyHash: authn.hash || 'demo',
+          provider,
+          model,
+          hit: true,
+          complianceMode,
+          ip: req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown',
+          namespace,
+          cacheKeyHash: cacheKey.slice(-16),
+          latency: l1Latency
+        });
+        
+        return json({ 
+          hit: true, 
+          response: l1Hit, 
+          tier: 'L1',
+          latency_ms: l1Latency,
+          cost_saved: '$0.02+'
+        }, 200, { mode: complianceMode, providerRegion: 'US' });
+      }
+      
+      // L2 Cache Check (Redis, 20-50ms)
       const { url, token } = getEnv();
       const metaKey = `${cacheKey}:meta`;
 
@@ -352,8 +426,11 @@ export default async function handler(req) {
         body: JSON.stringify(statsCommands)
       }).catch(() => { });
 
-      // Audit log: cache hit
-      const startTime = Date.now();
+      // Populate L1 cache for next request
+      setL1(cacheKey, cachedValue);
+      
+      // Audit log: L2 cache hit
+      const l2Latency = Date.now() - startL1Check;
       await logAuditEvent(redis, {
         type: 'cache_get',
         keyHash: authn.hash || 'demo',
@@ -364,14 +441,21 @@ export default async function handler(req) {
         ip: req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown',
         namespace,
         cacheKeyHash: cacheKey.slice(-16),
-        latency: Date.now() - startTime
+        latency: l2Latency
       });
 
       if (stream) {
         return streamCachedResponse(cachedValue, model);
       }
 
-      return json({ hit: true, response: cachedValue, freshness }, 200, { mode: complianceMode, providerRegion: 'US' });
+      return json({ 
+        hit: true, 
+        response: cachedValue, 
+        freshness,
+        tier: 'L2',
+        latency_ms: l2Latency,
+        cost_saved: '$0.01+'
+      }, 200, { mode: complianceMode, providerRegion: 'US' });
     }
 
     if (req.method === 'POST' && req.url.endsWith('/check')) {
