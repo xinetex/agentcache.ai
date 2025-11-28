@@ -145,6 +145,49 @@ curl http://localhost:3000/health
 
 ---
 
+## Secrets Management
+
+### ⚠️ CRITICAL: Never Commit Secrets
+
+#### Files That Should NEVER Be Committed
+```
+.env
+.env.local
+.env.vercel
+.env.vercel_*
+.env_*
+*_COMPLETE.md (setup docs with real values)
+docs/*ONBOARDING.md (if contains real credentials)
+```
+
+#### Pre-Commit Checklist
+1. **Scan for secrets**
+   ```bash
+   git diff --cached | grep -i "secret\|password\|sk_\|whsec_\|postgresql://"
+   ```
+
+2. **Verify no .env files staged**
+   ```bash
+   git status | grep \.env
+   ```
+
+#### If Secrets Are Exposed
+1. Remove from git: `git rm --cached <file>`
+2. **Immediately rotate ALL exposed secrets**
+3. Update Vercel environment variables
+4. Redeploy
+
+#### Safe Patterns
+✅ Use environment variables  
+✅ Template files with placeholders  
+✅ Vercel environment variables (encrypted at rest)  
+
+❌ Never hardcode secrets in tracked files  
+❌ Never commit `.env` files  
+❌ Never include real secrets in documentation  
+
+---
+
 ## Support
 
 For security inquiries: security@agentcache.ai  

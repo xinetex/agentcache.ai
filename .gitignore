@@ -13,3 +13,9 @@ dist/
 .env_stripe_key_temp
 .env.preview
 .env.production
+
+# Documentation with secrets (keep local only)
+AUTH_SETUP_COMPLETE.md
+docs/deployment-checklist.md
+docs/JETTYTHUNDER_ONBOARDING.md
+docs/VERCEL_ENV_SETUP.md

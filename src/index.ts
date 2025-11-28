@@ -7,6 +7,7 @@ import { createHash } from 'crypto';
 import { z } from 'zod';
 import { redis } from './lib/redis.js';
 import { ContextManager } from './infrastructure/ContextManager.js';
+import vercelIntegration from './integrations/vercel.js';
 
 const app = new Hono();
 const contextManager = new ContextManager();
@@ -20,6 +21,15 @@ app.use('/api/*', cors({
   allowMethods: ['GET', 'POST', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
 }));
+
+// Mount Vercel integration routes
+app.route('/api/integrations/vercel', vercelIntegration);
+
+// Provision API endpoints
+import { provisionClient, getApiKeyInfo, provisionJettyThunder } from './api/provision-hono.js';
+app.post('/api/provision', provisionClient);
+app.get('/api/provision/:api_key', getApiKeyInfo);
+app.post('/api/provision/jettythunder', provisionJettyThunder);
 
 // Serve static files (landing page)
 app.use('/*', serveStatic({ root: './public' }));
