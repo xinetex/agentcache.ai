@@ -98,9 +98,9 @@ export default async function handler(req, res) {
 
     // Generate JWT token
     const token = generateToken({
-      userId: user.id,
+      id: user.id,
       email: user.email,
-      organizationId: user.organization_id,
+      organization_id: user.organization_id,
       role: user.role || 'member',
     });
 
