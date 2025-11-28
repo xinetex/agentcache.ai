@@ -9,27 +9,14 @@ const L1_ENTRY_TTL = 60 * 1000; // 1 minute per entry
 
 function getSessionCache(sessionId) {
   if (!sessionCaches.has(sessionId)) {
-    const cache = {
-      data: new Map(),
-      createdAt: Date.now()
-    };
+    const cache = new Map();
     sessionCaches.set(sessionId, cache);
+    // Auto-cleanup session after 5 minutes
+    setTimeout(() => {
+      sessionCaches.delete(sessionId);
+    }, SESSION_CACHE_TTL);
   }
-  
-  const cache = sessionCaches.get(sessionId);
-  
-  // Clean up expired sessions (passive cleanup)
-  if (Date.now() - cache.createdAt > SESSION_CACHE_TTL) {
-    sessionCaches.delete(sessionId);
-    const newCache = {
-      data: new Map(),
-      createdAt: Date.now()
-    };
-    sessionCaches.set(sessionId, newCache);
-    return newCache.data;
-  }
-  
-  return cache.data;
+  return sessionCaches.get(sessionId);
 }
 
 function checkL1Cache(sessionId, cacheKey) {
