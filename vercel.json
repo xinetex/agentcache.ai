@@ -19,118 +19,16 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/studio",
-      "destination": "/studio.html"
-    },
-    {
-      "source": "/studio/:path*",
-      "destination": "/studio.html"
-    },
-    {
-      "source": "/api/cache/get",
-      "destination": "/api/cache"
-    },
-    {
-      "source": "/api/cache/set",
-      "destination": "/api/cache"
-    },
-    {
-      "source": "/api/cache/check",
-      "destination": "/api/cache"
-    },
-    {
-      "source": "/api/tool-cache/get",
-      "destination": "/api/tool-cache"
-    },
-    {
-      "source": "/api/tool-cache/set",
-      "destination": "/api/tool-cache"
-    },
-    {
-      "source": "/api/spelling/fix",
-      "destination": "/api/spelling"
-    },
-    {
-      "source": "/api/image-gen/generate",
-      "destination": "/api/image-gen"
-    },
-    {
-      "source": "/api/constraints/enforce",
-      "destination": "/api/constraints"
-    },
-    {
-      "source": "/api/auth/signup",
-      "destination": "/api/auth.js"
-    },
-    {
-      "source": "/api/auth/login",
-      "destination": "/api/auth.js"
-    },
-    {
-      "source": "/api/auth/me",
-      "destination": "/api/auth.js"
-    },
-    {
-      "source": "/api/auth/logout",
-      "destination": "/api/auth.js"
-    },
-    {
-      "source": "/api/auth/verify",
-      "destination": "/api/auth/verify.js"
-    },
-    {
-      "source": "/api/history",
-      "destination": "/api/history.js"
-    },
-    {
-      "source": "/api/integrations",
-      "destination": "/api/integrations.js"
-    },
-    {
-      "source": "/api/settings",
-      "destination": "/api/settings.js"
-    },
-    {
-      "source": "/api/pii",
-      "destination": "/api/pii.js"
-    },
-    {
-      "source": "/api/cognitive-universe",
-      "destination": "/api/cognitive-universe.js"
-    },
-    {
-      "source": "/daily",
-      "destination": "/daily.html"
-    },
-    {
-      "source": "/visualizations",
-      "destination": "/visualizations.html"
-    },
-    {
-      "source": "/docs",
-      "destination": "/docs.html"
-    },
-    {
-      "source": "/docs/:doc.md",
-      "destination": "/md.html?doc=:doc"
-    },
-    {
-      "source": "/blog",
-      "destination": "/blog.html"
-    },
-    {
-      "source": "/login",
-      "destination": "/login.html"
-    },
-    {
-      "source": "/privacy",
-      "destination": "/privacy.html"
-    },
-    {
-      "source": "/terms",
-      "destination": "/terms.html"
-    }
+    { "source": "/studio", "destination": "/studio.html" },
+    { "source": "/studio/:path*", "destination": "/studio.html" },
+    { "source": "/daily", "destination": "/daily.html" },
+    { "source": "/visualizations", "destination": "/visualizations.html" },
+    { "source": "/docs", "destination": "/docs.html" },
+    { "source": "/docs/:doc.md", "destination": "/md.html?doc=:doc" },
+    { "source": "/blog", "destination": "/blog.html" },
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/terms", "destination": "/terms.html" }
   ],
   "headers": [
     {
