@@ -18,6 +18,10 @@
   <script src="/js/demo-scenarios.js"></script>
   <script src="/js/live-metrics.js"></script>
   <script src="/js/demo-analytics.js"></script>
+  <script src="/js/response-viewer.js"></script>
+  
+  <!-- Response Viewer Styles -->
+  <link rel="stylesheet" href="/css/response-viewer.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
     
@@ -396,11 +400,8 @@
               </div>
             </div>
             
-            <!-- Right: Response Viewer -->
-            <div class="glass p-6 rounded-lg flex flex-col">
-              <h3 class="font-display text-sm mb-3">Response Data</h3>
-              <pre id="responseViewer" class="flex-1 font-data text-xs overflow-auto bg-slate-900/50 p-4 rounded border border-slate-800 text-slate-300">Waiting for API call...</pre>
-            </div>
+            <!-- Right: Response Viewer (Professional) -->
+            <div id="responseViewer" class="flex flex-col h-full"></div>
           </div>
         </div>
         
@@ -2232,15 +2233,22 @@
       await fetchLiveData(10);
     });
     
+    // Initialize Response Viewer
+    let responseViewer;
+    
     async function fetchLiveData(iterations = 1) {
       const sourceId = document.getElementById('dataSourceSelect').value;
       if (!sourceId) return;
+      
+      // Initialize viewer if not already done
+      if (!responseViewer) {
+        responseViewer = new ResponseViewer('responseViewer');
+      }
       
       const statusEl = document.getElementById('liveStatus');
       const latencyEl = document.getElementById('liveLatency');
       const costEl = document.getElementById('liveCost');
       const savedEl = document.getElementById('liveSaved');
-      const viewer = document.getElementById('responseViewer');
       
       statusEl.textContent = 'FETCHING...';
       statusEl.className = 'text-yellow-400';
@@ -2248,7 +2256,7 @@
       let totalLatency = 0;
       let totalCost = 0;
       let totalSaved = 0;
-      let lastResponse = null;
+      let lastResult = null;
       
       for (let i = 0; i < iterations; i++) {
         try {
@@ -2263,7 +2271,7 @@
           totalCost += result.cost;
           totalSaved += result.savedCost || 0;
           
-          lastResponse = result.data;
+          lastResult = result;
           
           // Track metrics
           metricsTracker.recordCall(result);
@@ -2271,7 +2279,12 @@
         } catch (error) {
           statusEl.textContent = 'ERROR';
           statusEl.className = 'text-rose-400';
-          viewer.textContent = JSON.stringify({ error: error.message }, null, 2);
+          
+          // Show error in Response Viewer
+          responseViewer.render(
+            { error: error.message },
+            { hit: false, latency: 0, cost: 0 }
+          );
           
           // Track error
           if (window.trackError) {
@@ -2281,7 +2294,7 @@
         }
       }
       
-      // Update display
+      // Update metrics display
       const avgLatency = Math.round(totalLatency / iterations);
       statusEl.textContent = totalCost === 0 ? 'CACHE HIT' : 'CACHE MISS';
       statusEl.className = totalCost === 0 ? 'text-emerald-400' : 'text-amber-400';
@@ -2289,12 +2302,12 @@
       costEl.textContent = `$${totalCost.toFixed(4)}`;
       savedEl.textContent = `$${totalSaved.toFixed(4)}`;
       
-      // Format response viewer with syntax highlighting
-      try {
-        viewer.textContent = JSON.stringify(lastResponse, null, 2);
-      } catch (e) {
-        viewer.textContent = String(lastResponse);
-      }
+      // Render response with professional viewer
+      responseViewer.render(lastResult.data, {
+        hit: lastResult.hit,
+        latency: avgLatency,
+        cost: totalCost / iterations
+      });
       
       // Update footer
       updateSessionStats();
