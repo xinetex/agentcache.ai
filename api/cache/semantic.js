@@ -7,8 +7,6 @@
 
 export const config = { runtime: 'nodejs' };
 
-import { Index } from '@upstash/vector';
-
 // Generate embedding using OpenAI embeddings API
 async function generateEmbedding(messages) {
   if (!process.env.OPENAI_API_KEY) {
@@ -60,6 +58,9 @@ export async function semanticSearch(messages, options = {}) {
   }
 
   try {
+    // Dynamic import of Upstash Vector
+    const { Index } = await import('@upstash/vector');
+    
     // Initialize Upstash Vector client
     const vector = new Index({
       url: process.env.UPSTASH_VECTOR_REST_URL,
@@ -131,6 +132,9 @@ export async function semanticStore(messages, response, options = {}) {
   }
 
   try {
+    // Dynamic import of Upstash Vector
+    const { Index } = await import('@upstash/vector');
+    
     const vector = new Index({
       url: process.env.UPSTASH_VECTOR_REST_URL,
       token: process.env.UPSTASH_VECTOR_REST_TOKEN,
@@ -182,6 +186,9 @@ export async function updateSemanticAccessCount(cacheKey) {
   }
 
   try {
+    // Dynamic import of Upstash Vector
+    const { Index } = await import('@upstash/vector');
+    
     const vector = new Index({
       url: process.env.UPSTASH_VECTOR_REST_URL,
       token: process.env.UPSTASH_VECTOR_REST_TOKEN,
