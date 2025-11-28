@@ -28,8 +28,7 @@ const getEnv = () => ({
 async function redis(command, ...args) {
   const { url, token } = getEnv();
   if (!url || !token) throw new Error('Upstash not configured');
-  const path = `${command}/${args.map(encodeURIComponent).join('/')}`;
-  const res = await fetch(`${url}/${path}`, {
+  const path = `${command}/${args.map(encodeURIComponent).join('/')}`;\n  const res = await fetch(`${url}/${path}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error(`Upstash ${res.status}`);
