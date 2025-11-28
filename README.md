@@ -18,10 +18,12 @@ Companies waste thousands monthly on duplicate AI API calls:
 ## The Solution
 
 AgentCache sits between your app and AI providers:
-- ✅ Cache identical prompts automatically
-- ✅ Return responses in <50ms (10x faster)
-- ✅ Pay $0 for cache hits (90% savings)
-- ✅ Works with OpenAI, Anthropic, Claude, any LLM
+- ✅ **Multi-tier caching** (L1/L2/L3) - Session, Redis, and Semantic layers
+- ✅ **Return responses in <5ms** (L1) to <200ms (L3)
+- ✅ **Pay $0 for cache hits** (90% cost savings)
+- ✅ **Works with any provider** - OpenAI, Anthropic, Claude, Groq, Together
+- ✅ **Cache everything** - LLM calls, tool results, database queries
+- ✅ **Semantic search** - Find similar queries with vector embeddings
 
 ## Quick Start
 
@@ -104,14 +106,26 @@ curl -X POST https://agentcache.ai/api/cache/get \
 
 ## Features
 
+### Core Caching
+- **3-Tier Architecture** - L1 (session), L2 (Redis), L3 (vector semantic search)
 - **Provider agnostic** - OpenAI, Anthropic, Moonshot, Cohere, Together, Groq
 - **Global edge** - Upstash Redis with <50ms P95 latency
 - **Streaming support** - SSE passthrough for cached responses
-- **Multi-Model Swarm** - Run parallel, consensus, or cheapest strategies
-- **Semantic Caching** - (Beta) Vector-based matching for higher hit rates
-- **Elastic Overflow** - Use AgentCache as overflow for Redis/ElastiCache
 - **Zero config** - Automatic cache key generation
 - **Deterministic keys** - Same input = same key, always
+
+### Advanced Features
+- **Semantic Caching** - Vector-based similarity matching (95%+ threshold)
+- **Tool Caching** - Cache function/API call results
+- **Database Caching** - Cache query results with schema versioning
+- **Multi-Model Swarm** - Run parallel, consensus, or cheapest strategies
+- **Cache Invalidation** - Pattern-based, tag-based, or namespace-wide
+- **Elastic Overflow** - Use AgentCache as overflow for Redis/ElastiCache
+
+### Observability
+- **Multi-tier analytics** - Hit rates, latency, and costs by tier
+- **Real-time metrics** - ROI tracking, cost savings, efficiency scores
+- **Trace integration** - Full observability of cache operations
 
 ## Pricing
 
@@ -178,25 +192,40 @@ Coming soon:
 
 ## Architecture
 
+### Multi-Tier Caching System
+
 ```
-┌─────────────┐
-│  Your App   │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────────┐
-│  AgentCache.ai  │◄──── Check cache first
-└──────┬──────────┘
-       │
-    ┌──┴──┐
-    │     │
-    ▼     ▼
-┌───────┐ ┌──────────┐
-│  Hit  │ │   Miss   │
-│ <50ms │ │ Call LLM │
-│  $0   │ │ + Cache  │
-└───────┘ └──────────┘
+User Query
+    ↓
+┌─────────────────────────┐
+│  L1: Session Cache      │  <5ms    | $0 (Free)
+│  (In-Memory)            │
+└────────┬────────────────┘
+         │ MISS
+         ▼
+┌─────────────────────────┐
+│  L2: Redis Cache        │  20-50ms | $0.0001/req
+│  (Global Edge)          │
+└────────┬────────────────┘
+         │ MISS
+         ▼
+┌─────────────────────────┐
+│  L3: Semantic Cache     │  100-200ms | $0.001/req
+│  (Vector Search)        │
+└────────┬────────────────┘
+         │ MISS
+         ▼
+┌─────────────────────────┐
+│  LLM Provider           │  3-8s    | $0.01-0.30/req
+│  (OpenAI, Anthropic)    │
+└─────────────────────────┘
 ```
+
+**Hit Distribution:**
+- L1 (Session): 40% of requests - Instant, $0
+- L2 (Redis): 35% of requests - Fast, $0.0001
+- L3 (Semantic): 17% of requests - Good, $0.001
+- LLM Miss: 8% of requests - Slow, $0.02+
 
 ## Tech Stack
 

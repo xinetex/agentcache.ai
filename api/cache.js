@@ -1,5 +1,45 @@
 export const config = { runtime: 'nodejs' };
 
+// ============================================
+// L1 Session Cache (In-Memory)
+// ============================================
+const sessionCaches = new Map();
+const SESSION_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const L1_ENTRY_TTL = 60 * 1000; // 1 minute per entry
+
+function getSessionCache(sessionId) {
+  if (!sessionCaches.has(sessionId)) {
+    const cache = new Map();
+    sessionCaches.set(sessionId, cache);
+    // Auto-cleanup session after 5 minutes
+    setTimeout(() => {
+      sessionCaches.delete(sessionId);
+    }, SESSION_CACHE_TTL);
+  }
+  return sessionCaches.get(sessionId);
+}
+
+function checkL1Cache(sessionId, cacheKey) {
+  if (!sessionId) return null;
+  const l1Cache = getSessionCache(sessionId);
+  const entry = l1Cache.get(cacheKey);
+  if (entry && Date.now() < entry.expiresAt) {
+    return entry.value;
+  }
+  // Clean up expired entry
+  if (entry) l1Cache.delete(cacheKey);
+  return null;
+}
+
+function setL1Cache(sessionId, cacheKey, value) {
+  if (!sessionId) return;
+  const l1Cache = getSessionCache(sessionId);
+  l1Cache.set(cacheKey, {
+    value,
+    expiresAt: Date.now() + L1_ENTRY_TTL
+  });
+}
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -8,7 +48,7 @@ function json(data, status = 200) {
       'cache-control': 'no-store',
       'access-control-allow-origin': '*',
       'access-control-allow-methods': 'POST, OPTIONS',
-      'access-control-allow-headers': 'Content-Type, Authorization, X-API-Key, X-Cache-Namespace',
+      'access-control-allow-headers': 'Content-Type, Authorization, X-API-Key, X-Cache-Namespace, X-Session-ID',
     },
   });
 }
@@ -111,7 +151,7 @@ function streamCachedResponse(text, model) {
       'connection': 'keep-alive',
       'access-control-allow-origin': '*',
       'access-control-allow-methods': 'POST, OPTIONS',
-      'access-control-allow-headers': 'Content-Type, Authorization, X-API-Key, X-Cache-Namespace',
+      'access-control-allow-headers': 'Content-Type, Authorization, X-API-Key, X-Cache-Namespace, X-Session-ID',
     }
   });
 }
@@ -127,6 +167,10 @@ export default async function handler(req) {
 
     // Extract namespace from header (for multi-tenant support)
     const namespace = req.headers.get('x-cache-namespace') || null;
+    
+    // Extract session ID for L1 cache (defaults to user hash for consistency)
+    const sessionId = req.headers.get('x-session-id') || authn.hash || `anon_${Date.now()}`;
+    const startTime = Date.now();
 
     // Rate limiting: Check request count in last minute
     if (authn.kind === 'live' || authn.kind === 'demo') {
@@ -215,7 +259,7 @@ export default async function handler(req) {
       const today = new Date().toISOString().slice(0, 10);
       const metaKey = `${cacheKey}:meta`;
 
-      // Store cached response and metadata
+      // Store cached response and metadata in L2 (Redis)
       const commands = [
         ['SETEX', cacheKey, ttl, finalResponse],
         // Store metadata
@@ -246,10 +290,49 @@ export default async function handler(req) {
 
       if (!pipelineRes.ok) throw new Error(`Upstash pipeline failed: ${pipelineRes.status}`);
 
+      // Also store in L3 semantic cache if enabled (fire-and-forget)
+      if (semantic && process.env.UPSTASH_VECTOR_REST_URL && messages) {
+        import('./cache/semantic.js').then(({ semanticStore }) => {
+          semanticStore(messages, finalResponse, {
+            provider,
+            model,
+            namespace: namespace || 'default',
+            cacheKey,
+          }).catch(err => console.error('L3 store error:', err));
+        }).catch(() => {});
+      }
+
       return json({ success: true, key: cacheKey.slice(-16), ttl });
     }
 
     if (req.method === 'POST' && req.url.endsWith('/get')) {
+      // ============================================
+      // L1 Check: Session Cache (In-Memory)
+      // ============================================
+      const l1Hit = checkL1Cache(sessionId, cacheKey);
+      if (l1Hit) {
+        const l1Latency = Date.now() - startTime;
+        // Track L1 hits
+        const today = new Date().toISOString().slice(0, 10);
+        redis('INCR', `stats:global:hits:l1:d:${today}`).catch(() => {});
+        redis('EXPIRE', `stats:global:hits:l1:d:${today}`, 60 * 60 * 24 * 7).catch(() => {});
+        
+        if (stream) {
+          return streamCachedResponse(l1Hit, model);
+        }
+        
+        return json({ 
+          hit: true, 
+          response: l1Hit, 
+          tier: 'L1',
+          latency: l1Latency,
+          freshness: { status: 'fresh', age: 0, ttlRemaining: L1_ENTRY_TTL }
+        });
+      }
+      
+      // ============================================
+      // L2 Check: Redis Cache
+      // ============================================
       // Fetch cache and metadata in parallel
       const { url, token } = getEnv();
       const metaKey = `${cacheKey}:meta`;
@@ -271,7 +354,58 @@ export default async function handler(req) {
       const cachedValue = data[0].result;
       const metaRaw = data[1].result;
 
-      if (!cachedValue) return json({ hit: false }, 404);
+      if (!cachedValue) {
+        // ============================================
+        // L3 Check: Semantic Cache (Vector Store)
+        // ============================================
+        if (semantic && process.env.UPSTASH_VECTOR_REST_URL) {
+          try {
+            const { semanticSearch } = await import('./cache/semantic.js');
+            const semanticResult = await semanticSearch(messages, {
+              threshold: similarity_threshold,
+              provider,
+              model,
+              namespace: namespace || 'default',
+            });
+            
+            if (semanticResult.hit) {
+              const l3Latency = Date.now() - startTime;
+              
+              // L3 HIT: Promote to L2 and L1
+              await redis('SETEX', cacheKey, ttl, semanticResult.response);
+              setL1Cache(sessionId, cacheKey, semanticResult.response);
+              
+              // Track L3 hits
+              const today = new Date().toISOString().slice(0, 10);
+              redis('INCR', `stats:global:hits:l3:d:${today}`).catch(() => {});
+              redis('EXPIRE', `stats:global:hits:l3:d:${today}`, 60 * 60 * 24 * 7).catch(() => {});
+              
+              // Update L3 access count (fire-and-forget)
+              import('./cache/semantic.js').then(({ updateSemanticAccessCount }) => {
+                updateSemanticAccessCount(semanticResult.cacheKey).catch(() => {});
+              });
+              
+              if (stream) {
+                return streamCachedResponse(semanticResult.response, model);
+              }
+              
+              return json({
+                hit: true,
+                response: semanticResult.response,
+                tier: 'L3',
+                similarity: semanticResult.similarity,
+                latency: l3Latency,
+                embeddingTokens: semanticResult.embeddingTokens,
+                matchedQuery: semanticResult.matchedQuery,
+              });
+            }
+          } catch (error) {
+            console.error('L3 semantic cache error:', error);
+            // Fall through to cache miss
+          }
+        }
+        return json({ hit: false, tier: 'miss' }, 404);
+      }
 
       // Parse metadata
       let freshness = null;
@@ -304,14 +438,20 @@ export default async function handler(req) {
         }
       }
 
+      // L2 HIT: Promote to L1 cache
+      setL1Cache(sessionId, cacheKey, cachedValue);
+      
       // Track global stats and estimate tokens (rough: ~4 chars = 1 token)
       const today = new Date().toISOString().slice(0, 10);
       const estimatedTokens = Math.floor(cachedValue.length / 4);
+      const l2Latency = Date.now() - startTime;
 
       // Fire and forget stats updates to reduce latency
       const statsCommands = [
         ['INCR', `stats:global:hits:d:${today}`],
         ['EXPIRE', `stats:global:hits:d:${today}`, 60 * 60 * 24 * 7],
+        ['INCR', `stats:global:hits:l2:d:${today}`],
+        ['EXPIRE', `stats:global:hits:l2:d:${today}`, 60 * 60 * 24 * 7],
         ['INCRBY', `stats:global:tokens:d:${today}`, estimatedTokens],
         ['EXPIRE', `stats:global:tokens:d:${today}`, 60 * 60 * 24 * 7]
       ];
@@ -330,7 +470,13 @@ export default async function handler(req) {
         return streamCachedResponse(cachedValue, model);
       }
 
-      return json({ hit: true, response: cachedValue, freshness });
+      return json({ 
+        hit: true, 
+        response: cachedValue, 
+        tier: 'L2',
+        latency: l2Latency,
+        freshness 
+      });
     }
 
     if (req.method === 'POST' && req.url.endsWith('/check')) {
