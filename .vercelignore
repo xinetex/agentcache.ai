@@ -7,3 +7,8 @@ brain
 node_modules
 scripts/verify_*
 tests
+
+# Exclude local dev server (Hono)
+dist/
+src/
+studio-dist/
