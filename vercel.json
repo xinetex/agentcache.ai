@@ -142,10 +142,6 @@
     {
       "path": "/api/cron/check-listeners",
       "schedule": "*/15 * * * *"
-    },
-    {
-      "path": "/api/cron/cache-optimization",
-      "schedule": "0 2 * * *"
     }
   ]
 }
