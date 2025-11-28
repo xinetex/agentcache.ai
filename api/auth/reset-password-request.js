@@ -49,7 +49,7 @@ export default async function handler(req, res) {
     const resetUrl = `${process.env.VERCEL_URL || 'https://agentcache.ai'}/reset-password.html?token=${resetToken}`;
     
     await resend.emails.send({
-      from: 'AgentCache <noreply@agentcache.ai>',
+      from: 'AgentCache <onboarding@resend.dev>',
       to: user.email,
       subject: 'Reset Your AgentCache Password',
       html: `
