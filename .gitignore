@@ -11,3 +11,5 @@ dist/
 .env.vercel_check_2
 .env.vercel_prod
 .env_stripe_key_temp
+.env.preview
+.env.production
