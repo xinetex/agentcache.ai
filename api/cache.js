@@ -313,6 +313,12 @@ export default async function handler(req) {
 
     return json({ error: 'Not found' }, 404);
   } catch (err) {
-    return json({ error: 'Unexpected error', details: err?.message || String(err) }, 500);
+    console.error('Cache API Error:', err);
+    console.error('Error stack:', err?.stack);
+    return json({ 
+      error: 'Unexpected error', 
+      details: err?.message || String(err),
+      stack: err?.stack?.split('\n').slice(0, 3).join('; ') || 'No stack'
+    }, 500);
   }
 }
