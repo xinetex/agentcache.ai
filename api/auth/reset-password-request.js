@@ -46,9 +46,16 @@ export default async function handler(req, res) {
     );
 
     // Send reset email
-    const resetUrl = `${process.env.VERCEL_URL || 'https://agentcache.ai'}/reset-password.html?token=${resetToken}`;
+    const resetUrl = `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://agentcache.ai'}/reset-password.html?token=${resetToken}`;
     
-    await resend.emails.send({
+    console.log('Sending password reset email:', {
+      to: user.email,
+      resetUrl,
+      tokenExpiry: expiresAt,
+      userId: user.id
+    });
+    
+    const emailResult = await resend.emails.send({
       from: 'AgentCache <onboarding@resend.dev>',
       to: user.email,
       subject: 'Reset Your AgentCache Password',
@@ -74,8 +81,14 @@ export default async function handler(req, res) {
         </div>
       `
     });
+    
+    console.log('Password reset email sent:', {
+      emailId: emailResult.id,
+      to: user.email,
+      status: 'success'
+    });
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: 'If an account exists with that email, a reset link has been sent.' 
     });
 

@@ -12,6 +12,13 @@ export default async function handler(req, res) {
   try {
     const { token, newPassword } = req.body;
 
+    console.log('Password reset attempt:', {
+      hasToken: !!token,
+      tokenLength: token?.length,
+      hasPassword: !!newPassword,
+      passwordLength: newPassword?.length
+    });
+
     if (!token || !newPassword) {
       return res.status(400).json({ message: 'Token and new password are required' });
     }
@@ -34,6 +41,18 @@ export default async function handler(req, res) {
     );
 
     if (tokenResult.rows.length === 0) {
+      // Check if token exists but expired
+      const expiredCheck = await query(
+        `SELECT expires_at FROM password_reset_tokens WHERE token_hash = $1`,
+        [tokenHash]
+      );
+      
+      console.error('Token validation failed:', {
+        tokenExists: expiredCheck.rows.length > 0,
+        tokenHash: tokenHash.substring(0, 10) + '...',
+        expiresAt: expiredCheck.rows[0]?.expires_at
+      });
+      
       return res.status(400).json({ message: 'Invalid or expired reset token' });
     }
 
@@ -53,6 +72,11 @@ export default async function handler(req, res) {
       'DELETE FROM password_reset_tokens WHERE user_id = $1',
       [user_id]
     );
+    
+    console.log('Password reset successful:', {
+      userId: user_id,
+      email: tokenResult.rows[0].email
+    });
 
     return res.status(200).json({ 
       message: 'Password reset successfully. You can now log in with your new password.' 
