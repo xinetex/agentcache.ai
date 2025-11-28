@@ -19,9 +19,16 @@
   <script src="/js/live-metrics.js"></script>
   <script src="/js/demo-analytics.js"></script>
   <script src="/js/response-viewer.js"></script>
+  <script src="/js/data-stream-visualizer.js"></script>
   
   <!-- Response Viewer Styles -->
   <link rel="stylesheet" href="/css/response-viewer.css">
+  
+  <!-- Scientific Analytics Dashboard -->
+  <script src="/js/cache-analytics-dashboard.js"></script>
+  <script src="/js/cache-hierarchy-viz.js"></script>
+  <script src="/js/data-grid-component.js"></script>
+  <link rel="stylesheet" href="/css/cache-analytics.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
     
@@ -244,6 +251,9 @@
             <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400 font-display" data-tab="scenarios">
               <span class="glow-text">🚀</span> Scenarios
             </button>
+            <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400 font-display" data-tab="analytics">
+              <span class="glow-text">📊</span> Analytics
+            </button>
           </div>
         </div>
         
@@ -358,8 +368,9 @@
         </div>
         
         <!-- Live Demo Tab -->
-        <div id="liveDemoTab" class="tab-content flex-col flex-1 overflow-hidden">
-          <div class="grid grid-cols-2 gap-6 p-6 h-full">
+        <div id="liveDemoTab" class="tab-content flex-col flex-1 overflow-hidden" style="position: relative;">
+          
+          <div class="grid grid-cols-2 gap-6 p-6 h-full" style="position: relative; z-index: 1;">
             <!-- Left: Data Source Selector -->
             <div class="glass-elevated p-6 rounded-lg flex flex-col">
               <h3 class="font-display text-lg mb-4 glow-text">⚡ Live Data Sources</h3>
@@ -403,7 +414,8 @@
             <!-- Right: Response Viewer (Professional) -->
             <div id="responseViewer" class="flex flex-col h-full"></div>
           </div>
-        </div>
+        </div><!-- End Live Demo Tab grid -->
+        </div><!-- End Live Demo Tab -->
         
         <!-- Scenarios Tab -->
         <div id="scenariosTab" class="tab-content flex-col flex-1 overflow-auto p-6">
@@ -448,6 +460,14 @@
                 <div class="text-lg font-semibold text-emerald-400" id="scenarioSavings">$0.00</div>
               </div>
             </div>
+          </div>
+        </div>
+        
+        <!-- Analytics Tab -->
+        <div id="analyticsTab" class="tab-content flex-col flex-1 overflow-hidden">
+          <!-- Scientific Analytics Dashboard Container -->
+          <div id="scientificAnalyticsDashboard" class="flex-1 overflow-auto">
+            <!-- Dashboard will be rendered here by CacheAnalyticsDashboard -->
           </div>
         </div>
       </main>
@@ -1950,6 +1970,10 @@
     let metricsTracker;
     let scenarioRunner;
     let sessionStartTime;
+    let dataStreamViz; // Data Stream Visualizer
+    let analyticsDashboard; // Scientific Analytics Dashboard
+    let hierarchyViz; // Cache Hierarchy Visualizer
+    let dataGrid; // Data Grid Component
     
     // Initialize live data modules
     function initializeLiveData() {
@@ -1987,7 +2011,89 @@
       // Start session timer
       startSessionTimer();
       
+      // Initialize Data Stream Visualizer
+      initializeDataStreamViz();
+      
+      // Initialize Scientific Analytics Dashboard
+      initializeAnalyticsDashboard();
+      
       console.log('[Studio] Live data modules initialized');
+    }
+    
+    // Initialize Data Stream Visualizer
+    function initializeDataStreamViz() {
+      if (typeof DataStreamVisualizer === 'undefined') {
+        console.warn('DataStreamVisualizer not loaded');
+        return;
+      }
+      
+      dataStreamViz = new DataStreamVisualizer('dataStreamCanvas', {
+        hitRate: 0.92,
+        spawnRate: 40, // Start slow
+        particleSpeed: 2
+      });
+      
+      // Auto-start when Live Demo tab is active
+      const liveDemoTab = document.querySelector('[data-tab="livedemo"]');
+      if (liveDemoTab) {
+        liveDemoTab.addEventListener('click', () => {
+          if (dataStreamViz && !dataStreamViz.running) {
+            dataStreamViz.start();
+          }
+        });
+      }
+      
+      // Stop when switching away from Live Demo
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (btn.dataset.tab !== 'livedemo' && dataStreamViz && dataStreamViz.running) {
+            dataStreamViz.stop();
+          }
+        });
+      });
+      
+      console.log('[Studio] Data Stream Visualizer initialized');
+    }
+    
+    // Initialize Scientific Analytics Dashboard
+    function initializeAnalyticsDashboard() {
+      if (typeof CacheAnalyticsDashboard === 'undefined') {
+        console.warn('CacheAnalyticsDashboard not loaded');
+        return;
+      }
+      
+      // Initialize main dashboard
+      analyticsDashboard = new CacheAnalyticsDashboard('scientificAnalyticsDashboard', {
+        timeWindow: 60,
+        maxDataPoints: 60,
+        movingAverageWindow: 10
+      });
+      analyticsDashboard.init();
+      
+      // Initialize cache hierarchy visualizer
+      hierarchyViz = new CacheHierarchyVisualizer('cacheHierarchyViz', {
+        width: 800,
+        height: 400
+      });
+      hierarchyViz.init();
+      
+      // Initialize data grid
+      dataGrid = new DataGridComponent('dataSourceTable');
+      dataGrid.init();
+      
+      // Wire up tab switching for analytics dashboard
+      const analyticsTab = document.querySelector('[data-tab="analytics"]');
+      if (analyticsTab) {
+        analyticsTab.addEventListener('click', () => {
+          // Update data grid with current metrics
+          if (metricsTracker && dataGrid) {
+            const stats = analyticsDashboard.getStatistics();
+            dataGrid.updateData(stats.sectorMetrics);
+          }
+        });
+      }
+      
+      console.log('[Studio] Scientific Analytics Dashboard initialized');
     }
     
     // Workspace Pipeline Templates
@@ -2275,6 +2381,34 @@
           
           // Track metrics
           metricsTracker.recordCall(result);
+          
+          // Update visualizer hit rate in real-time
+          if (dataStreamViz && dataStreamViz.running) {
+            const currentMetrics = metricsTracker.getMetrics();
+            dataStreamViz.setHitRate(currentMetrics.hitRate || 0.92);
+          }
+          
+          // Update scientific analytics dashboard
+          if (analyticsDashboard) {
+            const source = LIVE_DATA_SOURCES.find(s => s.id === sourceId);
+            analyticsDashboard.recordDataPoint({
+              latency: result.latency,
+              cost: result.cost || 0,
+              hit: result.hit,
+              sourceId: sourceId,
+              sector: source ? source.sector : 'general',
+              savedCost: result.savedCost || 0
+            });
+          }
+          
+          // Update cache hierarchy visualization
+          if (hierarchyViz) {
+            const tier = analyticsDashboard.determineCacheTier({
+              hit: result.hit,
+              latency: result.latency
+            });
+            hierarchyViz.updateTier(tier, result.latency);
+          }
           
         } catch (error) {
           statusEl.textContent = 'ERROR';
