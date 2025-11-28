@@ -305,6 +305,164 @@ app.post('/api/auth/signup', async (c) => {
 });
 
 /**
+ * POST /api/edges/optimal - Get optimal edge locations for file upload
+ */
+app.post('/api/edges/optimal', async (c) => {
+  const authError = await authenticateApiKey(c);
+  if (authError) return authError;
+
+  try {
+    const body = await c.req.json();
+    const { lat, lng, fileSize, priority = 'balanced', topN = 5 } = body;
+
+    if (!lat || !lng) {
+      return c.json({ error: 'Missing lat/lng' }, 400);
+    }
+
+    // Import edge selector
+    const { edgeSelector } = await import('./services/edgeSelector.js');
+    const { jettySpeedDb } = await import('./services/jettySpeedDb.js');
+
+    // Get active edges
+    const edges = await jettySpeedDb.getActiveEdges();
+    
+    // Get edge metrics (or use mock data)
+    const metrics = await jettySpeedDb.getAllEdgeMetrics();
+
+    // Select optimal edges
+    const selectedEdges = edgeSelector.selectOptimalEdges(
+      edges,
+      metrics,
+      { lat, lng },
+      priority as 'speed' | 'cost' | 'balanced',
+      topN
+    );
+
+    return c.json({
+      edges: selectedEdges,
+      fileSize,
+      priority,
+    });
+  } catch (error: any) {
+    console.error('Edge selection error:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+/**
+ * POST /api/jetty-speed/chunk - Upload chunk through edge (proxy to Lyve)
+ */
+app.post('/api/jetty-speed/chunk', async (c) => {
+  const authError = await authenticateApiKey(c);
+  if (authError) return authError;
+
+  try {
+    const fileId = c.req.header('X-File-Id');
+    const chunkIndex = c.req.header('X-Chunk-Index');
+    const lyveUploadUrl = c.req.header('X-Lyve-Upload-Url');
+    const edgeId = c.req.header('X-Edge-Id');
+
+    if (!fileId || !chunkIndex || !lyveUploadUrl) {
+      return c.json({ error: 'Missing required headers' }, 400);
+    }
+
+    // Read chunk data
+    const chunkData = await c.req.arrayBuffer();
+
+    // Cache chunk in Redis (base64 encoded)
+    const cacheKey = `chunk:${fileId}:${chunkIndex}`;
+    const base64Chunk = Buffer.from(chunkData).toString('base64');
+    await redis.setex(cacheKey, 3600, base64Chunk); // 1 hour TTL
+
+    // Stream to Lyve Cloud
+    const lyveResponse = await fetch(lyveUploadUrl, {
+      method: 'PUT',
+      body: chunkData,
+    });
+
+    if (!lyveResponse.ok) {
+      throw new Error(`Lyve upload failed: ${lyveResponse.status}`);
+    }
+
+    const etag = lyveResponse.headers.get('ETag');
+
+    return c.json({
+      success: true,
+      chunkIndex: parseInt(chunkIndex),
+      etag,
+      edgeId,
+      cached: true,
+    });
+  } catch (error: any) {
+    console.error('Chunk upload error:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+/**
+ * GET /api/jetty-speed/chunk/:fileId/:chunkIndex - Download cached chunk
+ */
+app.get('/api/jetty-speed/chunk/:fileId/:chunkIndex', async (c) => {
+  const authError = await authenticateApiKey(c);
+  if (authError) return authError;
+
+  try {
+    const { fileId, chunkIndex } = c.req.param();
+    const lyveDownloadUrl = c.req.header('X-Lyve-Download-Url');
+
+    // Check cache first
+    const cacheKey = `chunk:${fileId}:${chunkIndex}`;
+    const startTime = Date.now();
+    const cached = await redis.get(cacheKey);
+
+    if (cached) {
+      // Cache hit!
+      const latency = Date.now() - startTime;
+      const chunkBuffer = Buffer.from(cached, 'base64');
+      
+      return new Response(chunkBuffer, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/octet-stream',
+          'X-Cache': 'HIT',
+          'X-Cache-Latency': latency.toString(),
+        },
+      });
+    }
+
+    // Cache miss - fetch from Lyve if URL provided
+    if (lyveDownloadUrl) {
+      const lyveResponse = await fetch(lyveDownloadUrl);
+      
+      if (!lyveResponse.ok) {
+        return c.json({ error: 'Failed to fetch from Lyve' }, 502);
+      }
+
+      const chunkData = await lyveResponse.arrayBuffer();
+      const chunkBuffer = Buffer.from(chunkData);
+
+      // Cache for next time (24 hour TTL for downloads)
+      const base64Chunk = chunkBuffer.toString('base64');
+      await redis.setex(cacheKey, 86400, base64Chunk);
+
+      return new Response(chunkBuffer, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/octet-stream',
+          'X-Cache': 'MISS',
+        },
+      });
+    }
+
+    // No cache and no Lyve URL provided
+    return c.json({ error: 'Chunk not found in cache' }, 404);
+  } catch (error: any) {
+    console.error('Chunk download error:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+/**
  * GET /api - API info
  */
 app.get('/api', (c) => {
@@ -322,6 +480,9 @@ app.get('/api', (c) => {
       '/api/cache/get': 'Get cached response',
       '/api/cache/set': 'Store response in cache',
       '/api/stats': 'Usage statistics',
+      '/api/edges/optimal': 'Get optimal edge locations (JettySpeed)',
+      '/api/jetty-speed/chunk': 'Upload chunk via edge (JettySpeed)',
+      '/api/jetty-speed/chunk/:fileId/:chunkIndex': 'Download cached chunk (JettySpeed)',
     },
   });
 });
