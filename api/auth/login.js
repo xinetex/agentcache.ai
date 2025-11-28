@@ -1,6 +1,8 @@
 import bcrypt from 'bcryptjs';
 import { generateToken } from '../../lib/jwt.js';
-import { query } from '../../lib/db.js';
+import { neon } from '@neondatabase/serverless';
+
+const sql = neon(process.env.DATABASE_URL);
 
 export const config = {
   runtime: 'nodejs'
@@ -63,20 +65,20 @@ export default async function handler(req, res) {
     }
 
     // Find user by email
-    const userResult = await query(`
+    const users = await sql`
       SELECT *
       FROM users
-      WHERE email = $1 AND is_active = true
-    `, [email.toLowerCase()]);
+      WHERE email = ${email.toLowerCase()} AND is_active = true
+    `;
 
-    if (userResult.rows.length === 0) {
+    if (users.length === 0) {
       // Don't reveal whether user exists
       return res.status(401).json({
         error: 'Invalid email or password'
       });
     }
 
-    const user = userResult.rows[0];
+    const user = users[0];
 
     // Verify password
     const passwordMatch = await bcrypt.compare(password, user.password_hash);
@@ -88,11 +90,11 @@ export default async function handler(req, res) {
     }
 
     // Update last login timestamp
-    await query(`
+    await sql`
       UPDATE users 
       SET updated_at = NOW()
-      WHERE id = $1
-    `, [user.id]);
+      WHERE id = ${user.id}
+    `;
 
     // Generate JWT token
     const token = generateToken({
