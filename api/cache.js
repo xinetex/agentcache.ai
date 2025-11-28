@@ -1,4 +1,4 @@
-export const config = { runtime: 'nodejs' };
+export const config = { runtime: 'edge' };
 
 // Inline audit logging (simplified to avoid import issues)
 async function logAuditEvent(redis, event) {
@@ -85,8 +85,8 @@ function json(data, status = 200, complianceInfo = {}) {
 }
 
 const getEnv = () => ({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  url: (typeof process !== 'undefined' && process.env && process.env.UPSTASH_REDIS_REST_URL) || '',
+  token: (typeof process !== 'undefined' && process.env && process.env.UPSTASH_REDIS_REST_TOKEN) || '',
 });
 
 async function redis(command, ...args) {
