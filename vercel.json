@@ -1,4 +1,11 @@
 {
+  "regions": ["iad1", "sfo1"],
+  "functions": {
+    "api/**/*.js": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  },
   "redirects": [
     {
       "source": "/monitor.html",

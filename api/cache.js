@@ -1,16 +1,24 @@
 export const config = { runtime: 'nodejs' };
 
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      'cache-control': 'no-store',
-      'access-control-allow-origin': '*',
-      'access-control-allow-methods': 'POST, OPTIONS',
-      'access-control-allow-headers': 'Content-Type, Authorization, X-API-Key, X-Cache-Namespace',
-    },
-  });
+import { logAuditEvent } from './lib/audit.js';
+
+function json(data, status = 200, complianceInfo = {}) {
+  const headers = {
+    'content-type': 'application/json; charset=utf-8',
+    'cache-control': 'no-store',
+    'access-control-allow-origin': '*',
+    'access-control-allow-methods': 'POST, OPTIONS',
+    'access-control-allow-headers': 'Content-Type, Authorization, X-API-Key, X-Cache-Namespace, X-Compliance-Mode',
+  };
+  
+  // Add compliance headers if mode is active
+  if (complianceInfo.mode) {
+    headers['x-compliance-mode'] = complianceInfo.mode;
+    headers['x-data-residency'] = 'US';
+    headers['x-provider-region'] = complianceInfo.providerRegion || 'US';
+  }
+  
+  return new Response(JSON.stringify(data), { status, headers });
 }
 
 const getEnv = () => ({
@@ -142,6 +150,24 @@ export default async function handler(req) {
     const body = await req.json();
     const { key, value, provider, model, messages, temperature, response, ttl = 60 * 60 * 24 * 7, stream = false, semantic = false, similarity_threshold = 0.95 } = body || {};
 
+    // Check compliance mode
+    const complianceMode = req.headers.get('x-compliance-mode'); // 'standard' | 'fedramp'
+    
+    // Validate provider compliance before processing
+    if (provider) {
+      const compliance = checkCompliance(provider, complianceMode);
+      if (!compliance.allowed) {
+        return json({ 
+          error: compliance.reason,
+          provider: provider,
+          provider_region: compliance.provider_region,
+          alternative_providers: compliance.alternatives,
+          compliance_mode: complianceMode || 'standard',
+          help: 'Use X-Compliance-Mode: standard to allow all providers'
+        }, 403);
+      }
+    }
+
     // Robotics/Direct Mode: Use provided key
     let cacheKey = key;
 
@@ -218,7 +244,21 @@ export default async function handler(req) {
 
       if (!pipelineRes.ok) throw new Error(`Upstash pipeline failed: ${pipelineRes.status}`);
 
-      return json({ success: true, key: cacheKey.slice(-16), ttl });
+      // Audit log: cache_set event
+      await logAuditEvent(redis, {
+        type: 'cache_set',
+        keyHash: authn.hash || 'demo',
+        provider,
+        model,
+        hit: false,
+        complianceMode,
+        ip: req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown',
+        namespace,
+        cacheKeyHash: cacheKey.slice(-16),
+        ttl
+      });
+
+      return json({ success: true, key: cacheKey.slice(-16), ttl }, 200, { mode: complianceMode, providerRegion: 'US' });
     }
 
     if (req.method === 'POST' && req.url.endsWith('/get')) {
@@ -243,7 +283,21 @@ export default async function handler(req) {
       const cachedValue = data[0].result;
       const metaRaw = data[1].result;
 
-      if (!cachedValue) return json({ hit: false }, 404);
+      if (!cachedValue) {
+        // Audit log: cache miss
+        await logAuditEvent(redis, {
+          type: 'cache_get',
+          keyHash: authn.hash || 'demo',
+          provider,
+          model,
+          hit: false,
+          complianceMode,
+          ip: req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown',
+          namespace,
+          cacheKeyHash: cacheKey.slice(-16)
+        });
+        return json({ hit: false }, 404);
+      }
 
       // Parse metadata
       let freshness = null;
@@ -298,16 +352,45 @@ export default async function handler(req) {
         body: JSON.stringify(statsCommands)
       }).catch(() => { });
 
+      // Audit log: cache hit
+      const startTime = Date.now();
+      await logAuditEvent(redis, {
+        type: 'cache_get',
+        keyHash: authn.hash || 'demo',
+        provider,
+        model,
+        hit: true,
+        complianceMode,
+        ip: req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown',
+        namespace,
+        cacheKeyHash: cacheKey.slice(-16),
+        latency: Date.now() - startTime
+      });
+
       if (stream) {
         return streamCachedResponse(cachedValue, model);
       }
 
-      return json({ hit: true, response: cachedValue, freshness });
+      return json({ hit: true, response: cachedValue, freshness }, 200, { mode: complianceMode, providerRegion: 'US' });
     }
 
     if (req.method === 'POST' && req.url.endsWith('/check')) {
       const exists = await redis('EXISTS', cacheKey);
       const ttlVal = await redis('TTL', cacheKey);
+      
+      // Audit log: cache check
+      await logAuditEvent(redis, {
+        type: 'cache_check',
+        keyHash: authn.hash || 'demo',
+        provider,
+        model,
+        hit: !!exists,
+        complianceMode,
+        ip: req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown',
+        namespace,
+        cacheKeyHash: cacheKey.slice(-16)
+      });
+      
       return json({ cached: !!exists, ttl: ttlVal || 0 });
     }
 
