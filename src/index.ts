@@ -9,6 +9,12 @@ import { redis } from './lib/redis.js';
 import { ContextManager } from './infrastructure/ContextManager.js';
 import vercelIntegration from './integrations/vercel.js';
 import { antiCache } from './mcp/anticache.js';
+import { neon } from '@neondatabase/serverless';
+import { getTierQuota, getTierFeatures, getAllTiers } from './config/tiers.js';
+import { canUseNamespace, isTTLAllowed, getFeatureLimit } from './lib/tierChecker.js';
+import bcrypt from 'bcryptjs';
+
+const sql = neon(process.env.DATABASE_URL || '');
 
 const app = new Hono();
 const contextManager = new ContextManager();
@@ -76,16 +82,19 @@ const DEMO_API_KEYS = new Set([
   'ac_demo_test456',
 ]);
 
-// Middleware: Track usage in Redis
-async function trackUsage(apiKey: string) {
+// Middleware: Track usage in Redis with tier-based quotas
+async function trackUsage(apiKey: string, tier: string = 'free') {
   const keyHash = createHash('sha256').update(apiKey).digest('hex');
   const now = new Date();
   const monthKey = `usage:${keyHash}:m:${now.toISOString().slice(0, 7)}`;
   const quotaKey = `usage:${keyHash}:quota`;
   
-  // Get quota (default 10K for community)
-  const quotaStr = await redis.get(quotaKey);
-  const quota = parseInt(quotaStr || '10000');
+  // Get tier-based quota
+  const quota = getTierQuota(tier);
+  
+  // Update quota in Redis for caching
+  await redis.set(quotaKey, quota.toString());
+  await redis.set(`usage:${keyHash}:tier`, tier);
   
   // Increment usage
   const used = await redis.incr(monthKey);
@@ -94,15 +103,15 @@ async function trackUsage(apiKey: string) {
     await redis.expire(monthKey, 3024000);
   }
   
-  // Check quota
-  if (used > quota) {
+  // Check quota (-1 = unlimited for enterprise)
+  if (quota !== -1 && used > quota) {
     return { exceeded: true, used, quota, remaining: 0 };
   }
   
-  return { exceeded: false, used, quota, remaining: quota - used };
+  return { exceeded: false, used, quota, remaining: quota === -1 ? -1 : quota - used };
 }
 
-// Middleware: Simple API Key auth with usage tracking
+// Middleware: API Key auth with tier enforcement and usage tracking
 async function authenticateApiKey(c: any) {
   const apiKey = c.req.header('X-API-Key') || c.req.header('Authorization')?.replace('Bearer ', '');
 
@@ -116,33 +125,72 @@ async function authenticateApiKey(c: any) {
   // For MVP: Accept demo keys (unlimited usage)
   if (DEMO_API_KEYS.has(apiKey)) {
     c.set('apiKey', apiKey);
-    c.set('plan', 'demo');
-    c.set('usage', { used: 0, quota: 999999, remaining: 999999 });
+    c.set('tier', 'enterprise');
+    c.set('tierFeatures', getTierFeatures('enterprise'));
+    c.set('usage', { used: 0, quota: -1, remaining: -1 });
     return null;
   }
 
-  // Track usage for non-demo keys
+  // Fetch tier from Postgres with Redis caching
   try {
-    const usage = await trackUsage(apiKey);
+    const keyHash = createHash('sha256').update(apiKey).digest('hex');
+    const cacheKey = `tier:${keyHash}`;
+    
+    let tier = 'free'; // default
+    let tierFeatures = null;
+    
+    // Check Redis cache first (5 min TTL)
+    const cachedTier = await redis.get(cacheKey);
+    if (cachedTier) {
+      tier = cachedTier;
+      tierFeatures = getTierFeatures(tier);
+    } else {
+      // Query Postgres for tier
+      const keys = await sql`
+        SELECT tier, key_hash, is_active FROM api_keys 
+        WHERE is_active = TRUE
+      `;
+      
+      for (const record of keys) {
+        const match = await bcrypt.compare(apiKey, record.key_hash);
+        if (match) {
+          tier = record.tier || 'free';
+          tierFeatures = getTierFeatures(tier);
+          
+          // Cache tier in Redis for 5 minutes
+          await redis.setex(cacheKey, 300, tier);
+          break;
+        }
+      }
+    }
+    
+    // Track usage with tier-based quota
+    const usage = await trackUsage(apiKey, tier);
     
     if (usage.exceeded) {
       return c.json({
         error: 'Monthly quota exceeded',
         quota: usage.quota,
         used: usage.used,
-        message: 'Your free tier includes 10,000 requests/month. Upgrade for more.'
+        tier: tier,
+        message: tier === 'free' 
+          ? 'Your free tier includes 10,000 requests/month. Upgrade to Pro for 1M requests/month.' 
+          : 'Monthly quota exceeded. Contact support to upgrade your plan.'
       }, 429);
     }
     
+    // Attach tier info to context
     c.set('apiKey', apiKey);
-    c.set('plan', 'community');
+    c.set('tier', tier);
+    c.set('tierFeatures', tierFeatures);
     c.set('usage', usage);
     return null;
   } catch (error: any) {
-    console.error('[Usage] Tracking error:', error);
-    // Allow request on tracking error (fail open)
+    console.error('[Auth] Error:', error);
+    // Allow request on error (fail open) with free tier defaults
     c.set('apiKey', apiKey);
-    c.set('plan', 'community');
+    c.set('tier', 'free');
+    c.set('tierFeatures', getTierFeatures('free'));
     return null;
   }
 }
@@ -241,7 +289,7 @@ app.post('/api/cache/get', async (c) => {
 });
 
 /**
- * POST /api/cache/set - Store AI response in cache
+ * POST /api/cache/set - Store AI response in cache (with feature gating)
  */
 app.post('/api/cache/set', async (c) => {
   const authError = await authenticateApiKey(c);
@@ -251,9 +299,36 @@ app.post('/api/cache/set', async (c) => {
     const body = await c.req.json();
     const req = CacheRequestSchema.parse(body);
     const response = body.response;
+    const namespace = body.namespace || 'community';
+    const tier = c.get('tier');
 
     if (!response) {
       return c.json({ error: 'response field required' }, 400);
+    }
+
+    // Feature Gate 1: Private Namespace Check
+    if (!canUseNamespace(tier, namespace)) {
+      return c.json({
+        error: 'Private namespaces require Pro tier',
+        tier: tier,
+        namespace: namespace,
+        upgrade: 'https://agentcache.ai/upgrade.html'
+      }, 403);
+    }
+
+    // Feature Gate 2: TTL Limit Check
+    const ttlMs = req.ttl * 1000;
+    if (!isTTLAllowed(tier, ttlMs)) {
+      const maxTTL = getFeatureLimit(tier, 'ttlMax');
+      const maxTTLDays = Math.floor(maxTTL / (24 * 60 * 60 * 1000));
+      return c.json({
+        error: 'TTL exceeds tier limit',
+        tier: tier,
+        requestedTTL: req.ttl,
+        maxAllowedTTL: Math.floor(maxTTL / 1000),
+        message: `Your ${tier} tier allows max ${maxTTLDays} days TTL. Upgrade to Pro for 90 days.`,
+        upgrade: 'https://agentcache.ai/upgrade.html'
+      }, 403);
     }
 
     const key = generateCacheKey(req);
@@ -263,7 +338,7 @@ app.post('/api/cache/set', async (c) => {
     const metadata = {
       cachedAt: Date.now(),
       ttl: req.ttl * 1000, // Convert seconds to ms
-      namespace: body.namespace || 'default',
+      namespace: namespace,
       sourceUrl: body.sourceUrl,
       accessCount: 0,
       lastAccessed: Date.now()
@@ -279,6 +354,7 @@ app.post('/api/cache/set', async (c) => {
       success: true,
       key: key.slice(-16),
       ttl: req.ttl,
+      namespace: namespace,
       message: 'Response cached successfully',
     });
   } catch (error: any) {
@@ -529,23 +605,47 @@ app.delete('/api/listeners', async (c) => {
 });
 
 /**
- * GET /api/stats - Usage statistics
+ * GET /api/stats - Usage statistics with tier info
  */
 app.get('/api/stats', async (c) => {
   const authError = await authenticateApiKey(c);
   if (authError) return authError;
 
   const usage = c.get('usage') || { used: 0, quota: 10000, remaining: 10000 };
-  const plan = c.get('plan') || 'community';
+  const tier = c.get('tier') || 'free';
+  const tierFeatures = c.get('tierFeatures');
 
   return c.json({
-    plan,
-    monthlyQuota: usage.quota,
+    tier,
+    monthlyQuota: usage.quota === -1 ? 'unlimited' : usage.quota,
     used: usage.used,
-    remaining: usage.remaining,
-    percentUsed: Math.round((usage.used / usage.quota) * 100),
+    remaining: usage.remaining === -1 ? 'unlimited' : usage.remaining,
+    percentUsed: usage.quota === -1 ? 0 : Math.round((usage.used / usage.quota) * 100),
     resetDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString(),
+    features: tierFeatures,
   });
+});
+
+/**
+ * GET /api/pricing - Get all pricing tiers (public endpoint)
+ */
+app.get('/api/pricing', (c) => {
+  const tiers = getAllTiers().map(tier => ({
+    id: tier.id,
+    name: tier.name,
+    price: tier.price,
+    quota: tier.quota,
+    features: {
+      namespaces: tier.features.namespaces,
+      ttlMaxDays: tier.features.ttlMax === -1 ? 'unlimited' : Math.floor(tier.features.ttlMax / (24 * 60 * 60 * 1000)),
+      pipelineNodes: tier.features.pipelineNodes,
+      privateNamespace: tier.features.privateNamespace,
+      analytics: tier.features.analytics,
+      support: tier.features.support
+    }
+  }));
+
+  return c.json({ tiers });
 });
 
 /**

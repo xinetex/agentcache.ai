@@ -2,6 +2,7 @@ import { Context } from 'hono';
 import { createHash } from 'crypto';
 import { generateApiKey, createNamespace, recordInstallation, validateApiKey } from '../services/provisioning.js';
 import { redis } from '../lib/redis.js';
+import { getTierQuota } from '../config/tiers.js';
 
 /**
  * POST /api/provision
@@ -32,9 +33,11 @@ export async function provisionClient(c: Context) {
         project_id: `community_${Date.now()}`
       });
 
-      // Set quota in Redis (10K/month for free tier)
+      // Set quota in Redis (tier-based)
       const keyHash = createHash('sha256').update(apiKey).digest('hex');
-      await redis.set(`usage:${keyHash}:quota`, '10000');
+      const quota = getTierQuota('free');
+      await redis.set(`usage:${keyHash}:quota`, quota.toString());
+      await redis.set(`usage:${keyHash}:tier`, 'free');
 
       await createNamespace({
         name: 'community',
@@ -280,13 +283,8 @@ export async function cacheFile(file: File, customerId: string) {
 }
 
 /**
- * Helper: Get rate limit based on tier
+ * Helper: Get rate limit based on tier (uses tier config)
  */
 function getRateLimitForTier(tier: string): number {
-  const limits: Record<string, number> = {
-    free: 10_000,        // 10k/month
-    pro: 100_000,        // 100k/month
-    enterprise: 10_000_000  // 10M/month
-  };
-  return limits[tier] || limits.free;
+  return getTierQuota(tier);
 }
