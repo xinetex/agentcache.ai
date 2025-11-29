@@ -1,5 +1,7 @@
 import { Context } from 'hono';
+import { createHash } from 'crypto';
 import { generateApiKey, createNamespace, recordInstallation, validateApiKey } from '../services/provisioning.js';
+import { redis } from '../lib/redis.js';
 
 /**
  * POST /api/provision
@@ -29,6 +31,10 @@ export async function provisionClient(c: Context) {
         integration: 'community',
         project_id: `community_${Date.now()}`
       });
+
+      // Set quota in Redis (10K/month for free tier)
+      const keyHash = createHash('sha256').update(apiKey).digest('hex');
+      await redis.set(`usage:${keyHash}:quota`, '10000');
 
       await createNamespace({
         name: 'community',

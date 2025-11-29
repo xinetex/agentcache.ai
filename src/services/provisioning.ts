@@ -1,7 +1,11 @@
 import crypto from 'crypto';
+import { neon } from '@neondatabase/serverless';
+import bcrypt from 'bcryptjs';
+import { redis } from '../lib/redis.js';
 
-// Note: Database imports will be added when schema is ready
-// For now, we'll use in-memory storage for development
+const sql = neon(process.env.DATABASE_URL || '');
+
+// Note: Migrating from in-memory to Postgres persistence
 
 interface ApiKey {
   key: string;
@@ -50,17 +54,32 @@ export async function generateApiKey(params: {
   const randomBytes = crypto.randomBytes(32).toString('hex');
   const key = `ac_${params.integration}_${randomBytes}`;
   
-  // Store API key
+  // Hash the key for storage
+  const keyHash = await bcrypt.hash(key, 10);
+  const keyPrefix = key.substring(0, 12);
+  
+  // Store in Postgres
+  await sql`
+    INSERT INTO api_keys (user_id, key_hash, key_prefix, scopes, allowed_namespaces)
+    VALUES (
+      ${params.user_id},
+      ${keyHash},
+      ${keyPrefix},
+      '["cache:read", "cache:write"]'::jsonb,
+      '["*"]'::jsonb
+    )
+  `;
+  
+  // Also keep in memory for backwards compat during transition
   const apiKey: ApiKey = {
     key,
     user_id: params.user_id,
     integration: params.integration,
     project_id: params.project_id,
-    rate_limit: 100000, // Free tier: 100k requests/month
+    rate_limit: 100000,
     usage_count: 0,
     created_at: new Date()
   };
-  
   apiKeys.set(key, apiKey);
   
   console.log(`[Provisioning] Generated API key for user ${params.user_id}, project ${params.project_id}`);
@@ -122,10 +141,62 @@ export async function recordInstallation(params: {
 }
 
 /**
- * Validate an API key
+ * Validate an API key against Postgres with Redis caching
  */
 export async function validateApiKey(key: string): Promise<ApiKey | null> {
-  return apiKeys.get(key) || null;
+  // Check in-memory first for demo keys
+  const memKey = apiKeys.get(key);
+  if (memKey) return memKey;
+  
+  // Check Redis cache (5 min TTL)
+  const keyHash = crypto.createHash('sha256').update(key).digest('hex');
+  const cacheKey = `validated:${keyHash}`;
+  
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+  } catch (error) {
+    console.error('[Provisioning] Redis cache error:', error);
+  }
+  
+  // Query Postgres for active keys
+  try {
+    const keys = await sql`
+      SELECT * FROM api_keys 
+      WHERE is_active = TRUE
+    `;
+    
+    for (const record of keys) {
+      const match = await bcrypt.compare(key, record.key_hash);
+      if (match) {
+        // Return in ApiKey format
+        const result = {
+          key,
+          user_id: record.user_id,
+          integration: 'postgres',
+          project_id: 'n/a',
+          rate_limit: 10000,
+          usage_count: Number(record.request_count),
+          created_at: new Date(record.created_at)
+        };
+        
+        // Cache in Redis for 5 minutes
+        try {
+          await redis.setex(cacheKey, 300, JSON.stringify(result));
+        } catch (error) {
+          console.error('[Provisioning] Redis cache write error:', error);
+        }
+        
+        return result;
+      }
+    }
+  } catch (error) {
+    console.error('[Provisioning] Postgres validation error:', error);
+  }
+  
+  return null;
 }
 
 /**

@@ -371,7 +371,7 @@ export class UrlMonitor {
         // Trigger invalidation if configured
         if (listener.invalidateOnChange) {
           // This would call the invalidation API
-          console.error(`🔄 Change detected: ${listener.url}`);
+          console.log(`🔄 Change detected: ${listener.url}`);
           event.cachesInvalidated = await this.handleChange(listener, event);
         }
         
@@ -379,6 +379,9 @@ export class UrlMonitor {
         if (listener.webhook) {
           await this.sendWebhook(listener.webhook, event);
         }
+        
+        // Notify overflow partners
+        await this.notifyOverflowPartners(event);
         
         // Update listener
         listener.lastHash = newHash;
@@ -443,13 +446,77 @@ export class UrlMonitor {
    */
   private async sendWebhook(webhookUrl: string, event: ChangeEvent): Promise<void> {
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
+      
       await fetch(webhookUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(event)
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-AgentCache-Event': 'url-changed',
+          'X-Event-Type': 'cache-invalidation'
+        },
+        body: JSON.stringify({
+          event: 'cache-invalidation',
+          ...event
+        }),
+        signal: controller.signal
       });
+      
+      clearTimeout(timeout);
     } catch (error) {
       console.error(`Error sending webhook to ${webhookUrl}:`, error);
+    }
+  }
+  
+  /**
+   * Notify overflow partners of URL changes
+   */
+  async notifyOverflowPartners(event: ChangeEvent): Promise<void> {
+    // Import is done here to avoid circular dependencies
+    try {
+      const { getActivePartnersWithWebhooks } = await import('../services/overflowPartners.js');
+      const { redis } = await import('../lib/redis.js');
+      
+      const partners = getActivePartnersWithWebhooks();
+      
+      const webhookPromises = partners.map(async (partner) => {
+        if (!partner.webhook) return;
+        
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
+          
+          const response = await fetch(partner.webhook, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'X-AgentCache-Event': 'url-changed',
+              'X-Partner-Id': partner.id
+            },
+            body: JSON.stringify({
+              event: 'cache-invalidation',
+              url: event.url,
+              changedAt: event.changedAt,
+              cachesInvalidated: event.cachesInvalidated,
+              listenerId: event.listenerId
+            }),
+            signal: controller.signal
+          });
+          
+          clearTimeout(timeout);
+          
+          // Track webhook stats
+          await redis.hincrby(`partner:${partner.id}:webhooks`, response.ok ? 'success' : 'failure', 1);
+        } catch (error) {
+          console.error(`[Overflow] Failed to notify ${partner.name}:`, error);
+          await redis.hincrby(`partner:${partner.id}:webhooks`, 'failure', 1);
+        }
+      });
+      
+      await Promise.allSettled(webhookPromises);
+    } catch (error) {
+      console.error('[Overflow] Error notifying partners:', error);
     }
   }
   
