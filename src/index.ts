@@ -31,7 +31,10 @@ app.post('/api/provision', provisionClient);
 app.get('/api/provision/:api_key', getApiKeyInfo);
 app.post('/api/provision/jettythunder', provisionJettyThunder);
 
-// Serve static files (landing page)
+// Serve static files (landing page - defaults to community.html)
+app.get('/', (c) => {
+  return c.redirect('/community.html');
+});
 app.use('/*', serveStatic({ root: './public' }));
 
 // Types

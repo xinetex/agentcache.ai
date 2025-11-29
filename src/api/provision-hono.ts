@@ -9,16 +9,64 @@ export async function provisionClient(c: Context) {
   try {
     const body = await c.req.json();
     const {
+      email,
       user_id,
       integration,
       project_id,
       tier = 'free',
+      plan = 'free',
+      namespace = 'community',
       rate_limit,
       sector,
       use_case
     } = body;
 
-    // Validate required fields
+    // Community Edition: simplified signup with just email
+    if (email && plan === 'free' && namespace === 'community') {
+      const userId = email.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const apiKey = await generateApiKey({
+        user_id: userId,
+        integration: 'community',
+        project_id: `community_${Date.now()}`
+      });
+
+      await createNamespace({
+        name: 'community',
+        user_id: userId,
+        sector: 'general',
+        use_case: 'free_tier'
+      });
+
+      await recordInstallation({
+        user_id: userId,
+        platform: 'web',
+        project_id: `community_${Date.now()}`,
+        config_id: 'community_free',
+        api_key: apiKey,
+        namespace: 'community'
+      });
+
+      return c.json({
+        success: true,
+        api_key: apiKey,
+        namespace: 'community',
+        plan: 'free',
+        tier: 'free',
+        rate_limit: 10_000,
+        provisioned_at: new Date().toISOString(),
+        email,
+        usage: {
+          endpoint: 'https://agentcache.ai/api',
+          docs: 'https://agentcache.ai/docs'
+        },
+        quick_start: {
+          install: 'npm install agentcache-sdk',
+          code: `const cache = require('agentcache-sdk');\ncache.init({ apiKey: '${apiKey}' });`
+        }
+      }, 201);
+    }
+
+    // Validate required fields for standard provisioning
     if (!user_id || !integration || !project_id) {
       return c.json({
         error: 'Missing required fields',

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Start - AgentCache Community Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #020617;
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+        }
+        code {
+            font-family: 'JetBrains Mono', monospace;
+        }
+    </style>
+</head>
+<body class="p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl font-bold mb-8">Quick Start Guide</h1>
+        
+        <div class="mb-12">
+            <h2 class="text-2xl font-bold mb-4">1. Get Your API Key</h2>
+            <p class="text-slate-400 mb-4">Sign up at <a href="/community.html#signup" class="text-cyan-500 hover:underline">agentcache.ai/community</a> to get your free API key instantly.</p>
+        </div>
+
+        <div class="mb-12">
+            <h2 class="text-2xl font-bold mb-4">2. Install SDK</h2>
+            <pre class="bg-slate-900 rounded-xl p-4 overflow-x-auto border border-slate-700"><code class="text-sm">npm install agentcache-sdk</code></pre>
+        </div>
+
+        <div class="mb-12">
+            <h2 class="text-2xl font-bold mb-4">3. Initialize Client</h2>
+            <pre class="bg-slate-900 rounded-xl p-4 overflow-x-auto border border-slate-700"><code class="text-sm">const AgentCache = require('agentcache-sdk');
+
+const cache = new AgentCache({
+  apiKey: 'your-api-key-here',
+  baseUrl: 'https://agentcache.ai/api'
+});</code></pre>
+        </div>
+
+        <div class="mb-12">
+            <h2 class="text-2xl font-bold mb-4">4. Cache AI Responses</h2>
+            <pre class="bg-slate-900 rounded-xl p-4 overflow-x-auto border border-slate-700"><code class="text-sm">// Check cache first
+const cached = await cache.get({
+  provider: 'openai',
+  model: 'gpt-4',
+  messages: [
+    { role: 'user', content: 'What is 2+2?' }
+  ]
+});
+
+if (cached.hit) {
+  console.log('Cache hit!', cached.response);
+} else {
+  // Call your LLM provider
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4',
+    messages: [{ role: 'user', content: 'What is 2+2?' }]
+  });
+  
+  // Store in cache
+  await cache.set({
+    provider: 'openai',
+    model: 'gpt-4',
+    messages: [{ role: 'user', content: 'What is 2+2?' }],
+    response: response.choices[0].message.content
+  });
+  
+  console.log('Cached for next time:', response);
+}</code></pre>
+        </div>
+
+        <div class="mb-12">
+            <h2 class="text-2xl font-bold mb-4">5. Cache Tool Calls</h2>
+            <pre class="bg-slate-900 rounded-xl p-4 overflow-x-auto border border-slate-700"><code class="text-sm">// Weather API example
+const weatherCache = await cache.tool.get({
+  tool_name: 'get_weather',
+  parameters: { city: 'San Francisco' }
+});
+
+if (!weatherCache.hit) {
+  const weather = await fetchWeather('San Francisco');
+  await cache.tool.set({
+    tool_name: 'get_weather',
+    parameters: { city: 'San Francisco' },
+    result: weather,
+    ttl: 1800 // 30 minutes
+  });
+}</code></pre>
+        </div>
+
+        <div class="mb-12">
+            <h2 class="text-2xl font-bold mb-4">6. Monitor Your Savings</h2>
+            <pre class="bg-slate-900 rounded-xl p-4 overflow-x-auto border border-slate-700"><code class="text-sm">const stats = await cache.stats();
+
+console.log(`Cache hit rate: ${stats.hitRate}%`);
+console.log(`Money saved: $${stats.costSaved}`);
+console.log(`Requests cached: ${stats.totalRequests}`);</code></pre>
+        </div>
+
+        <div class="bg-green-500/10 border border-green-500/30 rounded-xl p-6 mb-12">
+            <h3 class="text-xl font-bold mb-2 text-green-400">🎉 You're All Set!</h3>
+            <p class="text-slate-300">You're now caching AI responses and saving money. Check out the <a href="/docs.html" class="text-cyan-500 hover:underline">full documentation</a> for advanced features.</p>
+        </div>
+
+        <div class="text-center">
+            <a href="/community.html" class="inline-block px-8 py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold transition">
+                Back to Community Edition
+            </a>
+        </div>
+    </div>
+</body>
+</html>
