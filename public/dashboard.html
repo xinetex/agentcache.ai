@@ -792,9 +792,9 @@
 
     // API Functions
     async function fetchDashboardData() {
-      const token = localStorage.getItem('agentcache_token');
+      const token = localStorage.getItem('auth_token');
       if (!token) {
-        window.location.href = '/login.html';
+        console.warn('No auth token found, using mock data');
         return null;
       }
 
@@ -806,8 +806,8 @@
         });
 
         if (res.status === 401) {
-          localStorage.removeItem('agentcache_token');
-          window.location.href = '/login.html?error=session_expired';
+          localStorage.removeItem('auth_token');
+          console.warn('Auth token expired, falling back to mock data');
           return null;
         }
 
