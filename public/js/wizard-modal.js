@@ -14,6 +14,8 @@ class WizardModal {
       priority: 'balanced'
     };
     this.recommendation = null;
+    this.gameSessionId = null; // Track game session for scoring
+    this.sessionStartTime = null;
     this.init();
   }
 
@@ -364,6 +366,9 @@ class WizardModal {
 
       const data = await response.json();
       
+      // Complete game session with success metrics
+      await this.completeGameSession(true);
+      
       // Redirect to Studio with pipeline ID
       window.location.href = `/studio.html?pipeline=${data.pipeline.id}`;
     } catch (error) {
@@ -372,15 +377,129 @@ class WizardModal {
     }
   }
 
-  open() {
+  async open() {
     this.currentStep = 1;
     this.recommendation = null;
     this.updateStep();
     document.getElementById('wizardModal').style.display = 'block';
+    
+    // Start game session tracking
+    await this.startGameSession();
   }
 
   close() {
     document.getElementById('wizardModal').style.display = 'none';
+  }
+}
+
+  async startGameSession() {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) return;
+
+      this.sessionStartTime = Date.now();
+      
+      const response = await fetch('/api/game/session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'start',
+          sessionType: 'wizard',
+          sector: this.formData.sector || 'unknown',
+          useCase: this.formData.useCase || 'Exploring AgentCache',
+          goal: 'Create optimal caching pipeline',
+          pipelineConfig: null
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        this.gameSessionId = data.sessionId;
+        console.log('[Game] Session started:', this.gameSessionId);
+      }
+    } catch (error) {
+      console.error('[Game] Failed to start session:', error);
+    }
+  }
+
+  async completeGameSession(success = true) {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token || !this.gameSessionId) return;
+
+      const metrics = {
+        hitRate: this.recommendation?.expectedMetrics?.hitRate || 0,
+        avgLatency: this.recommendation?.expectedMetrics?.avgLatency || 0,
+        latencyImprovement: 50, // Estimated improvement
+        costSavings: this.recommendation?.expectedMetrics?.estimatedCostSavings?.monthly || 0,
+        startedAt: this.sessionStartTime
+      };
+
+      const response = await fetch('/api/game/session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'complete',
+          sessionId: this.gameSessionId,
+          sector: this.formData.sector,
+          useCase: this.formData.useCase,
+          pipelineConfig: this.recommendation?.recommended,
+          success,
+          metrics
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('[Game] Session completed:', {
+          score: data.score,
+          discoveredPattern: data.discoveredPattern,
+          achievements: data.achievements
+        });
+
+        // Show achievements if any
+        if (data.achievements && data.achievements.length > 0) {
+          this.showAchievements(data.achievements);
+        }
+      }
+    } catch (error) {
+      console.error('[Game] Failed to complete session:', error);
+    }
+  }
+
+  showAchievements(achievements) {
+    // Simple toast notification for achievements
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 16px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 10000;
+      animation: slideIn 0.3s ease;
+    `;
+    
+    toast.innerHTML = `
+      <div style="font-weight: bold; margin-bottom: 8px;">🏆 Achievements Unlocked!</div>
+      ${achievements.map(a => `<div>• ${a.name}: ${a.description}</div>`).join('')}
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.style.animation = 'slideOut 0.3s ease';
+      setTimeout(() => toast.remove(), 300);
+    }, 5000);
   }
 }
 

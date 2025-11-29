@@ -29,17 +29,16 @@ async function runMigration() {
     
     console.log(`🚀 Running migration...`);
     
-    // Split on semicolons and run each statement
-    const statements = migrationSQL
-      .split(';')
-      .map(s => s.trim())
-      .filter(s => s.length > 0 && !s.startsWith('--'));
+    // Neon serverless requires the full SQL as a single query
+    // We'll use the raw query method for migrations
+    console.log(`   Executing migration SQL...`);
     
-    for (const statement of statements) {
-      if (statement.length === 0) continue;
-      console.log(`   Executing: ${statement.substring(0, 50)}...`);
-      await sql([statement]);
-    }
+    // Execute the entire migration file as one query
+    // This works better with CREATE TABLE, CREATE INDEX, etc.
+    const result = await sql([migrationSQL]);
+    
+    console.log(`   Migration executed successfully`);
+    console.log(`   Result:`, result.length > 0 ? `${result.length} operations` : 'Complete');
     
     console.log(`✅ Migration completed successfully!`);
   } catch (error) {
