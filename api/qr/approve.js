@@ -2,7 +2,7 @@ import { neon } from '@neondatabase/serverless';
 import crypto from 'crypto';
 
 export const config = {
-  runtime: 'nodejs20.x',
+  runtime: 'nodejs',
 };
 
 // Import provisioning logic
