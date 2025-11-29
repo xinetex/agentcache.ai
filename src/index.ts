@@ -925,6 +925,135 @@ app.get('/api/overflow/stats', async (c) => {
 });
 
 /**
+ * POST /api/qr/generate - Generate QR pairing code
+ */
+app.post('/api/qr/generate', async (c) => {
+  try {
+    const { neon } = await import('@neondatabase/serverless');
+    const sql = neon(process.env.DATABASE_URL || '');
+    
+    // Generate 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    
+    // Store in database
+    await sql`
+      INSERT INTO qr_pairing_codes (code, status, expires_at)
+      VALUES (${code}, 'pending', ${expiresAt.toISOString()})
+    `;
+    
+    const qrUrl = `${process.env.PUBLIC_URL || 'https://agentcache.ai'}/mobile-auth.html?code=${code}`;
+    
+    return c.json({
+      code,
+      qrUrl,
+      expiresAt: expiresAt.toISOString()
+    });
+  } catch (error: any) {
+    console.error('[QR Auth] Generate error:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+/**
+ * POST /api/qr/approve - Approve QR code and provision API key
+ */
+app.post('/api/qr/approve', async (c) => {
+  try {
+    const { neon } = await import('@neondatabase/serverless');
+    const sql = neon(process.env.DATABASE_URL || '');
+    const body = await c.req.json();
+    const { code, email } = body;
+    
+    if (!code || !email) {
+      return c.json({ error: 'Code and email required' }, 400);
+    }
+    
+    // Verify code exists and is pending
+    const pairing = await sql`
+      SELECT * FROM qr_pairing_codes 
+      WHERE code = ${code} AND status = 'pending' AND expires_at > NOW()
+      LIMIT 1
+    `;
+    
+    if (!pairing || pairing.length === 0) {
+      return c.json({ error: 'Invalid or expired code' }, 404);
+    }
+    
+    // Provision API key
+    const { generateApiKey } = await import('./services/provisioning.js');
+    const userId = email.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const apiKey = await generateApiKey({
+      user_id: userId,
+      integration: 'qr_auth',
+      project_id: `qr_${Date.now()}`
+    });
+    
+    // Set quota in Redis
+    const keyHash = createHash('sha256').update(apiKey).digest('hex');
+    await redis.set(`usage:${keyHash}:quota`, '10000');
+    
+    // Update pairing record
+    await sql`
+      UPDATE qr_pairing_codes 
+      SET status = 'approved', 
+          email = ${email},
+          api_key = ${apiKey},
+          approved_at = NOW()
+      WHERE code = ${code}
+    `;
+    
+    return c.json({
+      success: true,
+      message: 'API key provisioned'
+    });
+  } catch (error: any) {
+    console.error('[QR Auth] Approve error:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+/**
+ * GET /api/qr/status - Check QR code approval status
+ */
+app.get('/api/qr/status', async (c) => {
+  try {
+    const { neon } = await import('@neondatabase/serverless');
+    const sql = neon(process.env.DATABASE_URL || '');
+    const code = c.req.query('code');
+    
+    if (!code) {
+      return c.json({ error: 'Code required' }, 400);
+    }
+    
+    const pairing = await sql`
+      SELECT status, api_key, email FROM qr_pairing_codes 
+      WHERE code = ${code}
+      LIMIT 1
+    `;
+    
+    if (!pairing || pairing.length === 0) {
+      return c.json({ error: 'Code not found' }, 404);
+    }
+    
+    const result = pairing[0];
+    
+    if (result.status === 'approved') {
+      return c.json({
+        status: 'approved',
+        apiKey: result.api_key,
+        email: result.email
+      });
+    }
+    
+    return c.json({ status: result.status });
+  } catch (error: any) {
+    console.error('[QR Auth] Status error:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+/**
  * GET /api - API info
  */
 app.get('/api', (c) => {

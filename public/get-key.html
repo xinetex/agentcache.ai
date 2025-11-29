@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Your AgentCache API Key</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #020617;
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+        }
+        code {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .glass {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="p-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-5xl font-bold mb-4">Get Your API Key</h1>
+            <p class="text-slate-400 text-lg">Scan with your phone - no password needed</p>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- QR Code Section -->
+            <div class="glass rounded-xl p-8">
+                <div id="qr-loading" class="text-center">
+                    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                    <p class="text-slate-400">Generating QR code...</p>
+                </div>
+                
+                <div id="qr-display" class="hidden">
+                    <div class="text-center mb-6">
+                        <div id="qr-code" class="bg-white p-6 rounded-lg inline-block mb-4"></div>
+                        <p class="text-sm text-slate-400 mb-2">Or enter code manually:</p>
+                        <p id="pairing-code" class="text-5xl font-mono font-bold tracking-widest text-cyan-400"></p>
+                        <p class="text-xs text-slate-500 mt-2">Expires in <span id="time-remaining">5:00</span></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Status Section -->
+            <div class="glass rounded-xl p-8">
+                <!-- Waiting State -->
+                <div id="status-waiting">
+                    <div class="text-center mb-6">
+                        <div class="text-7xl mb-4 pulse">📱</div>
+                        <h3 class="text-3xl font-bold mb-4">Waiting for approval...</h3>
+                    </div>
+                    
+                    <ol class="space-y-4 text-slate-300">
+                        <li class="flex items-start gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">1</span>
+                            <div>
+                                <p class="font-semibold">Open your phone camera</p>
+                                <p class="text-sm text-slate-400">iOS or Android</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white font-bold">2</span>
+                            <div>
+                                <p class="font-semibold">Scan the QR code</p>
+                                <p class="text-sm text-slate-400">Opens agentcache.ai on your phone</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white font-bold">3</span>
+                            <div>
+                                <p class="font-semibold">Enter your email & approve</p>
+                                <p class="text-sm text-slate-400">Takes 5 seconds</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-500 flex items-center justify-center text-white font-bold">4</span>
+                            <div>
+                                <p class="font-semibold">Get your API key!</p>
+                                <p class="text-sm text-slate-400">Instantly provisioned</p>
+                            </div>
+                        </li>
+                    </ol>
+                    
+                    <div class="mt-8 p-4 bg-slate-800 rounded-lg">
+                        <p class="text-xs text-slate-400 text-center">
+                            ✨ <strong>Free tier includes:</strong> 10,000 requests/month
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Success State -->
+                <div id="status-success" class="hidden">
+                    <div class="text-center mb-6">
+                        <div class="text-7xl mb-4">✅</div>
+                        <h3 class="text-3xl font-bold mb-4 text-green-400">API Key Generated!</h3>
+                    </div>
+                    
+                    <div class="bg-slate-900 rounded-lg p-6 mb-6">
+                        <p class="text-xs text-slate-400 mb-2">Your API Key:</p>
+                        <code id="api-key" class="text-green-400 text-lg break-all block mb-4"></code>
+                        
+                        <div class="flex gap-2">
+                            <button onclick="copyKey()" class="flex-1 py-2 bg-green-600 hover:bg-green-500 rounded font-semibold transition">
+                                📋 Copy Key
+                            </button>
+                            <a id="dashboard-link" href="/dashboard" class="flex-1 py-2 bg-blue-600 hover:bg-blue-500 rounded font-semibold text-center transition">
+                                Dashboard →
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-slate-800 rounded-lg p-4">
+                        <p class="text-sm text-slate-300 mb-3"><strong>Quick Start:</strong></p>
+                        <pre class="text-xs bg-slate-900 rounded p-3 overflow-x-auto"><code>curl -X POST https://agentcache.ai/api/cache/get \
+  -H "X-API-Key: <span id="key-example">your-key</span>" \
+  -d '{"provider":"openai","model":"gpt-4","messages":[...]}'</code></pre>
+                    </div>
+                    
+                    <p class="text-center text-sm text-slate-500 mt-6">
+                        Logged in as: <span id="user-email" class="text-slate-300 font-semibold"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Alternative -->
+        <div class="text-center mt-12 text-sm text-slate-500">
+            Prefer email? <a href="/community.html" class="text-blue-400 hover:underline">Sign up here</a>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script>
+        let currentCode = null;
+        let pollInterval = null;
+        let expiryInterval = null;
+        let expiresAt = null;
+        
+        async function init() {
+            try {
+                // Generate QR code
+                const response = await fetch('/api/qr/generate', {
+                    method: 'POST'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to generate QR code');
+                }
+                
+                const data = await response.json();
+                currentCode = data.code;
+                expiresAt = new Date(data.expiresAt);
+                
+                // Display code
+                document.getElementById('pairing-code').textContent = currentCode;
+                
+                // Generate QR code
+                const canvas = document.createElement('canvas');
+                await QRCode.toCanvas(canvas, data.qrUrl, {
+                    width: 300,
+                    margin: 2,
+                    color: {
+                        dark: '#000000',
+                        light: '#FFFFFF'
+                    }
+                });
+                
+                const qrContainer = document.getElementById('qr-code');
+                qrContainer.appendChild(canvas);
+                
+                // Show QR display
+                document.getElementById('qr-loading').classList.add('hidden');
+                document.getElementById('qr-display').classList.remove('hidden');
+                
+                // Start polling
+                startPolling();
+                
+                // Start expiry countdown
+                startExpiry();
+            } catch (error) {
+                console.error('Init error:', error);
+                alert('Failed to generate QR code. Please refresh and try again.');
+            }
+        }
+        
+        async function startPolling() {
+            pollInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/qr/status?code=${currentCode}`);
+                    
+                    if (!response.ok) return;
+                    
+                    const data = await response.json();
+                    
+                    if (data.status === 'approved') {
+                        clearInterval(pollInterval);
+                        clearInterval(expiryInterval);
+                        showSuccess(data.apiKey, data.email);
+                    }
+                } catch (error) {
+                    console.error('Polling error:', error);
+                }
+            }, 2000); // Poll every 2 seconds
+        }
+        
+        function startExpiry() {
+            updateExpiry();
+            expiryInterval = setInterval(updateExpiry, 1000);
+        }
+        
+        function updateExpiry() {
+            const now = new Date();
+            const remaining = Math.max(0, Math.floor((expiresAt - now) / 1000));
+            
+            if (remaining === 0) {
+                clearInterval(pollInterval);
+                clearInterval(expiryInterval);
+                alert('QR code expired. Refreshing...');
+                location.reload();
+                return;
+            }
+            
+            const minutes = Math.floor(remaining / 60);
+            const seconds = remaining % 60;
+            document.getElementById('time-remaining').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        function showSuccess(apiKey, email) {
+            document.getElementById('status-waiting').classList.add('hidden');
+            document.getElementById('status-success').classList.remove('hidden');
+            document.getElementById('api-key').textContent = apiKey;
+            document.getElementById('key-example').textContent = apiKey;
+            document.getElementById('user-email').textContent = email;
+            document.getElementById('dashboard-link').href = `/dashboard?key=${apiKey}`;
+        }
+        
+        function copyKey() {
+            const key = document.getElementById('api-key').textContent;
+            navigator.clipboard.writeText(key);
+            
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '✓ Copied!';
+            setTimeout(() => {
+                btn.textContent = originalText;
+            }, 2000);
+        }
+        
+        // Initialize on page load
+        init();
+    </script>
+</body>
+</html>
