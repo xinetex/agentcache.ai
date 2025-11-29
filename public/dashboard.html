@@ -605,14 +605,19 @@
     });
 
     async function loadDashboard() {
-      // Load user's pipelines (mock for now, will connect to backend)
-      pipelines = getMockPipelines();
-
-      // Update metrics
-      updateMetrics();
-
-      // Render pipelines
-      renderPipelines();
+      // Try to load real data from API
+      const data = await fetchDashboardData();
+      
+      if (data && data.pipelines) {
+        // Use real data
+        pipelines = data.pipelines.recent || [];
+        renderRealPipelines(data);
+      } else {
+        // Fallback to mock data
+        pipelines = getMockPipelines();
+        updateMetrics();
+        renderMockPipelines();
+      }
     }
 
     function updateMetrics() {
@@ -628,11 +633,108 @@
       document.querySelector('#metricSavings').textContent = '$' + formatNumber(totalSavings);
     }
 
-    function renderPipelines() {
-      const container = document.querySelector('.divide-y.divide-slate-800\\/80');
+    function renderMockPipelines() {
+      const container = document.getElementById('pipelinesGrid');
       if (!container) return;
 
       container.innerHTML = pipelines.map(pipeline => `
+          <div class="rounded-lg border border-slate-800 bg-slate-950/60 hover:bg-slate-950/90 transition-colors p-4 space-y-3">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-start gap-3 flex-1">
+                <div class="h-10 w-10 rounded-md ${pipeline.iconBg} border ${pipeline.iconBorder} flex items-center justify-center flex-shrink-0">
+                  ${pipeline.icon}
+                </div>
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <h3 class="text-sm font-semibold text-slate-100">${pipeline.name}</h3>
+                    <span class="inline-flex items-center gap-1 rounded-full border ${pipeline.sectorBorderColor} ${pipeline.sectorBgColor} px-2 py-0.5 text-[0.65rem] ${pipeline.sectorTextColor} font-medium">
+                      <span class="h-1.5 w-1.5 rounded-full ${pipeline.sectorDotColor}"></span>
+                      ${pipeline.sector}
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-500">${pipeline.description}</p>
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-3 pt-3 border-t border-slate-800">
+              <div>
+                <p class="text-[0.65rem] text-slate-500 mb-1">Requests</p>
+                <p class="text-sm font-semibold text-slate-200">${formatNumber(pipeline.requests)}</p>
+              </div>
+              <div>
+                <p class="text-[0.65rem] text-slate-500 mb-1">Hit Rate</p>
+                <p class="text-sm font-semibold text-slate-200">${pipeline.hitRate}%</p>
+              </div>
+              <div>
+                <p class="text-[0.65rem] text-slate-500 mb-1">Savings</p>
+                <p class="text-sm font-semibold text-emerald-400">$${formatNumber(pipeline.savings)}</p>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+      // Re-init Lucide for new icons
+      if (window.lucide) lucide.createIcons();
+    }
+    
+    function renderRealPipelines(data) {
+      // Update metrics
+      const metrics = document.querySelectorAll('.text-2xl.font-semibold.tracking-tight.text-slate-50');
+      if (metrics[0]) metrics[0].textContent = formatNumber(data.usage.requests || 0);
+      if (metrics[1]) metrics[1].textContent = (data.usage.hitRate || 0).toFixed(1) + '%';
+      if (metrics[2]) metrics[2].textContent = '$' + formatNumber(Math.round(data.usage.costSaved || 0));
+      
+      // Use the existing renderPipelines function
+      renderPipelines(data.pipelines.recent);
+    }
+    
+    function openInStudio(pipelineId) {
+      window.location.href = `/studio.html?pipeline=${pipelineId}`;
+    }
+    
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    function getSectorColors(sector) {
+      const colors = {
+        healthcare: { bg: 'bg-emerald-500/10', border: 'border-emerald-400/40', text: 'text-emerald-200', dot: 'bg-emerald-400', iconBg: 'bg-emerald-500/10', iconBorder: 'border-emerald-400/40', iconText: 'text-emerald-200' },
+        finance: { bg: 'bg-sky-500/10', border: 'border-sky-400/40', text: 'text-sky-200', dot: 'bg-sky-400', iconBg: 'bg-sky-500/10', iconBorder: 'border-sky-400/40', iconText: 'text-sky-200' },
+        legal: { bg: 'bg-violet-500/10', border: 'border-violet-400/40', text: 'text-violet-200', dot: 'bg-violet-400', iconBg: 'bg-violet-500/10', iconBorder: 'border-violet-400/40', iconText: 'text-violet-200' },
+        default: { bg: 'bg-slate-500/10', border: 'border-slate-400/40', text: 'text-slate-200', dot: 'bg-slate-400', iconBg: 'bg-slate-500/10', iconBorder: 'border-slate-400/40', iconText: 'text-slate-200' }
+      };
+      return colors[sector.toLowerCase()] || colors.default;
+    }
+    
+    function getStatusColors(status) {
+      const colors = {
+        active: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/40', text: 'text-emerald-200' },
+        draft: { bg: 'bg-amber-500/10', border: 'border-amber-500/40', text: 'text-amber-200' },
+        paused: { bg: 'bg-slate-500/10', border: 'border-slate-500/40', text: 'text-slate-200' }
+      };
+      return colors[status] || colors.draft;
+    }
+    
+    // Remove old duplicate renderPipelines call
+    function renderPipelines(pipelines) {
+      const container = document.getElementById('pipelinesGrid');
+      if (!container) return;
+      
+      if (!pipelines || pipelines.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full text-center py-12">
+            <p class="text-slate-400 mb-4">No pipelines yet</p>
+            <button onclick="launchWizard()" class="inline-flex items-center gap-2 px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-500">
+              Create Your First Pipeline
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = pipelines.map(pipeline => {
           <a href="/pipeline-studio.html?id=${pipeline.id}" class="block group hover:bg-slate-900/80">
             <div class="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-2 items-center px-4 py-3">
               <div class="md:col-span-4 flex items-center gap-3">
