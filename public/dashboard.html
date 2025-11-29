@@ -199,20 +199,57 @@
     </div>
 
     <script>
-        // Get API key from URL
+// Get API key from URL or localStorage
         const urlParams = new URLSearchParams(window.location.search);
-        const apiKey = urlParams.get('key');
+        let apiKey = urlParams.get('key') || localStorage.getItem('ac_api_key');
+
+        // If API key provided via URL, persist to localStorage for next visits
+        if (urlParams.get('key')) {
+            localStorage.setItem('ac_api_key', urlParams.get('key'));
+        }
 
         if (!apiKey) {
             document.body.innerHTML = `
-                <div class="min-h-screen flex items-center justify-center">
-                    <div class="text-center">
-                        <h1 class="text-4xl font-bold text-red-500 mb-4">Missing API Key</h1>
-                        <p class="text-slate-400 mb-6">Please provide your API key in the URL</p>
-                        <code class="text-sm bg-slate-900 px-4 py-2 rounded">dashboard.html?key=ac_xxx</code>
+                <div class="min-h-screen flex items-center justify-center p-6">
+                  <div class="glass max-w-lg w-full rounded-2xl p-8 border border-slate-700 text-left">
+                    <h1 class="text-2xl font-bold mb-3">Missing API Key</h1>
+                    <p class="text-slate-400 mb-6">This developer dashboard requires an API key. You can:</p>
+
+                    <ol class="list-decimal list-inside space-y-2 text-sm text-slate-300 mb-6">
+                      <li>Append it to the URL: <code class="bg-slate-900 px-2 py-1 rounded">/dashboard.html?key=ac_xxx</code></li>
+                      <li>Paste it below and we'll remember it for you.</li>
+                      <li>Generate one via QR: <a href="/get-key.html" class="text-cyan-400 underline">/get-key.html</a></li>
+                    </ol>
+
+                    <div class="flex gap-2 mb-4">
+                      <input id="apiKeyInput" type="text" placeholder="ac_..." class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-cyan-600"/>
+                      <button id="saveKeyBtn" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg text-sm font-semibold">Save</button>
                     </div>
+
+                    <div class="flex items-center justify-between text-sm">
+                      <a href="/portal/login" class="text-slate-400 hover:text-white">I'm platform admin → Portal</a>
+                      <button id="useDemoBtn" class="text-slate-400 hover:text-white">Use demo key</button>
+                    </div>
+                  </div>
                 </div>
             `;
+
+            document.getElementById('saveKeyBtn').addEventListener('click', () => {
+              const v = document.getElementById('apiKeyInput').value.trim();
+              if (!v.startsWith('ac_')) { alert('Please paste a valid API key (starts with ac_)'); return; }
+              localStorage.setItem('ac_api_key', v);
+              const url = new URL(window.location.href);
+              url.searchParams.set('key', v);
+              window.location.href = url.toString();
+            });
+
+            document.getElementById('useDemoBtn').addEventListener('click', () => {
+              const demo = 'ac_demo_test123';
+              localStorage.setItem('ac_api_key', demo);
+              const url = new URL(window.location.href);
+              url.searchParams.set('key', demo);
+              window.location.href = url.toString();
+            });
         } else {
             document.getElementById('apiKeyDisplay').textContent = apiKey;
             document.getElementById('apiKeyCode1').textContent = apiKey;
