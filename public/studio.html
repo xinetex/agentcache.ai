@@ -779,6 +779,7 @@
     // Demo mode & authentication
     const urlParams = new URLSearchParams(window.location.search);
     const isDemoMode = urlParams.get('demo') === 'true';
+    const pipelineId = urlParams.get('pipeline'); // Wizard-generated pipeline ID
     const authToken = localStorage.getItem('agentcache_token');
     const isAuthenticated = !!authToken;
     
@@ -792,6 +793,11 @@
       await initializeStudio();
       loadSectorNodes();
       attachEventListeners();
+      
+      // Load wizard-generated pipeline if ID in URL
+      if (pipelineId && isAuthenticated) {
+        await loadPipelineFromWizard(pipelineId);
+      }
     });
     
     // Initialize Studio with demo/auth detection
@@ -1194,6 +1200,67 @@
       return [];
     }
     
+    // Load Wizard-Generated Pipeline by ID
+    async function loadPipelineFromWizard(id) {
+      console.log(`[Studio] Loading wizard pipeline: ${id}`);
+      
+      try {
+        const token = localStorage.getItem('auth_token') || localStorage.getItem('agentcache_token');
+        if (!token) {
+          console.error('No auth token found');
+          return;
+        }
+        
+        const response = await fetch(`/api/pipelines/${id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to load pipeline: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.pipeline) {
+          console.log('[Studio] Pipeline loaded:', data.pipeline);
+          const pipeline = data.pipeline;
+          
+          // Update sector if specified
+          if (pipeline.sector) {
+            currentSector = pipeline.sector;
+            document.getElementById('sectorName').textContent = pipeline.sector.charAt(0).toUpperCase() + pipeline.sector.slice(1);
+            loadSectorNodes();
+          }
+          
+          // Set current pipeline
+          currentPipeline = {
+            id: pipeline.id,
+            name: pipeline.name,
+            description: pipeline.description,
+            sector: pipeline.sector,
+            nodes: pipeline.config.nodes || [],
+            connections: pipeline.config.connections || [],
+            metrics: {
+              estimated_hit_rate: 0.85,
+              estimated_latency_ms: 85,
+              estimated_savings_per_request: 0.002
+            }
+          };
+          
+          // Render on canvas
+          renderWizardPipelineOnCanvas(currentPipeline);
+          
+          // Close wizard if open
+          document.getElementById('wizardModal').classList.add('hidden');
+          
+          addAIMessage(`✨ Loaded wizard-generated pipeline: ${pipeline.name}`, 'assistant');
+        }
+      } catch (error) {
+        console.error('[Studio] Failed to load wizard pipeline:', error);
+        addAIMessage(`❌ Failed to load pipeline: ${error.message}`, 'assistant');
+      }
+    }
+    
     // Render Pipeline on Canvas
     function renderPipelineOnCanvas(pipeline) {
       document.getElementById('emptyState').classList.add('hidden');
@@ -1230,6 +1297,79 @@
       
       // Add to AI chat
       addAIMessage(`Created pipeline: ${pipeline.name} with ${pipeline.nodes.length} nodes`, 'assistant');
+    }
+    
+    // Render Wizard Pipeline on Canvas
+    function renderWizardPipelineOnCanvas(pipeline) {
+      console.log('[Studio] Rendering wizard pipeline:', pipeline);
+      
+      // Hide empty state
+      const emptyState = document.getElementById('emptyState');
+      if (emptyState) emptyState.classList.add('hidden');
+      
+      // Update pipeline name
+      const nameEl = document.getElementById('pipelineName');
+      if (nameEl) nameEl.textContent = pipeline.name || 'Wizard Pipeline';
+      
+      // Update metrics if available
+      if (pipeline.metrics) {
+        const hitRateEl = document.getElementById('metricHitRate');
+        const latencyEl = document.getElementById('metricLatency');
+        const savingsEl = document.getElementById('metricSavings');
+        
+        if (hitRateEl) hitRateEl.textContent = `${Math.round(pipeline.metrics.estimated_hit_rate * 100)}%`;
+        if (latencyEl) latencyEl.textContent = `${pipeline.metrics.estimated_latency_ms}ms`;
+        if (savingsEl) savingsEl.textContent = `$${pipeline.metrics.estimated_savings_per_request}`;
+      }
+      
+      // Update validation status
+      const statusEl = document.getElementById('validationStatus');
+      if (statusEl) {
+        statusEl.innerHTML = `
+          <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+          <span class="text-emerald-300">Wizard Generated • Ready to customize</span>
+        `;
+      }
+      
+      // Enable action buttons
+      const optimizeBtn = document.getElementById('optimizeBtn');
+      const deployBtn = document.getElementById('deployBtn');
+      if (optimizeBtn) optimizeBtn.disabled = false;
+      if (deployBtn) deployBtn.disabled = false;
+      
+      // Render nodes on canvas
+      const container = document.getElementById('nodesContainer');
+      if (container && pipeline.nodes && pipeline.nodes.length > 0) {
+        const nodesHtml = pipeline.nodes.map((node, i) => {
+          const x = node.position?.x || (100 + i * 200);
+          const y = node.position?.y || 200;
+          const label = node.label || node.type;
+          const typeAbbr = (node.type || 'node').substring(0, 3).toUpperCase();
+          
+          return `
+            <div class="canvas-node absolute pointer-events-auto rounded-xl border border-slate-700 bg-slate-900/90 p-3 shadow-lg hover:border-sky-500" 
+                 style="left: ${x}px; top: ${y}px"
+                 data-node-id="${node.id}">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-sky-500 to-blue-600 text-xs font-semibold text-white">
+                  ${typeAbbr}
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-100">${label}</p>
+                  <p class="text-xs text-slate-500">${node.type}</p>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+        
+        container.innerHTML = nodesHtml;
+        
+        // Draw connections if available
+        if (pipeline.connections && pipeline.connections.length > 0) {
+          drawConnections(pipeline.connections, pipeline.nodes);
+        }
+      }
     }
     
     function drawConnections(connections, nodes) {
