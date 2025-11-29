@@ -734,7 +734,7 @@
         return;
       }
 
-      container.innerHTML = pipelines.map(pipeline => {
+      container.innerHTML = pipelines.map(pipeline => `
           <a href="/pipeline-studio.html?id=${pipeline.id}" class="block group hover:bg-slate-900/80">
             <div class="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-2 items-center px-4 py-3">
               <div class="md:col-span-4 flex items-center gap-3">
