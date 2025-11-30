@@ -949,11 +949,19 @@
     
     // Demo mode & authentication  
     const urlParams = new URLSearchParams(window.location.search);
-    const isDemoMode = urlParams.get('demo') === 'true' || window.location.pathname.includes('/public/');
     const authToken = localStorage.getItem('agentcache_token');
     const isAuthenticated = !!authToken;
     
+    // Demo mode detection:
+    // - Explicitly set demo=true in URL
+    // - Path includes /public/ BUT NOT if authenticated=true is set
+    const explicitDemo = urlParams.get('demo') === 'true';
+    const explicitAuth = urlParams.get('authenticated') === 'true';
+    const pathIsPublic = window.location.pathname.includes('/public/');
+    const isDemoMode = explicitDemo || (pathIsPublic && !explicitAuth && !isAuthenticated);
+    
     console.log('[Studio Init] Path:', window.location.pathname);
+    console.log('[Studio Init] explicitDemo:', explicitDemo, 'explicitAuth:', explicitAuth, 'pathIsPublic:', pathIsPublic);
     console.log('[Studio Init] isDemoMode:', isDemoMode);
     console.log('[Studio Init] isAuthenticated:', isAuthenticated);
     
