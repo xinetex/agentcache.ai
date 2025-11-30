@@ -64,15 +64,15 @@
         <div class="border-t border-slate-800/80 p-4 text-xs">
           <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-2">
-              <div class="h-7 w-7 rounded-full bg-slate-800 flex items-center justify-center text-[0.7rem] font-semibold tracking-tight">
+              <div id="sidebarInitials" class="h-7 w-7 rounded-full bg-slate-800 flex items-center justify-center text-[0.7rem] font-semibold tracking-tight">
                 JD
               </div>
               <div class="flex flex-col">
-                <span class="text-xs font-medium text-slate-100">Jane Doe</span>
-                <span class="text-[0.7rem] text-slate-500">jane@acme.ai</span>
+                <span id="sidebarName" class="text-xs font-medium text-slate-100">Jane Doe</span>
+                <span id="sidebarEmail" class="text-[0.7rem] text-slate-500">jane@acme.ai</span>
               </div>
             </div>
-            <button class="rounded-md border border-slate-800 bg-slate-900/80 hover:bg-slate-900 text-slate-300 px-2 py-1 text-[0.7rem] font-medium">
+            <button id="logoutBtn" class="rounded-md border border-slate-800 bg-slate-900/80 hover:bg-slate-900 text-slate-300 px-2 py-1 text-[0.7rem] font-medium">
               Logout
             </button>
           </div>
@@ -305,12 +305,12 @@
 
                     <div class="flex items-center justify-between gap-2 rounded-md border border-slate-800/80 bg-slate-900/60 px-3 py-2">
                       <div class="flex items-center gap-2">
-                        <div class="h-7 w-7 rounded-full bg-slate-800 flex items-center justify-center text-[0.7rem] font-semibold tracking-tight">
+                        <div id="teamInitials" class="h-7 w-7 rounded-full bg-slate-800 flex items-center justify-center text-[0.7rem] font-semibold tracking-tight">
                           JD
                         </div>
                         <div class="flex flex-col">
-                          <span class="text-sm text-slate-100">Jane Doe</span>
-                          <span class="text-xs text-slate-500">jane@acme.ai</span>
+                          <span id="teamName" class="text-sm text-slate-100">Jane Doe</span>
+                          <span id="teamEmail" class="text-xs text-slate-500">jane@acme.ai</span>
                         </div>
                       </div>
                       <div class="flex items-center gap-2">
@@ -478,6 +478,7 @@
       // Initialize settings
       document.addEventListener('DOMContentLoaded', async () => {
         await loadUserData();
+        setupLogout();
         setupSectorToggles();
         setupAPIKeyHandlers();
         setupTeamInvite();
@@ -501,28 +502,50 @@
             const data = await response.json();
             const user = data.user;
             
-            // Update sidebar user info
-            const initials = user.email.substring(0, 2).toUpperCase();
-            document.querySelectorAll('.h-7.w-7.rounded-full').forEach(el => {
-              el.textContent = initials;
-            });
+            // Get user display name and initials
+            const displayName = user.full_name || user.email.split('@')[0];
+            const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
             
-            // Update name displays
-            document.querySelectorAll('.text-xs.font-medium.text-slate-100, .text-sm.text-slate-100').forEach(el => {
-              if (el.textContent.includes('Jane')) {
-                el.textContent = user.full_name || user.email.split('@')[0];
-              }
-            });
+            // Update sidebar
+            const sidebarInitials = document.getElementById('sidebarInitials');
+            const sidebarName = document.getElementById('sidebarName');
+            const sidebarEmail = document.getElementById('sidebarEmail');
             
-            // Update email displays  
-            document.querySelectorAll('.text-\\[0\\.7rem\\].text-slate-500, .text-xs.text-slate-500').forEach(el => {
-              if (el.textContent.includes('jane@') || el.textContent.includes('acme.ai')) {
-                el.textContent = user.email;
-              }
-            });
+            if (sidebarInitials) sidebarInitials.textContent = initials;
+            if (sidebarName) sidebarName.textContent = displayName;
+            if (sidebarEmail) sidebarEmail.textContent = user.email;
+            
+            // Update team section (current user)
+            const teamInitials = document.getElementById('teamInitials');
+            const teamName = document.getElementById('teamName');
+            const teamEmail = document.getElementById('teamEmail');
+            
+            if (teamInitials) teamInitials.textContent = initials;
+            if (teamName) teamName.textContent = displayName;
+            if (teamEmail) teamEmail.textContent = user.email;
+            
+            console.log('User data loaded:', displayName, user.email);
+          } else {
+            console.error('Failed to load user:', response.status);
+            if (response.status === 401) {
+              localStorage.removeItem('agentcache_token');
+              window.location.href = '/login.html?redirect=/settings.html';
+            }
           }
         } catch (error) {
           console.error('Failed to load user data:', error);
+        }
+      }
+      
+      // Setup logout button
+      function setupLogout() {
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('agentcache_token');
+            localStorage.removeItem('agentcache_user');
+            window.location.href = '/login.html';
+          });
         }
       }
 
