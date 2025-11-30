@@ -953,6 +953,10 @@
     const authToken = localStorage.getItem('agentcache_token');
     const isAuthenticated = !!authToken;
     
+    // User & organization state
+    let currentUser = null;
+    let currentOrganization = null;
+    
     // Billing state
     let userBilling = null;
     let userPlan = 'starter';
@@ -973,15 +977,72 @@
         document.getElementById('demoBanner').classList.remove('hidden');
       }
       
-      // Load billing info for authenticated users
+      // Load user profile and configure sector for authenticated users
       if (isAuthenticated && !isDemoMode) {
+        await loadUserProfile();
         await loadBillingInfo();
       }
       
       // If not demo and not authenticated, redirect to login
       if (!isDemoMode && !isAuthenticated) {
-        window.location.href = '/login.html?redirect=/studio.html';
+        window.location.href = '/login.html?redirect=/studio-v2.html';
       }
+    }
+    
+    // Load user profile and organization
+    async function loadUserProfile() {
+      try {
+        const response = await fetch('/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          currentUser = data.user;
+          currentOrganization = data.user.organization;
+          
+          // Configure sector from organization
+          if (currentOrganization && currentOrganization.sector) {
+            currentSector = currentOrganization.sector;
+            updateSectorUI(currentSector);
+          }
+          
+          console.log(`[Studio] User: ${currentUser.email}, Org: ${currentOrganization?.name}, Sector: ${currentSector}`);
+        }
+      } catch (error) {
+        console.error('Failed to load user profile:', error);
+      }
+    }
+    
+    // Update UI with sector information
+    function updateSectorUI(sector) {
+      const sectorConfig = {
+        healthcare: { icon: '🏥', name: 'Healthcare', badges: ['HIPAA'] },
+        finance: { icon: '💰', name: 'Finance', badges: ['PCI-DSS', 'SOC2'] },
+        filestorage: { icon: '💾', name: 'File Storage', badges: ['SOC2'] },
+        legal: { icon: '⚖️', name: 'Legal', badges: ['SOC2'] },
+        ecommerce: { icon: '🛒', name: 'E-Commerce', badges: ['PCI-DSS'] },
+        education: { icon: '🎓', name: 'Education', badges: ['FERPA'] },
+        enterprise: { icon: '🏢', name: 'Enterprise', badges: ['SOC2'] },
+        developer: { icon: '👨‍💻', name: 'Developer', badges: [] },
+        datascience: { icon: '📊', name: 'Data Science', badges: [] },
+        general: { icon: '⚡', name: 'General', badges: [] },
+      };
+      
+      const config = sectorConfig[sector] || sectorConfig.general;
+      
+      // Update sector badge in header
+      document.getElementById('sectorIcon').textContent = config.icon;
+      document.getElementById('sectorName').textContent = config.name;
+      
+      // Update compliance badges
+      const badgesContainer = document.getElementById('complianceBadges');
+      badgesContainer.innerHTML = config.badges.map(badge => `
+        <span class="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-300">
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+          ${badge}
+        </span>
+      `).join('');
     }
     
     // Load user billing information
