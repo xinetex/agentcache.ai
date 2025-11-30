@@ -19,7 +19,6 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         studio: resolve(__dirname, 'studio.html'),
-        studio_v2_redirect: resolve(__dirname, 'studio-v2.html'),
         studio_v2_actual: resolve(__dirname, 'public/studio-v2.html'),
         gov_portal: resolve(__dirname, 'public/gov-portal.html'),
       },
