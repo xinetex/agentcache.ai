@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgentCache Lab Visualizer</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #000;
+      font-family: 'JetBrains Mono', monospace;
+      color: #f8fafc;
+      overflow: hidden;
+    }
+
+    #container {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+
+    #canvas-3d {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #radial-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    #metrics-panel {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 16px;
+      backdrop-filter: blur(10px);
+      min-width: 280px;
+    }
+
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 11px;
+    }
+
+    .metric-label {
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .metric-value {
+      color: #10b981;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .metric-value.warning {
+      color: #f59e0b;
+    }
+
+    .metric-value.error {
+      color: #ef4444;
+    }
+
+    #tier-legend {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 12px;
+      backdrop-filter: blur(10px);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 10px;
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      margin-right: 8px;
+    }
+
+    #stream-viz {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+
+    .pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: .5;
+      }
+    }
+
+    #experiment-status {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      color: #10b981;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    #experiment-status.active {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <canvas id="canvas-3d"></canvas>
+    <svg id="radial-overlay" width="600" height="600"></svg>
+    <svg id="stream-viz" width="280" height="180"></svg>
+
+    <div id="metrics-panel">
+      <div class="metric-row">
+        <span class="metric-label">Hit Rate</span>
+        <span class="metric-value" id="hit-rate">0.0%</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Latency P95</span>
+        <span class="metric-value" id="latency-p95">0ms</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">L1 Hits</span>
+        <span class="metric-value" id="l1-hits">0</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">L2 Hits</span>
+        <span class="metric-value" id="l2-hits">0</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">L3 Hits</span>
+        <span class="metric-value" id="l3-hits">0</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Misses</span>
+        <span class="metric-value warning" id="misses">0</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Requests</span>
+        <span class="metric-value" id="total-requests">0</span>
+      </div>
+    </div>
+
+    <div id="tier-legend">
+      <div class="legend-item">
+        <div class="legend-color" style="background: #10b981;"></div>
+        <span>L1 Session Cache</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #0ea5e9;"></div>
+        <span>L2 Redis Cache</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #a855f7;"></div>
+        <span>L3 Semantic Cache</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #ef4444;"></div>
+        <span>Cache Miss (LLM)</span>
+      </div>
+    </div>
+
+    <div id="experiment-status">Running Experiment...</div>
+  </div>
+
+  <script>
+    // === 3D Particle System ===
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
+    scene.fog = new THREE.Fog(0x000000, 500, 10000);
+
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+    camera.position.z = 1000;
+
+    const renderer = new THREE.WebGLRenderer({ 
+      canvas: document.getElementById('canvas-3d'),
+      antialias: true,
+      alpha: true
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+
+    // Particle systems for each tier
+    const particles = {
+      L1: { geometry: new THREE.BufferGeometry(), material: null, mesh: null, positions: [], velocities: [] },
+      L2: { geometry: new THREE.BufferGeometry(), material: null, mesh: null, positions: [], velocities: [] },
+      L3: { geometry: new THREE.BufferGeometry(), material: null, mesh: null, positions: [], velocities: [] },
+      MISS: { geometry: new THREE.BufferGeometry(), material: null, mesh: null, positions: [], velocities: [] }
+    };
+
+    const tierColors = {
+      L1: 0x10b981,
+      L2: 0x0ea5e9,
+      L3: 0xa855f7,
+      MISS: 0xef4444
+    };
+
+    // Initialize particle systems
+    Object.keys(particles).forEach(tier => {
+      const material = new THREE.PointsMaterial({
+        color: tierColors[tier],
+        size: tier === 'MISS' ? 8 : 6,
+        transparent: true,
+        opacity: 0.8,
+        blending: THREE.AdditiveBlending,
+        sizeAttenuation: true
+      });
+
+      particles[tier].material = material;
+      particles[tier].mesh = new THREE.Points(particles[tier].geometry, material);
+      scene.add(particles[tier].mesh);
+    });
+
+    // Add ambient light and glow effects
+    const ambientLight = new THREE.AmbientLight(0x404040, 2);
+    scene.add(ambientLight);
+
+    // Central core (data source)
+    const coreGeometry = new THREE.SphereGeometry(50, 32, 32);
+    const coreMaterial = new THREE.MeshPhongMaterial({
+      color: 0x64748b,
+      emissive: 0x475569,
+      transparent: true,
+      opacity: 0.6
+    });
+    const core = new THREE.Mesh(coreGeometry, coreMaterial);
+    scene.add(core);
+
+    // Orbital rings for tiers
+    const rings = [];
+    [200, 400, 600].forEach((radius, i) => {
+      const ringGeometry = new THREE.RingGeometry(radius - 2, radius + 2, 64);
+      const ringMaterial = new THREE.MeshBasicMaterial({
+        color: Object.values(tierColors)[i],
+        transparent: true,
+        opacity: 0.15,
+        side: THREE.DoubleSide
+      });
+      const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+      ring.rotation.x = Math.PI / 2;
+      scene.add(ring);
+      rings.push(ring);
+    });
+
+    // === D3.js Radial Horizon Chart ===
+    const radialSvg = d3.select('#radial-overlay');
+    const width = 600, height = 600;
+    const radius = Math.min(width, height) / 2 - 40;
+    const centerX = width / 2, centerY = height / 2;
+
+    const horizonData = Array(60).fill(null).map((_, i) => ({
+      angle: i,
+      latency: 0,
+      tier: null
+    }));
+
+    const angleScale = d3.scaleLinear()
+      .domain([0, 60])
+      .range([0, 2 * Math.PI]);
+
+    const latencyScale = d3.scaleLinear()
+      .domain([0, 500])
+      .range([0, radius]);
+
+    // Radial area generator
+    const radialArea = d3.areaRadial()
+      .angle(d => angleScale(d.angle))
+      .innerRadius(radius * 0.3)
+      .outerRadius(d => radius * 0.3 + latencyScale(d.latency))
+      .curve(d3.curveCardinalClosed);
+
+    const horizonGroup = radialSvg.append('g')
+      .attr('transform', `translate(${centerX}, ${centerY})`);
+
+    // Horizon layers for different latency bands
+    const horizonPath = horizonGroup.append('path')
+      .datum(horizonData)
+      .attr('class', 'horizon-area')
+      .attr('fill', '#10b981')
+      .attr('fill-opacity', 0.6)
+      .attr('stroke', '#10b981')
+      .attr('stroke-width', 1);
+
+    // Time markers (clock-like)
+    const timeMarkers = horizonGroup.append('g').attr('class', 'time-markers');
+    [0, 15, 30, 45].forEach(angle => {
+      const rad = angleScale(angle) - Math.PI / 2;
+      const x = Math.cos(rad) * (radius + 20);
+      const y = Math.sin(rad) * (radius + 20);
+      timeMarkers.append('text')
+        .attr('x', x)
+        .attr('y', y)
+        .attr('text-anchor', 'middle')
+        .attr('font-size', '10px')
+        .attr('fill', '#64748b')
+        .text(`-${60 - angle}s`);
+    });
+
+    // === D3.js Stream Graph ===
+    const streamSvg = d3.select('#stream-viz');
+    const streamWidth = 280, streamHeight = 180;
+    const streamMargin = { top: 10, right: 10, bottom: 20, left: 40 };
+
+    const streamX = d3.scaleLinear()
+      .domain([0, 60])
+      .range([streamMargin.left, streamWidth - streamMargin.right]);
+
+    const streamY = d3.scaleLinear()
+      .domain([0, 100])
+      .range([streamHeight - streamMargin.bottom, streamMargin.top]);
+
+    const streamData = {
+      L1: Array(60).fill(0),
+      L2: Array(60).fill(0),
+      L3: Array(60).fill(0),
+      MISS: Array(60).fill(0)
+    };
+
+    const stack = d3.stack()
+      .keys(['L1', 'L2', 'L3', 'MISS'])
+      .order(d3.stackOrderNone)
+      .offset(d3.stackOffsetWiggle);
+
+    const area = d3.area()
+      .x((d, i) => streamX(i))
+      .y0(d => streamY(d[0]))
+      .y1(d => streamY(d[1]))
+      .curve(d3.curveBasis);
+
+    const streamGroup = streamSvg.append('g');
+
+    // Axes
+    streamSvg.append('g')
+      .attr('transform', `translate(0, ${streamHeight - streamMargin.bottom})`)
+      .call(d3.axisBottom(streamX).ticks(6).tickFormat(d => `-${60 - d}s`))
+      .attr('color', '#475569')
+      .attr('font-size', '9px');
+
+    streamSvg.append('g')
+      .attr('transform', `translate(${streamMargin.left}, 0)`)
+      .call(d3.axisLeft(streamY).ticks(4))
+      .attr('color', '#475569')
+      .attr('font-size', '9px');
+
+    // === State Management ===
+    const state = {
+      experimentId: null,
+      metrics: {
+        totalRequests: 0,
+        l1Hits: 0,
+        l2Hits: 0,
+        l3Hits: 0,
+        misses: 0,
+        hitRate: 0,
+        latencyP95: 0
+      },
+      currentSecond: 0
+    };
+
+    // === Update Functions ===
+    function updateMetrics(metrics) {
+      state.metrics = metrics;
+
+      document.getElementById('hit-rate').textContent = 
+        `${metrics.hitRate.toFixed(1)}%`;
+      document.getElementById('latency-p95').textContent = 
+        `${metrics.latencyP95}ms`;
+      document.getElementById('l1-hits').textContent = metrics.l1Hits;
+      document.getElementById('l2-hits').textContent = metrics.l2Hits;
+      document.getElementById('l3-hits').textContent = metrics.l3Hits;
+      document.getElementById('misses').textContent = metrics.misses;
+      document.getElementById('total-requests').textContent = metrics.totalRequests;
+
+      // Animate metric values
+      anime({
+        targets: '.metric-value',
+        scale: [1.2, 1],
+        duration: 300,
+        easing: 'easeOutQuad'
+      });
+    }
+
+    function addParticle(tier, latency) {
+      const p = particles[tier];
+      
+      // Starting position (center)
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 60 + Math.random() * 40;
+      
+      p.positions.push(
+        Math.cos(angle) * radius, // x
+        Math.sin(angle) * radius, // y
+        (Math.random() - 0.5) * 100 // z
+      );
+
+      // Velocity (outward spiral)
+      const targetRadius = tier === 'L1' ? 200 : tier === 'L2' ? 400 : tier === 'L3' ? 600 : 800;
+      const speed = latency < 100 ? 8 : latency < 300 ? 5 : 3;
+      
+      p.velocities.push({
+        angle: angle,
+        radius: radius,
+        targetRadius: targetRadius,
+        speed: speed,
+        life: 1.0
+      });
+
+      // Update geometry
+      p.geometry.setAttribute('position', new THREE.Float32BufferAttribute(p.positions, 3));
+    }
+
+    function updateParticles() {
+      Object.keys(particles).forEach(tier => {
+        const p = particles[tier];
+        
+        // Update positions
+        for (let i = 0; i < p.velocities.length; i++) {
+          const v = p.velocities[i];
+          v.radius += v.speed;
+          v.life -= 0.005;
+
+          if (v.life > 0 && v.radius < v.targetRadius + 100) {
+            const idx = i * 3;
+            p.positions[idx] = Math.cos(v.angle) * v.radius;
+            p.positions[idx + 1] = Math.sin(v.angle) * v.radius;
+            p.positions[idx + 2] += (Math.random() - 0.5) * 2;
+          } else {
+            // Remove dead particles
+            p.positions.splice(i * 3, 3);
+            p.velocities.splice(i, 1);
+            i--;
+          }
+        }
+
+        if (p.positions.length > 0) {
+          p.geometry.setAttribute('position', new THREE.Float32BufferAttribute(p.positions, 3));
+          p.geometry.attributes.position.needsUpdate = true;
+        }
+      });
+    }
+
+    function updateRadialChart(tier, latency) {
+      // Shift data left (time advances)
+      horizonData.shift();
+      horizonData.push({
+        angle: 59,
+        latency: latency,
+        tier: tier
+      });
+
+      // Re-index angles
+      horizonData.forEach((d, i) => {
+        d.angle = i;
+      });
+
+      // Update path
+      horizonPath
+        .datum(horizonData)
+        .transition()
+        .duration(50)
+        .attr('d', radialArea)
+        .attr('fill', tier === 'MISS' ? '#ef4444' : tier === 'L3' ? '#a855f7' : tier === 'L2' ? '#0ea5e9' : '#10b981');
+    }
+
+    function updateStreamGraph() {
+      // Shift stream data
+      Object.keys(streamData).forEach(key => {
+        streamData[key].shift();
+        streamData[key].push(0);
+      });
+
+      // Add current metrics
+      const currentData = Object.keys(streamData).map((key, i) => {
+        const obj = {};
+        Object.keys(streamData).forEach(k => {
+          obj[k] = streamData[k][i];
+        });
+        return obj;
+      });
+
+      streamData.L1[59] = state.metrics.l1Hits;
+      streamData.L2[59] = state.metrics.l2Hits;
+      streamData.L3[59] = state.metrics.l3Hits;
+      streamData.MISS[59] = state.metrics.misses;
+
+      // Update stream
+      const series = stack(currentData);
+
+      streamGroup.selectAll('path').remove();
+      streamGroup.selectAll('path')
+        .data(series)
+        .join('path')
+        .attr('fill', (d, i) => Object.values(tierColors).map(c => `#${c.toString(16).padStart(6, '0')}`)[i])
+        .attr('fill-opacity', 0.7)
+        .attr('d', area);
+    }
+
+    // === Animation Loop ===
+    function animate() {
+      requestAnimationFrame(animate);
+
+      // Rotate core and rings
+      core.rotation.y += 0.002;
+      rings.forEach((ring, i) => {
+        ring.rotation.z += 0.001 * (i + 1);
+      });
+
+      // Update particles
+      updateParticles();
+
+      // Rotate camera slightly
+      camera.position.x = Math.sin(Date.now() * 0.0001) * 100;
+      camera.lookAt(scene.position);
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // === Mock Live Data (replace with real WebSocket) ===
+    function simulateExperiment() {
+      let iteration = 0;
+      const interval = setInterval(() => {
+        if (iteration >= 1000) {
+          clearInterval(interval);
+          document.getElementById('experiment-status').classList.remove('active');
+          return;
+        }
+
+        // Simulate cache query result
+        const rand = Math.random();
+        let tier, latency;
+        
+        if (rand < 0.4) {
+          tier = 'L1';
+          latency = 20 + Math.random() * 30;
+          state.metrics.l1Hits++;
+        } else if (rand < 0.7) {
+          tier = 'L2';
+          latency = 50 + Math.random() * 100;
+          state.metrics.l2Hits++;
+        } else if (rand < 0.85) {
+          tier = 'L3';
+          latency = 80 + Math.random() * 120;
+          state.metrics.l3Hits++;
+        } else {
+          tier = 'MISS';
+          latency = 500 + Math.random() * 2000;
+          state.metrics.misses++;
+        }
+
+        state.metrics.totalRequests++;
+        const totalHits = state.metrics.l1Hits + state.metrics.l2Hits + state.metrics.l3Hits;
+        state.metrics.hitRate = (totalHits / state.metrics.totalRequests) * 100;
+        state.metrics.latencyP95 = Math.floor(latency);
+
+        // Visualize
+        addParticle(tier, latency);
+        updateRadialChart(tier, latency);
+        updateMetrics(state.metrics);
+        
+        if (iteration % 10 === 0) {
+          updateStreamGraph();
+        }
+
+        iteration++;
+      }, 50); // 20 queries per second
+    }
+
+    // Auto-start simulation
+    document.getElementById('experiment-status').classList.add('active');
+    setTimeout(() => {
+      simulateExperiment();
+    }, 1000);
+
+    // Handle resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

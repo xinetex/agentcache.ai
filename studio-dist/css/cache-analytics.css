@@ -1,0 +1,506 @@
+/**
+ * Cache Analytics - Scientific Design System
+ * 
+ * High-density, data-first styling:
+ * - 10-11px base font for maximum information density
+ * - Monospace fonts for numbers and keys
+ * - Compact 4px grid spacing
+ * - Professional color palette with semantic meaning
+ * - Linear/Vercel/Stripe-inspired aesthetics
+ */
+
+/* ===== ANALYTICS GRID ===== */
+
+.analytics-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  background: #0f172a;
+  min-height: auto;
+  max-width: 100%;
+}
+
+/* ===== METRICS ROW ===== */
+
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.metric-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.metric-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94a3b8;
+}
+
+.metric-value {
+  font-size: 24px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  color: #f1f5f9;
+  line-height: 1;
+}
+
+.metric-trend {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ===== CHART PANEL ===== */
+
+.chart-panel {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 12px;
+  max-height: 280px;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.chart-header h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+.chart-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.chart-btn {
+  padding: 4px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.chart-btn:hover {
+  background: #1e293b;
+  border-color: #64748b;
+  color: #cbd5e1;
+}
+
+.chart-btn.active {
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+  color: #ffffff;
+}
+
+/* ===== D3 CHART STYLES ===== */
+
+#timeSeriesChart .x-axis text,
+#timeSeriesChart .y-axis-latency text,
+#timeSeriesChart .y-axis-cost text {
+  fill: #94a3b8;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+}
+
+#timeSeriesChart .x-axis line,
+#timeSeriesChart .y-axis-latency line,
+#timeSeriesChart .y-axis-cost line,
+#timeSeriesChart .x-axis path,
+#timeSeriesChart .y-axis-latency path,
+#timeSeriesChart .y-axis-cost path {
+  stroke: #334155;
+}
+
+#timeSeriesChart .axis-label {
+  fill: #cbd5e1;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ===== HIERARCHY PANEL ===== */
+
+.hierarchy-panel {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 12px;
+  max-height: 320px;
+}
+
+.hierarchy-panel h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0 0 16px 0;
+}
+
+/* ===== DATA GRID ===== */
+
+.data-grid {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  overflow: hidden;
+  max-height: 450px;
+}
+
+.grid-filter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #0f172a;
+  border-bottom: 1px solid #334155;
+}
+
+.filter-input {
+  flex: 1;
+  max-width: 400px;
+  padding: 6px 12px;
+  font-size: 11px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  color: #f1f5f9;
+  outline: none;
+  transition: all 0.15s;
+}
+
+.filter-input:focus {
+  border-color: #0ea5e9;
+  background: #0f172a;
+}
+
+.filter-input::placeholder {
+  color: #64748b;
+}
+
+.grid-stats {
+  font-size: 11px;
+  color: #94a3b8;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+}
+
+/* ===== TABLE PANEL ===== */
+
+.table-panel {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #0f172a;
+  border-bottom: 1px solid #334155;
+}
+
+.table-header h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+.table-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.export-btn {
+  padding: 4px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.export-btn:hover {
+  background: #1e293b;
+  border-color: #0ea5e9;
+  color: #0ea5e9;
+}
+
+/* ===== GRID TABLE ===== */
+
+.grid-table-container {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 380px;
+}
+
+.grid-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.grid-table thead {
+  position: sticky;
+  top: 0;
+  background: #0f172a;
+  z-index: 10;
+}
+
+.grid-table th {
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #cbd5e1;
+  border-bottom: 2px solid #334155;
+  white-space: nowrap;
+}
+
+.grid-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s;
+}
+
+.grid-table th.sortable:hover {
+  color: #0ea5e9;
+}
+
+.grid-table th.align-right {
+  text-align: right;
+}
+
+.grid-table tbody tr {
+  border-bottom: 1px solid #1e293b;
+  transition: background 0.15s;
+}
+
+.grid-table tbody tr:hover {
+  background: #0f172a;
+}
+
+.grid-table td {
+  padding: 6px 12px;
+  color: #cbd5e1;
+  vertical-align: middle;
+  line-height: 1.4;
+}
+
+.grid-table td.align-right {
+  text-align: right;
+}
+
+/* ===== TABLE CELL CONTENT ===== */
+
+.source-name {
+  font-weight: 500;
+  color: #f1f5f9;
+}
+
+.sector-badge {
+  font-weight: 700;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  letter-spacing: 0.5px;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.grid-action-btn {
+  padding: 2px 8px;
+  font-size: 14px;
+  background: transparent;
+  border: 1px solid #334155;
+  border-radius: 3px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.grid-action-btn:hover {
+  background: #0f172a;
+  border-color: #0ea5e9;
+  color: #0ea5e9;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+@media (max-width: 1400px) {
+  .metrics-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .metrics-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .table-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .grid-table {
+    font-size: 10px;
+  }
+  
+  .grid-table th,
+  .grid-table td {
+    padding: 4px 8px;
+  }
+}
+
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+
+.grid-table {
+  contain: layout style paint;
+}
+
+.grid-table tbody {
+  will-change: transform;
+}
+
+/* Force GPU acceleration for smooth scrolling */
+.grid-table-container {
+  transform: translateZ(0);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ===== ACCESSIBILITY ===== */
+
+.chart-btn:focus,
+.export-btn:focus,
+.filter-input:focus,
+.grid-action-btn:focus {
+  outline: 2px solid #0ea5e9;
+  outline-offset: 2px;
+}
+
+/* ===== CUSTOM SCROLLBAR ===== */
+
+.grid-table-container::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.grid-table-container::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+.grid-table-container::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 5px;
+}
+
+.grid-table-container::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* ===== LOADING STATES ===== */
+
+.metric-value.loading {
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ===== TREND INDICATORS ===== */
+
+.metric-trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+/* ===== HIGH-DENSITY MODE ===== */
+
+.analytics-grid.high-density .metric-card {
+  padding: 8px;
+}
+
+.analytics-grid.high-density .metric-label {
+  font-size: 9px;
+}
+
+.analytics-grid.high-density .metric-value {
+  font-size: 20px;
+}
+
+.analytics-grid.high-density .grid-table {
+  font-size: 10px;
+}
+
+.analytics-grid.high-density .grid-table th,
+.analytics-grid.high-density .grid-table td {
+  padding: 4px 8px;
+}
+
+/* ===== PRINT STYLES ===== */
+
+@media print {
+  .analytics-grid {
+    background: white;
+  }
+  
+  .metric-card,
+  .chart-panel,
+  .hierarchy-panel,
+  .data-grid {
+    border-color: #000;
+    page-break-inside: avoid;
+  }
+  
+  .chart-btn,
+  .export-btn,
+  .grid-action-btn {
+    display: none;
+  }
+}

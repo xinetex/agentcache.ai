@@ -17,6 +17,18 @@
   <script src="/js/live-data-sources.js"></script>
   <script src="/js/demo-scenarios.js"></script>
   <script src="/js/live-metrics.js"></script>
+  <script src="/js/demo-analytics.js"></script>
+  <script src="/js/response-viewer.js"></script>
+  <script src="/js/data-stream-visualizer.js"></script>
+  
+  <!-- Response Viewer Styles -->
+  <link rel="stylesheet" href="/css/response-viewer.css">
+  
+  <!-- Scientific Analytics Dashboard -->
+  <script src="/js/cache-analytics-dashboard.js"></script>
+  <script src="/js/cache-hierarchy-viz.js"></script>
+  <script src="/js/data-grid-component.js"></script>
+  <link rel="stylesheet" href="/css/cache-analytics.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
     
@@ -155,8 +167,8 @@
     <!-- Main Content -->
     <div class="flex flex-1 overflow-hidden">
       
-      <!-- Left Sidebar: Node Palette -->
-      <aside class="w-72 border-r border-slate-800/80 bg-slate-950/50 overflow-y-auto">
+      <!-- Left Sidebar: Node Palette (only visible in Builder tab) -->
+      <aside id="nodePalette" class="w-72 border-r border-slate-800/80 bg-slate-950/50 overflow-y-auto hidden">
         <div class="p-4">
           <div class="mb-4">
             <h2 class="text-sm font-semibold text-slate-300 mb-2">Node Palette</h2>
@@ -239,8 +251,11 @@
         <!-- Tab Navigation -->
         <div class="border-b border-slate-800/80 bg-slate-900/50">
           <div class="flex items-center gap-1 px-6">
-            <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400 active" data-tab="pipeline">
-              Pipeline Builder
+            <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400 active" data-tab="workspace">
+              Gallery
+            </button>
+            <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400" data-tab="builder">
+              <span class="glow-text">🔧</span> Builder
             </button>
             <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400" data-tab="dynamicview">
               Dynamic View
@@ -250,6 +265,9 @@
             </button>
             <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400 font-display" data-tab="scenarios">
               <span class="glow-text">🚀</span> Scenarios
+            </button>
+            <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400 font-display" data-tab="analytics">
+              <span class="glow-text">📊</span> Analytics
             </button>
           </div>
         </div>
@@ -294,34 +312,48 @@
           </div>
         </div>
         
-        <!-- Pipeline Canvas Tab -->
-        <div id="pipelineTab" class="tab-content active flex-1 relative overflow-hidden bg-[radial-gradient(circle_at_1px_1px,_rgb(51,65,85)_1px,_transparent_0)] bg-[length:24px_24px]">
-          <svg id="canvas" class="absolute inset-0 w-full h-full">
-            <defs>
-              <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-                <polygon points="0 0, 10 3, 0 6" fill="#64748b" />
-              </marker>
-              <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" style="stop-color:rgb(56, 189, 248);stop-opacity:1" />
-                <stop offset="100%" style="stop-color:rgb(59, 130, 246);stop-opacity:1" />
-              </linearGradient>
-            </defs>
-            <g id="connections"></g>
-          </svg>
-          <div id="nodesContainer" class="absolute inset-0 pointer-events-none">
-            <!-- Nodes rendered here -->
+        <!-- Workspace/Gallery Tab (Pipeline Cards Grid) -->
+        <div id="workspaceTab" class="tab-content active flex-1 overflow-auto p-6 bg-slate-950">
+          <div class="mb-6 flex items-center justify-between">
+            <div>
+              <h2 class="font-display text-2xl mb-1">Workspace Pipelines</h2>
+              <p class="text-sm text-slate-400">Pre-configured pipelines connected to live data sources</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <select id="workspaceFilter" class="rounded-lg border border-slate-700 bg-slate-900/50 px-3 py-2 text-sm">
+                <option value="all">All Sectors</option>
+                <option value="crypto">Crypto</option>
+                <option value="weather">Weather</option>
+                <option value="healthcare">Healthcare</option>
+                <option value="ecommerce">E-Commerce</option>
+              </select>
+              <button class="rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm hover:bg-slate-800">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+              </button>
+            </div>
           </div>
           
-          <!-- Empty State -->
-          <div id="emptyState" class="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div class="text-center">
-              <div class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-slate-800/50">
-                <svg class="h-8 w-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
+          <div id="pipelineCardsGrid" class="grid grid-cols-3 gap-4">
+            <!-- Pipeline cards populated by JS -->
+          </div>
+        </div>
+        
+        <!-- Builder Tab (Drag-n-Drop Canvas) -->
+        <div id="builderTab" class="tab-content flex-col flex-1 overflow-hidden">
+          <div class="flex-1 overflow-auto p-6 bg-slate-950">
+            <div id="pipelineCanvas" class="w-full h-full">
+              <!-- Pipeline visualization will be rendered here -->
+              <div id="canvasEmpty" class="flex items-center justify-center h-full">
+                <div class="text-center max-w-md">
+                  <div class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-slate-800/50">
+                    <svg class="h-8 w-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                  </div>
+                  <h3 class="text-lg font-semibold text-slate-300 mb-2">No Pipeline Loaded</h3>
+                  <p class="text-sm text-slate-500 mb-4">Click a pipeline card in the Gallery to see how it works, or drag nodes from the palette to create your own.</p>
+                </div>
               </div>
-              <h3 class="text-lg font-semibold text-slate-400 mb-2">No pipeline yet</h3>
-              <p class="text-sm text-slate-500">Click "New Pipeline" to start with AI wizard</p>
             </div>
           </div>
         </div>
@@ -371,8 +403,9 @@
         </div>
         
         <!-- Live Demo Tab -->
-        <div id="liveDemoTab" class="tab-content flex-col flex-1 overflow-hidden">
-          <div class="grid grid-cols-2 gap-6 p-6 h-full">
+        <div id="liveDemoTab" class="tab-content flex-col flex-1 overflow-hidden" style="position: relative;">
+          
+          <div class="grid grid-cols-2 gap-6 p-6 h-full" style="position: relative; z-index: 1;">
             <!-- Left: Data Source Selector -->
             <div class="glass-elevated p-6 rounded-lg flex flex-col">
               <h3 class="font-display text-lg mb-4 glow-text">⚡ Live Data Sources</h3>
@@ -413,13 +446,11 @@
               </div>
             </div>
             
-            <!-- Right: Response Viewer -->
-            <div class="glass p-6 rounded-lg flex flex-col">
-              <h3 class="font-display text-sm mb-3">Response Data</h3>
-              <pre id="responseViewer" class="flex-1 font-data text-xs overflow-auto bg-slate-900/50 p-4 rounded border border-slate-800 text-slate-300">Waiting for API call...</pre>
-            </div>
+            <!-- Right: Response Viewer (Professional) -->
+            <div id="responseViewer" class="flex flex-col h-full"></div>
           </div>
-        </div>
+        </div><!-- End Live Demo Tab grid -->
+        </div><!-- End Live Demo Tab -->
         
         <!-- Scenarios Tab -->
         <div id="scenariosTab" class="tab-content flex-col flex-1 overflow-auto p-6">
@@ -464,6 +495,14 @@
                 <div class="text-lg font-semibold text-emerald-400" id="scenarioSavings">$0.00</div>
               </div>
             </div>
+          </div>
+        </div>
+        
+        <!-- Analytics Tab -->
+        <div id="analyticsTab" class="tab-content flex-col flex-1 overflow-hidden">
+          <!-- Scientific Analytics Dashboard Container -->
+          <div id="scientificAnalyticsDashboard" class="flex-1 overflow-auto">
+            <!-- Dashboard will be rendered here by CacheAnalyticsDashboard -->
           </div>
         </div>
       </main>
@@ -1499,6 +1538,11 @@
     // ==============================================================
     
     function switchTab(tabName) {
+      // Track analytics
+      if (window.demoAnalytics) {
+        window.demoAnalytics.trackEvent('tab_switch', { tab: tabName });
+      }
+      
       // Update tab buttons
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
@@ -1512,18 +1556,34 @@
         content.classList.remove('active');
       });
       
-      if (tabName === 'pipeline') {
-        document.getElementById('pipelineTab').classList.add('active');
+      // Get node palette element
+      const nodePalette = document.getElementById('nodePalette');
+      
+      // Handle tab-specific logic
+      if (tabName === 'workspace') {
+        document.getElementById('workspaceTab').classList.add('active');
+        document.getElementById('metricsBar').style.display = 'none';
+        nodePalette.classList.add('hidden');
+      } else if (tabName === 'builder') {
+        document.getElementById('builderTab').classList.add('active');
         document.getElementById('metricsBar').style.display = 'block';
+        nodePalette.classList.remove('hidden');
       } else if (tabName === 'dynamicview') {
         document.getElementById('dynamicViewTab').classList.add('active');
         document.getElementById('metricsBar').style.display = 'none';
-      } else if (tabName === 'livedemo') {
+        nodePalette.classList.add('hidden');
+      } else if (tabName === 'livedemo' || tabName === 'liveDemo') {
         document.getElementById('liveDemoTab').classList.add('active');
         document.getElementById('metricsBar').style.display = 'none';
+        nodePalette.classList.add('hidden');
       } else if (tabName === 'scenarios') {
         document.getElementById('scenariosTab').classList.add('active');
         document.getElementById('metricsBar').style.display = 'none';
+        nodePalette.classList.add('hidden');
+      } else if (tabName === 'analytics') {
+        document.getElementById('analyticsTab').classList.add('active');
+        document.getElementById('metricsBar').style.display = 'none';
+        nodePalette.classList.add('hidden');
       }
     }
     
@@ -1961,6 +2021,10 @@
     let metricsTracker;
     let scenarioRunner;
     let sessionStartTime;
+    let dataStreamViz; // Data Stream Visualizer
+    let analyticsDashboard; // Scientific Analytics Dashboard
+    let hierarchyViz; // Cache Hierarchy Visualizer
+    let dataGrid; // Data Grid Component
     
     // Initialize live data modules
     function initializeLiveData() {
@@ -1970,8 +2034,14 @@
       }
       
       liveDataFetcher = new LiveDataFetcher();
-      metricsTracker = new LiveMetricsTracker();
-      scenarioRunner = new ScenarioRunner(liveDataFetcher, metricsTracker);
+      metricsTracker = new LiveMetricsTracker(liveDataFetcher);
+      
+      // Create scenario update callback
+      const onScenarioUpdate = (update) => {
+        updateScenarioProgress(update);
+      };
+      scenarioRunner = new ScenarioRunner(liveDataFetcher, onScenarioUpdate);
+      
       sessionStartTime = Date.now();
       
       // Populate data source dropdown
@@ -1979,16 +2049,397 @@
       LIVE_DATA_SOURCES.forEach(source => {
         const option = document.createElement('option');
         option.value = source.id;
-        option.textContent = `${source.name} (${source.category})`;
+        option.textContent = `${source.icon} ${source.name}`;
         select.appendChild(option);
       });
+      
+      // Populate workspace pipeline cards
+      populateWorkspacePipelines();
       
       // Populate scenario cards
       populateScenarioCards();
       
       // Start session timer
       startSessionTimer();
+      
+      // Initialize Data Stream Visualizer
+      initializeDataStreamViz();
+      
+      // Initialize Scientific Analytics Dashboard
+      initializeAnalyticsDashboard();
+      
+      console.log('[Studio] Live data modules initialized');
     }
+    
+    // Initialize Data Stream Visualizer
+    function initializeDataStreamViz() {
+      if (typeof DataStreamVisualizer === 'undefined') {
+        console.warn('DataStreamVisualizer not loaded');
+        return;
+      }
+      
+      dataStreamViz = new DataStreamVisualizer('dataStreamCanvas', {
+        hitRate: 0.92,
+        spawnRate: 40, // Start slow
+        particleSpeed: 2
+      });
+      
+      // Auto-start when Live Demo tab is active
+      const liveDemoTab = document.querySelector('[data-tab="livedemo"]');
+      if (liveDemoTab) {
+        liveDemoTab.addEventListener('click', () => {
+          if (dataStreamViz && !dataStreamViz.running) {
+            dataStreamViz.start();
+          }
+        });
+      }
+      
+      // Stop when switching away from Live Demo
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (btn.dataset.tab !== 'livedemo' && dataStreamViz && dataStreamViz.running) {
+            dataStreamViz.stop();
+          }
+        });
+      });
+      
+      console.log('[Studio] Data Stream Visualizer initialized');
+    }
+    
+    // Initialize Scientific Analytics Dashboard
+    function initializeAnalyticsDashboard() {
+      if (typeof CacheAnalyticsDashboard === 'undefined') {
+        console.warn('CacheAnalyticsDashboard not loaded');
+        return;
+      }
+      
+      // Initialize main dashboard
+      analyticsDashboard = new CacheAnalyticsDashboard('scientificAnalyticsDashboard', {
+        timeWindow: 60,
+        maxDataPoints: 60,
+        movingAverageWindow: 10
+      });
+      analyticsDashboard.init();
+      
+      // Initialize cache hierarchy visualizer
+      hierarchyViz = new CacheHierarchyVisualizer('cacheHierarchyViz', {
+        width: 800,
+        height: 400
+      });
+      hierarchyViz.init();
+      
+      // Initialize data grid
+      dataGrid = new DataGridComponent('dataSourceTable');
+      dataGrid.init();
+      
+      // Wire up tab switching for analytics dashboard
+      const analyticsTab = document.querySelector('[data-tab="analytics"]');
+      if (analyticsTab) {
+        analyticsTab.addEventListener('click', () => {
+          // Update data grid with current metrics
+          if (metricsTracker && dataGrid) {
+            const stats = analyticsDashboard.getStatistics();
+            dataGrid.updateData(stats.sectorMetrics);
+          }
+        });
+      }
+      
+      console.log('[Studio] Scientific Analytics Dashboard initialized');
+    }
+    
+    // Workspace Pipeline Templates
+    const WORKSPACE_PIPELINES = [
+      {
+        id: 'crypto-price-tracker',
+        name: 'Crypto Price Tracker',
+        description: 'Real-time cryptocurrency prices with L1/L2 caching',
+        sector: 'crypto',
+        icon: '₿',
+        dataSource: 'crypto-prices', // Matches LIVE_DATA_SOURCES id
+        nodes: ['L1 Cache', 'L2 Cache', 'CoinGecko API'],
+        estimatedSavings: '$240/mo',
+        hitRate: '92%',
+        status: 'active'
+      },
+      {
+        id: 'weather-forecast',
+        name: 'Weather Forecast API',
+        description: 'Global weather data with intelligent TTL caching',
+        sector: 'weather',
+        icon: '🌤️',
+        dataSource: 'weather-data', // Matches LIVE_DATA_SOURCES id
+        nodes: ['L1 Cache', 'L2 Cache', 'OpenMeteo API'],
+        estimatedSavings: '$180/mo',
+        hitRate: '89%',
+        status: 'active'
+      },
+      {
+        id: 'drug-safety',
+        name: 'FDA Drug Safety Alerts',
+        description: 'HIPAA-compliant adverse event monitoring',
+        sector: 'healthcare',
+        icon: '💊',
+        dataSource: 'fda-drugs', // Matches LIVE_DATA_SOURCES id
+        nodes: ['L1 Cache', 'L2 Cache', 'Compliance', 'OpenFDA API'],
+        estimatedSavings: '$320/mo',
+        hitRate: '94%',
+        status: 'active'
+      },
+      {
+        id: 'ecommerce-products',
+        name: 'Product Catalog Cache',
+        description: 'High-performance product data with CDN integration',
+        sector: 'ecommerce',
+        icon: '🛍️',
+        dataSource: 'json-placeholder', // Matches LIVE_DATA_SOURCES id
+        nodes: ['L1 Cache', 'L2 Cache', 'CDN', 'REST API'],
+        estimatedSavings: '$450/mo',
+        hitRate: '96%',
+        status: 'active'
+      },
+      {
+        id: 'geo-lookup',
+        name: 'Geographic Data Lookup',
+        description: 'Country information with persistent caching',
+        sector: 'general',
+        icon: '🌍',
+        dataSource: 'rest-countries', // Matches LIVE_DATA_SOURCES id
+        nodes: ['L1 Cache', 'L2 Cache', 'REST Countries API'],
+        estimatedSavings: '$160/mo',
+        hitRate: '88%',
+        status: 'active'
+      },
+      {
+        id: 'ip-geolocation',
+        name: 'IP Geolocation Service',
+        description: 'Visitor location data with rate-limit protection',
+        sector: 'general',
+        icon: '📍',
+        dataSource: 'ip-geolocation', // Matches LIVE_DATA_SOURCES id
+        nodes: ['L1 Cache', 'L2 Cache', 'Rate Limiter', 'ipapi.co'],
+        estimatedSavings: '$200/mo',
+        hitRate: '91%',
+        status: 'active'
+      },
+      {
+        id: 'gaming-pokedex',
+        name: 'Gaming Pokedex API',
+        description: 'Pokemon data with aggressive caching strategy',
+        sector: 'gaming',
+        icon: '🎮',
+        dataSource: 'pokemon-api', // Matches LIVE_DATA_SOURCES id
+        nodes: ['L1 Cache', 'L2 Cache', 'PokéAPI'],
+        estimatedSavings: '$140/mo',
+        hitRate: '97%',
+        status: 'active'
+      },
+      {
+        id: 'media-cdn',
+        name: 'Media CDN Pipeline',
+        description: 'Image delivery with edge caching and optimization',
+        sector: 'media',
+        icon: '🖼️',
+        dataSource: 'cat-images', // Matches LIVE_DATA_SOURCES id
+        nodes: ['L1 Cache', 'L2 Cache', 'Image Optimizer', 'The Cat API'],
+        estimatedSavings: '$380/mo',
+        hitRate: '93%',
+        status: 'active'
+      }
+    ];
+    
+    function populateWorkspacePipelines() {
+      const grid = document.getElementById('pipelineCardsGrid');
+      if (!grid) return;
+      
+      grid.innerHTML = WORKSPACE_PIPELINES.map(pipeline => `
+        <div class="glass-elevated rounded-lg p-5 cursor-pointer hover:border-sky-500 transition-all group" onclick="openPipeline('${pipeline.id}')">
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-3xl">${pipeline.icon}</div>
+            <span class="px-2 py-1 rounded-full text-xs font-mono ${pipeline.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-700 text-slate-400'}">
+              ${pipeline.status === 'active' ? '● LIVE' : '○ DRAFT'}
+            </span>
+          </div>
+          
+          <h3 class="font-display text-lg mb-1 group-hover:text-sky-400 transition-colors">${pipeline.name}</h3>
+          <p class="text-xs text-slate-400 mb-4">${pipeline.description}</p>
+          
+          <div class="flex items-center gap-2 mb-3 text-xs text-slate-500">
+            ${pipeline.nodes.map(node => `<span class="px-2 py-1 rounded bg-slate-800/50">${node}</span>`).join('')}
+          </div>
+          
+          <div class="flex items-center justify-between pt-3 border-t border-slate-800">
+            <div class="flex items-center gap-4 text-xs">
+              <div>
+                <div class="text-slate-500">Hit Rate</div>
+                <div class="font-semibold text-emerald-400">${pipeline.hitRate}</div>
+              </div>
+              <div>
+                <div class="text-slate-500">Savings</div>
+                <div class="font-semibold text-sky-400">${pipeline.estimatedSavings}</div>
+              </div>
+            </div>
+            <button class="px-3 py-1 rounded bg-sky-600 text-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation(); runPipeline('${pipeline.id}')">Run Test</button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // Open pipeline details
+    window.openPipeline = function(pipelineId) {
+      const pipeline = WORKSPACE_PIPELINES.find(p => p.id === pipelineId);
+      if (!pipeline) return;
+      
+      // Track analytics
+      if (window.trackPipelineView) {
+        window.trackPipelineView(pipelineId);
+      }
+      
+      // Switch to Builder tab
+      switchTab('builder');
+      
+      // Update metrics bar with pipeline name
+      document.getElementById('pipelineName').textContent = pipeline.name;
+      document.getElementById('metricHitRate').textContent = pipeline.hitRate;
+      document.getElementById('metricLatency').textContent = '~50ms';
+      document.getElementById('metricSavings').textContent = pipeline.estimatedSavings;
+      
+      // Render pipeline visualization on canvas
+      renderPipelineVisualization(pipeline);
+    };
+    
+    // Render pipeline visualization showing how nodes are connected
+    function renderPipelineVisualization(pipeline) {
+      const canvas = document.getElementById('pipelineCanvas');
+      const empty = document.getElementById('canvasEmpty');
+      
+      // Hide empty state
+      if (empty) empty.style.display = 'none';
+      
+      // Create visual node graph
+      canvas.innerHTML = `
+        <div class="flex flex-col gap-6 p-8">
+          <div class="mb-4">
+            <h2 class="text-2xl font-bold mb-2">${pipeline.icon} ${pipeline.name}</h2>
+            <p class="text-slate-400">${pipeline.description}</p>
+          </div>
+          
+          <div class="flex items-center justify-center gap-8 p-8 bg-slate-900/50 rounded-lg">
+            <!-- Visual flow diagram -->
+            <div class="flex items-center gap-4">
+              ${pipeline.nodes.map((node, index) => `
+                <div class="flex items-center gap-4">
+                  <div class="flex flex-col items-center">
+                    <div class="w-32 h-32 rounded-lg bg-gradient-to-br ${
+                      node.includes('L1') ? 'from-emerald-500/20 to-emerald-600/20 border-emerald-500' :
+                      node.includes('L2') ? 'from-sky-500/20 to-sky-600/20 border-sky-500' :
+                      node.includes('L3') ? 'from-purple-500/20 to-purple-600/20 border-purple-500' :
+                      'from-slate-500/20 to-slate-600/20 border-slate-500'
+                    } border-2 flex items-center justify-center">
+                      <div class="text-center">
+                        <div class="text-2xl mb-2">${
+                          node.includes('L1') ? '⚡' :
+                          node.includes('L2') ? '💾' :
+                          node.includes('L3') ? '🔮' :
+                          '🌐'
+                        }</div>
+                        <div class="text-sm font-semibold">${node}</div>
+                        <div class="text-xs text-slate-400 mt-1">${
+                          node.includes('L1') ? '<5ms' :
+                          node.includes('L2') ? '15ms' :
+                          node.includes('L3') ? '50ms' :
+                          '800ms'
+                        }</div>
+                      </div>
+                    </div>
+                  </div>
+                  ${index < pipeline.nodes.length - 1 ? `
+                    <div class="flex flex-col items-center">
+                      <svg class="w-12 h-8" viewBox="0 0 48 32" fill="none">
+                        <path d="M4 16 H40 M40 16 L32 8 M40 16 L32 24" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round"/>
+                      </svg>
+                      <span class="text-xs text-slate-500 mt-1">→ miss</span>
+                    </div>
+                  ` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4 mt-4">
+            <div class="p-4 bg-slate-900/50 rounded-lg">
+              <h4 class="text-sm font-semibold mb-2 text-emerald-400">How It Works</h4>
+              <p class="text-xs text-slate-400">Requests flow through cache tiers (L1→L2→L3) before hitting the API. ${pipeline.hitRate} of requests are served from cache, avoiding expensive API calls.</p>
+            </div>
+            <div class="p-4 bg-slate-900/50 rounded-lg">
+              <h4 class="text-sm font-semibold mb-2 text-sky-400">Performance Metrics</h4>
+              <ul class="text-xs text-slate-400 space-y-1">
+                <li>• <strong>Hit Rate:</strong> ${pipeline.hitRate}</li>
+                <li>• <strong>Savings:</strong> ${pipeline.estimatedSavings}</li>
+                <li>• <strong>Nodes:</strong> ${pipeline.nodes.length} connected</li>
+                <li>• <strong>Status:</strong> ${pipeline.status === 'active' ? '🟢 Live' : '⚪ Draft'}</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="flex gap-3 mt-4">
+            <button onclick="runPipeline('${pipeline.id}')" class="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-semibold">
+              🧪 Run Test
+            </button>
+            <button onclick="switchTab('workspace')" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg">
+              ← Back to Gallery
+            </button>
+          </div>
+        </div>
+      `;
+    };
+    
+    // Run pipeline test
+    window.runPipeline = async function(pipelineId) {
+      const pipeline = WORKSPACE_PIPELINES.find(p => p.id === pipelineId);
+      if (!pipeline || !pipeline.dataSource) return;
+      
+      try {
+        // Fetch data from the pipeline's data source
+        const result = await liveDataFetcher.fetch(pipeline.dataSource);
+        
+        // Track analytics
+        if (window.trackPipelineTest) {
+          window.trackPipelineTest(pipelineId, result);
+        }
+        
+        // Track metrics
+        metricsTracker.recordCall(result);
+      } catch (error) {
+        if (window.trackError) {
+          window.trackError(error, 'pipeline_test');
+        }
+        alert(`Pipeline test failed: ${error.message}`);
+        return;
+      }
+      
+      // Update session stats
+      updateSessionStats();
+      
+      // Show success notification
+      const card = event.target.closest('.glass-elevated');
+      card.classList.add('ring-2', 'ring-emerald-500');
+      setTimeout(() => card.classList.remove('ring-2', 'ring-emerald-500'), 1000);
+    };
+    
+    // Workspace filter
+    document.getElementById('workspaceFilter')?.addEventListener('change', (e) => {
+      const filter = e.target.value;
+      const cards = document.querySelectorAll('#pipelineCardsGrid > div');
+      
+      cards.forEach((card, index) => {
+        const pipeline = WORKSPACE_PIPELINES[index];
+        if (filter === 'all' || pipeline.sector === filter) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
     
     // Data source selection handler
     document.getElementById('dataSourceSelect')?.addEventListener('change', (e) => {
@@ -2005,9 +2456,9 @@
         if (source) {
           sourceInfo.classList.remove('hidden');
           sourceInfo.innerHTML = `
-            <div class="text-slate-300 font-medium">${source.name}</div>
-            <div>${source.description}</div>
-            <div class="mt-1 text-slate-500">Cost: $${source.costPerCall.toFixed(4)}/call • Rate: ${source.rateLimit} calls/min</div>
+            <div class="text-slate-300 font-medium">${source.icon} ${source.name}</div>
+            <div class="text-slate-400">${source.description}</div>
+            <div class="mt-1 text-slate-500">Cost: $${source.costPerCall.toFixed(4)}/call • TTL: ${source.cacheStrategy.ttl}s</div>
           `;
         }
       } else {
@@ -2027,15 +2478,22 @@
       await fetchLiveData(10);
     });
     
+    // Initialize Response Viewer
+    let responseViewer;
+    
     async function fetchLiveData(iterations = 1) {
       const sourceId = document.getElementById('dataSourceSelect').value;
       if (!sourceId) return;
+      
+      // Initialize viewer if not already done
+      if (!responseViewer) {
+        responseViewer = new ResponseViewer('responseViewer');
+      }
       
       const statusEl = document.getElementById('liveStatus');
       const latencyEl = document.getElementById('liveLatency');
       const costEl = document.getElementById('liveCost');
       const savedEl = document.getElementById('liveSaved');
-      const viewer = document.getElementById('responseViewer');
       
       statusEl.textContent = 'FETCHING...';
       statusEl.className = 'text-yellow-400';
@@ -2043,67 +2501,146 @@
       let totalLatency = 0;
       let totalCost = 0;
       let totalSaved = 0;
-      let lastResponse = null;
+      let lastResult = null;
       
       for (let i = 0; i < iterations; i++) {
-        const result = await liveDataFetcher.fetch(sourceId);
-        
-        if (result.error) {
+        try {
+          const result = await liveDataFetcher.fetch(sourceId);
+          
+          // Track successful fetch
+          if (window.trackDataFetch) {
+            window.trackDataFetch(sourceId, result.hit, result.latency);
+          }
+          
+          totalLatency += result.latency;
+          totalCost += result.cost;
+          totalSaved += result.savedCost || 0;
+          
+          lastResult = result;
+          
+          // Track metrics
+          metricsTracker.recordCall(result);
+          
+          // Update visualizer hit rate in real-time
+          if (dataStreamViz && dataStreamViz.running) {
+            const currentMetrics = metricsTracker.getMetrics();
+            dataStreamViz.setHitRate(currentMetrics.hitRate || 0.92);
+          }
+          
+          // Update scientific analytics dashboard
+          if (analyticsDashboard) {
+            const source = LIVE_DATA_SOURCES.find(s => s.id === sourceId);
+            analyticsDashboard.recordDataPoint({
+              latency: result.latency,
+              cost: result.cost || 0,
+              hit: result.hit,
+              sourceId: sourceId,
+              sector: source ? source.sector : 'general',
+              savedCost: result.savedCost || 0
+            });
+          }
+          
+          // Update cache hierarchy visualization
+          if (hierarchyViz) {
+            const tier = analyticsDashboard.determineCacheTier({
+              hit: result.hit,
+              latency: result.latency
+            });
+            hierarchyViz.updateTier(tier, result.latency);
+          }
+          
+        } catch (error) {
           statusEl.textContent = 'ERROR';
           statusEl.className = 'text-rose-400';
-          viewer.textContent = JSON.stringify({ error: result.error }, null, 2);
+          
+          // Show error in Response Viewer
+          responseViewer.render(
+            { error: error.message },
+            { hit: false, latency: 0, cost: 0 }
+          );
+          
+          // Track error
+          if (window.trackError) {
+            window.trackError(error, 'data_fetch');
+          }
           return;
         }
-        
-        totalLatency += result.metadata.latency;
-        totalCost += result.metadata.cost;
-        
-        if (result.metadata.cached) {
-          const source = LIVE_DATA_SOURCES.find(s => s.id === sourceId);
-          totalSaved += source.costPerCall;
-        }
-        
-        lastResponse = result.data;
-        
-        // Track metrics
-        metricsTracker.recordCall(
-          result.metadata.cached ? 'hit' : 'miss',
-          result.metadata.latency,
-          result.metadata.cost
-        );
       }
       
-      // Update display
-      statusEl.textContent = 'SUCCESS';
-      statusEl.className = 'text-emerald-400';
-      latencyEl.textContent = `${Math.round(totalLatency / iterations)}ms avg`;
+      // Update metrics display
+      const avgLatency = Math.round(totalLatency / iterations);
+      statusEl.textContent = totalCost === 0 ? 'CACHE HIT' : 'CACHE MISS';
+      statusEl.className = totalCost === 0 ? 'text-emerald-400' : 'text-amber-400';
+      latencyEl.textContent = `${avgLatency}ms`;
       costEl.textContent = `$${totalCost.toFixed(4)}`;
       savedEl.textContent = `$${totalSaved.toFixed(4)}`;
       
-      viewer.textContent = JSON.stringify(lastResponse, null, 2);
+      // Render response with professional viewer
+      responseViewer.render(lastResult.data, {
+        hit: lastResult.hit,
+        latency: avgLatency,
+        cost: totalCost / iterations
+      });
       
       // Update footer
       updateSessionStats();
     }
     
     function populateScenarioCards() {
-      if (typeof DEMO_SCENARIOS === 'undefined') return;
+      if (typeof DEMO_SCENARIOS === 'undefined') {
+        console.warn('DEMO_SCENARIOS not loaded');
+        return;
+      }
       
       const container = document.getElementById('scenarioCards');
+      if (!container) return;
+      
       container.innerHTML = DEMO_SCENARIOS.map(scenario => `
         <div class="glass-elevated p-4 rounded-lg cursor-pointer hover:border-sky-500 transition-colors" onclick="runScenario('${scenario.id}')">
           <div class="text-2xl mb-2">${scenario.icon}</div>
           <h4 class="font-display text-sm mb-2">${scenario.name}</h4>
           <p class="text-xs text-slate-400 mb-3">${scenario.description}</p>
           <div class="flex justify-between text-xs text-slate-500">
-            <span>${scenario.calls.length} calls</span>
-            <span>${scenario.cacheStrategy}</span>
+            <span>${scenario.duration}s duration</span>
+            <span>${scenario.expectedMetrics.hitRate}% hit rate</span>
           </div>
         </div>
       `).join('');
     }
     
     window.runScenario = async function(scenarioId) {
+      const scenario = DEMO_SCENARIOS.find(s => s.id === scenarioId);
+      if (!scenario) {
+        console.error('Scenario not found:', scenarioId);
+        return;
+      }
+      
+      // Track analytics
+      if (window.trackScenarioRun) {
+        window.trackScenarioRun(scenarioId);
+      }
+      
+      try {
+        await scenarioRunner.run(scenarioId);
+        
+        // Update footer stats
+        updateSessionStats();
+        
+        // Show completion message
+        addAIMessage(`✅ Scenario "${scenario.name}" completed!`, 'assistant');
+        
+      } catch (error) {
+        console.error('Scenario failed:', error);
+        alert(`Scenario failed: ${error.message}`);
+        
+        if (window.trackError) {
+          window.trackError(error, 'scenario_run');
+        }
+      }
+    };
+    
+    // Update scenario progress during execution
+    function updateScenarioProgress(update) {
       const progress = document.getElementById('scenarioProgress');
       const progressBar = document.getElementById('scenarioProgressBar');
       const nameEl = document.getElementById('scenarioName');
@@ -2114,50 +2651,34 @@
       const latencyEl = document.getElementById('scenarioLatency');
       const savingsEl = document.getElementById('scenarioSavings');
       
-      const scenario = DEMO_SCENARIOS.find(s => s.id === scenarioId);
-      if (!scenario) return;
-      
-      progress.classList.remove('hidden');
-      nameEl.textContent = scenario.name;
-      
-      const totalCalls = scenario.calls.length;
-      let completed = 0;
-      
-      for (const call of scenario.calls) {
-        const result = await liveDataFetcher.fetch(call.source, call.params);
+      if (update.status === 'running') {
+        progress.classList.remove('hidden');
+        nameEl.textContent = update.scenario.name;
         
-        metricsTracker.recordCall(
-          result.metadata.cached ? 'hit' : 'miss',
-          result.metadata.latency,
-          result.metadata.cost
-        );
+        progressBar.style.width = `${update.progress}%`;
+        stepEl.textContent = `${update.currentCall || 0}/${update.totalCalls || 0} calls`;
+        percentEl.textContent = `${update.progress}%`;
         
-        completed++;
-        const percent = Math.round((completed / totalCalls) * 100);
-        
-        progressBar.style.width = `${percent}%`;
-        stepEl.textContent = `${completed}/${totalCalls} calls`;
-        percentEl.textContent = `${percent}%`;
-        
-        // Update metrics
-        const stats = metricsTracker.getSessionStats();
-        callsEl.textContent = stats.totalCalls;
-        hitRateEl.textContent = `${stats.hitRate}%`;
-        latencyEl.textContent = `${Math.round(stats.avgLatency)}ms`;
-        savingsEl.textContent = `$${stats.totalSavings.toFixed(2)}`;
-        
-        // Small delay for visual effect
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
-      
-      // Update footer
-      updateSessionStats();
-      
-      // Hide progress after 2s
-      setTimeout(() => {
+        // Update metrics from results
+        if (update.results && update.results.length > 0) {
+          const hits = update.results.filter(r => r.hit).length;
+          const totalLatency = update.results.reduce((sum, r) => sum + r.latency, 0);
+          const totalSaved = update.results.reduce((sum, r) => sum + (r.savedCost || 0), 0);
+          
+          callsEl.textContent = update.results.length;
+          hitRateEl.textContent = `${Math.round((hits / update.results.length) * 100)}%`;
+          latencyEl.textContent = `${Math.round(totalLatency / update.results.length)}ms`;
+          savingsEl.textContent = `$${totalSaved.toFixed(3)}`;
+        }
+      } else if (update.status === 'completed') {
+        // Hide progress after 3s
+        setTimeout(() => {
+          progress.classList.add('hidden');
+        }, 3000);
+      } else if (update.status === 'error') {
         progress.classList.add('hidden');
-      }, 2000);
-    };
+      }
+    }
     
     document.getElementById('stopScenarioBtn')?.addEventListener('click', () => {
       document.getElementById('scenarioProgress').classList.add('hidden');
@@ -2174,16 +2695,25 @@
     }
     
     function updateSessionStats() {
-      const stats = metricsTracker.getSessionStats();
-      document.getElementById('sessionCalls').textContent = stats.totalCalls;
-      document.getElementById('footerHitRate').textContent = `${stats.hitRate}%`;
-      document.getElementById('footerSavings').textContent = stats.totalSavings.toFixed(2);
+      if (!metricsTracker) return;
+      
+      const snapshot = metricsTracker.getSnapshot();
+      const metrics = liveDataFetcher.getMetrics();
+      
+      document.getElementById('sessionCalls').textContent = metrics.totalCalls;
+      document.getElementById('footerHitRate').textContent = `${metrics.hitRate.toFixed(0)}%`;
+      document.getElementById('footerSavings').textContent = metrics.totalSaved.toFixed(2);
     }
     
     // View report button
     document.getElementById('viewReportBtn')?.addEventListener('click', () => {
-      const report = new SessionReport(metricsTracker);
-      const reportData = report.generateReport();
+      if (!metricsTracker || !liveDataFetcher) {
+        alert('No session data available yet. Try fetching some data first!');
+        return;
+      }
+      
+      const sessionReport = new SessionReport(liveDataFetcher, metricsTracker);
+      const reportData = sessionReport.generateReport();
       
       // Display in modal or new tab
       const reportWindow = window.open('', '_blank');
@@ -2193,34 +2723,84 @@
             <title>AgentCache Session Report</title>
             <style>
               body { font-family: system-ui; padding: 2rem; background: #0f172a; color: #e2e8f0; }
-              h1 { color: #38bdf8; }
+              h1 { color: #38bdf8; margin-bottom: 2rem; }
+              h2 { color: #38bdf8; margin-top: 2rem; font-size: 1.25rem; }
               .metric { margin: 1rem 0; padding: 1rem; background: #1e293b; border-radius: 8px; }
-              .metric-label { font-size: 0.875rem; color: #94a3b8; }
+              .metric-label { font-size: 0.875rem; color: #94a3b8; margin-bottom: 0.5rem; }
               .metric-value { font-size: 1.5rem; font-weight: bold; }
+              .section { margin-bottom: 2rem; }
             </style>
           </head>
           <body>
-            <h1>📊 Session Report</h1>
-            <div class="metric">
-              <div class="metric-label">Total Calls</div>
-              <div class="metric-value">${reportData.totalCalls}</div>
+            <h1>📊 AgentCache Session Report</h1>
+            
+            <div class="section">
+              <h2>Summary</h2>
+              <div class="metric">
+                <div class="metric-label">Data Sources Tested</div>
+                <div class="metric-value">${reportData.summary.dataSourcesTested}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Scenarios Run</div>
+                <div class="metric-value">${reportData.summary.scenariosRun}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Total API Calls</div>
+                <div class="metric-value">${reportData.summary.totalCalls}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Session Duration</div>
+                <div class="metric-value">${reportData.summary.sessionDuration}</div>
+              </div>
             </div>
-            <div class="metric">
-              <div class="metric-label">Cache Hit Rate</div>
-              <div class="metric-value" style="color: #10b981">${reportData.hitRate}%</div>
+            
+            <div class="section">
+              <h2>Performance</h2>
+              <div class="metric">
+                <div class="metric-label">Cache Hit Rate</div>
+                <div class="metric-value" style="color: #10b981">${reportData.performance.cacheHitRate}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Avg Latency (Hit)</div>
+                <div class="metric-value" style="color: #38bdf8">${reportData.performance.avgLatencyHit}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Avg Latency (Miss)</div>
+                <div class="metric-value">${reportData.performance.avgLatencyMiss}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Latency Improvement</div>
+                <div class="metric-value" style="color: #10b981">${reportData.performance.latencyImprovement}</div>
+              </div>
             </div>
-            <div class="metric">
-              <div class="metric-label">Average Latency</div>
-              <div class="metric-value">${reportData.avgLatency}ms</div>
+            
+            <div class="section">
+              <h2>Cost Analysis</h2>
+              <div class="metric">
+                <div class="metric-label">Total Spent (This Session)</div>
+                <div class="metric-value">${reportData.cost.totalSpent}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Total Saved (This Session)</div>
+                <div class="metric-value" style="color: #10b981">${reportData.cost.totalSaved}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Projected Monthly (Without Cache)</div>
+                <div class="metric-value">${reportData.cost.projectedMonthlyWithout}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Projected Monthly (With Cache)</div>
+                <div class="metric-value" style="color: #38bdf8">${reportData.cost.projectedMonthlyWith}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Projected Monthly Savings</div>
+                <div class="metric-value" style="color: #10b981">${reportData.cost.projectedMonthlySavings}</div>
+              </div>
             </div>
-            <div class="metric">
-              <div class="metric-label">Total Savings</div>
-              <div class="metric-value" style="color: #10b981">$${reportData.totalSavings.toFixed(4)}</div>
-            </div>
-            <div class="metric">
-              <div class="metric-label">Projected Monthly Savings</div>
-              <div class="metric-value" style="color: #10b981">$${reportData.projectedMonthlySavings.toFixed(2)}</div>
-            </div>
+            
+            <p style="margin-top: 3rem; text-align: center; color: #64748b; font-size: 0.875rem;">
+              Generated at ${reportData.summary.timestamp}
+            </p>
           </body>
         </html>
       `);
@@ -2231,6 +2811,11 @@
       btn.addEventListener('click', () => {
         const theme = btn.dataset.themeBtn;
         document.body.dataset.theme = theme;
+        
+        // Track analytics
+        if (window.demoAnalytics) {
+          window.demoAnalytics.trackEvent('theme_switch', { theme });
+        }
         
         // Update active state
         document.querySelectorAll('[data-theme-btn]').forEach(b => {
