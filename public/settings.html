@@ -476,12 +476,55 @@
       ];
 
       // Initialize settings
-      document.addEventListener('DOMContentLoaded', () => {
+      document.addEventListener('DOMContentLoaded', async () => {
+        await loadUserData();
         setupSectorToggles();
         setupAPIKeyHandlers();
         setupTeamInvite();
         setupSaveButton();
       });
+      
+      // Load real user data from API
+      async function loadUserData() {
+        try {
+          const token = localStorage.getItem('agentcache_token');
+          if (!token) {
+            window.location.href = '/login.html?redirect=/settings.html';
+            return;
+          }
+          
+          const response = await fetch('/api/auth/me', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            const user = data.user;
+            
+            // Update sidebar user info
+            const initials = user.email.substring(0, 2).toUpperCase();
+            document.querySelectorAll('.h-7.w-7.rounded-full').forEach(el => {
+              el.textContent = initials;
+            });
+            
+            // Update name displays
+            document.querySelectorAll('.text-xs.font-medium.text-slate-100, .text-sm.text-slate-100').forEach(el => {
+              if (el.textContent.includes('Jane')) {
+                el.textContent = user.full_name || user.email.split('@')[0];
+              }
+            });
+            
+            // Update email displays  
+            document.querySelectorAll('.text-\\[0\\.7rem\\].text-slate-500, .text-xs.text-slate-500').forEach(el => {
+              if (el.textContent.includes('jane@') || el.textContent.includes('acme.ai')) {
+                el.textContent = user.email;
+              }
+            });
+          }
+        } catch (error) {
+          console.error('Failed to load user data:', error);
+        }
+      }
 
       function setupSectorToggles() {
         const healthcareToggle = document.querySelector('.inline-flex.items-center.justify-between.rounded-full.bg-emerald-500\\/20');
