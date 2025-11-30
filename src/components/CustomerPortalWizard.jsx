@@ -43,17 +43,22 @@ function CustomerPortalWizard({ onClose, onComplete }) {
         setError(null);
 
         try {
-            const response = await fetch('/api/portal/provision', {
+            const authToken = localStorage.getItem('agentcache_token');
+            if (!authToken) {
+                throw new Error('Not authenticated');
+            }
+
+            const response = await fetch('/api/onboarding/complete', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
                 body: JSON.stringify({
-                    organization: {
-                        ...orgProfile,
-                        plan_tier: planTier
-                    },
-                    scale,
-                    namespace_strategy: namespaceStrategy,
-                    custom_namespaces: customNamespaces
+                    sector: orgProfile.sector,
+                    useCase: `${orgProfile.name} - ${orgProfile.sector} organization`,
+                    priority: 'balanced', // Can be derived from planTier
+                    wizardPrompt: `Setup for ${orgProfile.name} in ${orgProfile.sector} sector`
                 })
             });
 
@@ -64,13 +69,14 @@ function CustomerPortalWizard({ onClose, onComplete }) {
                 if (onComplete) {
                     onComplete({
                         organization: data.organization,
-                        api_key: data.api_key,
-                        namespaces: data.namespaces,
-                        dashboard_url: `/portal/dashboard?org=${data.organization.slug}`
+                        pipeline: data.pipeline,
+                        apiKey: data.apiKey,
+                        projectedSavings: data.projectedSavings,
+                        dashboard_url: `/studio-v2.html`
                     });
                 }
             } else {
-                throw new Error(data.error || 'Failed to provision organization');
+                throw new Error(data.error || 'Failed to complete onboarding');
             }
         } catch (err) {
             setError(err.message);
