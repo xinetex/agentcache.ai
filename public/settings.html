@@ -114,6 +114,64 @@
         <!-- Content -->
         <main class="flex-1 overflow-y-auto">
           <div class="max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-7 space-y-6 sm:space-y-8">
+            
+            <!-- Profile & Security Section (Full Width) -->
+            <section class="space-y-4">
+              <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-4">
+                <div class="flex items-center gap-2 mb-4">
+                  <div class="h-7 w-7 rounded-md bg-violet-500/15 border border-violet-400/60 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 stroke-[1.5] text-violet-200"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  </div>
+                  <div>
+                    <h2 class="text-base font-semibold tracking-tight text-slate-100">Profile & Security</h2>
+                    <p class="text-sm text-slate-500">Manage your account details and password</p>
+                  </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <!-- Profile Info -->
+                  <div class="space-y-4">
+                    <div>
+                      <label class="block text-sm font-medium text-slate-300 mb-2">Full Name</label>
+                      <input type="text" id="profileFullName" class="w-full rounded-md border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500" placeholder="Your name" />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-slate-300 mb-2">Email</label>
+                      <input type="email" id="profileEmail" disabled class="w-full rounded-md border border-slate-700 bg-slate-900/50 px-3 py-2 text-sm text-slate-400 cursor-not-allowed" />
+                      <p class="text-xs text-slate-500 mt-1">Email cannot be changed</p>
+                    </div>
+                    <button id="updateProfileBtn" class="inline-flex items-center gap-1.5 rounded-md bg-sky-600 hover:bg-sky-500 px-4 py-2 text-sm font-medium text-white">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"></path><path d="M17 21v-8H7v8"></path><path d="M7 3v5h8"></path></svg>
+                      Update Profile
+                    </button>
+                  </div>
+                  
+                  <!-- Change Password -->
+                  <div class="space-y-4">
+                    <div>
+                      <label class="block text-sm font-medium text-slate-300 mb-2">Current Password</label>
+                      <input type="password" id="currentPassword" class="w-full rounded-md border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500" placeholder="Enter current password" />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-slate-300 mb-2">New Password</label>
+                      <input type="password" id="newPassword" class="w-full rounded-md border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500" placeholder="Enter new password" />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-slate-300 mb-2">Confirm New Password</label>
+                      <input type="password" id="confirmPassword" class="w-full rounded-md border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500" placeholder="Confirm new password" />
+                    </div>
+                    <button id="changePasswordBtn" class="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 px-4 py-2 text-sm font-medium text-white">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                      Change Password
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Status Message -->
+                <div id="profileMessage" class="hidden mt-4 p-3 rounded-md"></div>
+              </div>
+            </section>
+            
             <!-- Settings Grid -->
             <section class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
               <!-- API Keys -->
@@ -483,6 +541,7 @@
         setupAPIKeyHandlers();
         setupTeamInvite();
         setupSaveButton();
+        setupProfileHandlers();
       });
       
       // Load real user data from API
@@ -523,6 +582,13 @@
             if (teamInitials) teamInitials.textContent = initials;
             if (teamName) teamName.textContent = displayName;
             if (teamEmail) teamEmail.textContent = user.email;
+            
+            // Update profile form fields
+            const profileFullName = document.getElementById('profileFullName');
+            const profileEmail = document.getElementById('profileEmail');
+            
+            if (profileFullName) profileFullName.value = user.full_name || '';
+            if (profileEmail) profileEmail.value = user.email;
             
             console.log('User data loaded:', displayName, user.email);
           } else {
@@ -652,6 +718,121 @@
         
         // In production, would POST to /api/settings
         alert('Settings saved successfully!\n\nEnabled sectors: ' + Object.keys(userConfig.sectors).filter(k => userConfig.sectors[k]).join(', '));
+      }
+      
+      // Profile & Security Handlers
+      function setupProfileHandlers() {
+        const updateProfileBtn = document.getElementById('updateProfileBtn');
+        const changePasswordBtn = document.getElementById('changePasswordBtn');
+        
+        if (updateProfileBtn) {
+          updateProfileBtn.addEventListener('click', updateProfile);
+        }
+        
+        if (changePasswordBtn) {
+          changePasswordBtn.addEventListener('click', changePassword);
+        }
+      }
+      
+      async function updateProfile() {
+        const fullName = document.getElementById('profileFullName').value.trim();
+        const messageDiv = document.getElementById('profileMessage');
+        
+        if (!fullName) {
+          showMessage('Please enter your full name', 'error');
+          return;
+        }
+        
+        try {
+          const token = localStorage.getItem('agentcache_token');
+          const response = await fetch('/api/user/update-profile', {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ full_name: fullName })
+          });
+          
+          const data = await response.json();
+          
+          if (response.ok) {
+            showMessage('Profile updated successfully!', 'success');
+            // Reload user data to update UI
+            await loadUserData();
+          } else {
+            showMessage(data.error || 'Failed to update profile', 'error');
+          }
+        } catch (error) {
+          console.error('Update profile error:', error);
+          showMessage('Failed to update profile. Please try again.', 'error');
+        }
+      }
+      
+      async function changePassword() {
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        
+        // Validation
+        if (!currentPassword || !newPassword || !confirmPassword) {
+          showMessage('Please fill in all password fields', 'error');
+          return;
+        }
+        
+        if (newPassword !== confirmPassword) {
+          showMessage('New passwords do not match', 'error');
+          return;
+        }
+        
+        if (newPassword.length < 8) {
+          showMessage('Password must be at least 8 characters long', 'error');
+          return;
+        }
+        
+        try {
+          const token = localStorage.getItem('agentcache_token');
+          const response = await fetch('/api/user/change-password', {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              current_password: currentPassword,
+              new_password: newPassword
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (response.ok) {
+            showMessage('Password changed successfully!', 'success');
+            // Clear password fields
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+          } else {
+            showMessage(data.error || 'Failed to change password', 'error');
+          }
+        } catch (error) {
+          console.error('Change password error:', error);
+          showMessage('Failed to change password. Please try again.', 'error');
+        }
+      }
+      
+      function showMessage(message, type) {
+        const messageDiv = document.getElementById('profileMessage');
+        messageDiv.textContent = message;
+        messageDiv.className = type === 'success' 
+          ? 'mt-4 p-3 rounded-md bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 text-sm'
+          : 'mt-4 p-3 rounded-md bg-rose-500/20 border border-rose-500/40 text-rose-200 text-sm';
+        messageDiv.classList.remove('hidden');
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+          messageDiv.classList.add('hidden');
+        }, 5000);
       }
     </script>
   </body>
