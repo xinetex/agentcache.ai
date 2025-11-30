@@ -968,6 +968,13 @@
       loadSectorNodes();
       attachEventListeners();
       initializeLiveData();
+      
+      // Check if onboarding mode
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('onboarding') === 'true' && isAuthenticated && !isDemoMode) {
+        // Check if user needs onboarding
+        await checkOnboardingStatus();
+      }
     });
     
     // Initialize Studio with demo/auth detection
@@ -1173,6 +1180,15 @@
           btn.classList.add('selected');
           wizardState.useCase = btn.dataset.usecase;
           wizardState.prompt = btn.dataset.prompt || '';
+          
+          // Map use case to sector for onboarding
+          const sectorMapping = {
+            'clinical-decision': 'healthcare',
+            'trading': 'finance',
+            'contract-review': 'legal',
+            'custom': 'general'
+          };
+          wizardState.sector = sectorMapping[btn.dataset.usecase] || 'general';
         });
       });
       
@@ -1220,10 +1236,37 @@
       document.getElementById('scanActionBtn').addEventListener('click', handleScanAction);
     }
     
+    // Check if user needs onboarding
+    async function checkOnboardingStatus() {
+      try {
+        const response = await fetch('/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          // If no organization, trigger onboarding wizard
+          if (!data.user.organization) {
+            console.log('[Onboarding] User needs onboarding - opening wizard');
+            openWizard(true); // true = onboarding mode
+          }
+        }
+      } catch (error) {
+        console.error('Failed to check onboarding status:', error);
+      }
+    }
+    
     // Wizard Flow
-    function openWizard() {
+    function openWizard(isOnboarding = false) {
       document.getElementById('wizardModal').classList.remove('hidden');
-      wizardState = { step: 1, useCase: null, prompt: '', performance: 'balanced' };
+      wizardState = { 
+        step: 1, 
+        useCase: null, 
+        prompt: '', 
+        performance: 'balanced',
+        isOnboarding: isOnboarding 
+      };
       updateWizardStep();
     }
     
@@ -1260,8 +1303,11 @@
         // Call AI to generate pipeline
         setTimeout(() => generatePipeline(), 500);
       } else if (wizardState.step === 4) {
-        // Apply pipeline to canvas
-        if (currentPipeline) {
+        // Apply pipeline to canvas or complete onboarding
+        if (wizardState.isOnboarding) {
+          // Complete onboarding - create org and starter pipeline
+          await completeOnboarding();
+        } else if (currentPipeline) {
           renderPipelineOnCanvas(currentPipeline);
           closeWizard();
         }
@@ -1342,21 +1388,135 @@
     
     function displayPipelineReview(pipeline) {
       document.getElementById('reviewName').textContent = pipeline.name;
-      document.getElementById('reviewLatency').textContent = `${pipeline.metrics.estimated_latency_ms}ms`;
-      document.getElementById('reviewHitRate').textContent = `${Math.round(pipeline.metrics.estimated_hit_rate * 100)}%`;
-      document.getElementById('reviewSavings').textContent = `$${pipeline.metrics.estimated_savings_per_request}/req`;
+      document.getElementById('reviewLatency').textContent = `${pipeline.metrics?.estimated_latency_ms || '--'}ms`;
+      document.getElementById('reviewHitRate').textContent = `${Math.round((pipeline.metrics?.estimated_hit_rate || 0) * 100)}%`;
+      document.getElementById('reviewSavings').textContent = `$${pipeline.metrics?.estimated_savings_per_request || '--'}/req`;
       
       // Render nodes
-      const nodesHtml = pipeline.nodes.map(node => 
-        `<span class="inline-flex items-center rounded-full bg-slate-700/50 px-2 py-0.5 text-xs text-slate-300">${node.type}</span>`
-      ).join('');
+      const nodesHtml = pipeline.nodes?.map(node => 
+        `<span class="inline-flex items-center rounded-full bg-slate-700/50 px-2 py-0.5 text-xs text-slate-300">${node.type || node.label}</span>`
+      ).join('') || '';
       document.getElementById('reviewNodes').innerHTML = nodesHtml;
       
       // Render reasoning
-      const reasoningHtml = pipeline.reasoning.map(reason =>
+      const reasoningHtml = pipeline.reasoning?.map(reason =>
         `<li class="flex items-start gap-2"><span class="text-emerald-400">•</span><span>${reason}</span></li>`
-      ).join('');
+      ).join('') || '';
       document.getElementById('reviewReasoning').innerHTML = reasoningHtml;
+    }
+    
+    // Complete onboarding - call API to create org and pipeline
+    async function completeOnboarding() {
+      const nextBtn = document.getElementById('wizardNextBtn');
+      const originalText = nextBtn.textContent;
+      nextBtn.textContent = 'Creating workspace...';
+      nextBtn.disabled = true;
+      
+      try {
+        const response = await fetch('/api/onboarding/complete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({
+            sector: wizardState.sector || 'general',
+            useCase: wizardState.prompt,
+            priority: wizardState.performance,
+            wizardPrompt: wizardState.prompt
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Show welcome modal with API key
+          showWelcomeModal(data);
+          closeWizard();
+          
+          // Reload page to show new org
+          setTimeout(() => {
+            window.location.reload();
+          }, 5000);
+        } else {
+          throw new Error(data.error || 'Onboarding failed');
+        }
+      } catch (error) {
+        console.error('Onboarding error:', error);
+        alert('Failed to complete onboarding: ' + error.message);
+        nextBtn.textContent = originalText;
+        nextBtn.disabled = false;
+      }
+    }
+    
+    // Show welcome modal with API key and savings
+    function showWelcomeModal(data) {
+      const modalHtml = `
+        <div id="welcomeModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div class="w-full max-w-lg rounded-2xl border border-emerald-500/50 bg-slate-900 shadow-2xl">
+            <div class="border-b border-slate-800 bg-gradient-to-r from-emerald-600/20 to-sky-600/20 px-6 py-4">
+              <h2 class="text-2xl font-bold">🎉 Welcome to AgentCache!</h2>
+              <p class="text-sm text-slate-300 mt-1">Your workspace is ready</p>
+            </div>
+            
+            <div class="p-6 space-y-4">
+              <div class="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4">
+                <p class="text-sm font-semibold text-emerald-300 mb-2">💰 Projected Savings</p>
+                <p class="text-3xl font-bold text-emerald-400">$${data.projectedSavings.toLocaleString()}<span class="text-lg text-slate-400">/month</span></p>
+              </div>
+              
+              <div>
+                <p class="text-sm font-semibold text-slate-300 mb-2">📋 Your Starter Pipeline</p>
+                <p class="text-sm text-slate-400">${data.pipeline.description}</p>
+                <div class="mt-2 flex flex-wrap gap-1">
+                  ${data.pipeline.nodes.map(n => `<span class="inline-flex items-center rounded-full bg-slate-700/50 px-2 py-1 text-xs text-slate-300">${n.label}</span>`).join('')}
+                </div>
+              </div>
+              
+              <div class="rounded-xl border border-sky-500/40 bg-slate-800/50 p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <p class="text-sm font-semibold text-sky-300">🔑 Your API Key</p>
+                  <button onclick="copyApiKey('${data.apiKey}')" class="text-xs text-sky-400 hover:text-sky-300">Copy</button>
+                </div>
+                <code class="block text-xs font-mono text-slate-300 break-all bg-slate-900 p-2 rounded">${data.apiKey}</code>
+                <p class="text-xs text-amber-300 mt-2">⚠️ Save this key now - it won't be shown again!</p>
+              </div>
+              
+              <div class="grid grid-cols-3 gap-3 text-center">
+                <div>
+                  <p class="text-xs text-slate-500">Hit Rate</p>
+                  <p class="text-lg font-bold text-emerald-400">${Math.round((data.pipeline.estimatedHitRate || 0) * 100)}%</p>
+                </div>
+                <div>
+                  <p class="text-xs text-slate-500">Latency</p>
+                  <p class="text-lg font-bold text-sky-400">${data.pipeline.avgLatency}ms</p>
+                </div>
+                <div>
+                  <p class="text-xs text-slate-500">Compliance</p>
+                  <p class="text-lg font-bold text-purple-400">${data.pipeline.compliance?.join(', ') || 'Standard'}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="border-t border-slate-800 px-6 py-4 bg-slate-900/50">
+              <button onclick="closeWelcomeModal()" class="w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-sky-600 rounded-lg text-sm font-semibold text-white hover:from-emerald-500 hover:to-sky-500">
+                Get Started →
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+    
+    function copyApiKey(key) {
+      navigator.clipboard.writeText(key);
+      alert('API key copied to clipboard!');
+    }
+    
+    function closeWelcomeModal() {
+      document.getElementById('welcomeModal')?.remove();
     }
     
     // Save Pipeline to Database
