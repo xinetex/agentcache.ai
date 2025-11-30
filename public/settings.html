@@ -546,24 +546,33 @@
       
       // Load real user data from API
       async function loadUserData() {
+        console.log('[Settings] Starting loadUserData...');
         try {
           const token = localStorage.getItem('agentcache_token');
+          console.log('[Settings] Token exists:', !!token);
+          
           if (!token) {
+            console.log('[Settings] No token, redirecting to login');
             window.location.href = '/login.html?redirect=/settings.html';
             return;
           }
           
+          console.log('[Settings] Fetching /api/auth/me');
           const response = await fetch('/api/auth/me', {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           
+          console.log('[Settings] Response status:', response.status);
+          
           if (response.ok) {
             const data = await response.json();
             const user = data.user;
+            console.log('[Settings] User data:', { email: user.email, full_name: user.full_name, id: user.id });
             
             // Get user display name and initials
             const displayName = user.full_name || user.email.split('@')[0];
             const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+            console.log('[Settings] Display name:', displayName, 'Initials:', initials);
             
             // Update sidebar
             const sidebarInitials = document.getElementById('sidebarInitials');
@@ -592,14 +601,19 @@
             
             console.log('User data loaded:', displayName, user.email);
           } else {
-            console.error('Failed to load user:', response.status);
+            console.error('[Settings] Failed to load user:', response.status);
+            const errorText = await response.text();
+            console.error('[Settings] Error response:', errorText);
             if (response.status === 401) {
               localStorage.removeItem('agentcache_token');
               window.location.href = '/login.html?redirect=/settings.html';
             }
           }
         } catch (error) {
-          console.error('Failed to load user data:', error);
+          console.error('[Settings] Failed to load user data:', error);
+          console.error('[Settings] Error stack:', error.stack);
+          // Show error to user
+          alert('Failed to load user data. Please refresh the page or contact support.');
         }
       }
       
