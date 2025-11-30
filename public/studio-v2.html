@@ -947,11 +947,15 @@
       performance: 'balanced',
     };
     
-    // Demo mode & authentication
+    // Demo mode & authentication  
     const urlParams = new URLSearchParams(window.location.search);
-    const isDemoMode = urlParams.get('demo') === 'true';
+    const isDemoMode = urlParams.get('demo') === 'true' || window.location.pathname.includes('/public/');
     const authToken = localStorage.getItem('agentcache_token');
     const isAuthenticated = !!authToken;
+    
+    console.log('[Studio Init] Path:', window.location.pathname);
+    console.log('[Studio Init] isDemoMode:', isDemoMode);
+    console.log('[Studio Init] isAuthenticated:', isAuthenticated);
     
     // User & organization state
     let currentUser = null;
