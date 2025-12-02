@@ -1,7 +1,7 @@
 import { withAuth } from '../../lib/auth-unified.js';
 import { Index } from "@upstash/vector";
 
-export const config = { runtime: 'edge' };
+export const config = { runtime: 'nodejs' };
 
 // L3 Semantic Cache API
 // POST /api/cache/semantic
