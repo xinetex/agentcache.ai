@@ -3,22 +3,39 @@ import { OpenAIProvider } from './providers/openai.js';
 import { AnthropicProvider } from './providers/anthropic.js';
 import { GeminiProvider } from './providers/gemini.js';
 import { MoonshotProvider } from './providers/moonshot.js';
+import { withToolCache } from '../cache/tool.js';
 
 export type ProviderType = 'openai' | 'anthropic' | 'gemini' | 'moonshot';
 
 export class LLMFactory {
     static createProvider(type: ProviderType, apiKey?: string): LLMProvider {
+        let provider: LLMProvider;
         switch (type) {
             case 'openai':
-                return new OpenAIProvider(apiKey || process.env.OPENAI_API_KEY);
+                provider = new OpenAIProvider(apiKey || process.env.OPENAI_API_KEY);
+                break;
             case 'anthropic':
-                return new AnthropicProvider(apiKey || process.env.ANTHROPIC_API_KEY);
+                provider = new AnthropicProvider(apiKey || process.env.ANTHROPIC_API_KEY);
+                break;
             case 'gemini':
-                return new GeminiProvider(apiKey || process.env.GEMINI_API_KEY);
+                provider = new GeminiProvider(apiKey || process.env.GEMINI_API_KEY);
+                break;
             case 'moonshot':
-                return new MoonshotProvider(apiKey || process.env.MOONSHOT_API_KEY);
+                provider = new MoonshotProvider(apiKey || process.env.MOONSHOT_API_KEY);
+                break;
             default:
                 throw new Error(`Unknown provider type: ${type}`);
         }
+
+        // Apply Tool Caching to the 'chat' method
+        // This caches the expensive LLM calls
+        const originalChat = provider.chat.bind(provider);
+        provider.chat = withToolCache(
+            `llm:${type}`,
+            originalChat,
+            { ttl: 3600, namespace: 'llm-generation' }
+        );
+
+        return provider;
     }
 }

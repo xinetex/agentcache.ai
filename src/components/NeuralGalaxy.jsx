@@ -194,7 +194,37 @@ export default function NeuralGalaxy() {
   const [hoveredItem, setHoveredItem] = useState(null);
 
   useEffect(() => {
+    // Load initial dataset
     DatasetService.loadDataset().then(setData);
+
+    // Connect to live stream
+    const eventSource = new EventSource('/api/stream/semantic');
+
+    eventSource.onmessage = (event) => {
+      try {
+        const newPoint = JSON.parse(event.data);
+        console.log('[NeuralGalaxy] New live point:', newPoint);
+
+        // Add to data state
+        setData(prevData => {
+          // Keep only last 2000 points to avoid performance issues
+          const updated = [...prevData, newPoint];
+          if (updated.length > 2000) return updated.slice(updated.length - 2000);
+          return updated;
+        });
+      } catch (err) {
+        console.error('[NeuralGalaxy] Error parsing live event:', err);
+      }
+    };
+
+    eventSource.onerror = (err) => {
+      console.error('[NeuralGalaxy] SSE Error:', err);
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
   }, []);
 
   return (

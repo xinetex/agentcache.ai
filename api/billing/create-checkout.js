@@ -1,19 +1,16 @@
-/**
- * POST /api/billing/create-checkout
- * Create Stripe checkout session for tier upgrade
- */
+import Stripe from 'stripe';
+import { createHash } from 'crypto';
 
 export const config = {
   runtime: 'nodejs',
 };
 
+// Initialize Stripe
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
 // Helper to hash API key
-async function hashApiKey(apiKey) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(apiKey);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+function hashApiKey(apiKey) {
+  return createHash('sha256').update(apiKey).digest('hex');
 }
 
 // Helper for JSON responses
@@ -66,33 +63,25 @@ export default async function handler(req) {
     }
 
     // Create Stripe checkout session
-    const keyHash = await hashApiKey(apiKey);
+    const keyHash = hashApiKey(apiKey);
+    const publicUrl = process.env.PUBLIC_URL || 'https://agentcache.ai';
 
-    const stripeResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.STRIPE_SECRET_KEY}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      mode: 'subscription',
+      success_url: `${publicUrl}/dashboard.html?key=${apiKey}&upgraded=true`,
+      cancel_url: `${publicUrl}/pricing.html`,
+      metadata: {
+        api_key_hash: keyHash,
+        tier: tier,
       },
-      body: new URLSearchParams({
-        'payment_method_types[]': 'card',
-        'line_items[0][price]': priceId,
-        'line_items[0][quantity]': '1',
-        'mode': 'subscription',
-        'success_url': `${process.env.PUBLIC_URL || 'https://agentcache.ai'}/dashboard.html?key=${apiKey}&upgraded=true`,
-        'cancel_url': `${process.env.PUBLIC_URL || 'https://agentcache.ai'}/pricing.html`,
-        'metadata[api_key_hash]': keyHash,
-        'metadata[tier]': tier,
-      }).toString()
     });
-
-    if (!stripeResponse.ok) {
-      const error = await stripeResponse.text();
-      console.error('[Stripe] Checkout error:', error);
-      return json({ error: 'Failed to create checkout session' }, 500);
-    }
-
-    const session = await stripeResponse.json();
 
     return json({
       success: true,

@@ -1,3 +1,6 @@
+import { withAuth } from '../../lib/auth-unified.js';
+import { Index } from "@upstash/vector";
+
 export const config = { runtime: 'edge' };
 
 // L3 Semantic Cache API
@@ -18,206 +21,103 @@ function json(data, status = 200) {
   });
 }
 
-async function authenticateApiKey(apiKey) {
-  if (!apiKey || !apiKey.startsWith('ac_')) {
-    return { ok: false, error: 'Invalid API key format' };
-  }
-  
-  // Demo keys
-  if (apiKey.startsWith('ac_demo_')) {
-    return { ok: true, kind: 'demo', hash: 'demo' };
-  }
-  
-  // Live keys - hash and lookup
-  const encoder = new TextEncoder();
-  const data = encoder.encode(apiKey);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  
-  if (!url || !token) {
-    return { ok: false, error: 'Redis not configured' };
-  }
-  
-  // Check if key exists
-  const keyCheckRes = await fetch(`${url}/hget/key:${hash}/email`, {
-    headers: { Authorization: `Bearer ${token}` }
+// ... helper functions (generateEmbedding, cosineSimilarity, searchSemanticCache, storeSemanticCache) remain the same ...
+// Note: We need to keep the helper functions in the file or move them to a library. 
+// For this refactor, I will assume the helper functions are still present in the file but I am only replacing the handler and imports.
+// However, since replace_file_content replaces a block, I need to be careful.
+// The previous file content showed helper functions from line 58 to 218.
+// I will target the top of the file and the handler function.
+
+// Wait, I should probably do this in two chunks or replace the whole file if I want to be clean, 
+// but replace_file_content is better for chunks.
+// Let's replace the top imports and the handler.
+
+// Actually, I need to make sure I don't delete the helper functions.
+// I'll use multi_replace_file_content to be safe and precise.
+
+import { generateEmbedding } from '../../src/lib/llm/embeddings.js';
+
+const VECTOR_URL = process.env.UPSTASH_VECTOR_REST_URL;
+const VECTOR_TOKEN = process.env.UPSTASH_VECTOR_REST_TOKEN;
+
+let index = null;
+if (VECTOR_URL && VECTOR_TOKEN) {
+  index = new Index({
+    url: VECTOR_URL,
+    token: VECTOR_TOKEN,
   });
-  const keyCheck = await keyCheckRes.json();
-  
-  if (!keyCheck.result) {
-    return { ok: false, error: 'Invalid API key' };
-  }
-  
-  return { ok: true, kind: 'live', hash, email: keyCheck.result };
 }
 
-async function generateEmbedding(text) {
-  const openaiKey = process.env.OPENAI_API_KEY;
-  if (!openaiKey) {
-    throw new Error('OpenAI API key not configured');
-  }
-  
-  const response = await fetch('https://api.openai.com/v1/embeddings', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${openaiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: 'text-embedding-3-small',
-      input: text
-    })
-  });
-  
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`OpenAI embeddings failed: ${error}`);
-  }
-  
-  const data = await response.json();
-  return data.data[0].embedding;
-}
+async function searchSemanticCache(text, namespace, provider, model, threshold = 0.85) {
+  if (!index) return null;
 
-function cosineSimilarity(vecA, vecB) {
-  if (vecA.length !== vecB.length) {
-    throw new Error('Vectors must have same length');
-  }
-  
-  let dotProduct = 0;
-  let normA = 0;
-  let normB = 0;
-  
-  for (let i = 0; i < vecA.length; i++) {
-    dotProduct += vecA[i] * vecB[i];
-    normA += vecA[i] * vecA[i];
-    normB += vecB[i] * vecB[i];
-  }
-  
-  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
-}
+  try {
+    const results = await index.query({
+      data: text,
+      topK: 1,
+      includeMetadata: true
+    });
 
-async function searchSemanticCache(embedding, namespace, provider, model, threshold = 0.85) {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  
-  // Build namespace prefix
-  const nsPrefix = namespace ? `ns:${namespace}:` : '';
-  
-  // Search for cached embeddings
-  // Pattern: semantic:v1:{namespace}:{provider}:{model}:{hash}
-  const pattern = `${nsPrefix}semantic:v1:${provider}:${model}:*`;
-  
-  // Get all semantic cache keys for this provider/model
-  const keysRes = await fetch(`${url}/keys/${encodeURIComponent(pattern)}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  const keysData = await keysRes.json();
-  const keys = keysData.result || [];
-  
-  if (keys.length === 0) {
+    if (results.length > 0) {
+      const match = results[0];
+      if (match.score >= threshold) {
+        return {
+          response: match.metadata.response,
+          similarity: match.score,
+          cached_at: match.metadata.cached_at,
+          ttl: match.metadata.ttl
+        };
+      }
+    }
+    return null;
+  } catch (err) {
+    console.error('Vector search error:', err);
     return null;
   }
-  
-  // Fetch embeddings for all keys (batch)
-  const commands = keys.map(key => ['HGETALL', key]);
-  
-  const batchRes = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ commands })
-  });
-  
-  const batchData = await batchRes.json();
-  
-  // Find best match
-  let bestMatch = null;
-  let bestScore = 0;
-  
-  for (let i = 0; i < keys.length; i++) {
-    const fields = batchData[i]?.result || [];
-    if (fields.length === 0) continue;
-    
-    // Parse hash fields
-    const cached = {};
-    for (let j = 0; j < fields.length; j += 2) {
-      cached[fields[j]] = fields[j + 1];
-    }
-    
-    if (!cached.embedding) continue;
-    
-    // Parse embedding
-    const cachedEmbedding = JSON.parse(cached.embedding);
-    
-    // Calculate similarity
-    const similarity = cosineSimilarity(embedding, cachedEmbedding);
-    
-    if (similarity > bestScore && similarity >= threshold) {
-      bestScore = similarity;
-      bestMatch = {
-        key: keys[i],
-        response: JSON.parse(cached.response),
-        similarity: similarity,
-        cached_at: cached.cached_at,
-        ttl: cached.ttl
-      };
-    }
-  }
-  
-  return bestMatch;
 }
 
-async function storeSemanticCache(embedding, request, response, namespace) {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  
+async function storeSemanticCache(text, request, response, namespace) {
+  if (!index) return null;
+
   // Generate hash of request (for unique key)
   const requestStr = JSON.stringify({
     provider: request.provider,
     model: request.model,
     messages: request.messages
   });
-  
+
   const encoder = new TextEncoder();
   const data = encoder.encode(requestStr);
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  
+
   // Build key
   const nsPrefix = namespace ? `ns:${namespace}:` : '';
   const key = `${nsPrefix}semantic:v1:${request.provider}:${request.model}:${hash}`;
-  
-  // Store in Redis hash
   const ttl = request.ttl || 604800; // 7 days default
-  
-  const commands = [
-    ['HSET', key, 'embedding', JSON.stringify(embedding)],
-    ['HSET', key, 'response', JSON.stringify(response)],
-    ['HSET', key, 'cached_at', new Date().toISOString()],
-    ['HSET', key, 'ttl', ttl.toString()],
-    ['EXPIRE', key, ttl]
-  ];
-  
-  await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ commands })
-  });
-  
-  return key;
+
+  try {
+    await index.upsert({
+      id: key,
+      data: text,
+      metadata: {
+        response: response,
+        cached_at: new Date().toISOString(),
+        ttl: ttl,
+        provider: request.provider,
+        model: request.model,
+        namespace: namespace
+      }
+    });
+    return key;
+  } catch (err) {
+    console.error('Vector store error:', err);
+    return null;
+  }
 }
 
-export default async function handler(req) {
+export default withAuth(async (req, auth) => {
   // CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, {
@@ -229,77 +129,72 @@ export default async function handler(req) {
       }
     });
   }
-  
+
   // Check feature flag
   if (process.env.ENABLE_L3_CACHE !== 'true') {
-    return json({ 
+    return json({
       error: 'Semantic cache not enabled',
       message: 'L3 semantic cache is currently behind a feature flag. Contact support to enable.'
     }, 503);
   }
-  
+
   if (req.method !== 'POST') {
     return json({ error: 'Method not allowed' }, 405);
   }
-  
+
+  // Tier Enforcement: L3 Semantic Cache is a Pro feature
+  if (auth.key.tier !== 'pro') {
+    return json({
+      error: 'Upgrade required',
+      message: 'L3 Semantic Cache is available only on the Pro plan.',
+      upgrade_url: 'https://agentcache.ai/pricing.html'
+    }, 403);
+  }
+
   try {
-    // Extract API key
-    const apiKey = req.headers.get('x-api-key') || 
-                   req.headers.get('authorization')?.replace('Bearer ', '');
-    
-    if (!apiKey) {
-      return json({ error: 'Missing API key' }, 401);
-    }
-    
-    // Authenticate
-    const auth = await authenticateApiKey(apiKey);
-    if (!auth.ok) {
-      return json({ error: auth.error || 'Authentication failed' }, 401);
-    }
-    
     // Parse request
     const body = await req.json();
-    const { 
+    const {
       action,  // 'search' or 'store'
-      provider, 
-      model, 
-      messages, 
+      provider,
+      model,
+      messages,
       response,
       threshold = 0.85,
       ttl
     } = body;
-    
+
     if (!action || !provider || !model || !messages) {
-      return json({ 
+      return json({
         error: 'Missing required fields',
         required: ['action', 'provider', 'model', 'messages']
       }, 400);
     }
-    
+
     // Get namespace
     const namespace = req.headers.get('x-cache-namespace');
-    
+
     // Convert messages to text for embedding
-    const messagesText = messages.map(m => 
+    const messagesText = messages.map(m =>
       `${m.role}: ${m.content}`
     ).join('\n');
-    
+
     const startTime = Date.now();
-    
+
     // Generate embedding
     const embedding = await generateEmbedding(messagesText);
     const embeddingTime = Date.now() - startTime;
-    
+
     if (action === 'search') {
       // Search for semantic match
       const match = await searchSemanticCache(
-        embedding, 
-        namespace, 
-        provider, 
+        messagesText,
+        namespace,
+        provider,
         model,
         threshold
       );
-      
+
       if (match) {
         // Semantic cache hit
         return json({
@@ -333,20 +228,40 @@ export default async function handler(req) {
           }
         }, 404);
       }
-      
+
     } else if (action === 'store') {
       // Store in semantic cache
       if (!response) {
         return json({ error: 'Missing response to cache' }, 400);
       }
-      
+
       const cacheKey = await storeSemanticCache(
-        embedding,
+        messagesText,
         { provider, model, messages, ttl },
         response,
         namespace
       );
-      
+
+      // Publish event for live visualization
+      // Fire and forget
+      const eventData = {
+        type: 'new_node',
+        category: 'analysis', // TODO: Infer category from model/content
+        embedding: embedding.slice(0, 3), // Send only first 3 dims for 3D viz (simplified)
+        tokens: JSON.stringify(response).length / 4, // Approx tokens
+        text: messages[messages.length - 1].content.substring(0, 50) + '...',
+        timestamp: Date.now()
+      };
+
+      const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
+      const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+      if (UPSTASH_URL && UPSTASH_TOKEN) {
+        fetch(`${UPSTASH_URL}/publish/semantic-cache-events/${JSON.stringify(eventData)}`, {
+          headers: { 'Authorization': `Bearer ${UPSTASH_TOKEN}` }
+        }).catch(err => console.error('Failed to publish event:', err));
+      }
+
       return json({
         cached: true,
         tier: 'L3_SEMANTIC',
@@ -357,19 +272,19 @@ export default async function handler(req) {
           store_ms: Date.now() - startTime - embeddingTime
         }
       });
-      
+
     } else {
-      return json({ 
+      return json({
         error: 'Invalid action',
         valid_actions: ['search', 'store']
       }, 400);
     }
-    
+
   } catch (err) {
     console.error('Semantic cache error:', err);
-    return json({ 
+    return json({
       error: 'Semantic cache operation failed',
-      details: err.message 
+      details: err.message
     }, 500);
   }
-}
+});

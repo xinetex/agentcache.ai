@@ -1,19 +1,16 @@
-/**
- * GET /api/billing/portal
- * Create Stripe billing portal session for subscription management
- */
+import Stripe from 'stripe';
+import { createHash } from 'crypto';
 
 export const config = {
   runtime: 'nodejs',
 };
 
+// Initialize Stripe
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
 // Helper to hash API key
-async function hashApiKey(apiKey) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(apiKey);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+function hashApiKey(apiKey) {
+  return createHash('sha256').update(apiKey).digest('hex');
 }
 
 // Helper for JSON responses
@@ -43,7 +40,7 @@ export default async function handler(req) {
     }
 
     // Get stripe_customer_id from Redis or Postgres
-    const keyHash = await hashApiKey(apiKey);
+    const keyHash = hashApiKey(apiKey);
     const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
     const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
@@ -69,25 +66,12 @@ export default async function handler(req) {
     }
 
     // Create Stripe billing portal session
-    const stripeResponse = await fetch('https://api.stripe.com/v1/billing_portal/sessions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.STRIPE_SECRET_KEY}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        'customer': customerId,
-        'return_url': `${process.env.PUBLIC_URL || 'https://agentcache.ai'}/dashboard.html?key=${apiKey}`,
-      }).toString()
+    const publicUrl = process.env.PUBLIC_URL || 'https://agentcache.ai';
+
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: `${publicUrl}/dashboard.html?key=${apiKey}`,
     });
-
-    if (!stripeResponse.ok) {
-      const error = await stripeResponse.text();
-      console.error('[Stripe] Portal error:', error);
-      return json({ error: 'Failed to create billing portal session' }, 500);
-    }
-
-    const session = await stripeResponse.json();
 
     return json({
       success: true,

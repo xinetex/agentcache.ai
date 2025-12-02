@@ -2,6 +2,8 @@ import { redactPII } from '../../src/lib/pii.js';
 import { LLMFactory } from '../../src/lib/llm/factory.js';
 
 import { SemanticRouter } from '../../src/lib/router.js';
+import { createHash } from 'crypto';
+import { redis } from '../../src/lib/redis.js';
 
 export const config = { runtime: 'nodejs' };
 
@@ -14,6 +16,38 @@ export default async function handler(req: Request, context: any): Promise<Respo
         // 1. PII Redaction (Input Guard)
         const redactedMessage = redactPII(message);
         const wasRedacted = message !== redactedMessage;
+
+        // 1.5. L1 Exact Cache Check (Hot Path)
+        // SHA-256(redactedMessage + provider + model)
+        const l1Hash = createHash('sha256')
+            .update(redactedMessage + provider + (model || ''))
+            .digest('hex');
+        const l1Key = `cache:l1:${l1Hash}`;
+
+        const cachedL1 = await redis.get(l1Key);
+        if (cachedL1) {
+            const l1Data = JSON.parse(cachedL1);
+            return new Response(JSON.stringify({
+                message: l1Data.message,
+                contextSource: 'L1 (Exact Cache)',
+                latency: Date.now() - (l1Data.timestamp || Date.now()), // Approx
+                cached: true,
+                metrics: {
+                    reasoningTokensSaved: l1Data.reasoningTokens || 0,
+                    actualReasoningTokens: 0,
+                    piiRedacted: wasRedacted,
+                    provider: provider,
+                    model: model || 'default',
+                    similarity: 1.0
+                }
+            }), {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Cache': 'HIT-L1',
+                    'X-Cache-Score': '1.0'
+                }
+            });
+        }
 
         // 2. Semantic Cache Check (L2)
         const router = new SemanticRouter(0.90); // 90% similarity threshold
@@ -75,6 +109,17 @@ export default async function handler(req: Request, context: any): Promise<Respo
                 reasoningTokens
             }).catch(err => console.error('Cache update failed:', err));
         }
+
+        // 5. Update L1 Exact Cache (Async)
+        // TTL: 1 hour (3600s)
+        const l1Payload = JSON.stringify({
+            message: answer,
+            reasoningTokens,
+            timestamp: Date.now()
+        });
+
+        // Fire and forget L1 update
+        redis.setex(l1Key, 3600, l1Payload).catch(err => console.error('L1 cache update failed:', err));
 
         return new Response(JSON.stringify({
             message: answer,

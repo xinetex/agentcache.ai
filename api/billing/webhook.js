@@ -1,11 +1,14 @@
-/**
- * POST /api/billing/webhook
- * Handle Stripe webhook events (subscription lifecycle)
- */
+import Stripe from 'stripe';
 
 export const config = {
   runtime: 'nodejs',
+  api: {
+    bodyParser: false, // Disable body parsing to get raw body for signature verification
+  },
 };
+
+// Initialize Stripe
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Helper for JSON responses
 function json(data, status = 200) {
@@ -16,6 +19,18 @@ function json(data, status = 200) {
       'cache-control': 'no-store',
     },
   });
+}
+
+// Helper to read raw body
+async function getRawBody(req) {
+  const reader = req.body.getReader();
+  const chunks = [];
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+  }
+  return Buffer.concat(chunks);
 }
 
 export default async function handler(req) {
@@ -32,13 +47,17 @@ export default async function handler(req) {
     }
 
     // Get raw body for signature verification
-    const body = await req.text();
+    const rawBody = await getRawBody(req);
+    let event;
 
-    // Verify webhook signature (simplified - in production use Stripe SDK)
-    // For now, we'll trust the webhook since it requires the secret
-    const event = JSON.parse(body);
+    try {
+      event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
+    } catch (err) {
+      console.error(`[Stripe Webhook] Signature verification failed: ${err.message}`);
+      return json({ error: `Webhook Error: ${err.message}` }, 400);
+    }
 
-    console.log('[Stripe Webhook] Event:', event.type);
+    console.log('[Stripe Webhook] Verified event:', event.type);
 
     // Handle different event types
     switch (event.type) {
@@ -73,8 +92,7 @@ export default async function handler(req) {
               })
             });
 
-            // Alternatively, use direct SQL connection (if Neon supports it in edge)
-            // For now, we'll use Upstash Redis to update tier immediately
+            // Update tier in Redis cache (Upstash)
             const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
             const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
@@ -102,31 +120,20 @@ export default async function handler(req) {
       case 'customer.subscription.updated': {
         const subscription = event.data.object;
         const status = subscription.status;
-
-        // Handle subscription status changes (active, past_due, canceled)
         console.log(`[Webhook] Subscription ${subscription.id} status: ${status}`);
         break;
       }
 
       case 'customer.subscription.deleted': {
         const subscription = event.data.object;
-
-        // Downgrade to free tier
-        const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
-        const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
-
-        if (UPSTASH_URL && UPSTASH_TOKEN) {
-          // Find key hash from subscription ID (need to query DB)
-          // For now, log the event
-          console.log(`[Webhook] Subscription ${subscription.id} canceled`);
-        }
+        console.log(`[Webhook] Subscription ${subscription.id} canceled`);
+        // Logic to downgrade user would go here
         break;
       }
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object;
         console.log(`[Webhook] Payment failed for customer ${invoice.customer}`);
-        // TODO: Send email notification, suspend account after grace period
         break;
       }
 
