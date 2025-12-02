@@ -50,7 +50,7 @@ function CustomerPortalWizard({ onClose, onComplete }) {
 
             const response = await fetch('/api/onboarding/complete', {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${authToken}`
                 },
@@ -72,7 +72,7 @@ function CustomerPortalWizard({ onClose, onComplete }) {
                         pipeline: data.pipeline,
                         apiKey: data.apiKey,
                         projectedSavings: data.projectedSavings,
-                        dashboard_url: `/studio-v2.html`
+                        dashboard_url: `/studio.html`
                     });
                 }
             } else {

@@ -1,5 +1,16 @@
 [
   {
+    "title": "The Rise of Agentic Caching: Intelligent Optimization for AI",
+    "date": "2025-12-02",
+    "author": "AgentCache Team",
+    "category": "industry",
+    "excerpt": "Agentic Caching is shifting the paradigm from caching answers to caching the thinking process. Learn how this new approach reduces costs by 98% and slashes latency for AI agents.",
+    "featured_image": "/blog/images/agentic-caching-rise.png",
+    "slug": "the-rise-of-agentic-caching",
+    "filename": "2025-12-02-the-rise-of-agentic-caching.md",
+    "mdPath": "/blog/posts/2025-12-02-the-rise-of-agentic-caching.md"
+  },
+  {
     "title": "Claude Opus 4.5, Lens Loop IDE, and AMD's MoE Breakthrough: AI Cost Digest",
     "date": "2025-11-25",
     "author": "AgentCache Blog Writer",

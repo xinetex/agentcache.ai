@@ -234,7 +234,7 @@ export default async function handler(req, res) {
       },
       apiKey: apiKeyPlain, // Only sent once
       projectedSavings: pipelineConfig.projectedSavings,
-      nextStep: '/studio-v2.html'
+      nextStep: '/studio.html'
     });
 
   } catch (error) {

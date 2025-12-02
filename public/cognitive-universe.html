@@ -10,7 +10,13 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://d3js.org/d3-sankey.v0.12.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="/js/visualizations/agentcache-viz.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="/js/live-data-sources.js"></script>
+  <script src="/js/live-metrics.js"></script>
+  <script src="/js/visualizations/radial-horizon.js"></script>
+  <script src="/js/visualizations/latent-space-3d.js"></script>
+  <script src="/js/cache-hierarchy-viz.js"></script>
   
   <style>
     @keyframes fadeIn {
@@ -201,34 +207,44 @@
           </div>
         </div>
 
+        <!-- Radial Horizon Chart -->
+        <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-lg font-semibold text-slate-50">🕐 Real-Time Cache Performance</h2>
+              <p class="text-sm text-slate-500 mt-1">60-second circular timeline with latency bands • L1/L2/L3 tier distribution</p>
+            </div>
+            <button onclick="radialChart.render()" class="text-xs text-sky-400 hover:text-sky-300">Refresh</button>
+          </div>
+          <div id="radialHorizonChart" class="w-full flex items-center justify-center" style="min-height: 560px;"></div>
+        </div>
+
         <!-- Intelligent Query Flow Visualization -->
         <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-lg font-semibold text-slate-50">Intelligent Query Flow</h2>
             <span class="text-xs text-slate-500">Real-time query lifecycle visualization</span>
           </div>
-          <div id="queryFlowSankey" class="w-full" style="min-height: 500px;"></div>
+          <div id="queryFlowSankey" class="w-full" style="min-height: 400px;"></div>
         </div>
 
         <!-- Latent Space Visualization -->
         <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-6">
           <div class="flex items-center justify-between mb-4">
             <div>
-              <h2 class="text-lg font-semibold text-slate-50">Latent Space Intelligence</h2>
-              <p class="text-sm text-slate-500 mt-1">T5 Autoencoder • Real-time prompt embeddings • Semantic clustering</p>
+              <h2 class="text-lg font-semibold text-slate-50">🧠 3D Latent Space Intelligence</h2>
+              <p class="text-sm text-slate-500 mt-1">Interactive point cloud • Sector clustering • Semantic similarity lines</p>
             </div>
             <div class="flex items-center gap-2">
+              <button onclick="latentSpace3D.clear()" class="text-xs text-slate-400 hover:text-slate-300">Clear</button>
+              <button onclick="latentSpace3D.generateMockData(100)" class="text-xs text-sky-400 hover:text-sky-300">Generate Mock Data</button>
               <span class="inline-flex items-center gap-1 rounded-full bg-purple-500/10 border border-purple-500/30 px-2 py-0.5 text-xs text-purple-300">
                 <i data-lucide="zap" class="w-3 h-3"></i>
                 Latent: ~500ms
               </span>
-              <span class="inline-flex items-center gap-1 rounded-full bg-slate-500/10 border border-slate-500/30 px-2 py-0.5 text-xs text-slate-400">
-                <i data-lucide="cloud" class="w-3 h-3"></i>
-                LLM: ~3-8s
-              </span>
             </div>
           </div>
-          <div id="latentSpaceViz" class="w-full" style="min-height: 450px;"></div>
+          <div id="latentSpaceViz" class="w-full bg-slate-900/50 rounded-lg overflow-hidden" style="min-height: 500px;"></div>
         </div>
 
         <!-- Interactive Sector Intelligence Grid -->
@@ -884,8 +900,33 @@
       a.click();
     }
 
+    // Initialize live data system
+    let liveDataFetcher, metricsTracker, radialChart, cacheHierarchyViz, latentSpace3D;
+
     // Initialize revolutionary cognitive intelligence dashboard
     async function initDashboard() {
+      // Initialize live data fetcher and metrics tracker
+      liveDataFetcher = new LiveDataFetcher();
+      metricsTracker = new LiveMetricsTracker(liveDataFetcher);
+      
+      // Initialize Radial Horizon Chart
+      radialChart = new RadialHorizonChart('radialHorizonChart', {
+        width: 560,
+        height: 560
+      });
+      radialChart.init();
+      
+      // Initialize Cache Hierarchy Visualizer
+      cacheHierarchyViz = new CacheHierarchyVisualizer('queryFlowSankey', {
+        width: document.getElementById('queryFlowSankey').offsetWidth,
+        height: 400
+      });
+      cacheHierarchyViz.init();
+      
+      // Initialize 3D Latent Space
+      latentSpace3D = new LatentSpace3D('latentSpaceViz');
+      latentSpace3D.init();
+      
       // Fetch initial data from API
       await fetchCognitiveData();
       
@@ -895,13 +936,52 @@
       renderActivityFeed();
       
       // Revolutionary visualizations
-      renderQueryFlowSankey();
       await renderLatentSpace();
       await renderCrossSectorNetwork();
+      
+      // Start live data polling
+      startLiveDataPolling();
       
       // Live updates
       setInterval(addCognitiveFeedItem, 3000);
       setInterval(refreshData, 30000); // Refresh every 30 seconds
+    }
+    
+    // Poll live data sources and update visualizations
+    async function startLiveDataPolling() {
+      // Simulate cache calls every 2-5 seconds
+      setInterval(async () => {
+        try {
+          // Pick random data source
+          const sources = ['crypto-prices', 'weather-data', 'fda-drugs', 'json-placeholder'];
+          const sourceId = sources[Math.floor(Math.random() * sources.length)];
+          
+          // Fetch with cache
+          const result = await liveDataFetcher.fetch(sourceId, true);
+          
+          // Update metrics tracker
+          metricsTracker.recordCall(result);
+          
+          // Update radial chart
+          const tier = result.hit ? (result.latency < 50 ? 'L1' : result.latency < 200 ? 'L2' : 'L3') : 'MISS';
+          radialChart.recordDataPoint({
+            latency: result.latency,
+            tier: tier,
+            hit: result.hit
+          });
+          
+          // Update cache hierarchy
+          cacheHierarchyViz.updateTier(tier, result.latency);
+          
+          // Update metrics in UI
+          const snapshot = metricsTracker.getSnapshot();
+          document.getElementById('totalHits').textContent = snapshot.cacheHits.toLocaleString();
+          document.getElementById('accuracy').textContent = `${snapshot.hitRate}%`;
+          
+        } catch (error) {
+          console.error('Live data polling error:', error);
+        }
+      }, Math.random() * 3000 + 2000); // Random 2-5 seconds
     }
     
     // Start dashboard

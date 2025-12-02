@@ -18,8 +18,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
-        studio: resolve(__dirname, 'studio.html'),
-        studio_v2_actual: resolve(__dirname, 'public/studio-v2.html'),
+        studio: resolve(__dirname, 'public/studio.html'),
+        pipeline_studio: resolve(__dirname, 'public/pipeline-studio.html'),
         gov_portal: resolve(__dirname, 'public/gov-portal.html'),
       },
     },

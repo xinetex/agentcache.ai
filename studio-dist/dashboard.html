@@ -1,34 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgentCache Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <title>Redirecting to Studio...</title>
+    <meta http-equiv="refresh" content="0; url=/studio.html">
+    <script>window.location.replace('/studio.html');</script>
+    <meta http-equiv="refresh" content="0; url=/cognitive-universe.html">
+    <script>
+        // Immediate redirect
+        window.location.replace('/cognitive-universe.html');
+    </script>
     <style>
         body {
             background-color: #020617;
             color: #f8fafc;
             font-family: 'Inter', sans-serif;
         }
+
         code {
             font-family: 'JetBrains Mono', monospace;
         }
+
         .glass {
             background: rgba(30, 41, 59, 0.4);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
+
         @keyframes pulse-green {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
         }
+
         .pulse-green {
             animation: pulse-green 2s ease-in-out infinite;
         }
     </style>
 </head>
+
 <body class="p-8">
     <div class="max-w-7xl mx-auto">
         <!-- Header -->
@@ -171,13 +189,16 @@
             <div class="glass rounded-xl p-6 border border-slate-700">
                 <h3 class="text-lg font-bold mb-3">Quick Actions</h3>
                 <div class="space-y-2">
-                    <button onclick="invalidateOldCaches()" class="w-full px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-sm font-semibold transition">
+                    <button onclick="invalidateOldCaches()"
+                        class="w-full px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-sm font-semibold transition">
                         🗑️ Invalidate Old Caches (>24h)
                     </button>
-                    <button onclick="viewDocs()" class="w-full px-4 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg text-sm font-semibold transition">
+                    <button onclick="viewDocs()"
+                        class="w-full px-4 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg text-sm font-semibold transition">
                         📖 View Documentation
                     </button>
-                    <button onclick="shareSavings()" class="w-full px-4 py-2 bg-green-600 hover:bg-green-500 rounded-lg text-sm font-semibold transition">
+                    <button onclick="shareSavings()"
+                        class="w-full px-4 py-2 bg-green-600 hover:bg-green-500 rounded-lg text-sm font-semibold transition">
                         📱 Share My Savings
                     </button>
                 </div>
@@ -186,7 +207,8 @@
             <div class="glass rounded-xl p-6 border border-slate-700">
                 <h3 class="text-lg font-bold mb-3">Upgrade</h3>
                 <p class="text-sm text-slate-400 mb-4">Need more requests? Upgrade to Pro for 1M requests/month.</p>
-                <a href="/community.html#pricing" class="block w-full px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm font-semibold text-center transition">
+                <a href="/community.html#pricing"
+                    class="block w-full px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm font-semibold text-center transition">
                     🚀 Upgrade to Pro - $49/month
                 </a>
             </div>
@@ -199,25 +221,62 @@
     </div>
 
     <script>
-        // Get API key from URL
+        // Get API key from URL or localStorage
         const urlParams = new URLSearchParams(window.location.search);
-        const apiKey = urlParams.get('key');
+        let apiKey = urlParams.get('key') || localStorage.getItem('ac_api_key');
+
+        // If API key provided via URL, persist to localStorage for next visits
+        if (urlParams.get('key')) {
+            localStorage.setItem('ac_api_key', urlParams.get('key'));
+        }
 
         if (!apiKey) {
             document.body.innerHTML = `
-                <div class="min-h-screen flex items-center justify-center">
-                    <div class="text-center">
-                        <h1 class="text-4xl font-bold text-red-500 mb-4">Missing API Key</h1>
-                        <p class="text-slate-400 mb-6">Please provide your API key in the URL</p>
-                        <code class="text-sm bg-slate-900 px-4 py-2 rounded">dashboard.html?key=ac_xxx</code>
+                <div class="min-h-screen flex items-center justify-center p-6">
+                  <div class="glass max-w-lg w-full rounded-2xl p-8 border border-slate-700 text-left">
+                    <h1 class="text-2xl font-bold mb-3">Missing API Key</h1>
+                    <p class="text-slate-400 mb-6">This developer dashboard requires an API key. You can:</p>
+
+                    <ol class="list-decimal list-inside space-y-2 text-sm text-slate-300 mb-6">
+                      <li>Append it to the URL: <code class="bg-slate-900 px-2 py-1 rounded">/dashboard.html?key=ac_xxx</code></li>
+                      <li>Paste it below and we'll remember it for you.</li>
+                      <li>Generate one via QR: <a href="/get-key.html" class="text-cyan-400 underline">/get-key.html</a></li>
+                    </ol>
+
+                    <div class="flex gap-2 mb-4">
+                      <input id="apiKeyInput" type="text" placeholder="ac_..." class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-cyan-600"/>
+                      <button id="saveKeyBtn" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg text-sm font-semibold">Save</button>
                     </div>
+
+                    <div class="flex items-center justify-between text-sm">
+                      <a href="/portal/login" class="text-slate-400 hover:text-white">I'm platform admin → Portal</a>
+                      <button id="useDemoBtn" class="text-slate-400 hover:text-white">Use demo key</button>
+                    </div>
+                  </div>
                 </div>
             `;
+
+            document.getElementById('saveKeyBtn').addEventListener('click', () => {
+                const v = document.getElementById('apiKeyInput').value.trim();
+                if (!v.startsWith('ac_')) { alert('Please paste a valid API key (starts with ac_)'); return; }
+                localStorage.setItem('ac_api_key', v);
+                const url = new URL(window.location.href);
+                url.searchParams.set('key', v);
+                window.location.href = url.toString();
+            });
+
+            document.getElementById('useDemoBtn').addEventListener('click', () => {
+                const demo = 'ac_demo_test123';
+                localStorage.setItem('ac_api_key', demo);
+                const url = new URL(window.location.href);
+                url.searchParams.set('key', demo);
+                window.location.href = url.toString();
+            });
         } else {
             document.getElementById('apiKeyDisplay').textContent = apiKey;
             document.getElementById('apiKeyCode1').textContent = apiKey;
             document.getElementById('apiKeyCode2').textContent = apiKey;
-            
+
             // Start fetching stats
             fetchStats();
             fetchPartnerStats();
@@ -237,7 +296,7 @@
                 }
 
                 const data = await response.json();
-                
+
                 // Render partner stats
                 const partnerStatsHtml = data.partners.map(partner => {
                     const partnerName = partner.id.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
@@ -265,7 +324,7 @@
                         </div>
                     `;
                 }).join('');
-                
+
                 document.getElementById('partnerStats').innerHTML = partnerStatsHtml;
             } catch (error) {
                 console.error('Error fetching partner stats:', error);
@@ -285,7 +344,7 @@
                 }
 
                 const data = await response.json();
-                
+
                 // Update stats
                 document.getElementById('requestsToday').textContent = data.requestsToday || 0;
                 document.getElementById('quotaRemaining').textContent = (data.monthlyQuota || 10000) - (data.used || 0);
@@ -295,14 +354,14 @@
                 document.getElementById('moneySaved').textContent = (data.costSaved || 0).toFixed(2);
                 document.getElementById('latency').textContent = data.avgLatency || 0;
                 document.getElementById('latencyP95').textContent = data.latencyP95 || 0;
-                
+
                 // Freshness distribution
                 if (data.freshness) {
                     document.getElementById('freshCount').textContent = data.freshness.fresh || 0;
                     document.getElementById('staleCount').textContent = data.freshness.stale || 0;
                     document.getElementById('expiredCount').textContent = data.freshness.expired || 0;
                 }
-                
+
                 document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
             } catch (error) {
                 console.error('Error fetching stats:', error);
@@ -311,7 +370,7 @@
 
         async function invalidateOldCaches() {
             if (!confirm('This will invalidate all caches older than 24 hours. Continue?')) return;
-            
+
             try {
                 const response = await fetch('/api/cache/invalidate', {
                     method: 'POST',
@@ -340,7 +399,7 @@
         function shareSavings() {
             const saved = document.getElementById('moneySaved').textContent;
             const text = `I saved $${saved} this month using @AgentCache! 🚀\n\nFree AI response caching with 95% cost reduction.\n\nhttps://agentcache.ai`;
-            
+
             if (navigator.share) {
                 navigator.share({ text });
             } else {
@@ -350,4 +409,5 @@
         }
     </script>
 </body>
+
 </html>
