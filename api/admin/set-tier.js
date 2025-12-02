@@ -4,7 +4,7 @@
  */
 
 export const config = {
-  runtime: 'edge',
+  runtime: 'nodejs',
 };
 
 // Helper to hash API key
@@ -20,7 +20,7 @@ async function hashApiKey(apiKey) {
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 
+    headers: {
       'content-type': 'application/json; charset=utf-8',
       'cache-control': 'no-store',
     },
@@ -34,9 +34,9 @@ export default async function handler(req) {
 
   try {
     // Check admin token
-    const adminToken = req.headers.get('x-admin-token') || 
-                       req.headers.get('authorization')?.replace('Bearer ', '');
-    
+    const adminToken = req.headers.get('x-admin-token') ||
+      req.headers.get('authorization')?.replace('Bearer ', '');
+
     if (!adminToken || adminToken !== process.env.ADMIN_TOKEN) {
       return json({ error: 'Unauthorized - Admin access required' }, 401);
     }
@@ -51,9 +51,9 @@ export default async function handler(req) {
 
     const validTiers = ['free', 'pro', 'enterprise'];
     if (!validTiers.includes(tier)) {
-      return json({ 
+      return json({
         error: 'Invalid tier',
-        validTiers 
+        validTiers
       }, 400);
     }
 
@@ -119,9 +119,9 @@ export default async function handler(req) {
 
   } catch (error) {
     console.error('[Admin] Set tier error:', error);
-    return json({ 
+    return json({
       error: 'Failed to set tier',
-      message: error.message 
+      message: error.message
     }, 500);
   }
 }

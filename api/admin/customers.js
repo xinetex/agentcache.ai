@@ -4,14 +4,14 @@
  */
 
 export const config = {
-  runtime: 'edge',
+  runtime: 'nodejs',
 };
 
 // Helper for JSON responses
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 
+    headers: {
       'content-type': 'application/json; charset=utf-8',
       'cache-control': 'no-store',
     },
@@ -25,9 +25,9 @@ export default async function handler(req) {
 
   try {
     // Check admin token
-    const adminToken = req.headers.get('x-admin-token') || 
-                       req.headers.get('authorization')?.replace('Bearer ', '');
-    
+    const adminToken = req.headers.get('x-admin-token') ||
+      req.headers.get('authorization')?.replace('Bearer ', '');
+
     if (!adminToken || adminToken !== process.env.ADMIN_TOKEN) {
       return json({ error: 'Unauthorized - Admin access required' }, 401);
     }
@@ -69,9 +69,9 @@ export default async function handler(req) {
 
   } catch (error) {
     console.error('[Admin] Customers error:', error);
-    return json({ 
+    return json({
       error: 'Failed to fetch customers',
-      message: error.message 
+      message: error.message
     }, 500);
   }
 }

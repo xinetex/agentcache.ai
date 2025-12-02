@@ -1,4 +1,4 @@
-export const config = { runtime: 'edge' };
+export const config = { runtime: 'nodejs' };
 
 // Cache Warming Admin Endpoint
 // POST /api/admin/cache-warm
@@ -23,35 +23,35 @@ async function generateCacheKey(provider, model, messages, temperature = 0) {
     messages,
     temperature
   };
-  
+
   const requestStr = JSON.stringify(canonical);
   const encoder = new TextEncoder();
   const data = encoder.encode(requestStr);
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  
+
   return `agentcache:v1:${provider}:${model}:${hash}`;
 }
 
 async function warmCache(scenario) {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  
+
   if (!url || !token) {
     throw new Error('Redis not configured');
   }
-  
+
   const { provider, model, messages, response, ttl = 604800 } = scenario;
-  
+
   // Generate cache key
   const cacheKey = await generateCacheKey(provider, model, messages, 0);
-  
+
   // Build namespace prefix if provided
   const namespace = scenario.namespace;
   const nsPrefix = namespace ? `ns:${namespace}:` : '';
   const fullKey = nsPrefix + cacheKey;
-  
+
   // Store in Redis
   const cacheEntry = {
     response,
@@ -62,12 +62,12 @@ async function warmCache(scenario) {
     model,
     messages
   };
-  
+
   const commands = [
     ['SET', fullKey, JSON.stringify(cacheEntry)],
     ['EXPIRE', fullKey, ttl]
   ];
-  
+
   const res = await fetch(url, {
     method: 'POST',
     headers: {
@@ -76,11 +76,11 @@ async function warmCache(scenario) {
     },
     body: JSON.stringify({ commands })
   });
-  
+
   if (!res.ok) {
     throw new Error(`Redis operation failed: ${res.status}`);
   }
-  
+
   return { key: fullKey, ttl };
 }
 
@@ -177,30 +177,30 @@ export default async function handler(req) {
   if (req.method !== 'POST') {
     return json({ error: 'Method not allowed' }, 405);
   }
-  
+
   try {
     // Admin authentication
-    const adminToken = req.headers.get('x-admin-token') || 
-                       req.headers.get('authorization')?.replace('Bearer ', '');
-    
+    const adminToken = req.headers.get('x-admin-token') ||
+      req.headers.get('authorization')?.replace('Bearer ', '');
+
     if (!adminToken || adminToken !== process.env.ADMIN_TOKEN) {
       return json({ error: 'Unauthorized - invalid admin token' }, 401);
     }
-    
+
     // Parse request
     const body = await req.json().catch(() => ({}));
     const { scenarios, namespace } = body;
-    
+
     // Use provided scenarios or defaults
     const scenariosToWarm = scenarios || COMMON_SCENARIOS.map(s => ({
       ...s,
       namespace: namespace || s.namespace
     }));
-    
+
     // Warm cache for each scenario
     const results = [];
     const errors = [];
-    
+
     for (const scenario of scenariosToWarm) {
       try {
         const result = await warmCache(scenario);
@@ -218,7 +218,7 @@ export default async function handler(req) {
         });
       }
     }
-    
+
     return json({
       warmed: results.length,
       failed: errors.length,
@@ -226,7 +226,7 @@ export default async function handler(req) {
       errors,
       message: `Successfully warmed ${results.length} cache entries`
     });
-    
+
   } catch (err) {
     console.error('Cache warming error:', err);
     return json({
