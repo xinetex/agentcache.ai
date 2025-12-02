@@ -1,12 +1,3208 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AgentCache Studio - Visual Pipeline Builder</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgentCache Studio - Sector-Aware Pipeline Orchestration</title>
+  <title>AgentCache Studio - Sector-Aware Pipeline Orchestration</title>
+  <script type="module" src="/src/index.css"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="/dynamicview-renderer.js"></script>
+  <script src="/js/workspace-manager.js"></script>
+
+  <!-- Console Theme CSS -->
+  <link rel="stylesheet" href="/css/console-base.css">
+
+  <!-- Live Data Integration -->
+  <script src="/js/live-data-sources.js"></script>
+  <script src="/js/demo-scenarios.js"></script>
+  <script src="/js/live-metrics.js"></script>
+  <script src="/js/demo-analytics.js"></script>
+  <script src="/js/response-viewer.js"></script>
+  <script src="/js/data-stream-visualizer.js"></script>
+
+  <!-- Response Viewer Styles -->
+  <link rel="stylesheet" href="/css/response-viewer.css">
+
+  <!-- Scientific Analytics Dashboard -->
+  <script src="/js/cache-analytics-dashboard.js"></script>
+  <script src="/js/cache-hierarchy-viz.js"></script>
+  <script src="/js/data-grid-component.js"></script>
+  <link rel="stylesheet" href="/css/cache-analytics.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .canvas-node {
+      cursor: grab;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .canvas-node:active {
+      cursor: grabbing;
+    }
+
+    .canvas-node:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    #wizardModal {
+      backdrop-filter: blur(8px);
+    }
+
+    .wizard-step {
+      display: none;
+    }
+
+    .wizard-step.active {
+      display: block;
+    }
+
+    .node-connection {
+      stroke-dasharray: 1000;
+      stroke-dashoffset: 1000;
+    }
+
+    .node-connection.animated {
+      animation: dash 2s linear forwards;
+    }
+
+    @keyframes dash {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    .metric-value {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .use-case-option.selected,
+    .perf-option.selected {
+      border-color: rgb(14 165 233);
+      background-color: rgb(7 89 133 / 0.3);
+    }
+
+    .tab-btn {
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      border-bottom-color: rgb(14 165 233);
+      color: rgb(14 165 233);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: flex;
+    }
+
+    .template-card {
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .template-card:hover {
+      transform: translateY(-2px);
+      border-color: rgb(14 165 233);
+    }
+  </style>
+</head>
+
+<body class="scanlines noise bg-slate-950 text-slate-100 antialiased" data-theme="console">
+
+  <!-- Main Layout -->
+  <div class="flex h-screen flex-col">
+
+    <!-- Demo Mode Banner -->
+    <div id="demoBanner" class="hidden bg-amber-500/20 border-b border-amber-500/40 px-6 py-3">
+      <div class="flex items-center justify-between">
+        <p class="text-sm text-amber-200">
+          🎭 <strong>Demo Mode</strong> - Your work won't be saved permanently.
+          <a href="/signup.html" class="underline font-semibold hover:text-amber-100">Sign up free</a> to save pipelines
+          and deploy to production.
+        </p>
+        <button onclick="dismissDemoBanner()"
+          class="text-amber-300 hover:text-amber-100 text-lg font-bold px-2">×</button>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <header
+      class="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/90 px-6 py-3 backdrop-blur">
+      <div class="flex items-center gap-4">
+        <div
+          class="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 text-sm font-bold text-white shadow-lg">
+          AC
+        </div>
+        <div>
+          <h1 class="text-lg font-semibold tracking-tight">AgentCache Studio</h1>
+          <p class="text-xs text-slate-400">Sector-aware pipeline orchestration</p>
+        </div>
+        <!-- Navigation -->
+        <div class="flex items-center gap-2 ml-4 pl-4 border-l border-slate-700">
+          <a href="/dashboard.html"
+            class="px-3 py-1.5 text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-900/50 rounded-md">
+            Dashboard
+          </a>
+          <a href="/cognitive-universe.html"
+            class="px-3 py-1.5 text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-900/50 rounded-md">
+            Cognitive Universe
+          </a>
+          <a href="/analytics.html"
+            class="px-3 py-1.5 text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-900/50 rounded-md">
+            Analytics
+          </a>
+          <a href="/settings.html"
+            class="px-3 py-1.5 text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-900/50 rounded-md">
+            Settings
+          </a>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <!-- Sector Badge -->
+        <div class="flex items-center gap-2 rounded-full border border-slate-700/80 bg-slate-900/80 px-4 py-2">
+          <span class="text-xs font-medium uppercase tracking-wide text-slate-500">Sector</span>
+          <div class="flex items-center gap-2">
+            <span id="sectorIcon" class="text-lg">🏥</span>
+            <span id="sectorName" class="text-sm font-semibold">Healthcare</span>
+          </div>
+        </div>
+
+        <!-- Compliance Badges -->
+        <div id="complianceBadges" class="flex items-center gap-2">
+          <span
+            class="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-300">
+            <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+            HIPAA
+          </span>
+        </div>
+
+        <!-- Theme Selector -->
+        <div class="theme-selector">
+          <button class="theme-btn active" data-theme="console">Console</button>
+          <button class="theme-btn" data-theme="corporate">Corporate</button>
+          <button class="theme-btn" data-theme="tactical">Tactical</button>
+        </div>
+
+        <!-- Actions -->
+        <button id="scanProjectBtn"
+          class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-600 to-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-lg hover:from-emerald-500 hover:to-sky-500">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          Scan My Project
+        </button>
+        <button id="newPipelineBtn"
+          class="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-900/50 hover:bg-sky-500">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          New Pipeline
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex flex-1 overflow-hidden">
+
+      <!-- Left Sidebar: Node Palette (only visible in Builder tab) -->
+      <aside id="nodePalette" class="w-72 border-r border-slate-800/80 bg-slate-950/50 overflow-y-auto hidden">
+        <div class="p-4">
+          <div class="mb-4">
+            <h2 class="text-sm font-semibold text-slate-300 mb-2">Node Palette</h2>
+            <p class="text-xs text-slate-500">Drag nodes onto the canvas to build your pipeline</p>
+          </div>
+
+          <!-- Generic Nodes -->
+          <div class="mb-6">
+            <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Sources</h3>
+            <div class="space-y-2" id="sourceNodes">
+              <div
+                class="node-palette-item group flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-900/50 p-3 cursor-grab hover:border-sky-500/50 hover:bg-slate-900"
+                data-node-type="http_api">
+                <div class="flex h-8 w-8 items-center justify-center rounded-md bg-slate-800 text-xs font-semibold">API
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm font-medium">HTTP API</p>
+                  <p class="text-xs text-slate-500">REST, gRPC, webhooks</p>
+                </div>
+              </div>
+
+              <div
+                class="node-palette-item group flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-900/50 p-3 cursor-grab hover:border-sky-500/50 hover:bg-slate-900"
+                data-node-type="database">
+                <div class="flex h-8 w-8 items-center justify-center rounded-md bg-slate-800 text-xs font-semibold">DB
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm font-medium">Database</p>
+                  <p class="text-xs text-slate-500">Postgres, Snowflake</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cache Layers -->
+          <div class="mb-6">
+            <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Cache Layers</h3>
+            <div class="space-y-2" id="cacheNodes">
+              <div
+                class="node-palette-item group flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-900/50 p-3 cursor-grab hover:border-sky-500/50 hover:bg-slate-900"
+                data-node-type="cache_l1">
+                <div
+                  class="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-500/20 text-xs font-semibold text-emerald-300">
+                  L1</div>
+                <div class="flex-1">
+                  <p class="text-sm font-medium">L1 Cache</p>
+                  <p class="text-xs text-slate-500">In-memory • 5ms</p>
+                </div>
+              </div>
+
+              <div
+                class="node-palette-item group flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-900/50 p-3 cursor-grab hover:border-sky-500/50 hover:bg-slate-900"
+                data-node-type="cache_l2">
+                <div
+                  class="flex h-8 w-8 items-center justify-center rounded-md bg-sky-500/20 text-xs font-semibold text-sky-300">
+                  L2</div>
+                <div class="flex-1">
+                  <p class="text-sm font-medium">L2 Cache</p>
+                  <p class="text-xs text-slate-500">Object store • 15ms</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sector-Specific Nodes -->
+          <div class="mb-6" id="sectorNodesContainer">
+            <h3 class="text-xs font-semibold uppercase tracking-wide text-emerald-400 mb-2">
+              <span id="sectorNodesTitle">Healthcare Nodes</span>
+            </h3>
+            <div class="space-y-2" id="sectorNodes">
+              <!-- Dynamically populated from API -->
+            </div>
+          </div>
+
+          <!-- LLM Nodes -->
+          <div class="mb-6">
+            <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">LLM</h3>
+            <div class="space-y-2">
+              <div
+                class="node-palette-item group flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-900/50 p-3 cursor-grab hover:border-sky-500/50 hover:bg-slate-900"
+                data-node-type="llm_openai">
+                <div
+                  class="flex h-8 w-8 items-center justify-center rounded-md bg-purple-500/20 text-xs font-semibold text-purple-300">
+                  AI</div>
+                <div class="flex-1">
+                  <p class="text-sm font-medium">OpenAI</p>
+                  <p class="text-xs text-slate-500">GPT-4o • 800ms</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center: Canvas -->
+      <main class="flex-1 flex flex-col bg-slate-950">
+
+        <!-- Tab Navigation -->
+        <div class="border-b border-slate-800/80 bg-slate-900/50">
+          <div class="flex items-center gap-1 px-6">
+            <button
+              class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400 active"
+              data-tab="workspace">
+              Gallery
+            </button>
+            <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400"
+              data-tab="builder">
+              <span class="glow-text">🔧</span> Builder
+            </button>
+            <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400"
+              data-tab="dynamicview">
+              Dynamic View
+            </button>
+            <button
+              class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400 font-display"
+              data-tab="liveDemo">
+              <span class="glow-text">⚡</span> Live Demo
+            </button>
+            <button
+              class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400 font-display"
+              data-tab="scenarios">
+              <span class="glow-text">🚀</span> Scenarios
+            </button>
+            <button
+              class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-sky-400 font-display"
+              data-tab="analytics">
+              <span class="glow-text">📊</span> Analytics
+            </button>
+          </div>
+        </div>
+
+        <!-- Metrics Bar (for Pipeline tab) -->
+        <div id="metricsBar" class="border-b border-slate-800/80 bg-slate-900/50 px-6 py-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-6">
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-slate-400">Pipeline:</span>
+                <span id="pipelineName" class="text-sm font-semibold">Untitled Pipeline</span>
+              </div>
+              <div class="h-4 w-px bg-slate-700"></div>
+              <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-slate-500">Hit Rate</span>
+                  <span id="metricHitRate" class="metric-value text-sm font-semibold text-emerald-400">--</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-slate-500">Latency</span>
+                  <span id="metricLatency" class="metric-value text-sm font-semibold text-sky-400">--</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-slate-500">Savings</span>
+                  <span id="metricSavings" class="metric-value text-sm font-semibold text-emerald-400">--</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <div id="validationStatus" class="flex items-center gap-2 rounded-full bg-slate-800/50 px-3 py-1 text-xs">
+                <span class="h-2 w-2 rounded-full bg-slate-500"></span>
+                <span class="text-slate-400">No pipeline</span>
+              </div>
+              <button id="optimizeBtn"
+                class="rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
+                disabled>
+                ⚡ Optimize
+              </button>
+              <button id="deployBtn"
+                class="rounded-lg bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
+                disabled>
+                Deploy
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Workspace/Gallery Tab (Pipeline Cards Grid) -->
+        <div id="workspaceTab" class="tab-content active flex-1 overflow-auto p-6 bg-slate-950">
+          <div class="mb-6 flex items-center justify-between">
+            <div>
+              <h2 class="font-display text-2xl mb-1">Workspace Pipelines</h2>
+              <p class="text-sm text-slate-400">Pre-configured pipelines connected to live data sources</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <select id="workspaceFilter" class="rounded-lg border border-slate-700 bg-slate-900/50 px-3 py-2 text-sm">
+                <option value="all">All Sectors</option>
+                <option value="crypto">Crypto</option>
+                <option value="weather">Weather</option>
+                <option value="healthcare">Healthcare</option>
+                <option value="ecommerce">E-Commerce</option>
+              </select>
+              <button class="rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm hover:bg-slate-800">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z">
+                  </path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div id="pipelineCardsGrid" class="grid grid-cols-3 gap-4">
+            <!-- Pipeline cards populated by JS -->
+          </div>
+        </div>
+
+        <!-- Builder Tab (Drag-n-Drop Canvas) -->
+        <div id="builderTab" class="tab-content flex-col flex-1 overflow-hidden">
+          <div class="flex-1 overflow-auto p-6 bg-slate-950">
+            <div id="pipelineCanvas" class="w-full h-full">
+              <!-- Pipeline visualization will be rendered here -->
+              <div id="canvasEmpty" class="flex items-center justify-center h-full">
+                <div class="text-center max-w-md">
+                  <div class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-slate-800/50">
+                    <svg class="h-8 w-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+                      </path>
+                    </svg>
+                  </div>
+                  <h3 class="text-lg font-semibold text-slate-300 mb-2">No Pipeline Loaded</h3>
+                  <p class="text-sm text-slate-500 mb-4">Click a pipeline card in the Gallery to see how it works, or
+                    drag nodes from the palette to create your own.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic View Tab -->
+        <div id="dynamicViewTab" class="tab-content flex-col flex-1 overflow-hidden">
+          <!-- Dynamic View Controls -->
+          <div class="border-b border-slate-800/80 bg-slate-900/50 p-4">
+            <div class="flex items-center gap-3 mb-3">
+              <input id="dynamicViewPrompt" type="text"
+                placeholder="Describe the view you want... (e.g., 'Show me a performance dashboard')"
+                class="flex-1 rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500/50" />
+              <button id="generateViewBtn"
+                class="rounded-lg bg-sky-600 px-6 py-2 text-sm font-semibold text-white hover:bg-sky-500">
+                Generate
+              </button>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-500">Quick Start:</span>
+              <div id="templateGallery" class="flex items-center gap-2 overflow-x-auto">
+                <!-- Templates populated by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic View Render Canvas -->
+          <div id="dynamicViewCanvas" class="flex-1 overflow-y-auto p-6 bg-slate-950">
+            <!-- Empty state -->
+            <div id="dynamicViewEmpty" class="flex items-center justify-center h-full">
+              <div class="text-center max-w-md">
+                <div class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-slate-800/50">
+                  <svg class="h-8 w-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                    </path>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-slate-300 mb-2">No Dynamic View loaded</h3>
+                <p class="text-sm text-slate-500 mb-4">Generate a custom view using AI, or select a template from the
+                  quick start gallery above</p>
+                <div class="flex items-center justify-center gap-2 text-xs text-slate-600">
+                  <span class="px-2 py-1 rounded bg-slate-800/50">🟢 Templates load instantly</span>
+                  <span class="px-2 py-1 rounded bg-slate-800/50">⚡ AI generation ~500ms</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Demo Tab -->
+        <div id="liveDemoTab" class="tab-content flex-col flex-1 overflow-hidden" style="position: relative;">
+
+          <div class="grid grid-cols-2 gap-6 p-6 h-full" style="position: relative; z-index: 1;">
+            <!-- Left: Data Source Selector -->
+            <div class="glass-elevated p-6 rounded-lg flex flex-col">
+              <h3 class="font-display text-lg mb-4 glow-text">⚡ Live Data Sources</h3>
+              <select id="dataSourceSelect"
+                class="mb-4 rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-2 text-sm text-slate-100 focus:border-sky-500 focus:outline-none">
+                <option value="">Select a data source...</option>
+              </select>
+              <div id="sourceInfo" class="mb-4 text-xs text-slate-400 hidden"></div>
+              <div class="flex gap-2 mb-4">
+                <button id="fetchDataBtn"
+                  class="flex-1 rounded-lg bg-gradient-to-r from-emerald-600 to-sky-600 px-4 py-2 text-sm font-semibold text-white hover:from-emerald-500 hover:to-sky-500 disabled:opacity-50"
+                  disabled>
+                  Fetch Data
+                </button>
+                <button id="fetch10xBtn"
+                  class="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
+                  disabled>
+                  Run 10x
+                </button>
+              </div>
+
+              <!-- Metrics HUD -->
+              <div class="glass p-4 rounded-lg flex-1">
+                <h4 class="font-display text-sm mb-3 text-secondary">Real-Time Metrics</h4>
+                <div id="liveMetricsDisplay" class="space-y-2 text-xs font-data">
+                  <div class="flex justify-between">
+                    <span class="text-tertiary">STATUS:</span>
+                    <span id="liveStatus" class="text-quaternary">--</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-tertiary">LATENCY:</span>
+                    <span id="liveLatency" class="text-quaternary">--</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-tertiary">COST:</span>
+                    <span id="liveCost" class="text-quaternary">--</span>
+                  </div>
+                  <div class="flex justify-between border-t border-slate-700 pt-2 mt-2">
+                    <span class="text-tertiary">SAVED:</span>
+                    <span id="liveSaved" class="text-emerald-400">$0.000</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Response Viewer (Professional) -->
+            <div id="responseViewer" class="flex flex-col h-full"></div>
+          </div>
+        </div><!-- End Live Demo Tab grid -->
+    </div><!-- End Live Demo Tab -->
+
+    <!-- Scenarios Tab -->
+    <div id="scenariosTab" class="tab-content flex-col flex-1 overflow-auto p-6">
+      <div class="mb-6">
+        <h2 class="font-display text-2xl mb-2">Demo Scenarios</h2>
+        <p class="text-sm text-slate-400">Pre-built scenarios demonstrating real-world cache performance</p>
+      </div>
+
+      <div id="scenarioCards" class="grid grid-cols-3 gap-4 mb-6">
+        <!-- Populated by JS -->
+      </div>
+
+      <div id="scenarioProgress" class="glass-elevated p-6 rounded-lg hidden">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-display text-lg" id="scenarioName">Running Scenario...</h3>
+          <button id="stopScenarioBtn" class="text-xs text-rose-400 hover:text-rose-300">Stop</button>
+        </div>
+        <div class="mb-4">
+          <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+            <div id="scenarioProgressBar" class="h-full bg-gradient-to-r from-emerald-500 to-sky-500 transition-all"
+              style="width: 0%"></div>
+          </div>
+          <div class="flex justify-between text-xs text-slate-400 mt-1">
+            <span id="scenarioStep">0/0 calls</span>
+            <span id="scenarioPercent">0%</span>
+          </div>
+        </div>
+        <div class="grid grid-cols-4 gap-4 text-xs font-data">
+          <div>
+            <div class="text-slate-400">CALLS</div>
+            <div class="text-lg font-semibold" id="scenarioCalls">0</div>
+          </div>
+          <div>
+            <div class="text-slate-400">HIT RATE</div>
+            <div class="text-lg font-semibold text-emerald-400" id="scenarioHitRate">0%</div>
+          </div>
+          <div>
+            <div class="text-slate-400">AVG LATENCY</div>
+            <div class="text-lg font-semibold text-sky-400" id="scenarioLatency">0ms</div>
+          </div>
+          <div>
+            <div class="text-slate-400">SAVINGS</div>
+            <div class="text-lg font-semibold text-emerald-400" id="scenarioSavings">$0.00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Tab -->
+    <div id="analyticsTab" class="tab-content flex-col flex-1 overflow-hidden">
+      <!-- Scientific Analytics Dashboard Container -->
+      <div id="scientificAnalyticsDashboard" class="flex-1 overflow-auto">
+        <!-- Dashboard will be rendered here by CacheAnalyticsDashboard -->
+      </div>
+    </div>
+    </main>
+
+    <!-- Right Sidebar: AI Assistant -->
+    <aside class="w-80 border-l border-slate-800/80 bg-slate-950/50 flex flex-col">
+      <div class="border-b border-slate-800/80 px-4 py-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-semibold">AI Assistant</h2>
+          <button id="clearChatBtn"
+            class="rounded-lg border border-slate-700 bg-slate-800/50 px-2 py-1 text-xs text-slate-400 hover:bg-slate-800">
+            Clear
+          </button>
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-4 space-y-3" id="aiAssistantChat">
+        <div class="text-xs text-slate-500 text-center py-8">
+          <p>Ask me to optimize your pipeline, add nodes, or adjust configuration</p>
+          <p class="mt-2 text-slate-600">Try: "Make it faster" or "Add audit logging"</p>
+        </div>
+      </div>
+
+      <div class="border-t border-slate-800/80 p-4">
+        <div class="flex gap-2">
+          <input id="aiInput" type="text" placeholder="Ask AI to modify pipeline..."
+            class="flex-1 rounded-lg border border-slate-700 bg-slate-900/50 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500/50" />
+          <button id="aiSendBtn"
+            class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-500">
+            Send
+          </button>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+  </div>
+
+  <!-- Session Stats Footer -->
+  <footer
+    class="fixed bottom-0 left-0 right-0 glass border-t border-slate-800/80 h-10 flex items-center justify-between px-6 text-xs font-data z-40">
+    <div class="flex gap-6">
+      <span>SYS</span>
+      <span>SESSION: <span id="sessionTime">0m 0s</span></span>
+      <span>CALLS: <span id="sessionCalls">0</span>/50</span>
+      <span>HIT RATE: <span id="footerHitRate" class="text-emerald-400">0%</span> ⚡</span>
+      <span>SAVINGS: $<span id="footerSavings">0.00</span> 💰</span>
+    </div>
+    <div>
+      <button id="viewReportBtn"
+        class="rounded-md border border-slate-700 bg-slate-800/50 px-3 py-1 text-xs text-slate-300 hover:bg-slate-800">📊
+        View Report</button>
+    </div>
+  </footer>
+
+  <!-- Wizard Modal -->
+  <div id="wizardModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
+    <div class="w-full max-w-2xl rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl">
+      <div class="border-b border-slate-800/80 px-6 py-4">
+        <h2 class="text-xl font-semibold">Create Pipeline</h2>
+        <p class="text-sm text-slate-400 mt-1">AI will build an optimized cache pipeline for your use case</p>
+      </div>
+
+      <div class="p-6" id="wizardContent">
+        <!-- Step 1: Use Case -->
+        <div class="wizard-step active" data-step="1">
+          <h3 class="text-lg font-semibold mb-4">What are you building?</h3>
+          <div class="space-y-3">
+            <button
+              class="use-case-option w-full text-left rounded-xl border-2 border-slate-700 bg-slate-800/50 p-4 hover:border-sky-500 hover:bg-slate-800"
+              data-usecase="clinical-decision"
+              data-prompt="Build a HIPAA-compliant clinical decision support cache for patient triage and diagnosis queries">
+              <div class="flex items-center gap-3">
+                <span class="text-2xl">🏥</span>
+                <div>
+                  <p class="font-semibold">Clinical Decision Support</p>
+                  <p class="text-sm text-slate-400">HIPAA-compliant cache for patient triage and diagnosis</p>
+                </div>
+              </div>
+            </button>
+
+            <button
+              class="use-case-option w-full text-left rounded-xl border-2 border-slate-700 bg-slate-800/50 p-4 hover:border-sky-500 hover:bg-slate-800"
+              data-usecase="trading"
+              data-prompt="Build a low-latency cache for trading assistant with real-time market data">
+              <div class="flex items-center gap-3">
+                <span class="text-2xl">📈</span>
+                <div>
+                  <p class="font-semibold">Trading Assistant</p>
+                  <p class="text-sm text-slate-400">Low-latency cache for real-time market data</p>
+                </div>
+              </div>
+            </button>
+
+            <button
+              class="use-case-option w-full text-left rounded-xl border-2 border-slate-700 bg-slate-800/50 p-4 hover:border-sky-500 hover:bg-slate-800"
+              data-usecase="contract-review"
+              data-prompt="Build a privilege-protected cache for legal contract review and document analysis">
+              <div class="flex items-center gap-3">
+                <span class="text-2xl">⚖️</span>
+                <div>
+                  <p class="font-semibold">Contract Review</p>
+                  <p class="text-sm text-slate-400">Privilege-protected cache for legal document analysis</p>
+                </div>
+              </div>
+            </button>
+
+            <button
+              class="use-case-option w-full text-left rounded-xl border-2 border-slate-700 bg-slate-800/50 p-4 hover:border-sky-500 hover:bg-slate-800"
+              data-usecase="custom">
+              <div class="flex items-center gap-3">
+                <span class="text-2xl">⚡</span>
+                <div>
+                  <p class="font-semibold">Custom Pipeline</p>
+                  <p class="text-sm text-slate-400">Describe your own use case in natural language</p>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Natural Language Input (for custom) -->
+        <div class="wizard-step" data-step="2">
+          <h3 class="text-lg font-semibold mb-4">Describe your use case</h3>
+          <textarea id="customUseCase" rows="6"
+            placeholder="Example: Build a HIPAA-compliant cache for clinical decision support that connects to our Epic EHR and caches LLM responses for common diagnosis queries..."
+            class="w-full rounded-xl border border-slate-700 bg-slate-800/50 p-4 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500/50"></textarea>
+        </div>
+
+        <!-- Step 3: Performance Goal -->
+        <div class="wizard-step" data-step="3">
+          <h3 class="text-lg font-semibold mb-4">Optimize for:</h3>
+          <div class="space-y-3">
+            <button
+              class="perf-option w-full text-left rounded-xl border-2 border-slate-700 bg-slate-800/50 p-4 hover:border-sky-500 hover:bg-slate-800"
+              data-perf="fast">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="font-semibold">⚡ Low Latency</p>
+                  <p class="text-sm text-slate-400">Minimize response time • Single L1 cache</p>
+                </div>
+                <span class="text-xs text-sky-400">~97ms p95</span>
+              </div>
+            </button>
+
+            <button
+              class="perf-option selected w-full text-left rounded-xl border-2 border-sky-500 bg-slate-800 p-4 hover:border-sky-500 hover:bg-slate-800"
+              data-perf="balanced">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="font-semibold">⚖️ Balanced</p>
+                  <p class="text-sm text-slate-400">Good speed + cost savings • L1 + L2 cache</p>
+                </div>
+                <span class="text-xs text-emerald-400">Recommended</span>
+              </div>
+            </button>
+
+            <button
+              class="perf-option w-full text-left rounded-xl border-2 border-slate-700 bg-slate-800/50 p-4 hover:border-sky-500 hover:bg-slate-800"
+              data-perf="cost">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="font-semibold">💰 Cost Optimized</p>
+                  <p class="text-sm text-slate-400">Maximum savings • Multi-tier cache</p>
+                </div>
+                <span class="text-xs text-emerald-400">~$2.40/req saved</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 4: Review -->
+        <div class="wizard-step" data-step="4">
+          <div class="flex items-center justify-center py-8" id="generatingLoader">
+            <div class="text-center">
+              <div
+                class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-sky-500 border-r-transparent">
+              </div>
+              <p class="mt-4 text-sm text-slate-400">AI is generating your pipeline...</p>
+            </div>
+          </div>
+
+          <div id="reviewContent" class="hidden">
+            <h3 class="text-lg font-semibold mb-4">Review Pipeline</h3>
+            <div class="rounded-xl border border-slate-700 bg-slate-800/50 p-4">
+              <div class="space-y-3">
+                <div>
+                  <p class="text-xs text-slate-500 uppercase">Generated Pipeline</p>
+                  <p id="reviewName" class="text-sm font-semibold">--</p>
+                </div>
+                <div>
+                  <p class="text-xs text-slate-500 uppercase mb-1">Nodes</p>
+                  <div id="reviewNodes" class="flex flex-wrap gap-1">
+                    <!-- Populated by JS -->
+                  </div>
+                </div>
+                <div class="grid grid-cols-3 gap-3 pt-2">
+                  <div>
+                    <p class="text-xs text-slate-500">Estimated Latency</p>
+                    <p id="reviewLatency" class="text-sm font-semibold text-sky-400">--</p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-slate-500">Hit Rate</p>
+                    <p id="reviewHitRate" class="text-sm font-semibold text-emerald-400">--</p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-slate-500">Savings</p>
+                    <p id="reviewSavings" class="text-sm font-semibold text-emerald-400">--</p>
+                  </div>
+                </div>
+                <div class="pt-2">
+                  <p class="text-xs text-slate-500 uppercase mb-1">AI Reasoning</p>
+                  <ul id="reviewReasoning" class="space-y-1 text-xs text-slate-300">
+                    <!-- Populated by JS -->
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="border-t border-slate-800/80 px-6 py-4 flex items-center justify-between">
+        <button id="wizardBackBtn"
+          class="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hidden">
+          Back
+        </button>
+        <div class="flex gap-2">
+          <button id="wizardCancelBtn"
+            class="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800">
+            Cancel
+          </button>
+          <button id="wizardNextBtn"
+            class="rounded-lg bg-sky-600 px-6 py-2 text-sm font-semibold text-white hover:bg-sky-500">
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scan Project Modal -->
+  <div id="scanProjectModal"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
+    <div
+      class="w-full max-w-3xl rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="border-b border-slate-800/80 px-6 py-4">
+        <h2 class="text-xl font-semibold">🔍 Scan My Project</h2>
+        <p class="text-sm text-slate-400 mt-1">AI analyzes your project and auto-generates a personalized cache pipeline
+        </p>
+      </div>
+
+      <div class="p-6" id="scanModalContent">
+        <!-- Step 1: Input -->
+        <div id="scanStep1">
+          <h3 class="text-lg font-semibold mb-4">Tell us about your project</h3>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-300 mb-2">GitHub Repository URL</label>
+              <input id="githubUrl" type="text" placeholder="https://github.com/your-org/your-repo"
+                class="w-full rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500/50" />
+            </div>
+
+            <div class="flex items-center gap-3">
+              <div class="flex-1 h-px bg-slate-700"></div>
+              <span class="text-xs text-slate-500">OR</span>
+              <div class="flex-1 h-px bg-slate-700"></div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-300 mb-2">Manually Describe Tech Stack</label>
+              <textarea id="manualTechStack" rows="4"
+                placeholder="Example: Node.js app using OpenAI API, storing files in Seagate Lyve Cloud, PostgreSQL database, serves 1M requests/month..."
+                class="w-full rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500/50"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-300 mb-2">Workspace Name (optional)</label>
+              <input id="workspaceName" type="text" placeholder="My Project Pipeline"
+                class="w-full rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500/50" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Scanning (loading) -->
+        <div id="scanStep2" class="hidden">
+          <div class="flex flex-col items-center justify-center py-12">
+            <div
+              class="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-emerald-500 border-r-transparent mb-4">
+            </div>
+            <h3 class="text-lg font-semibold mb-2">Analyzing Your Project...</h3>
+            <p class="text-sm text-slate-400 text-center max-w-md" id="scanProgress">
+              Scanning code patterns, detecting storage APIs, analyzing LLM usage...
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 3: Results & Preview -->
+        <div id="scanStep3" class="hidden">
+          <h3 class="text-lg font-semibold mb-4">✨ Pipeline Ready</h3>
+
+          <div class="space-y-4">
+            <!-- Sector Detection -->
+            <div class="rounded-xl border border-slate-700 bg-slate-800/50 p-4">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-semibold">Detected Sector</h4>
+                <span id="detectedSector"
+                  class="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
+                  <span>📁 File Storage</span>
+                </span>
+              </div>
+              <p id="sectorReason" class="text-xs text-slate-400">Based on detected storage APIs and file operations</p>
+            </div>
+
+            <!-- Pipeline Preview -->
+            <div class="rounded-xl border border-slate-700 bg-slate-800/50 p-4">
+              <h4 class="text-sm font-semibold mb-3">Generated Pipeline</h4>
+              <div class="space-y-2">
+                <div class="flex items-center justify-between text-sm">
+                  <span class="text-slate-400">Name:</span>
+                  <span id="pipelineName" class="font-medium">--</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                  <span class="text-slate-400">Nodes:</span>
+                  <span id="pipelineNodes" class="font-medium">--</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                  <span class="text-slate-400">Complexity:</span>
+                  <span id="pipelineComplexity" class="font-medium">--</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Metrics -->
+            <div class="grid grid-cols-3 gap-3">
+              <div class="rounded-xl border border-slate-700 bg-slate-800/50 p-3">
+                <p class="text-xs text-slate-500 mb-1">Est. Latency</p>
+                <p id="metricLatencyPreview" class="text-lg font-semibold text-sky-400">50ms</p>
+              </div>
+              <div class="rounded-xl border border-slate-700 bg-slate-800/50 p-3">
+                <p class="text-xs text-slate-500 mb-1">Hit Rate</p>
+                <p id="metricHitRatePreview" class="text-lg font-semibold text-emerald-400">92%</p>
+              </div>
+              <div class="rounded-xl border border-slate-700 bg-slate-800/50 p-3">
+                <p class="text-xs text-slate-500 mb-1">Savings</p>
+                <p id="metricSavingsPreview" class="text-lg font-semibold text-emerald-400">$5K/mo</p>
+              </div>
+            </div>
+
+            <!-- Mesh Network Visualization Preview -->
+            <div class="rounded-xl border border-slate-700 bg-slate-800/50 p-4">
+              <h4 class="text-sm font-semibold mb-3">Infrastructure Mesh Network</h4>
+              <div id="meshPreview"
+                class="bg-slate-900/50 rounded-lg p-4 min-h-[120px] flex items-center justify-center">
+                <p class="text-xs text-slate-500">Visual diagram will render here</p>
+              </div>
+            </div>
+
+            <!-- Namespaces -->
+            <div class="rounded-xl border border-slate-700 bg-slate-800/50 p-4">
+              <h4 class="text-sm font-semibold mb-2">Recommended Namespaces</h4>
+              <div id="namespacesList" class="flex flex-wrap gap-2">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="border-t border-slate-800/80 px-6 py-4 flex items-center justify-between">
+        <button id="scanCancelBtn"
+          class="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800">
+          Cancel
+        </button>
+        <div class="flex gap-2">
+          <button id="scanBackBtn"
+            class="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hidden">
+            Back
+          </button>
+          <button id="scanActionBtn"
+            class="rounded-lg bg-gradient-to-r from-emerald-600 to-sky-600 px-6 py-2 text-sm font-semibold text-white hover:from-emerald-500 hover:to-sky-500">
+            Scan Project
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upgrade Required Modal -->
+  <div id="upgradeModal"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
+    <div class="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl">
+      <div class="border-b border-slate-800/80 px-6 py-4">
+        <h2 class="text-xl font-semibold">🚀 Upgrade Required</h2>
+      </div>
+
+      <div class="p-6" id="upgradeContent">
+        <div id="pipelineLimitContent" class="hidden">
+          <div class="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
+            <p class="text-sm text-amber-200">
+              You've reached your pipeline limit on the <strong id="currentPlanName">Starter</strong> plan.
+            </p>
+          </div>
+          <div class="space-y-3 text-sm text-slate-300">
+            <p><strong>Current Plan Limits:</strong></p>
+            <ul class="space-y-2 ml-4">
+              <li>• <strong>Starter:</strong> 3 pipelines</li>
+              <li>• <strong>Professional:</strong> 25 pipelines</li>
+              <li>• <strong>Enterprise:</strong> Unlimited pipelines</li>
+            </ul>
+            <p class="mt-4 text-emerald-300">
+              Upgrade to create more pipelines and unlock advanced features!
+            </p>
+          </div>
+        </div>
+
+        <div id="complexityLimitContent" class="hidden">
+          <div class="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
+            <p class="text-sm text-amber-200">
+              This <strong id="pipelineComplexity">moderate</strong> complexity pipeline requires a higher plan tier.
+            </p>
+          </div>
+          <div class="space-y-3 text-sm text-slate-300">
+            <p><strong>Complexity Tiers:</strong></p>
+            <ul class="space-y-2 ml-4">
+              <li>• <strong>Starter:</strong> Simple pipelines only</li>
+              <li>• <strong>Professional:</strong> Simple + Moderate</li>
+              <li>• <strong>Enterprise:</strong> All complexity tiers</li>
+            </ul>
+            <p class="mt-4">
+              <strong>Estimated Cost:</strong> <span id="estimatedCost" class="text-emerald-400">$XX/mo</span>
+            </p>
+          </div>
+        </div>
+
+        <div id="demoLimitContent" class="hidden">
+          <div class="mb-4 rounded-lg border border-sky-500/40 bg-sky-500/10 p-4">
+            <p class="text-sm text-sky-200">
+              🎭 You're in demo mode! Sign up to unlock full features.
+            </p>
+          </div>
+          <div class="space-y-3 text-sm text-slate-300">
+            <p><strong>Sign up to get:</strong></p>
+            <ul class="space-y-2 ml-4">
+              <li>✔️ Unlimited project scans</li>
+              <li>✔️ Save pipelines permanently</li>
+              <li>✔️ Deploy to production</li>
+              <li>✔️ Generate API keys</li>
+              <li>✔️ Access analytics dashboard</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="border-t border-slate-800/80 px-6 py-4 flex gap-3">
+        <button onclick="closeUpgradeModal()"
+          class="flex-1 px-4 py-2 border border-slate-700 bg-slate-800/50 rounded-lg text-sm font-medium hover:bg-slate-800">
+          Cancel
+        </button>
+        <a id="upgradeLink" href="/pricing.html"
+          class="flex-1 px-4 py-2 bg-gradient-to-r from-emerald-600 to-sky-600 rounded-lg text-center text-sm font-semibold hover:from-emerald-500 hover:to-sky-500">
+          View Plans
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State
+    let currentSector = 'healthcare';
+    let currentPipeline = null;
+    let wizardState = {
+      step: 1,
+      useCase: null,
+      prompt: '',
+      performance: 'balanced',
+    };
+
+    // Demo mode & authentication  
+    const urlParams = new URLSearchParams(window.location.search);
+    const authToken = localStorage.getItem('agentcache_token');
+    const isAuthenticated = !!authToken;
+
+    // Demo mode detection:
+    // - Explicitly set demo=true in URL
+    // - Path includes /public/ BUT NOT if authenticated=true is set
+    const explicitDemo = urlParams.get('demo') === 'true';
+    const explicitAuth = urlParams.get('authenticated') === 'true';
+    const pathIsPublic = window.location.pathname.includes('/public/');
+    const isDemoMode = explicitDemo || (pathIsPublic && !explicitAuth && !isAuthenticated);
+
+    console.log('[Studio Init] Path:', window.location.pathname);
+    console.log('[Studio Init] explicitDemo:', explicitDemo, 'explicitAuth:', explicitAuth, 'pathIsPublic:', pathIsPublic);
+    console.log('[Studio Init] isDemoMode:', isDemoMode);
+    console.log('[Studio Init] isAuthenticated:', isAuthenticated);
+
+    // User & organization state
+    let currentUser = null;
+    let currentOrganization = null;
+
+    // Billing state
+    let userBilling = null;
+    let userPlan = 'starter';
+    let pipelineQuota = { current: 0, limit: 3 };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initializeStudio();
+      loadSectorNodes();
+      attachEventListeners();
+      initializeLiveData();
+
+      // Check if onboarding mode
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('onboarding') === 'true' && isAuthenticated && !isDemoMode) {
+        // Check if user needs onboarding
+        await checkOnboardingStatus();
+      }
+    });
+
+    // Initialize Studio with demo/auth detection
+    async function initializeStudio() {
+      // Show demo banner if in demo mode
+      if (isDemoMode) {
+        document.getElementById('demoBanner').classList.remove('hidden');
+      }
+
+      // Load user profile and configure sector for authenticated users
+      if (isAuthenticated && !isDemoMode) {
+        await loadUserProfile();
+        await loadBillingInfo();
+      }
+
+      // If not demo and not authenticated, redirect to login
+      if (!isDemoMode && !isAuthenticated) {
+        window.location.href = '/login.html?redirect=/studio.html';
+      }
+    }
+
+    // Load user profile and organization
+    async function loadUserProfile() {
+      try {
+        const response = await fetch('/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          currentUser = data.user;
+          currentOrganization = data.user.organization;
+
+          // Configure sector from organization
+          if (currentOrganization && currentOrganization.sector) {
+            currentSector = currentOrganization.sector;
+            updateSectorUI(currentSector);
+          }
+
+          console.log(`[Studio] User: ${currentUser.email}, Org: ${currentOrganization?.name}, Sector: ${currentSector}`);
+        }
+      } catch (error) {
+        console.error('Failed to load user profile:', error);
+      }
+    }
+
+    // Update UI with sector information
+    function updateSectorUI(sector) {
+      const sectorConfig = {
+        healthcare: { icon: '🏥', name: 'Healthcare', badges: ['HIPAA'] },
+        finance: { icon: '💰', name: 'Finance', badges: ['PCI-DSS', 'SOC2'] },
+        filestorage: { icon: '💾', name: 'File Storage', badges: ['SOC2'] },
+        legal: { icon: '⚖️', name: 'Legal', badges: ['SOC2'] },
+        ecommerce: { icon: '🛒', name: 'E-Commerce', badges: ['PCI-DSS'] },
+        education: { icon: '🎓', name: 'Education', badges: ['FERPA'] },
+        enterprise: { icon: '🏢', name: 'Enterprise', badges: ['SOC2'] },
+        developer: { icon: '👨‍💻', name: 'Developer', badges: [] },
+        datascience: { icon: '📊', name: 'Data Science', badges: [] },
+        general: { icon: '⚡', name: 'General', badges: [] },
+      };
+
+      const config = sectorConfig[sector] || sectorConfig.general;
+
+      // Update sector badge in header
+      document.getElementById('sectorIcon').textContent = config.icon;
+      document.getElementById('sectorName').textContent = config.name;
+
+      // Update compliance badges
+      const badgesContainer = document.getElementById('complianceBadges');
+      badgesContainer.innerHTML = config.badges.map(badge => `
+        <span class="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-300">
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+          ${badge}
+        </span>
+      `).join('');
+    }
+
+    // Load user billing information
+    async function loadBillingInfo() {
+      try {
+        const response = await fetch('/api/billing/usage', {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+
+        if (response.ok) {
+          userBilling = await response.json();
+          userPlan = userBilling.subscription.plan;
+          pipelineQuota = {
+            current: userBilling.pipelines.length,
+            limit: userPlan === 'enterprise' ? Infinity : (userPlan === 'professional' ? 25 : 3)
+          };
+
+          console.log(`[Studio] Loaded billing: ${userPlan} plan, ${pipelineQuota.current}/${pipelineQuota.limit} pipelines`);
+        }
+      } catch (error) {
+        console.error('Failed to load billing info:', error);
+      }
+    }
+
+    // Check if user can create a new pipeline
+    async function checkPipelineLimit() {
+      if (isDemoMode) {
+        // Demo mode: check sessionStorage for demo pipelines
+        const demoPipelines = JSON.parse(sessionStorage.getItem('demo_pipelines') || '[]');
+        if (demoPipelines.length >= 2) {
+          showUpgradeModal('demo');
+          return false;
+        }
+        return true;
+      }
+
+      if (!isAuthenticated) return false;
+
+      // Refresh billing info
+      await loadBillingInfo();
+
+      if (pipelineQuota.current >= pipelineQuota.limit) {
+        showUpgradeModal('pipeline_limit');
+        return false;
+      }
+
+      return true;
+    }
+
+    // Show upgrade modal
+    function showUpgradeModal(type) {
+      // Hide all content sections
+      document.getElementById('pipelineLimitContent').classList.add('hidden');
+      document.getElementById('complexityLimitContent').classList.add('hidden');
+      document.getElementById('demoLimitContent').classList.add('hidden');
+
+      // Show appropriate content
+      if (type === 'demo') {
+        document.getElementById('demoLimitContent').classList.remove('hidden');
+        document.getElementById('upgradeLink').href = '/signup.html';
+        document.getElementById('upgradeLink').textContent = 'Sign Up Free';
+      } else if (type === 'pipeline_limit') {
+        document.getElementById('pipelineLimitContent').classList.remove('hidden');
+        document.getElementById('currentPlanName').textContent = userPlan.charAt(0).toUpperCase() + userPlan.slice(1);
+        document.getElementById('upgradeLink').href = '/pricing.html';
+        document.getElementById('upgradeLink').textContent = 'View Plans';
+      } else if (type === 'complexity') {
+        document.getElementById('complexityLimitContent').classList.remove('hidden');
+        document.getElementById('upgradeLink').href = '/pricing.html';
+        document.getElementById('upgradeLink').textContent = 'View Plans';
+      }
+
+      document.getElementById('upgradeModal').classList.remove('hidden');
+    }
+
+    function closeUpgradeModal() {
+      document.getElementById('upgradeModal').classList.add('hidden');
+    }
+
+    function dismissDemoBanner() {
+      document.getElementById('demoBanner').classList.add('hidden');
+      sessionStorage.setItem('demo_banner_dismissed', 'true');
+    }
+
+    // Load sector-specific nodes from API
+    async function loadSectorNodes() {
+      try {
+        const response = await fetch(`/api/sector/${currentSector}`);
+        const data = await response.json();
+
+        if (data.success && data.nodes) {
+          renderSectorNodes(data.nodes);
+        }
+      } catch (error) {
+        console.error('Failed to load sector nodes:', error);
+      }
+    }
+
+    function renderSectorNodes(nodes) {
+      const container = document.getElementById('sectorNodes');
+      container.innerHTML = nodes.map(node => `
+        <div class="node-palette-item group flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-900/50 p-3 cursor-grab hover:border-emerald-500/50 hover:bg-slate-900" data-node-type="${node.id}">
+          <div class="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-500/20 text-xs font-semibold text-emerald-300">${node.icon || node.id.substring(0, 2).toUpperCase()}</div>
+          <div class="flex-1">
+            <p class="text-sm font-medium">${node.name}</p>
+            <p class="text-xs text-slate-500">${node.description}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Event Listeners
+    function attachEventListeners() {
+      // New Pipeline button
+      document.getElementById('newPipelineBtn').addEventListener('click', () => {
+        openWizard();
+      });
+
+      // Wizard navigation
+      document.getElementById('wizardNextBtn').addEventListener('click', wizardNext);
+      document.getElementById('wizardBackBtn').addEventListener('click', wizardBack);
+      document.getElementById('wizardCancelBtn').addEventListener('click', closeWizard);
+
+      // Use case selection
+      document.querySelectorAll('.use-case-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.use-case-option').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          wizardState.useCase = btn.dataset.usecase;
+          wizardState.prompt = btn.dataset.prompt || '';
+
+          // Map use case to sector for onboarding
+          const sectorMapping = {
+            'clinical-decision': 'healthcare',
+            'trading': 'finance',
+            'contract-review': 'legal',
+            'custom': 'general'
+          };
+          wizardState.sector = sectorMapping[btn.dataset.usecase] || 'general';
+        });
+      });
+
+      // Performance selection
+      document.querySelectorAll('.perf-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.perf-option').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          wizardState.performance = btn.dataset.perf;
+        });
+      });
+
+      // AI Chat
+      document.getElementById('aiSendBtn').addEventListener('click', sendAIMessage);
+      document.getElementById('aiInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendAIMessage();
+      });
+
+      // Optimize button
+      document.getElementById('optimizeBtn').addEventListener('click', optimizePipeline);
+
+      // Deploy button - saves pipeline
+      document.getElementById('deployBtn').addEventListener('click', savePipeline);
+
+      // Tab switching
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tabName = btn.dataset.tab;
+          switchTab(tabName);
+        });
+      });
+
+      // Dynamic View generation
+      document.getElementById('generateViewBtn').addEventListener('click', generateDynamicView);
+      document.getElementById('dynamicViewPrompt').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') generateDynamicView();
+      });
+
+      // Load templates
+      loadTemplateGallery();
+
+      // Scan Project button
+      document.getElementById('scanProjectBtn').addEventListener('click', openScanModal);
+      document.getElementById('scanCancelBtn').addEventListener('click', closeScanModal);
+      document.getElementById('scanActionBtn').addEventListener('click', handleScanAction);
+    }
+
+    // Check if user needs onboarding
+    async function checkOnboardingStatus() {
+      try {
+        const response = await fetch('/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+
+          // If no organization, trigger onboarding wizard
+          if (!data.user.organization) {
+            console.log('[Onboarding] User needs onboarding - opening wizard');
+            openWizard(true); // true = onboarding mode
+          }
+        }
+      } catch (error) {
+        console.error('Failed to check onboarding status:', error);
+      }
+    }
+
+    // Wizard Flow
+    function openWizard(isOnboarding = false) {
+      document.getElementById('wizardModal').classList.remove('hidden');
+      wizardState = {
+        step: 1,
+        useCase: null,
+        prompt: '',
+        performance: 'balanced',
+        isOnboarding: isOnboarding
+      };
+      updateWizardStep();
+    }
+
+    function closeWizard() {
+      document.getElementById('wizardModal').classList.add('hidden');
+    }
+
+    async function wizardNext() {
+      const nextBtn = document.getElementById('wizardNextBtn');
+
+      if (wizardState.step === 1) {
+        if (!wizardState.useCase) {
+          alert('Please select a use case');
+          return;
+        }
+
+        if (wizardState.useCase === 'custom') {
+          wizardState.step = 2;
+        } else {
+          wizardState.step = 3;
+        }
+      } else if (wizardState.step === 2) {
+        const customPrompt = document.getElementById('customUseCase').value.trim();
+        if (!customPrompt) {
+          alert('Please describe your use case');
+          return;
+        }
+        wizardState.prompt = customPrompt;
+        wizardState.step = 3;
+      } else if (wizardState.step === 3) {
+        wizardState.step = 4;
+        nextBtn.textContent = 'Create Pipeline';
+
+        // Call AI to generate pipeline
+        setTimeout(() => generatePipeline(), 500);
+      } else if (wizardState.step === 4) {
+        // Apply pipeline to canvas or complete onboarding
+        if (wizardState.isOnboarding) {
+          // Complete onboarding - create org and starter pipeline
+          await completeOnboarding();
+        } else if (currentPipeline) {
+          renderPipelineOnCanvas(currentPipeline);
+          closeWizard();
+        }
+      }
+
+      updateWizardStep();
+    }
+
+    function wizardBack() {
+      if (wizardState.step === 2 && wizardState.useCase !== 'custom') {
+        wizardState.step = 1;
+      } else if (wizardState.step > 1) {
+        wizardState.step--;
+      }
+
+      const nextBtn = document.getElementById('wizardNextBtn');
+      nextBtn.textContent = wizardState.step === 4 ? 'Create Pipeline' : 'Next';
+      updateWizardStep();
+    }
+
+    function updateWizardStep() {
+      document.querySelectorAll('.wizard-step').forEach(step => {
+        step.classList.remove('active');
+      });
+
+      const currentStep = document.querySelector(`[data-step="${wizardState.step}"]`);
+      if (currentStep) currentStep.classList.add('active');
+
+      const backBtn = document.getElementById('wizardBackBtn');
+      backBtn.classList.toggle('hidden', wizardState.step === 1);
+    }
+
+    // Generate Pipeline via AI API
+    async function generatePipeline() {
+      const loader = document.getElementById('generatingLoader');
+      const content = document.getElementById('reviewContent');
+
+      loader.classList.remove('hidden');
+      content.classList.add('hidden');
+
+      try {
+        // Build prompt based on selections
+        let fullPrompt = wizardState.prompt;
+        if (wizardState.performance === 'fast') {
+          fullPrompt += ' optimized for low latency';
+        } else if (wizardState.performance === 'cost') {
+          fullPrompt += ' optimized for cost savings';
+        }
+
+        const response = await fetch('/api/pipelines/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: fullPrompt,
+            sector: currentSector,
+            performance: wizardState.performance,
+            save: false // Preview mode, save manually later
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.pipeline) {
+          currentPipeline = data.pipeline;
+          displayPipelineReview(data.pipeline);
+
+          loader.classList.add('hidden');
+          content.classList.remove('hidden');
+        } else {
+          throw new Error(data.error || 'Failed to generate pipeline');
+        }
+      } catch (error) {
+        console.error('Pipeline generation failed:', error);
+        alert('Failed to generate pipeline. Please try again.');
+        wizardBack();
+      }
+    }
+
+    function displayPipelineReview(pipeline) {
+      document.getElementById('reviewName').textContent = pipeline.name;
+      document.getElementById('reviewLatency').textContent = `${pipeline.metrics?.estimated_latency_ms || '--'}ms`;
+      document.getElementById('reviewHitRate').textContent = `${Math.round((pipeline.metrics?.estimated_hit_rate || 0) * 100)}%`;
+      document.getElementById('reviewSavings').textContent = `$${pipeline.metrics?.estimated_savings_per_request || '--'}/req`;
+
+      // Render nodes
+      const nodesHtml = pipeline.nodes?.map(node =>
+        `<span class="inline-flex items-center rounded-full bg-slate-700/50 px-2 py-0.5 text-xs text-slate-300">${node.type || node.label}</span>`
+      ).join('') || '';
+      document.getElementById('reviewNodes').innerHTML = nodesHtml;
+
+      // Render reasoning
+      const reasoningHtml = pipeline.reasoning?.map(reason =>
+        `<li class="flex items-start gap-2"><span class="text-emerald-400">•</span><span>${reason}</span></li>`
+      ).join('') || '';
+      document.getElementById('reviewReasoning').innerHTML = reasoningHtml;
+    }
+
+    // Complete onboarding - call API to create org and pipeline
+    async function completeOnboarding() {
+      const nextBtn = document.getElementById('wizardNextBtn');
+      const originalText = nextBtn.textContent;
+      nextBtn.textContent = 'Creating workspace...';
+      nextBtn.disabled = true;
+
+      try {
+        const response = await fetch('/api/onboarding/complete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({
+            sector: wizardState.sector || 'general',
+            useCase: wizardState.prompt,
+            priority: wizardState.performance,
+            wizardPrompt: wizardState.prompt
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Show welcome modal with API key
+          showWelcomeModal(data);
+          closeWizard();
+
+          // Reload page to show new org
+          setTimeout(() => {
+            window.location.reload();
+          }, 5000);
+        } else {
+          throw new Error(data.error || 'Onboarding failed');
+        }
+      } catch (error) {
+        console.error('Onboarding error:', error);
+        alert('Failed to complete onboarding: ' + error.message);
+        nextBtn.textContent = originalText;
+        nextBtn.disabled = false;
+      }
+    }
+
+    // Show welcome modal with API key and savings
+    function showWelcomeModal(data) {
+      const modalHtml = `
+        <div id="welcomeModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div class="w-full max-w-lg rounded-2xl border border-emerald-500/50 bg-slate-900 shadow-2xl">
+            <div class="border-b border-slate-800 bg-gradient-to-r from-emerald-600/20 to-sky-600/20 px-6 py-4">
+              <h2 class="text-2xl font-bold">🎉 Welcome to AgentCache!</h2>
+              <p class="text-sm text-slate-300 mt-1">Your workspace is ready</p>
+            </div>
+            
+            <div class="p-6 space-y-4">
+              <div class="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4">
+                <p class="text-sm font-semibold text-emerald-300 mb-2">💰 Projected Savings</p>
+                <p class="text-3xl font-bold text-emerald-400">$${data.projectedSavings.toLocaleString()}<span class="text-lg text-slate-400">/month</span></p>
+              </div>
+              
+              <div>
+                <p class="text-sm font-semibold text-slate-300 mb-2">📋 Your Starter Pipeline</p>
+                <p class="text-sm text-slate-400">${data.pipeline.description}</p>
+                <div class="mt-2 flex flex-wrap gap-1">
+                  ${data.pipeline.nodes.map(n => `<span class="inline-flex items-center rounded-full bg-slate-700/50 px-2 py-1 text-xs text-slate-300">${n.label}</span>`).join('')}
+                </div>
+              </div>
+              
+              <div class="rounded-xl border border-sky-500/40 bg-slate-800/50 p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <p class="text-sm font-semibold text-sky-300">🔑 Your API Key</p>
+                  <button onclick="copyApiKey('${data.apiKey}')" class="text-xs text-sky-400 hover:text-sky-300">Copy</button>
+                </div>
+                <code class="block text-xs font-mono text-slate-300 break-all bg-slate-900 p-2 rounded">${data.apiKey}</code>
+                <p class="text-xs text-amber-300 mt-2">⚠️ Save this key now - it won't be shown again!</p>
+              </div>
+              
+              <div class="grid grid-cols-3 gap-3 text-center">
+                <div>
+                  <p class="text-xs text-slate-500">Hit Rate</p>
+                  <p class="text-lg font-bold text-emerald-400">${Math.round((data.pipeline.estimatedHitRate || 0) * 100)}%</p>
+                </div>
+                <div>
+                  <p class="text-xs text-slate-500">Latency</p>
+                  <p class="text-lg font-bold text-sky-400">${data.pipeline.avgLatency}ms</p>
+                </div>
+                <div>
+                  <p class="text-xs text-slate-500">Compliance</p>
+                  <p class="text-lg font-bold text-purple-400">${data.pipeline.compliance?.join(', ') || 'Standard'}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="border-t border-slate-800 px-6 py-4 bg-slate-900/50">
+              <button onclick="closeWelcomeModal()" class="w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-sky-600 rounded-lg text-sm font-semibold text-white hover:from-emerald-500 hover:to-sky-500">
+                Get Started →
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+
+    function copyApiKey(key) {
+      navigator.clipboard.writeText(key);
+      alert('API key copied to clipboard!');
+    }
+
+    function closeWelcomeModal() {
+      document.getElementById('welcomeModal')?.remove();
+    }
+
+    // Save Pipeline to Database
+    async function savePipeline() {
+      if (!currentPipeline) {
+        addAIMessage('No pipeline to save', 'assistant');
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('agentcache_token');
+        if (!token) {
+          alert('Please log in to save pipelines');
+          return;
+        }
+
+        const response = await fetch('/api/pipelines/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            name: currentPipeline.name,
+            description: currentPipeline.description,
+            sector: currentPipeline.sector,
+            nodes: currentPipeline.nodes,
+            connections: currentPipeline.connections,
+            features: currentPipeline.features,
+            complexity: currentPipeline.complexity,
+            monthlyCost: currentPipeline.metrics?.estimated_monthly_cost
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          currentPipeline.id = data.pipeline.id;
+          addAIMessage(`✅ Pipeline saved successfully: ${data.pipeline.id}`, 'assistant');
+        } else {
+          throw new Error(data.error || 'Failed to save pipeline');
+        }
+      } catch (error) {
+        console.error('Save failed:', error);
+        addAIMessage(`❌ Failed to save: ${error.message}`, 'assistant');
+      }
+    }
+
+    // Load Pipelines from Database
+    async function loadPipelines() {
+      try {
+        const token = localStorage.getItem('agentcache_token');
+        if (!token) return;
+
+        const response = await fetch('/api/pipelines/list?limit=20', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await response.json();
+
+        if (data.pipelines) {
+          console.log(`Loaded ${data.pipelines.length} pipelines`);
+          return data.pipelines;
+        }
+      } catch (error) {
+        console.error('Failed to load pipelines:', error);
+      }
+      return [];
+    }
+
+    // Render Pipeline on Canvas
+    function renderPipelineOnCanvas(pipeline) {
+      document.getElementById('emptyState').classList.add('hidden');
+      document.getElementById('pipelineName').textContent = pipeline.name;
+      document.getElementById('metricHitRate').textContent = `${Math.round(pipeline.metrics.estimated_hit_rate * 100)}%`;
+      document.getElementById('metricLatency').textContent = `${pipeline.metrics.estimated_latency_ms}ms`;
+      document.getElementById('metricSavings').textContent = `$${pipeline.metrics.estimated_savings_per_request}`;
+
+      // Update validation status
+      const status = document.getElementById('validationStatus');
+      status.innerHTML = `
+        <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+        <span class="text-emerald-300">Valid • Tier: ${pipeline.complexity_tier}</span>
+      `;
+
+      // Enable buttons
+      document.getElementById('optimizeBtn').disabled = false;
+      document.getElementById('deployBtn').disabled = false;
+
+      // Render nodes on canvas
+      const container = document.getElementById('nodesContainer');
+      const nodesHtml = pipeline.nodes.map((node, i) => `
+        <div class="canvas-node absolute pointer-events-auto rounded-xl border border-slate-700 bg-slate-900/90 p-3 shadow-lg" style="left: ${100 + i * 200}px; top: ${200}px">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="flex h-8 w-8 items-center justify-center rounded-md bg-slate-800 text-xs font-semibold">${node.type.substring(0, 3).toUpperCase()}</div>
+            <div>
+              <p class="text-sm font-semibold">${node.type}</p>
+              <p class="text-xs text-slate-500">Node ${i + 1}</p>
+            </div>
+          </div>
+        </div>
+      `).join('');
+      container.innerHTML = nodesHtml;
+
+      // Add to AI chat
+      addAIMessage(`Created pipeline: ${pipeline.name} with ${pipeline.nodes.length} nodes`, 'assistant');
+    }
+
+    function drawConnections(connections, nodes) {
+      const svg = document.getElementById('connections');
+      svg.innerHTML = '';
+
+      connections.forEach(conn => {
+        const fromNode = nodes.find(n => n.id === conn.from);
+        const toNode = nodes.find(n => n.id === conn.to);
+
+        if (fromNode && toNode) {
+          const fromX = fromNode.position.x + 100;
+          const fromY = fromNode.position.y + 40;
+          const toX = toNode.position.x;
+          const toY = toNode.position.y + 40;
+
+          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path.setAttribute('d', `M ${fromX} ${fromY} C ${(fromX + toX) / 2} ${fromY}, ${(fromX + toX) / 2} ${toY}, ${toX} ${toY}`);
+          path.setAttribute('stroke', 'url(#connectionGradient)');
+          path.setAttribute('stroke-width', '2');
+          path.setAttribute('fill', 'none');
+          path.setAttribute('marker-end', 'url(#arrowhead)');
+          path.classList.add('node-connection', 'animated');
+
+          svg.appendChild(path);
+        }
+      });
+    }
+
+    // AI Chat
+    function sendAIMessage() {
+      const input = document.getElementById('aiInput');
+      const message = input.value.trim();
+
+      if (!message) return;
+
+      addAIMessage(message, 'user');
+      input.value = '';
+
+      // Process AI command
+      processAICommand(message);
+    }
+
+    function addAIMessage(text, role) {
+      const chat = document.getElementById('aiAssistantChat');
+      const isUser = role === 'user';
+
+      const msg = document.createElement('div');
+      msg.className = `text-sm ${isUser ? 'text-right' : ''}`;
+      msg.innerHTML = `
+        <div class="inline-block rounded-lg px-3 py-2 ${isUser ? 'bg-sky-600 text-white' : 'bg-slate-800 text-slate-100'}">
+          ${text}
+        </div>
+      `;
+
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function processAICommand(command) {
+      if (!currentPipeline) {
+        addAIMessage('Please create a pipeline first', 'assistant');
+        return;
+      }
+
+      const lower = command.toLowerCase();
+
+      if (lower.includes('faster') || lower.includes('latency')) {
+        await optimizePipeline(['latency']);
+      } else if (lower.includes('cost') || lower.includes('cheap')) {
+        await optimizePipeline(['cost']);
+      } else {
+        addAIMessage(`I can help optimize your pipeline. Try: "make it faster" or "reduce cost"`, 'assistant');
+      }
+    }
+
+    // Optimize Pipeline
+    async function optimizePipeline(goals = ['cost']) {
+      if (!currentPipeline) return;
+
+      addAIMessage(`Optimizing pipeline for ${goals.join(', ')}...`, 'assistant');
+
+      try {
+        const response = await fetch('/api/pipeline/optimize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pipeline: currentPipeline,
+            goals,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.pipeline) {
+          currentPipeline = data.pipeline;
+          renderPipelineOnCanvas(data.pipeline);
+
+          const improvements = [];
+          if (data.improvement.latency !== 0) improvements.push(`${Math.abs(data.improvement.latency)}ms ${data.improvement.latency < 0 ? 'slower' : 'faster'}`);
+          if (data.improvement.hitRate !== 0) improvements.push(`${Math.abs(data.improvement.hitRate)}% ${data.improvement.hitRate > 0 ? 'better' : 'worse'} hit rate`);
+
+          addAIMessage(`✅ Optimized! ${improvements.join(', ')}. Made ${data.changes.length} changes.`, 'assistant');
+        }
+      } catch (error) {
+        console.error('Optimization failed:', error);
+        addAIMessage('Optimization failed. Please try again.', 'assistant');
+      }
+    }
+
+    document.getElementById('clearChatBtn').addEventListener('click', () => {
+      document.getElementById('aiAssistantChat').innerHTML = `
+        <div class="text-xs text-slate-500 text-center py-8">
+          <p>Ask me to optimize your pipeline, add nodes, or adjust configuration</p>
+          <p class="mt-2 text-slate-600">Try: "Make it faster" or "Add audit logging"</p>
+        </div>
+      `;
+    });
+
+    // ==============================================================
+    // Dynamic View Functionality
+    // ==============================================================
+
+    function switchTab(tabName) {
+      // Track analytics
+      if (window.demoAnalytics) {
+        window.demoAnalytics.trackEvent('tab_switch', { tab: tabName });
+      }
+
+      // Update tab buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.tab === tabName) {
+          btn.classList.add('active');
+        }
+      });
+
+      // Update tab content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+
+      // Get node palette element
+      const nodePalette = document.getElementById('nodePalette');
+
+      // Handle tab-specific logic
+      if (tabName === 'workspace') {
+        document.getElementById('workspaceTab').classList.add('active');
+        document.getElementById('metricsBar').style.display = 'none';
+        nodePalette.classList.add('hidden');
+      } else if (tabName === 'builder') {
+        document.getElementById('builderTab').classList.add('active');
+        document.getElementById('metricsBar').style.display = 'block';
+        nodePalette.classList.remove('hidden');
+      } else if (tabName === 'dynamicview') {
+        document.getElementById('dynamicViewTab').classList.add('active');
+        document.getElementById('metricsBar').style.display = 'none';
+        nodePalette.classList.add('hidden');
+      } else if (tabName === 'livedemo' || tabName === 'liveDemo') {
+        document.getElementById('liveDemoTab').classList.add('active');
+        document.getElementById('metricsBar').style.display = 'none';
+        nodePalette.classList.add('hidden');
+      } else if (tabName === 'scenarios') {
+        document.getElementById('scenariosTab').classList.add('active');
+        document.getElementById('metricsBar').style.display = 'none';
+        nodePalette.classList.add('hidden');
+      } else if (tabName === 'analytics') {
+        document.getElementById('analyticsTab').classList.add('active');
+        document.getElementById('metricsBar').style.display = 'none';
+        nodePalette.classList.add('hidden');
+      }
+    }
+
+    function loadTemplateGallery() {
+      const templates = [
+        { id: 'pipeline-dashboard', name: '📊 Pipeline Dashboard', icon: '📊' },
+        { id: 'cost-analyzer', name: '💰 Cost Analyzer', icon: '💰' },
+        { id: 'compliance-audit', name: '🔒 Compliance', icon: '🔒' },
+        { id: 'hit-rate-viz', name: '🎯 Hit Rate', icon: '🎯' },
+        { id: 'node-config', name: '⚙️ Node Config', icon: '⚙️' }
+      ];
+
+      const gallery = document.getElementById('templateGallery');
+      gallery.innerHTML = templates.map(t => `
+        <button 
+          class="rounded-md border border-slate-700 bg-slate-900/80 hover:bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-300 whitespace-nowrap"
+          onclick="loadTemplate('${t.id}')"
+        >
+          ${t.icon} ${t.name}
+        </button>
+      `).join('');
+    }
+
+    async function loadTemplate(templateId) {
+      const canvas = document.getElementById('dynamicViewCanvas');
+      const empty = document.getElementById('dynamicViewEmpty');
+
+      empty.style.display = 'none';
+      canvas.innerHTML = '<div class="flex items-center justify-center h-full"><div class="text-center"><div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-sky-500 border-r-transparent"></div><p class="mt-4 text-sm text-slate-400">Loading template...</p></div></div>';
+
+      try {
+        const response = await fetch(`/api/dynamicview/templates/${templateId}`);
+        const data = await response.json();
+
+        if (data.schema) {
+          renderDynamicView(data.schema);
+        } else {
+          throw new Error('Invalid template response');
+        }
+      } catch (error) {
+        console.error('Template load failed:', error);
+        canvas.innerHTML = `
+          <div class="rounded-lg border-2 border-rose-500 bg-rose-500/10 p-6">
+            <h3 class="text-lg font-semibold text-rose-300 mb-2">⚠️ Failed to load template</h3>
+            <p class="text-sm text-rose-200">${error.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    async function generateDynamicView() {
+      const input = document.getElementById('dynamicViewPrompt');
+      const prompt = input.value.trim();
+
+      if (!prompt) {
+        alert('Please enter a description');
+        return;
+      }
+
+      const canvas = document.getElementById('dynamicViewCanvas');
+      const empty = document.getElementById('dynamicViewEmpty');
+
+      empty.style.display = 'none';
+      canvas.innerHTML = '<div class="flex items-center justify-center h-full"><div class="text-center"><div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-sky-500 border-r-transparent"></div><p class="mt-4 text-sm text-slate-400">Generating with AI...</p></div></div>';
+
+      try {
+        const response = await fetch('/api/dynamicview/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt,
+            sector: currentSector,
+            useCache: true
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.schema) {
+          console.log(`[DynamicView] Generated via ${data.metadata.generatedBy} in ${data.metadata.latency}ms`);
+          renderDynamicView(data.schema);
+          input.value = '';
+        } else {
+          throw new Error(data.error || 'Failed to generate view');
+        }
+      } catch (error) {
+        console.error('Dynamic View generation failed:', error);
+        canvas.innerHTML = `
+          <div class="rounded-lg border-2 border-rose-500 bg-rose-500/10 p-6">
+            <h3 class="text-lg font-semibold text-rose-300 mb-2">⚠️ Generation Failed</h3>
+            <p class="text-sm text-rose-200">${error.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderDynamicView(schema) {
+      const canvas = document.getElementById('dynamicViewCanvas');
+
+      // Validate schema first
+      if (!schema || !schema.root) {
+        canvas.innerHTML = '<div class="text-sm text-rose-400">Invalid schema: missing root component</div>';
+        return;
+      }
+
+      // Render the view (simplified - in production, use DynamicViewRenderer React component)
+      canvas.innerHTML = renderComponent(schema.root);
+    }
+
+    // Simplified component renderer (for demo - production should use React component)
+    function renderComponent(component) {
+      switch (component.type) {
+        case 'container':
+          return `<div class="space-y-4">${component.children?.map(c => renderComponent(c)).join('') || ''}</div>`;
+
+        case 'grid':
+          const cols = component.columns || 3;
+          return `<div class="grid grid-cols-${cols} gap-4">${component.children?.map(c => renderComponent(c)).join('') || ''}</div>`;
+
+        case 'card':
+          return `
+            <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+              ${component.title ? `<h3 class="text-lg font-semibold text-slate-100 mb-4">${component.title}</h3>` : ''}
+              ${component.children?.map(c => renderComponent(c)).join('') || ''}
+            </div>
+          `;
+
+        case 'heading':
+          const tag = `h${component.level}`;
+          return `<${tag} class="font-bold text-slate-100">${component.content}</${tag}>`;
+
+        case 'text':
+          return `<p class="text-slate-300">${component.content}</p>`;
+
+        case 'metric':
+          return `
+            <div class="flex flex-col gap-1">
+              <span class="text-xs uppercase tracking-wide text-slate-500">${component.label}</span>
+              <span class="text-3xl font-bold text-slate-50">${component.value}</span>
+              ${component.trend ? `<span class="text-sm text-${component.trend === 'up' ? 'emerald' : 'rose'}-400">${component.trend === 'up' ? '↗' : '↘'} ${component.trendValue || ''}</span>` : ''}
+            </div>
+          `;
+
+        case 'badge':
+          const variantColors = {
+            success: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+            warning: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+            error: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+            info: 'bg-sky-500/20 text-sky-300 border-sky-500/40',
+            neutral: 'bg-slate-500/20 text-slate-300 border-slate-500/40'
+          };
+          return `<span class="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs font-medium ${variantColors[component.variant || 'neutral']}">${component.label}</span>`;
+
+        case 'row':
+          return `<div class="flex gap-4">${component.children?.map(c => renderComponent(c)).join('') || ''}</div>`;
+
+        case 'chart':
+          return `<div class="rounded-lg border border-slate-800 bg-slate-900/50 p-4"><h4 class="text-sm font-semibold text-slate-300 mb-3">${component.title || 'Chart'}</h4><div class="h-48 flex items-center justify-center text-slate-500 text-sm">📊 ${component.chartType} chart</div></div>`;
+
+        default:
+          return `<div class="text-xs text-slate-500">Unknown component: ${component.type}</div>`;
+      }
+    }
+
+    // ===== Scan Project Modal Functions =====
+    let scanState = {
+      step: 1,
+      workspace: null
+    };
+
+    function openScanModal() {
+      document.getElementById('scanProjectModal').classList.remove('hidden');
+      scanState = { step: 1, workspace: null };
+      showScanStep(1);
+
+      // Reset inputs
+      document.getElementById('githubUrl').value = '';
+      document.getElementById('manualTechStack').value = '';
+      document.getElementById('workspaceName').value = '';
+    }
+
+    function closeScanModal() {
+      document.getElementById('scanProjectModal').classList.add('hidden');
+    }
+
+    async function handleScanAction() {
+      const actionBtn = document.getElementById('scanActionBtn');
+
+      if (scanState.step === 1) {
+        // Validate input
+        const githubUrl = document.getElementById('githubUrl').value.trim();
+        const manualStack = document.getElementById('manualTechStack').value.trim();
+
+        if (!githubUrl && !manualStack) {
+          alert('Please provide either a GitHub URL or describe your tech stack');
+          return;
+        }
+
+        // Check demo mode scan limit
+        if (isDemoMode) {
+          const demoScans = parseInt(sessionStorage.getItem('demo_scans') || '0');
+          if (demoScans >= 1) {
+            showUpgradeModal('demo');
+            return;
+          }
+          sessionStorage.setItem('demo_scans', (demoScans + 1).toString());
+        }
+
+        // Check pipeline limit before scanning
+        const canCreate = await checkPipelineLimit();
+        if (!canCreate) {
+          return;
+        }
+
+        // Start scanning
+        showScanStep(2);
+        actionBtn.disabled = true;
+
+        try {
+          const workspaceName = document.getElementById('workspaceName').value.trim();
+
+          const response = await fetch('/api/workspace/scan-and-create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              scanInput: {
+                github_url: githubUrl || null,
+                tech_stack: manualStack || null
+              },
+              workspaceName: workspaceName || null
+            })
+          });
+
+          const data = await response.json();
+
+          if (data.success && data.workspace) {
+            scanState.workspace = data.workspace;
+            displayScanResults(data.workspace);
+            showScanStep(3);
+            actionBtn.disabled = false;
+            actionBtn.textContent = 'Create Workspace';
+          } else {
+            throw new Error(data.message || 'Scan failed');
+          }
+        } catch (error) {
+          console.error('Scan failed:', error);
+          alert(`Scan failed: ${error.message}`);
+          showScanStep(1);
+          actionBtn.disabled = false;
+        }
+      } else if (scanState.step === 3) {
+        // Save workspace and load in Studio
+        saveScannedWorkspace(scanState.workspace);
+        closeScanModal();
+      }
+    }
+
+    function showScanStep(step) {
+      scanState.step = step;
+
+      // Hide all steps
+      document.getElementById('scanStep1').classList.add('hidden');
+      document.getElementById('scanStep2').classList.add('hidden');
+      document.getElementById('scanStep3').classList.add('hidden');
+
+      // Show current step
+      document.getElementById(`scanStep${step}`).classList.remove('hidden');
+
+      // Update buttons
+      const backBtn = document.getElementById('scanBackBtn');
+      const actionBtn = document.getElementById('scanActionBtn');
+
+      if (step === 1) {
+        backBtn.classList.add('hidden');
+        actionBtn.textContent = 'Scan Project';
+      } else if (step === 2) {
+        backBtn.classList.add('hidden');
+        actionBtn.classList.add('hidden');
+      } else if (step === 3) {
+        backBtn.classList.remove('hidden');
+        actionBtn.classList.remove('hidden');
+        actionBtn.textContent = 'Create Workspace';
+      }
+    }
+
+    function displayScanResults(workspace) {
+      const { sector, pipeline, metrics, recommendations, scanResults } = workspace;
+
+      // Sector detection
+      const sectorIcons = {
+        filestorage: '📁',
+        healthcare: '🏥',
+        finance: '📈',
+        legal: '⚖️',
+        education: '🎓',
+        ecommerce: '🛒',
+        enterprise: '🏢',
+        developer: '💻',
+        datascience: '🔬',
+        government: '🏛️'
+      };
+
+      const sectorNames = {
+        filestorage: 'File Storage',
+        healthcare: 'Healthcare',
+        finance: 'Finance',
+        legal: 'Legal',
+        education: 'Education',
+        ecommerce: 'E-commerce',
+        enterprise: 'Enterprise',
+        developer: 'Developer Tools',
+        datascience: 'Data Science',
+        government: 'Government'
+      };
+
+      document.getElementById('detectedSector').innerHTML = `
+        <span>${sectorIcons[sector] || '⚡'} ${sectorNames[sector] || sector}</span>
+      `;
+
+      document.getElementById('sectorReason').textContent =
+        recommendations.detection_reason || 'Based on detected APIs and patterns';
+
+      // Pipeline info
+      document.getElementById('pipelineName').textContent = pipeline.name;
+      document.getElementById('pipelineNodes').textContent = `${pipeline.nodes.length} nodes`;
+      document.getElementById('pipelineComplexity').textContent = metrics.complexity;
+
+      // Metrics
+      document.getElementById('metricLatencyPreview').textContent = metrics.estimatedLatency;
+      document.getElementById('metricHitRatePreview').textContent = metrics.estimatedHitRate;
+      document.getElementById('metricSavingsPreview').textContent = metrics.estimatedSavings;
+
+      // Namespaces
+      const namespacesHtml = recommendations.namespaces.map(ns => `
+        <span class="inline-flex items-center gap-1 rounded-full bg-sky-500/20 px-3 py-1 text-xs font-medium text-sky-300">
+          ${ns}
+        </span>
+      `).join('');
+      document.getElementById('namespacesList').innerHTML = namespacesHtml;
+
+      // Mesh network preview (simplified text for now)
+      const meshPreview = document.getElementById('meshPreview');
+      const storageApis = scanResults.storage_apis || [];
+      meshPreview.innerHTML = `
+        <div class="text-left space-y-2">
+          <p class="text-xs text-slate-400">Your Infrastructure:</p>
+          ${storageApis.map(api => `
+            <div class="flex items-center gap-2 text-xs text-slate-300">
+              <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+              <span>${api.name || api}</span>
+            </div>
+          `).join('')}
+          <div class="flex items-center gap-2 text-xs text-slate-300">
+            <span class="h-2 w-2 rounded-full bg-sky-400"></span>
+            <span>AgentCache L1/L2/L3 Tiers</span>
+          </div>
+        </div>
+      `;
+    }
+
+    async function saveScannedWorkspace(workspace) {
+      if (isDemoMode) {
+        // Demo mode: sessionStorage only
+        const demoPipelines = JSON.parse(sessionStorage.getItem('demo_pipelines') || '[]');
+        demoPipelines.push(workspace);
+        sessionStorage.setItem('demo_pipelines', JSON.stringify(demoPipelines));
+
+        addAIMessage(`🎭 Demo: Created workspace "${workspace.name}" (not saved permanently)`, 'assistant');
+      } else {
+        // Authenticated: save to localStorage and optionally to database
+        const workspaces = JSON.parse(localStorage.getItem('agentcache_workspaces') || '[]');
+        workspaces.push(workspace);
+        localStorage.setItem('agentcache_workspaces', JSON.stringify(workspaces));
+
+        // TODO: Sync to database via /api/workspace/save when endpoint is ready
+
+        addAIMessage(`✅ Created workspace: ${workspace.name}`, 'assistant');
+      }
+
+      // Load the pipeline in Studio
+      currentPipeline = workspace.pipeline;
+      renderPipelineOnCanvas(workspace.pipeline);
+
+      // Update sector if different
+      if (workspace.sector !== currentSector) {
+        currentSector = workspace.sector;
+        updateSectorDisplay();
+        loadSectorNodes();
+      }
+
+      addAIMessage(`📊 ${workspace.metrics.nodeCount} nodes • ${workspace.metrics.estimatedSavings} monthly savings`, 'assistant');
+
+      // Increment quota counter for authenticated users
+      if (!isDemoMode && pipelineQuota) {
+        pipelineQuota.current++;
+      }
+    }
+
+    function updateSectorDisplay() {
+      const sectorIcons = {
+        filestorage: '📁',
+        healthcare: '🏥',
+        finance: '📈',
+        legal: '⚖️',
+        education: '🎓',
+        ecommerce: '🛒',
+        enterprise: '🏢',
+        developer: '💻',
+        datascience: '🔬',
+        government: '🏛️'
+      };
+
+      const sectorNames = {
+        filestorage: 'File Storage',
+        healthcare: 'Healthcare',
+        finance: 'Finance',
+        legal: 'Legal',
+        education: 'Education',
+        ecommerce: 'E-commerce',
+        enterprise: 'Enterprise',
+        developer: 'Developer Tools',
+        datascience: 'Data Science',
+        government: 'Government'
+      };
+
+      document.getElementById('sectorIcon').textContent = sectorIcons[currentSector] || '⚡';
+      document.getElementById('sectorName').textContent = sectorNames[currentSector] || currentSector;
+    }
+
+    // ==============================================================
+    // Live Demo & Scenarios Integration
+    // ==============================================================
+
+    let liveDataFetcher;
+    let metricsTracker;
+    let scenarioRunner;
+    let sessionStartTime;
+    let dataStreamViz; // Data Stream Visualizer
+    let analyticsDashboard; // Scientific Analytics Dashboard
+    let hierarchyViz; // Cache Hierarchy Visualizer
+    let dataGrid; // Data Grid Component
+
+    // Initialize live data modules
+    function initializeLiveData() {
+      if (typeof LiveDataFetcher === 'undefined') {
+        console.warn('LiveDataFetcher not loaded');
+        return;
+      }
+
+      liveDataFetcher = new LiveDataFetcher();
+      metricsTracker = new LiveMetricsTracker(liveDataFetcher);
+
+      // Create scenario update callback
+      const onScenarioUpdate = (update) => {
+        updateScenarioProgress(update);
+      };
+      scenarioRunner = new ScenarioRunner(liveDataFetcher, onScenarioUpdate);
+
+      sessionStartTime = Date.now();
+
+      // Populate data source dropdown
+      const select = document.getElementById('dataSourceSelect');
+      LIVE_DATA_SOURCES.forEach(source => {
+        const option = document.createElement('option');
+        option.value = source.id;
+        option.textContent = `${source.icon} ${source.name}`;
+        select.appendChild(option);
+      });
+
+      // Populate workspace pipeline cards
+      populateWorkspacePipelines();
+
+      // Populate scenario cards
+      populateScenarioCards();
+
+      // Start session timer
+      startSessionTimer();
+
+      // Initialize Data Stream Visualizer
+      initializeDataStreamViz();
+
+      // Initialize Scientific Analytics Dashboard
+      initializeAnalyticsDashboard();
+
+      console.log('[Studio] Live data modules initialized');
+    }
+
+    // Initialize Data Stream Visualizer
+    function initializeDataStreamViz() {
+      if (typeof DataStreamVisualizer === 'undefined') {
+        console.warn('DataStreamVisualizer not loaded');
+        return;
+      }
+
+      dataStreamViz = new DataStreamVisualizer('dataStreamCanvas', {
+        hitRate: 0.92,
+        spawnRate: 40, // Start slow
+        particleSpeed: 2
+      });
+
+      // Auto-start when Live Demo tab is active
+      const liveDemoTab = document.querySelector('[data-tab="livedemo"]');
+      if (liveDemoTab) {
+        liveDemoTab.addEventListener('click', () => {
+          if (dataStreamViz && !dataStreamViz.running) {
+            dataStreamViz.start();
+          }
+        });
+      }
+
+      // Stop when switching away from Live Demo
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (btn.dataset.tab !== 'livedemo' && dataStreamViz && dataStreamViz.running) {
+            dataStreamViz.stop();
+          }
+        });
+      });
+
+      console.log('[Studio] Data Stream Visualizer initialized');
+    }
+
+    // Initialize Scientific Analytics Dashboard
+    function initializeAnalyticsDashboard() {
+      if (typeof CacheAnalyticsDashboard === 'undefined') {
+        console.warn('CacheAnalyticsDashboard not loaded');
+        return;
+      }
+
+      // Initialize main dashboard
+      analyticsDashboard = new CacheAnalyticsDashboard('scientificAnalyticsDashboard', {
+        timeWindow: 60,
+        maxDataPoints: 60,
+        movingAverageWindow: 10
+      });
+      analyticsDashboard.init();
+
+      // Initialize cache hierarchy visualizer
+      hierarchyViz = new CacheHierarchyVisualizer('cacheHierarchyViz', {
+        width: 800,
+        height: 400
+      });
+      hierarchyViz.init();
+
+      // Initialize data grid
+      dataGrid = new DataGridComponent('dataSourceTable');
+      dataGrid.init();
+
+      // Wire up tab switching for analytics dashboard
+      const analyticsTab = document.querySelector('[data-tab="analytics"]');
+      if (analyticsTab) {
+        analyticsTab.addEventListener('click', () => {
+          // Update data grid with current metrics
+          if (metricsTracker && dataGrid) {
+            const stats = analyticsDashboard.getStatistics();
+            dataGrid.updateData(stats.sectorMetrics);
+          }
+        });
+      }
+
+      console.log('[Studio] Scientific Analytics Dashboard initialized');
+    }
+
+    // Workspace Pipeline Templates
+    const WORKSPACE_PIPELINES = [
+      {
+        id: 'crypto-price-tracker',
+        name: 'Crypto Price Tracker',
+        description: 'Real-time cryptocurrency prices with L1/L2 caching',
+        sector: 'crypto',
+        icon: '₿',
+        dataSource: 'crypto-prices', // Matches LIVE_DATA_SOURCES id
+        nodes: ['L1 Cache', 'L2 Cache', 'CoinGecko API'],
+        estimatedSavings: '$240/mo',
+        hitRate: '92%',
+        status: 'active'
+      },
+      {
+        id: 'weather-forecast',
+        name: 'Weather Forecast API',
+        description: 'Global weather data with intelligent TTL caching',
+        sector: 'weather',
+        icon: '🌤️',
+        dataSource: 'weather-data', // Matches LIVE_DATA_SOURCES id
+        nodes: ['L1 Cache', 'L2 Cache', 'OpenMeteo API'],
+        estimatedSavings: '$180/mo',
+        hitRate: '89%',
+        status: 'active'
+      },
+      {
+        id: 'drug-safety',
+        name: 'FDA Drug Safety Alerts',
+        description: 'HIPAA-compliant adverse event monitoring',
+        sector: 'healthcare',
+        icon: '💊',
+        dataSource: 'fda-drugs', // Matches LIVE_DATA_SOURCES id
+        nodes: ['L1 Cache', 'L2 Cache', 'Compliance', 'OpenFDA API'],
+        estimatedSavings: '$320/mo',
+        hitRate: '94%',
+        status: 'active'
+      },
+      {
+        id: 'ecommerce-products',
+        name: 'Product Catalog Cache',
+        description: 'High-performance product data with CDN integration',
+        sector: 'ecommerce',
+        icon: '🛍️',
+        dataSource: 'json-placeholder', // Matches LIVE_DATA_SOURCES id
+        nodes: ['L1 Cache', 'L2 Cache', 'CDN', 'REST API'],
+        estimatedSavings: '$450/mo',
+        hitRate: '96%',
+        status: 'active'
+      },
+      {
+        id: 'geo-lookup',
+        name: 'Geographic Data Lookup',
+        description: 'Country information with persistent caching',
+        sector: 'general',
+        icon: '🌍',
+        dataSource: 'rest-countries', // Matches LIVE_DATA_SOURCES id
+        nodes: ['L1 Cache', 'L2 Cache', 'REST Countries API'],
+        estimatedSavings: '$160/mo',
+        hitRate: '88%',
+        status: 'active'
+      },
+      {
+        id: 'ip-geolocation',
+        name: 'IP Geolocation Service',
+        description: 'Visitor location data with rate-limit protection',
+        sector: 'general',
+        icon: '📍',
+        dataSource: 'ip-geolocation', // Matches LIVE_DATA_SOURCES id
+        nodes: ['L1 Cache', 'L2 Cache', 'Rate Limiter', 'ipapi.co'],
+        estimatedSavings: '$200/mo',
+        hitRate: '91%',
+        status: 'active'
+      },
+      {
+        id: 'gaming-pokedex',
+        name: 'Gaming Pokedex API',
+        description: 'Pokemon data with aggressive caching strategy',
+        sector: 'gaming',
+        icon: '🎮',
+        dataSource: 'pokemon-api', // Matches LIVE_DATA_SOURCES id
+        nodes: ['L1 Cache', 'L2 Cache', 'PokéAPI'],
+        estimatedSavings: '$140/mo',
+        hitRate: '97%',
+        status: 'active'
+      },
+      {
+        id: 'media-cdn',
+        name: 'Media CDN Pipeline',
+        description: 'Image delivery with edge caching and optimization',
+        sector: 'media',
+        icon: '🖼️',
+        dataSource: 'cat-images', // Matches LIVE_DATA_SOURCES id
+        nodes: ['L1 Cache', 'L2 Cache', 'Image Optimizer', 'The Cat API'],
+        estimatedSavings: '$380/mo',
+        hitRate: '93%',
+        status: 'active'
+      }
+    ];
+
+    function populateWorkspacePipelines() {
+      const grid = document.getElementById('pipelineCardsGrid');
+      if (!grid) return;
+
+      grid.innerHTML = WORKSPACE_PIPELINES.map(pipeline => `
+        <div class="glass-elevated rounded-lg p-5 cursor-pointer hover:border-sky-500 transition-all group" onclick="openPipeline('${pipeline.id}')">
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-3xl">${pipeline.icon}</div>
+            <span class="px-2 py-1 rounded-full text-xs font-mono ${pipeline.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-700 text-slate-400'}">
+              ${pipeline.status === 'active' ? '● LIVE' : '○ DRAFT'}
+            </span>
+          </div>
+          
+          <h3 class="font-display text-lg mb-1 group-hover:text-sky-400 transition-colors">${pipeline.name}</h3>
+          <p class="text-xs text-slate-400 mb-4">${pipeline.description}</p>
+          
+          <div class="flex items-center gap-2 mb-3 text-xs text-slate-500">
+            ${pipeline.nodes.map(node => `<span class="px-2 py-1 rounded bg-slate-800/50">${node}</span>`).join('')}
+          </div>
+          
+          <div class="flex items-center justify-between pt-3 border-t border-slate-800">
+            <div class="flex items-center gap-4 text-xs">
+              <div>
+                <div class="text-slate-500">Hit Rate</div>
+                <div class="font-semibold text-emerald-400">${pipeline.hitRate}</div>
+              </div>
+              <div>
+                <div class="text-slate-500">Savings</div>
+                <div class="font-semibold text-sky-400">${pipeline.estimatedSavings}</div>
+              </div>
+            </div>
+            <button class="px-3 py-1 rounded bg-sky-600 text-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation(); runPipeline('${pipeline.id}')">Run Test</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Open pipeline details
+    window.openPipeline = function (pipelineId) {
+      const pipeline = WORKSPACE_PIPELINES.find(p => p.id === pipelineId);
+      if (!pipeline) return;
+
+      // Track analytics
+      if (window.trackPipelineView) {
+        window.trackPipelineView(pipelineId);
+      }
+
+      // Switch to Builder tab
+      switchTab('builder');
+
+      // Update metrics bar with pipeline name
+      document.getElementById('pipelineName').textContent = pipeline.name;
+      document.getElementById('metricHitRate').textContent = pipeline.hitRate;
+      document.getElementById('metricLatency').textContent = '~50ms';
+      document.getElementById('metricSavings').textContent = pipeline.estimatedSavings;
+
+      // Render pipeline visualization on canvas
+      renderPipelineVisualization(pipeline);
+    };
+
+    // Render pipeline visualization showing how nodes are connected
+    function renderPipelineVisualization(pipeline) {
+      const canvas = document.getElementById('pipelineCanvas');
+      const empty = document.getElementById('canvasEmpty');
+
+      // Hide empty state
+      if (empty) empty.style.display = 'none';
+
+      // Create visual node graph
+      canvas.innerHTML = `
+        <div class="flex flex-col gap-6 p-8">
+          <div class="mb-4">
+            <h2 class="text-2xl font-bold mb-2">${pipeline.icon} ${pipeline.name}</h2>
+            <p class="text-slate-400">${pipeline.description}</p>
+          </div>
+          
+          <div class="flex items-center justify-center gap-8 p-8 bg-slate-900/50 rounded-lg">
+            <!-- Visual flow diagram -->
+            <div class="flex items-center gap-4">
+              ${pipeline.nodes.map((node, index) => `
+                <div class="flex items-center gap-4">
+                  <div class="flex flex-col items-center">
+                    <div class="w-32 h-32 rounded-lg bg-gradient-to-br ${node.includes('L1') ? 'from-emerald-500/20 to-emerald-600/20 border-emerald-500' :
+          node.includes('L2') ? 'from-sky-500/20 to-sky-600/20 border-sky-500' :
+            node.includes('L3') ? 'from-purple-500/20 to-purple-600/20 border-purple-500' :
+              'from-slate-500/20 to-slate-600/20 border-slate-500'
+        } border-2 flex items-center justify-center">
+                      <div class="text-center">
+                        <div class="text-2xl mb-2">${node.includes('L1') ? '⚡' :
+          node.includes('L2') ? '💾' :
+            node.includes('L3') ? '🔮' :
+              '🌐'
+        }</div>
+                        <div class="text-sm font-semibold">${node}</div>
+                        <div class="text-xs text-slate-400 mt-1">${node.includes('L1') ? '<5ms' :
+          node.includes('L2') ? '15ms' :
+            node.includes('L3') ? '50ms' :
+              '800ms'
+        }</div>
+                      </div>
+                    </div>
+                  </div>
+                  ${index < pipeline.nodes.length - 1 ? `
+                    <div class="flex flex-col items-center">
+                      <svg class="w-12 h-8" viewBox="0 0 48 32" fill="none">
+                        <path d="M4 16 H40 M40 16 L32 8 M40 16 L32 24" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round"/>
+                      </svg>
+                      <span class="text-xs text-slate-500 mt-1">→ miss</span>
+                    </div>
+                  ` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4 mt-4">
+            <div class="p-4 bg-slate-900/50 rounded-lg">
+              <h4 class="text-sm font-semibold mb-2 text-emerald-400">How It Works</h4>
+              <p class="text-xs text-slate-400">Requests flow through cache tiers (L1→L2→L3) before hitting the API. ${pipeline.hitRate} of requests are served from cache, avoiding expensive API calls.</p>
+            </div>
+            <div class="p-4 bg-slate-900/50 rounded-lg">
+              <h4 class="text-sm font-semibold mb-2 text-sky-400">Performance Metrics</h4>
+              <ul class="text-xs text-slate-400 space-y-1">
+                <li>• <strong>Hit Rate:</strong> ${pipeline.hitRate}</li>
+                <li>• <strong>Savings:</strong> ${pipeline.estimatedSavings}</li>
+                <li>• <strong>Nodes:</strong> ${pipeline.nodes.length} connected</li>
+                <li>• <strong>Status:</strong> ${pipeline.status === 'active' ? '🟢 Live' : '⚪ Draft'}</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="flex gap-3 mt-4">
+            <button onclick="runPipeline('${pipeline.id}')" class="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-semibold">
+              🧪 Run Test
+            </button>
+            <button onclick="switchTab('workspace')" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg">
+              ← Back to Gallery
+            </button>
+          </div>
+        </div>
+      `;
+    };
+
+    // Run pipeline test
+    window.runPipeline = async function (pipelineId) {
+      const pipeline = WORKSPACE_PIPELINES.find(p => p.id === pipelineId);
+      if (!pipeline || !pipeline.dataSource) return;
+
+      try {
+        // Fetch data from the pipeline's data source
+        const result = await liveDataFetcher.fetch(pipeline.dataSource);
+
+        // Track analytics
+        if (window.trackPipelineTest) {
+          window.trackPipelineTest(pipelineId, result);
+        }
+
+        // Track metrics
+        metricsTracker.recordCall(result);
+      } catch (error) {
+        if (window.trackError) {
+          window.trackError(error, 'pipeline_test');
+        }
+        alert(`Pipeline test failed: ${error.message}`);
+        return;
+      }
+
+      // Update session stats
+      updateSessionStats();
+
+      // Show success notification
+      const card = event.target.closest('.glass-elevated');
+      card.classList.add('ring-2', 'ring-emerald-500');
+      setTimeout(() => card.classList.remove('ring-2', 'ring-emerald-500'), 1000);
+    };
+
+    // Workspace filter
+    document.getElementById('workspaceFilter')?.addEventListener('change', (e) => {
+      const filter = e.target.value;
+      const cards = document.querySelectorAll('#pipelineCardsGrid > div');
+
+      cards.forEach((card, index) => {
+        const pipeline = WORKSPACE_PIPELINES[index];
+        if (filter === 'all' || pipeline.sector === filter) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+
+    // Data source selection handler
+    document.getElementById('dataSourceSelect')?.addEventListener('change', (e) => {
+      const sourceId = e.target.value;
+      const fetchBtn = document.getElementById('fetchDataBtn');
+      const fetch10xBtn = document.getElementById('fetch10xBtn');
+      const sourceInfo = document.getElementById('sourceInfo');
+
+      if (sourceId) {
+        fetchBtn.disabled = false;
+        fetch10xBtn.disabled = false;
+
+        const source = LIVE_DATA_SOURCES.find(s => s.id === sourceId);
+        if (source) {
+          sourceInfo.classList.remove('hidden');
+          sourceInfo.innerHTML = `
+            <div class="text-slate-300 font-medium">${source.icon} ${source.name}</div>
+            <div class="text-slate-400">${source.description}</div>
+            <div class="mt-1 text-slate-500">Cost: $${source.costPerCall.toFixed(4)}/call • TTL: ${source.cacheStrategy.ttl}s</div>
+          `;
+        }
+      } else {
+        fetchBtn.disabled = true;
+        fetch10xBtn.disabled = true;
+        sourceInfo.classList.add('hidden');
+      }
+    });
+
+    // Fetch data button
+    document.getElementById('fetchDataBtn')?.addEventListener('click', async () => {
+      await fetchLiveData(1);
+    });
+
+    // Run 10x button
+    document.getElementById('fetch10xBtn')?.addEventListener('click', async () => {
+      await fetchLiveData(10);
+    });
+
+    // Initialize Response Viewer
+    let responseViewer;
+
+    async function fetchLiveData(iterations = 1) {
+      const sourceId = document.getElementById('dataSourceSelect').value;
+      if (!sourceId) return;
+
+      // Initialize viewer if not already done
+      if (!responseViewer) {
+        responseViewer = new ResponseViewer('responseViewer');
+      }
+
+      const statusEl = document.getElementById('liveStatus');
+      const latencyEl = document.getElementById('liveLatency');
+      const costEl = document.getElementById('liveCost');
+      const savedEl = document.getElementById('liveSaved');
+
+      statusEl.textContent = 'FETCHING...';
+      statusEl.className = 'text-yellow-400';
+
+      let totalLatency = 0;
+      let totalCost = 0;
+      let totalSaved = 0;
+      let lastResult = null;
+
+      for (let i = 0; i < iterations; i++) {
+        try {
+          const result = await liveDataFetcher.fetch(sourceId);
+
+          // Track successful fetch
+          if (window.trackDataFetch) {
+            window.trackDataFetch(sourceId, result.hit, result.latency);
+          }
+
+          totalLatency += result.latency;
+          totalCost += result.cost;
+          totalSaved += result.savedCost || 0;
+
+          lastResult = result;
+
+          // Track metrics
+          metricsTracker.recordCall(result);
+
+          // Update visualizer hit rate in real-time
+          if (dataStreamViz && dataStreamViz.running) {
+            const currentMetrics = metricsTracker.getMetrics();
+            dataStreamViz.setHitRate(currentMetrics.hitRate || 0.92);
+          }
+
+          // Update scientific analytics dashboard
+          if (analyticsDashboard) {
+            const source = LIVE_DATA_SOURCES.find(s => s.id === sourceId);
+            analyticsDashboard.recordDataPoint({
+              latency: result.latency,
+              cost: result.cost || 0,
+              hit: result.hit,
+              sourceId: sourceId,
+              sector: source ? source.sector : 'general',
+              savedCost: result.savedCost || 0
+            });
+          }
+
+          // Update cache hierarchy visualization
+          if (hierarchyViz) {
+            const tier = analyticsDashboard.determineCacheTier({
+              hit: result.hit,
+              latency: result.latency
+            });
+            hierarchyViz.updateTier(tier, result.latency);
+          }
+
+        } catch (error) {
+          statusEl.textContent = 'ERROR';
+          statusEl.className = 'text-rose-400';
+
+          // Show error in Response Viewer
+          responseViewer.render(
+            { error: error.message },
+            { hit: false, latency: 0, cost: 0 }
+          );
+
+          // Track error
+          if (window.trackError) {
+            window.trackError(error, 'data_fetch');
+          }
+          return;
+        }
+      }
+
+      // Update metrics display
+      const avgLatency = Math.round(totalLatency / iterations);
+      statusEl.textContent = totalCost === 0 ? 'CACHE HIT' : 'CACHE MISS';
+      statusEl.className = totalCost === 0 ? 'text-emerald-400' : 'text-amber-400';
+      latencyEl.textContent = `${avgLatency}ms`;
+      costEl.textContent = `$${totalCost.toFixed(4)}`;
+      savedEl.textContent = `$${totalSaved.toFixed(4)}`;
+
+      // Render response with professional viewer
+      responseViewer.render(lastResult.data, {
+        hit: lastResult.hit,
+        latency: avgLatency,
+        cost: totalCost / iterations
+      });
+
+      // Update footer
+      updateSessionStats();
+    }
+
+    function populateScenarioCards() {
+      if (typeof DEMO_SCENARIOS === 'undefined') {
+        console.warn('DEMO_SCENARIOS not loaded');
+        return;
+      }
+
+      const container = document.getElementById('scenarioCards');
+      if (!container) return;
+
+      container.innerHTML = DEMO_SCENARIOS.map(scenario => `
+        <div class="glass-elevated p-4 rounded-lg cursor-pointer hover:border-sky-500 transition-colors" onclick="runScenario('${scenario.id}')">
+          <div class="text-2xl mb-2">${scenario.icon}</div>
+          <h4 class="font-display text-sm mb-2">${scenario.name}</h4>
+          <p class="text-xs text-slate-400 mb-3">${scenario.description}</p>
+          <div class="flex justify-between text-xs text-slate-500">
+            <span>${scenario.duration}s duration</span>
+            <span>${scenario.expectedMetrics.hitRate}% hit rate</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.runScenario = async function (scenarioId) {
+      const scenario = DEMO_SCENARIOS.find(s => s.id === scenarioId);
+      if (!scenario) {
+        console.error('Scenario not found:', scenarioId);
+        return;
+      }
+
+      // Track analytics
+      if (window.trackScenarioRun) {
+        window.trackScenarioRun(scenarioId);
+      }
+
+      try {
+        await scenarioRunner.run(scenarioId);
+
+        // Update footer stats
+        updateSessionStats();
+
+        // Show completion message
+        addAIMessage(`✅ Scenario "${scenario.name}" completed!`, 'assistant');
+
+      } catch (error) {
+        console.error('Scenario failed:', error);
+        alert(`Scenario failed: ${error.message}`);
+
+        if (window.trackError) {
+          window.trackError(error, 'scenario_run');
+        }
+      }
+    };
+
+    // Update scenario progress during execution
+    function updateScenarioProgress(update) {
+      const progress = document.getElementById('scenarioProgress');
+      const progressBar = document.getElementById('scenarioProgressBar');
+      const nameEl = document.getElementById('scenarioName');
+      const stepEl = document.getElementById('scenarioStep');
+      const percentEl = document.getElementById('scenarioPercent');
+      const callsEl = document.getElementById('scenarioCalls');
+      const hitRateEl = document.getElementById('scenarioHitRate');
+      const latencyEl = document.getElementById('scenarioLatency');
+      const savingsEl = document.getElementById('scenarioSavings');
+
+      if (update.status === 'running') {
+        progress.classList.remove('hidden');
+        nameEl.textContent = update.scenario.name;
+
+        progressBar.style.width = `${update.progress}%`;
+        stepEl.textContent = `${update.currentCall || 0}/${update.totalCalls || 0} calls`;
+        percentEl.textContent = `${update.progress}%`;
+
+        // Update metrics from results
+        if (update.results && update.results.length > 0) {
+          const hits = update.results.filter(r => r.hit).length;
+          const totalLatency = update.results.reduce((sum, r) => sum + r.latency, 0);
+          const totalSaved = update.results.reduce((sum, r) => sum + (r.savedCost || 0), 0);
+
+          callsEl.textContent = update.results.length;
+          hitRateEl.textContent = `${Math.round((hits / update.results.length) * 100)}%`;
+          latencyEl.textContent = `${Math.round(totalLatency / update.results.length)}ms`;
+          savingsEl.textContent = `$${totalSaved.toFixed(3)}`;
+        }
+      } else if (update.status === 'completed') {
+        // Hide progress after 3s
+        setTimeout(() => {
+          progress.classList.add('hidden');
+        }, 3000);
+      } else if (update.status === 'error') {
+        progress.classList.add('hidden');
+      }
+    }
+
+    document.getElementById('stopScenarioBtn')?.addEventListener('click', () => {
+      document.getElementById('scenarioProgress').classList.add('hidden');
+    });
+
+    // Session timer
+    function startSessionTimer() {
+      setInterval(() => {
+        const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        document.getElementById('sessionTime').textContent = `${minutes}m ${seconds}s`;
+      }, 1000);
+    }
+
+    function updateSessionStats() {
+      if (!metricsTracker) return;
+
+      const snapshot = metricsTracker.getSnapshot();
+      const metrics = liveDataFetcher.getMetrics();
+
+      document.getElementById('sessionCalls').textContent = metrics.totalCalls;
+      document.getElementById('footerHitRate').textContent = `${metrics.hitRate.toFixed(0)}%`;
+      document.getElementById('footerSavings').textContent = metrics.totalSaved.toFixed(2);
+    }
+
+    // View report button
+    document.getElementById('viewReportBtn')?.addEventListener('click', () => {
+      if (!metricsTracker || !liveDataFetcher) {
+        alert('No session data available yet. Try fetching some data first!');
+        return;
+      }
+
+      const sessionReport = new SessionReport(liveDataFetcher, metricsTracker);
+      const reportData = sessionReport.generateReport();
+
+      // Display in modal or new tab
+      const reportWindow = window.open('', '_blank');
+      reportWindow.document.write(`
+        <html>
+          <head>
+            <title>AgentCache Session Report</title>
+            <style>
+              body { font-family: system-ui; padding: 2rem; background: #0f172a; color: #e2e8f0; }
+              h1 { color: #38bdf8; margin-bottom: 2rem; }
+              h2 { color: #38bdf8; margin-top: 2rem; font-size: 1.25rem; }
+              .metric { margin: 1rem 0; padding: 1rem; background: #1e293b; border-radius: 8px; }
+              .metric-label { font-size: 0.875rem; color: #94a3b8; margin-bottom: 0.5rem; }
+              .metric-value { font-size: 1.5rem; font-weight: bold; }
+              .section { margin-bottom: 2rem; }
+            </style>
+          </head>
+          <body>
+            <h1>📊 AgentCache Session Report</h1>
+            
+            <div class="section">
+              <h2>Summary</h2>
+              <div class="metric">
+                <div class="metric-label">Data Sources Tested</div>
+                <div class="metric-value">${reportData.summary.dataSourcesTested}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Scenarios Run</div>
+                <div class="metric-value">${reportData.summary.scenariosRun}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Total API Calls</div>
+                <div class="metric-value">${reportData.summary.totalCalls}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Session Duration</div>
+                <div class="metric-value">${reportData.summary.sessionDuration}</div>
+              </div>
+            </div>
+            
+            <div class="section">
+              <h2>Performance</h2>
+              <div class="metric">
+                <div class="metric-label">Cache Hit Rate</div>
+                <div class="metric-value" style="color: #10b981">${reportData.performance.cacheHitRate}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Avg Latency (Hit)</div>
+                <div class="metric-value" style="color: #38bdf8">${reportData.performance.avgLatencyHit}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Avg Latency (Miss)</div>
+                <div class="metric-value">${reportData.performance.avgLatencyMiss}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Latency Improvement</div>
+                <div class="metric-value" style="color: #10b981">${reportData.performance.latencyImprovement}</div>
+              </div>
+            </div>
+            
+            <div class="section">
+              <h2>Cost Analysis</h2>
+              <div class="metric">
+                <div class="metric-label">Total Spent (This Session)</div>
+                <div class="metric-value">${reportData.cost.totalSpent}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Total Saved (This Session)</div>
+                <div class="metric-value" style="color: #10b981">${reportData.cost.totalSaved}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Projected Monthly (Without Cache)</div>
+                <div class="metric-value">${reportData.cost.projectedMonthlyWithout}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Projected Monthly (With Cache)</div>
+                <div class="metric-value" style="color: #38bdf8">${reportData.cost.projectedMonthlyWith}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Projected Monthly Savings</div>
+                <div class="metric-value" style="color: #10b981">${reportData.cost.projectedMonthlySavings}</div>
+              </div>
+            </div>
+            
+            <p style="margin-top: 3rem; text-align: center; color: #64748b; font-size: 0.875rem;">
+              Generated at ${reportData.summary.timestamp}
+            </p>
+          </body>
+        </html>
+      `);
+    });
+
+    // Theme switching
+    document.querySelectorAll('[data-theme-btn]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const theme = btn.dataset.themeBtn;
+        document.body.dataset.theme = theme;
+
+        // Track analytics
+        if (window.demoAnalytics) {
+          window.demoAnalytics.trackEvent('theme_switch', { theme });
+        }
+
+        // Update active state
+        document.querySelectorAll('[data-theme-btn]').forEach(b => {
+          b.classList.remove('bg-sky-600');
+          b.classList.add('bg-slate-800');
+        });
+        btn.classList.remove('bg-slate-800');
+        btn.classList.add('bg-sky-600');
+
+        // Store preference
+        localStorage.setItem('agentcache_theme', theme);
+      });
+    });
+
+    // Restore theme preference
+    const savedTheme = localStorage.getItem('agentcache_theme');
+    if (savedTheme) {
+      document.body.dataset.theme = savedTheme;
+      const btn = document.querySelector(`[data-theme-btn="${savedTheme}"]`);
+      if (btn) {
+        document.querySelectorAll('[data-theme-btn]').forEach(b => {
+          b.classList.remove('bg-sky-600');
+          b.classList.add('bg-slate-800');
+        });
+        btn.classList.remove('bg-slate-800');
+        btn.classList.add('bg-sky-600');
+      }
+    }
+  </script>
+</body>
+
 </html>
