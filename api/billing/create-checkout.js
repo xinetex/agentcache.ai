@@ -4,7 +4,7 @@
  */
 
 export const config = {
-  runtime: 'edge',
+  runtime: 'nodejs',
 };
 
 // Helper to hash API key
@@ -20,7 +20,7 @@ async function hashApiKey(apiKey) {
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 
+    headers: {
       'content-type': 'application/json; charset=utf-8',
       'cache-control': 'no-store',
       'access-control-allow-origin': '*',
@@ -35,9 +35,9 @@ export default async function handler(req) {
 
   try {
     // Get API key from header
-    const apiKey = req.headers.get('x-api-key') || 
-                   req.headers.get('authorization')?.replace('Bearer ', '');
-    
+    const apiKey = req.headers.get('x-api-key') ||
+      req.headers.get('authorization')?.replace('Bearer ', '');
+
     if (!apiKey || !apiKey.startsWith('ac_')) {
       return json({ error: 'Invalid or missing API key' }, 401);
     }
@@ -47,19 +47,19 @@ export default async function handler(req) {
 
     // Validate tier
     if (tier !== 'pro') {
-      return json({ 
+      return json({
         error: 'Only Pro tier is available for self-service upgrade',
         message: 'For Enterprise, please contact sales@agentcache.ai'
       }, 400);
     }
 
     // Get Stripe price ID from environment
-    const priceId = billingPeriod === 'yearly' 
-      ? process.env.STRIPE_PRICE_PRO_YEARLY 
+    const priceId = billingPeriod === 'yearly'
+      ? process.env.STRIPE_PRICE_PRO_YEARLY
       : process.env.STRIPE_PRICE_PRO_MONTHLY;
 
     if (!priceId) {
-      return json({ 
+      return json({
         error: 'Stripe not configured',
         message: 'Please contact support@agentcache.ai'
       }, 500);
@@ -67,7 +67,7 @@ export default async function handler(req) {
 
     // Create Stripe checkout session
     const keyHash = await hashApiKey(apiKey);
-    
+
     const stripeResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
       headers: {
@@ -102,9 +102,9 @@ export default async function handler(req) {
 
   } catch (error) {
     console.error('[Billing] Create checkout error:', error);
-    return json({ 
+    return json({
       error: 'Failed to create checkout',
-      message: error.message 
+      message: error.message
     }, 500);
   }
 }

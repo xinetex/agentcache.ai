@@ -4,7 +4,7 @@
  */
 
 export const config = {
-  runtime: 'edge',
+  runtime: 'nodejs',
 };
 
 // Helper to hash API key
@@ -20,7 +20,7 @@ async function hashApiKey(apiKey) {
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 
+    headers: {
       'content-type': 'application/json; charset=utf-8',
       'cache-control': 'no-store',
       'access-control-allow-origin': '*',
@@ -35,9 +35,9 @@ export default async function handler(req) {
 
   try {
     // Get API key from header
-    const apiKey = req.headers.get('x-api-key') || 
-                   req.headers.get('authorization')?.replace('Bearer ', '');
-    
+    const apiKey = req.headers.get('x-api-key') ||
+      req.headers.get('authorization')?.replace('Bearer ', '');
+
     if (!apiKey || !apiKey.startsWith('ac_')) {
       return json({ error: 'Invalid or missing API key' }, 401);
     }
@@ -49,12 +49,12 @@ export default async function handler(req) {
 
     // First check Redis for cached customer ID
     let customerId = null;
-    
+
     if (UPSTASH_URL && UPSTASH_TOKEN) {
       const cacheResponse = await fetch(`${UPSTASH_URL}/get/stripe:${keyHash}:customer`, {
         headers: { 'Authorization': `Bearer ${UPSTASH_TOKEN}` }
       });
-      
+
       if (cacheResponse.ok) {
         const cacheData = await cacheResponse.json();
         customerId = cacheData.result;
@@ -62,7 +62,7 @@ export default async function handler(req) {
     }
 
     if (!customerId) {
-      return json({ 
+      return json({
         error: 'No active subscription',
         message: 'You need to subscribe to a paid plan first'
       }, 404);
@@ -96,9 +96,9 @@ export default async function handler(req) {
 
   } catch (error) {
     console.error('[Billing] Portal error:', error);
-    return json({ 
+    return json({
       error: 'Failed to create portal session',
-      message: error.message 
+      message: error.message
     }, 500);
   }
 }

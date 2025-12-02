@@ -4,14 +4,14 @@
  */
 
 export const config = {
-  runtime: 'edge',
+  runtime: 'nodejs',
 };
 
 // Helper for JSON responses
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 
+    headers: {
       'content-type': 'application/json; charset=utf-8',
       'cache-control': 'no-store',
     },
@@ -138,9 +138,9 @@ export default async function handler(req) {
 
   } catch (error) {
     console.error('[Webhook] Error:', error);
-    return json({ 
+    return json({
       error: 'Webhook processing failed',
-      message: error.message 
+      message: error.message
     }, 500);
   }
 }

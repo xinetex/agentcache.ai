@@ -22,7 +22,7 @@
  * }
  */
 
-export const config = { runtime: 'edge' };
+export const config = { runtime: 'nodejs' };
 
 import { generatePresignedUrl } from '../../lib/aws-sig-v4.js';
 import { authenticate, extractNamespace } from '../../lib/auth-unified.js';
@@ -127,7 +127,7 @@ export default async function handler(req) {
     const endpointRegion = lyveConfig.endpoint.match(/s3\.([^.]+)\.lyvecloud/)?.[1];
     if (endpointRegion && endpointRegion !== lyveConfig.region) {
       console.error(`Region mismatch: endpoint=${endpointRegion}, config=${lyveConfig.region}`);
-      return json({ 
+      return json({
         error: 'Configuration error',
         details: 'Region and endpoint do not match'
       }, 500);
@@ -151,14 +151,14 @@ export default async function handler(req) {
     // Track usage (optional analytics)
     const namespace = extractNamespace(req);
     const logKey = `presigned:${auth.key.hash}:${new Date().toISOString().slice(0, 10)}`;
-    
+
     // Increment counter (fire and forget)
     fetch(`${process.env.UPSTASH_REDIS_REST_URL}/incr/${logKey}`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
       },
-    }).catch(() => {}); // Ignore errors
+    }).catch(() => { }); // Ignore errors
 
     return json({
       url: presignedUrl,
@@ -171,9 +171,9 @@ export default async function handler(req) {
 
   } catch (error) {
     console.error('Presigned URL generation error:', error);
-    return json({ 
+    return json({
       error: 'Internal server error',
-      message: error.message 
+      message: error.message
     }, 500);
   }
 }
