@@ -5,7 +5,7 @@ import DataGrid from '../components/DataGrid';
 import StatDial from '../components/StatDial';
 
 export default function DataExplorer() {
-    const [activeTab, setActiveTab] = useState('cash'); // 'cash', 'inspector', 'embeddings'
+    const [activeTab, setActiveTab] = useState('activity'); // 'activity', 'inspector', 'embeddings'
     const [nodes, setNodes] = useState([]);
     const [loading, setLoading] = useState(false);
     const [embeddingInput, setEmbeddingInput] = useState('');
@@ -56,7 +56,7 @@ export default function DataExplorer() {
             <div className="flex items-center justify-between">
                 <div className="flex gap-2 bg-black/50 p-1 rounded-lg border border-[var(--hud-border)]">
                     {[
-                        { id: 'cash', label: 'Cache Activity', icon: Activity },
+                        { id: 'activity', label: 'Cache Activity', icon: Activity },
                         { id: 'inspector', label: 'Cache Inspector', icon: Database },
                         { id: 'embeddings', label: 'Vector Lab', icon: Layers }
                     ].map(tab => (
@@ -79,7 +79,7 @@ export default function DataExplorer() {
             <div className="flex-1 overflow-hidden">
 
                 {/* CACHE ACTIVITY TAB */}
-                {activeTab === 'cash' && (
+                {activeTab === 'activity' && (
                     <div className="h-full grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4">
                         {/* Cache Stats */}
                         <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-4 gap-6">
