@@ -4,11 +4,7 @@ import CyberCard from '../components/CyberCard';
 import StatDial from '../components/StatDial';
 import DataGrid from '../components/DataGrid';
 
-import React, { useState, useEffect } from 'react';
-import { Activity, Globe, Zap, Server, Shield, Clock } from 'lucide-react';
-import CyberCard from '../components/CyberCard';
-import StatDial from '../components/StatDial';
-import DataGrid from '../components/DataGrid';
+
 
 const Overview = () => {
     const [metrics, setMetrics] = useState({
