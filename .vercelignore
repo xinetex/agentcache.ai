@@ -6,7 +6,7 @@ brain
 *.log
 node_modules
 scripts/verify_*
-tests
+# tests
 
 # Exclude local dev server (Hono) - NOT the Vite build!
 dist/
