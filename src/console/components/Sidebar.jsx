@@ -1,10 +1,12 @@
 import React from 'react';
 
-export default function Sidebar({ activeView, onViewChange }) {
+export default function Sidebar({ activeView, onViewChange, user }) {
     const menuItems = [
         { id: 'overview', label: 'Overview', icon: '📊' },
         { id: 'pipelines', label: 'Pipelines', icon: '⚡' },
         { id: 'swarm', label: 'Swarm', icon: '🌌' },
+        { id: 'lab', label: 'Lab', icon: '🧬' },
+        { id: 'observability', label: 'Observability', icon: '👁️' },
         { id: 'data', label: 'Data Explorer', icon: '💾' },
         { id: 'governance', label: 'Governance', icon: '⚖️' },
     ];
@@ -32,50 +34,16 @@ export default function Sidebar({ activeView, onViewChange }) {
                         {item.label}
                     </button>
                 ))}
-                <button
-                    onClick={() => onViewChange('lab')}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${activeView === 'lab'
-                        ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-[0_0_10px_rgba(6,182,212,0.1)]'
-                        : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/50'
-                        }`}
-                >
-                    <span className="text-lg">🧬</span>
-                    Lab
-                </button>
-
-                <button
-                    onClick={() => onViewChange('observability')}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${activeView === 'observability'
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]'
-                            : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/50'
-                        }`}
-                >
-                    <span className="text-lg">👁️</span>
-                    Observability
-                </button>
-
-                <div className="my-4 border-t border-slate-800/50"></div>
-
-                <button
-                    onClick={() => onViewChange('governance')}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${activeView === 'governance'
-                        ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.1)]'
-                        : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/50'
-                        }`}
-                >
-                    <span className="text-lg">⚖️</span>
-                    Governance
-                </button>
             </nav>
 
             <div className="p-4 border-t border-slate-800">
                 <div className="flex items-center gap-3 px-4 py-3">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-xs font-bold text-white">
-                        AC
+                        {user?.name ? user.name.substring(0, 2).toUpperCase() : 'GU'}
                     </div>
                     <div>
-                        <div className="text-sm font-medium text-white">Admin</div>
-                        <div className="text-xs text-slate-500">Pro Plan</div>
+                        <div className="text-sm font-medium text-white">{user?.name || 'Guest User'}</div>
+                        <div className="text-xs text-slate-500">{user?.role || 'Viewer'}</div>
                     </div>
                 </div>
             </div>

@@ -11,6 +11,13 @@ import { SectorProvider } from '../context/SectorContext';
 
 export default function App() {
     const [activeView, setActiveView] = useState('swarm');
+    const [user, setUser] = useState(() => {
+        try {
+            return JSON.parse(localStorage.getItem('agentcache_user')) || { name: 'Guest', role: 'Viewer' };
+        } catch {
+            return { name: 'Guest', role: 'Viewer' };
+        }
+    });
 
     const renderView = () => {
         switch (activeView) {
@@ -42,7 +49,7 @@ export default function App() {
 
     return (
         <div className="flex h-screen bg-slate-950 text-slate-200 font-sans overflow-hidden">
-            <Sidebar activeView={activeView} onViewChange={setActiveView} />
+            <Sidebar activeView={activeView} onViewChange={setActiveView} user={user} />
             <main className="flex-1 overflow-auto relative">
                 {renderView()}
             </main>
