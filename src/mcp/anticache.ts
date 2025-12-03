@@ -10,6 +10,7 @@
  */
 
 import { createHash } from 'crypto';
+import { redis } from '../lib/redis.js';
 
 // ==========================================
 // TYPES & INTERFACES
@@ -90,7 +91,7 @@ export class FreshnessCalculator {
     const age = now - metadata.cachedAt;
     const ttlRemaining = (metadata.cachedAt + metadata.ttl) - now;
     const expirationTime = metadata.cachedAt + metadata.ttl;
-    
+
     // Determine status
     let status: 'fresh' | 'stale' | 'expired';
     if (now > expirationTime) {
@@ -101,16 +102,16 @@ export class FreshnessCalculator {
     } else {
       status = 'fresh';
     }
-    
+
     // Calculate freshness score (0-100)
-    const freshnessScore = status === 'expired' 
-      ? 0 
+    const freshnessScore = status === 'expired'
+      ? 0
       : Math.max(0, Math.min(100, (ttlRemaining / metadata.ttl) * 100));
-    
+
     // Should we refresh?
-    const shouldRefresh = status === 'expired' || 
-                          (status === 'stale' && metadata.accessCount > 10);
-    
+    const shouldRefresh = status === 'expired' ||
+      (status === 'stale' && metadata.accessCount > 10);
+
     return {
       status,
       age,
@@ -119,7 +120,7 @@ export class FreshnessCalculator {
       shouldRefresh
     };
   }
-  
+
   /**
    * Get recommended TTL based on content type and access patterns
    */
@@ -131,16 +132,16 @@ export class FreshnessCalculator {
       'knowledge': 2592000000,   // 30 days
       'static': 31536000000      // 1 year
     };
-    
+
     const baseTTL = baseTTLs[contentType] || 86400000; // Default 24h
-    
+
     // Adjust based on access pattern
     const multiplier = {
       'frequent': 0.5,  // More frequent = shorter TTL (stay fresh)
       'moderate': 1.0,
       'rare': 2.0       // Rare access = longer TTL (save costs)
     }[accessPattern];
-    
+
     return baseTTL * multiplier;
   }
 }
@@ -150,60 +151,103 @@ export class FreshnessCalculator {
 // ==========================================
 
 export class CacheInvalidator {
-  private metadata: Map<string, CacheMetadata> = new Map();
-  
+  // Removed in-memory map: private metadata: Map<string, CacheMetadata> = new Map();
+
   /**
    * Register cache metadata
    */
-  registerCache(cacheKey: string, metadata: CacheMetadata): void {
-    this.metadata.set(cacheKey, metadata);
+  async registerCache(cacheKey: string, metadata: CacheMetadata): Promise<void> {
+    // Store metadata in Redis
+    await redis.setex(`${cacheKey}:meta`, Math.ceil(metadata.ttl / 1000), JSON.stringify(metadata));
+
+    // Index by namespace for efficient invalidation
+    if (metadata.namespace) {
+      await redis.sadd(`namespace:${metadata.namespace}`, cacheKey);
+    }
   }
-  
+
   /**
    * Get cache metadata
    */
-  getMetadata(cacheKey: string): CacheMetadata | undefined {
-    return this.metadata.get(cacheKey);
+  async getMetadata(cacheKey: string): Promise<CacheMetadata | undefined> {
+    const data = await redis.get(`${cacheKey}:meta`);
+    return data ? JSON.parse(data) : undefined;
   }
-  
+
   /**
    * Update access statistics
    */
-  recordAccess(cacheKey: string): void {
-    const metadata = this.metadata.get(cacheKey);
-    if (metadata) {
+  async recordAccess(cacheKey: string): Promise<void> {
+    const data = await redis.get(`${cacheKey}:meta`);
+    if (data) {
+      const metadata = JSON.parse(data);
       metadata.accessCount++;
       metadata.lastAccessed = Date.now();
-      this.metadata.set(cacheKey, metadata);
+      // Update with same TTL
+      const ttl = await redis.ttl(`${cacheKey}:meta`);
+      if (ttl > 0) {
+        await redis.setex(`${cacheKey}:meta`, ttl, JSON.stringify(metadata));
+      }
     }
   }
-  
+
   /**
    * Invalidate caches matching criteria
    */
   async invalidate(request: InvalidationRequest): Promise<InvalidationResult> {
     const matchingKeys: string[] = [];
     const namespaces = new Set<string>();
-    
-    // Find matching cache keys
-    for (const [cacheKey, metadata] of this.metadata.entries()) {
-      if (this.matchesInvalidationCriteria(cacheKey, metadata, request)) {
-        matchingKeys.push(cacheKey);
-        if (metadata.namespace) {
-          namespaces.add(metadata.namespace);
-        }
+
+    // Strategy:
+    // 1. If namespace provided, scan that namespace set
+    // 2. If pattern provided, scan keys matching pattern
+    // 3. Else, this is a heavy operation (scan all) - strictly limited in prod
+
+    let candidates: string[] = [];
+
+    if (request.namespace) {
+      candidates = await redis.smembers(`namespace:${request.namespace}`);
+      namespaces.add(request.namespace);
+    } else if (request.pattern) {
+      // Use SCAN for pattern matching (inefficient but works for MVP)
+      // In prod, use a proper search index (RedisSearch)
+      let cursor = '0';
+      do {
+        const [nextCursor, keys] = await redis.scan(cursor, 'MATCH', request.pattern, 'COUNT', 100);
+        cursor = nextCursor;
+        candidates.push(...keys);
+      } while (cursor !== '0');
+    }
+
+    // Filter candidates
+    for (const key of candidates) {
+      const metadata = await this.getMetadata(key);
+      if (metadata && this.matchesInvalidationCriteria(key, metadata, request)) {
+        matchingKeys.push(key);
+        if (metadata.namespace) namespaces.add(metadata.namespace);
+      } else if (!metadata) {
+        // Orphaned key or no metadata, maybe just delete it if it matches pattern
+        if (request.pattern) matchingKeys.push(key);
       }
     }
-    
-    // Remove metadata
-    for (const key of matchingKeys) {
-      this.metadata.delete(key);
+
+    // Delete keys
+    if (matchingKeys.length > 0) {
+      await redis.del(...matchingKeys);
+      // Also delete metadata
+      const metaKeys = matchingKeys.map(k => `${k}:meta`);
+      await redis.del(...metaKeys);
+
+      // Cleanup namespace sets (async/background)
+      if (request.namespace) {
+        await redis.srem(`namespace:${request.namespace}`, ...matchingKeys);
+      }
     }
-    
+
     // Calculate cost impact (rough estimate)
     const avgCostPerCache = 0.01; // $0.01 per cache re-generation
     const estimatedCost = matchingKeys.length * avgCostPerCache;
-    
+
     return {
       invalidated: matchingKeys.length,
       namespaces: Array.from(namespaces),
@@ -212,7 +256,7 @@ export class CacheInvalidator {
       preWarmed: request.preWarm ? matchingKeys.length : 0
     };
   }
-  
+
   /**
    * Check if cache matches invalidation criteria
    */
@@ -230,12 +274,12 @@ export class CacheInvalidator {
         return false;
       }
     }
-    
+
     // Namespace matching
     if (request.namespace && metadata.namespace !== request.namespace) {
       return false;
     }
-    
+
     // Age-based invalidation
     if (request.olderThan) {
       const age = Date.now() - metadata.cachedAt;
@@ -243,28 +287,40 @@ export class CacheInvalidator {
         return false;
       }
     }
-    
+
     // URL matching
     if (request.url && metadata.sourceUrl !== request.url) {
       return false;
     }
-    
+
     return true;
   }
-  
+
   /**
-   * Get all stale caches
+   * Get all stale caches (Scan)
    */
-  getStaleCaches(): { key: string; metadata: CacheMetadata; freshness: FreshnessStatus }[] {
+  async getStaleCaches(): Promise<{ key: string; metadata: CacheMetadata; freshness: FreshnessStatus }[]> {
     const stale: { key: string; metadata: CacheMetadata; freshness: FreshnessStatus }[] = [];
-    
-    for (const [key, metadata] of this.metadata.entries()) {
-      const freshness = FreshnessCalculator.calculateFreshness(metadata);
-      if (freshness.status === 'stale' || freshness.status === 'expired') {
-        stale.push({ key, metadata, freshness });
+
+    // Scan all meta keys
+    let cursor = '0';
+    do {
+      const [nextCursor, keys] = await redis.scan(cursor, 'MATCH', '*:meta', 'COUNT', 100);
+      cursor = nextCursor;
+
+      for (const metaKey of keys) {
+        const data = await redis.get(metaKey);
+        if (data) {
+          const metadata = JSON.parse(data);
+          const freshness = FreshnessCalculator.calculateFreshness(metadata);
+          if (freshness.status === 'stale' || freshness.status === 'expired') {
+            const key = metaKey.replace(':meta', '');
+            stale.push({ key, metadata, freshness });
+          }
+        }
       }
-    }
-    
+    } while (cursor !== '0');
+
     return stale;
   }
 }
@@ -273,16 +329,19 @@ export class CacheInvalidator {
 // URL MONITORING & CHANGE DETECTION
 // ==========================================
 
+// Imports moved to top
+
 export class UrlMonitor {
-  private listeners: Map<string, UrlListener> = new Map();
-  private intervals: Map<string, NodeJS.Timeout> = new Map();
-  
+  // Removed in-memory maps:
+  // private listeners: Map<string, UrlListener> = new Map();
+  // private intervals: Map<string, NodeJS.Timeout> = new Map();
+
   /**
    * Register a URL to monitor
    */
-  registerListener(listener: Omit<UrlListener, 'id' | 'lastCheck' | 'lastHash'>): string {
+  async registerListener(listener: Omit<UrlListener, 'id' | 'lastCheck' | 'lastHash'>): Promise<string> {
     const id = this.generateListenerId();
-    
+
     const fullListener: UrlListener = {
       ...listener,
       id,
@@ -290,73 +349,56 @@ export class UrlMonitor {
       lastHash: '',
       enabled: true
     };
-    
-    this.listeners.set(id, fullListener);
-    this.startMonitoring(id);
-    
+
+    // Store in Redis
+    await redis.set(`listener:${id}`, JSON.stringify(fullListener));
+    await redis.sadd('listeners:active', id);
+
+    // Note: In a serverless environment, we can't start a persistent interval here.
+    // Instead, we rely on an external cron job (e.g., Vercel Cron) to call a check endpoint.
+    // For local dev (long-running), we could start it, but let's stick to the stateless pattern.
+
     return id;
   }
-  
+
   /**
    * Unregister a listener
    */
-  unregisterListener(id: string): boolean {
-    this.stopMonitoring(id);
-    return this.listeners.delete(id);
+  async unregisterListener(id: string): Promise<boolean> {
+    const exists = await redis.exists(`listener:${id}`);
+    if (!exists) return false;
+
+    await redis.del(`listener:${id}`);
+    await redis.srem('listeners:active', id);
+    return true;
   }
-  
+
   /**
-   * Start monitoring a URL
+   * Check URL for changes (Stateless - called by Cron)
    */
-  private startMonitoring(id: string): void {
-    const listener = this.listeners.get(id);
-    if (!listener || !listener.enabled) return;
-    
-    // Set up interval
-    const interval = setInterval(async () => {
-      await this.checkUrl(id);
-    }, listener.checkInterval);
-    
-    this.intervals.set(id, interval);
-    
-    // Do initial check
-    this.checkUrl(id);
-  }
-  
-  /**
-   * Stop monitoring a URL
-   */
-  private stopMonitoring(id: string): void {
-    const interval = this.intervals.get(id);
-    if (interval) {
-      clearInterval(interval);
-      this.intervals.delete(id);
-    }
-  }
-  
-  /**
-   * Check URL for changes
-   */
-  private async checkUrl(id: string): Promise<void> {
-    const listener = this.listeners.get(id);
-    if (!listener) return;
-    
+  async checkUrl(id: string): Promise<void> {
+    const data = await redis.get(`listener:${id}`);
+    if (!data) return;
+
+    const listener: UrlListener = JSON.parse(data);
+    if (!listener.enabled) return;
+
     try {
       // Fetch URL content
       const response = await fetch(listener.url);
       const content = await response.text();
-      
+
       // Calculate content hash
       const newHash = this.hashContent(content);
-      
+
       // First check - just store hash
       if (!listener.lastHash) {
         listener.lastHash = newHash;
         listener.lastCheck = Date.now();
-        this.listeners.set(id, listener);
+        await redis.set(`listener:${id}`, JSON.stringify(listener));
         return;
       }
-      
+
       // Check for changes
       if (newHash !== listener.lastHash) {
         const event: ChangeEvent = {
@@ -367,49 +409,48 @@ export class UrlMonitor {
           newHash: newHash,
           cachesInvalidated: 0
         };
-        
+
         // Trigger invalidation if configured
         if (listener.invalidateOnChange) {
-          // This would call the invalidation API
           console.log(`🔄 Change detected: ${listener.url}`);
           event.cachesInvalidated = await this.handleChange(listener, event);
         }
-        
+
         // Send webhook notification
         if (listener.webhook) {
           await this.sendWebhook(listener.webhook, event);
         }
-        
+
         // Notify overflow partners
         await this.notifyOverflowPartners(event);
-        
+
         // Update listener
         listener.lastHash = newHash;
         listener.lastCheck = Date.now();
-        this.listeners.set(id, listener);
+        await redis.set(`listener:${id}`, JSON.stringify(listener));
       } else {
         // No change
         listener.lastCheck = Date.now();
-        this.listeners.set(id, listener);
+        await redis.set(`listener:${id}`, JSON.stringify(listener));
       }
     } catch (error) {
       console.error(`Error checking URL ${listener.url}:`, error);
     }
   }
-  
+
   /**
    * Hash content for change detection
    */
   private hashContent(content: string): string {
     // Clean content (remove timestamps, ads, etc.)
     const cleaned = this.cleanContent(content);
-    
+
     return createHash('sha256')
       .update(cleaned)
       .digest('hex')
       .substring(0, 16);
   }
-  
+
   /**
    * Clean content for hashing (remove noise)
    */
@@ -419,19 +460,19 @@ export class UrlMonitor {
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
       .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
       .replace(/<!--[\s\S]*?-->/g, '');
-    
+
     // Remove common timestamp patterns
     cleaned = cleaned
       .replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/g, '')
       .replace(/\d{13}/g, '') // Unix timestamps (ms)
       .replace(/\d{10}/g, ''); // Unix timestamps (s)
-    
+
     // Normalize whitespace
     cleaned = cleaned.replace(/\s+/g, ' ').trim();
-    
+
     return cleaned;
   }
-  
+
   /**
    * Handle change event (invalidate caches)
    */
@@ -440,7 +481,7 @@ export class UrlMonitor {
     // For now, just return a mock count
     return 0; // Implement actual invalidation
   }
-  
+
   /**
    * Send webhook notification
    */
@@ -448,10 +489,10 @@ export class UrlMonitor {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
-      
+
       await fetch(webhookUrl, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'X-AgentCache-Event': 'url-changed',
           'X-Event-Type': 'cache-invalidation'
@@ -462,13 +503,13 @@ export class UrlMonitor {
         }),
         signal: controller.signal
       });
-      
+
       clearTimeout(timeout);
     } catch (error) {
       console.error(`Error sending webhook to ${webhookUrl}:`, error);
     }
   }
-  
+
   /**
    * Notify overflow partners of URL changes
    */
@@ -477,19 +518,19 @@ export class UrlMonitor {
     try {
       const { getActivePartnersWithWebhooks } = await import('../services/overflowPartners.js');
       const { redis } = await import('../lib/redis.js');
-      
+
       const partners = getActivePartnersWithWebhooks();
-      
+
       const webhookPromises = partners.map(async (partner) => {
         if (!partner.webhook) return;
-        
+
         try {
           const controller = new AbortController();
           const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
-          
+
           const response = await fetch(partner.webhook, {
             method: 'POST',
-            headers: { 
+            headers: {
               'Content-Type': 'application/json',
               'X-AgentCache-Event': 'url-changed',
               'X-Partner-Id': partner.id
@@ -503,9 +544,9 @@ export class UrlMonitor {
             }),
             signal: controller.signal
           });
-          
+
           clearTimeout(timeout);
-          
+
           // Track webhook stats
           await redis.hincrby(`partner:${partner.id}:webhooks`, response.ok ? 'success' : 'failure', 1);
         } catch (error) {
@@ -513,32 +554,43 @@ export class UrlMonitor {
           await redis.hincrby(`partner:${partner.id}:webhooks`, 'failure', 1);
         }
       });
-      
+
       await Promise.allSettled(webhookPromises);
     } catch (error) {
       console.error('[Overflow] Error notifying partners:', error);
     }
   }
-  
+
   /**
    * Generate unique listener ID
    */
   private generateListenerId(): string {
     return `listener_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
-  
+
   /**
    * Get listener by ID
    */
-  getListener(id: string): UrlListener | undefined {
-    return this.listeners.get(id);
+  async getListener(id: string): Promise<UrlListener | undefined> {
+    const data = await redis.get(`listener:${id}`);
+    return data ? JSON.parse(data) : undefined;
   }
-  
+
   /**
    * Get all listeners
    */
-  getAllListeners(): UrlListener[] {
-    return Array.from(this.listeners.values());
+  async getAllListeners(): Promise<UrlListener[]> {
+    const ids = await redis.smembers('listeners:active');
+    const listeners: UrlListener[] = [];
+
+    for (const id of ids) {
+      const data = await redis.get(`listener:${id}`);
+      if (data) {
+        listeners.push(JSON.parse(data));
+      }
+    }
+
+    return listeners;
   }
 }
 
@@ -585,7 +637,7 @@ export class FreshnessRuleEngine {
       autoRefresh: false
     }
   ];
-  
+
   /**
    * Find matching rule for cache key
    */
@@ -598,11 +650,11 @@ export class FreshnessRuleEngine {
         return rule;
       }
     }
-    
+
     // Default: last rule (general)
     return this.rules[this.rules.length - 1];
   }
-  
+
   /**
    * Evaluate freshness against rules
    */
@@ -612,7 +664,7 @@ export class FreshnessRuleEngine {
     shouldAutoRefresh: boolean;
   } {
     const rule = this.findMatchingRule(cacheKey);
-    
+
     let status: 'fresh' | 'stale' | 'expired';
     if (age < rule.freshThreshold) {
       status = 'fresh';
@@ -621,12 +673,12 @@ export class FreshnessRuleEngine {
     } else {
       status = 'expired';
     }
-    
+
     const shouldAutoRefresh = rule.autoRefresh && status !== 'fresh';
-    
+
     return { rule, status, shouldAutoRefresh };
   }
-  
+
   /**
    * Add custom rule
    */
@@ -634,7 +686,7 @@ export class FreshnessRuleEngine {
     // Insert before the last (general) rule
     this.rules.splice(this.rules.length - 1, 0, rule);
   }
-  
+
   /**
    * Get all rules
    */
