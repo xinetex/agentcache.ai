@@ -10,20 +10,15 @@ import DataExplorer from './views/DataExplorer';
 import Governance from './views/Governance';
 import { SectorProvider } from '../context/SectorContext';
 
-const App = () => {
-    const [activeView, setActiveView] = useState('overview');
-    const [user, setUser] = useState({ name: 'Guest', role: 'Viewer' });
+import { AuthProvider, useAuth } from './auth/AuthContext';
+import LoginOverlay from './components/LoginOverlay';
 
-    useEffect(() => {
-        const storedUser = localStorage.getItem('agentcache_user');
-        if (storedUser) {
-            try {
-                setUser(JSON.parse(storedUser));
-            } catch (e) {
-                console.error('Failed to parse user data', e);
-            }
-        }
-    }, []);
+const AppContent = () => {
+    const [activeView, setActiveView] = useState('overview');
+    const { user, loading } = useAuth();
+
+    if (loading) return <div className="h-screen flex items-center justify-center text-[var(--hud-accent)] font-mono">INITIALIZING...</div>;
+    if (!user) return <LoginOverlay />;
 
     const renderView = () => {
         switch (activeView) {
@@ -69,5 +64,11 @@ const App = () => {
         </SectorProvider>
     );
 };
+
+const App = () => (
+    <AuthProvider>
+        <AppContent />
+    </AuthProvider>
+);
 
 export default App;

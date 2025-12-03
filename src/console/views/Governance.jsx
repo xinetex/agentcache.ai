@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../auth/AuthContext';
 
 const PRESETS = [
     { id: 'Darwin', icon: '🦁', label: 'Darwin', desc: 'Survival of the fittest. High mutation, ruthless culling.', color: 'text-orange-400', border: 'border-orange-500/50', bg: 'bg-orange-500/10' },
@@ -9,20 +10,26 @@ const PRESETS = [
 ];
 
 export default function Governance() {
+    const { token } = useAuth();
     const [currentMode, setCurrentMode] = useState(null);
     const [org, setOrg] = useState(null);
     const [loading, setLoading] = useState(true);
     const [switching, setSwitching] = useState(false);
 
     useEffect(() => {
+        if (!token) return;
+
         const fetchData = async () => {
             try {
+                const headers = { 'Authorization': `Bearer ${token}` };
                 const [orgRes, membersRes, keysRes, modeRes] = await Promise.all([
-                    fetch('/api/governance/org'),
-                    fetch('/api/governance/members'),
-                    fetch('/api/governance/keys'),
-                    fetch('/api/governance/presets')
+                    fetch('/api/governance/org', { headers }),
+                    fetch('/api/governance/members', { headers }),
+                    fetch('/api/governance/keys', { headers }),
+                    fetch('/api/governance/presets', { headers })
                 ]);
+
+                if (!orgRes.ok) throw new Error('Failed to fetch org data');
 
                 const orgData = await orgRes.json();
                 const membersData = await membersRes.json();
@@ -31,8 +38,8 @@ export default function Governance() {
 
                 setOrg({
                     ...orgData,
-                    members: membersData.members,
-                    apiKeys: keysData.apiKeys
+                    members: membersData.members || [],
+                    apiKeys: keysData.apiKeys || []
                 });
                 setCurrentMode(modeData.mode || 'Default');
             } catch (err) {
@@ -42,7 +49,7 @@ export default function Governance() {
             }
         };
         fetchData();
-    }, []);
+    }, [token]);
 
     const handleSwitchMode = async (mode) => {
         setSwitching(true);

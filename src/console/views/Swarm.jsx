@@ -2,18 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { Hexagon, Trophy, Radio, Zap } from 'lucide-react';
 import CyberCard from '../components/CyberCard';
 import DataGrid from '../components/DataGrid';
+import { useAuth } from '../auth/AuthContext';
 
 export default function Swarm() {
+    const { token } = useAuth();
     const [leaderboard, setLeaderboard] = useState([]);
     const [discoveries, setDiscoveries] = useState([]);
     const [session, setSession] = useState(null);
 
     useEffect(() => {
+        if (!token) return;
+
         // Fetch Leaderboard (Top Users)
         const fetchLeaderboard = async () => {
             try {
                 const res = await fetch('/api/admin-stats', {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('agentcache_token')}` }
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
 

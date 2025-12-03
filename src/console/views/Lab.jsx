@@ -2,18 +2,25 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import CyberCard from '../components/CyberCard';
 import { FlaskConical, Activity } from 'lucide-react';
+import { useAuth } from '../auth/AuthContext';
+
 const STATES = ['START', 'L1_CHECK', 'L2_CHECK', 'L3_SEARCH', 'COGNITIVE', 'LLM_CALL', 'END'];
 
 export default function Lab() {
+    const { token } = useAuth();
     const [genomes, setGenomes] = useState([]);
     const [selectedGenome, setSelectedGenome] = useState(null);
     const svgRef = useRef(null);
 
     // Fetch Genomes
     useEffect(() => {
+        if (!token) return;
+
         const fetchGenomes = async () => {
             try {
-                const res = await fetch('/api/lab/genomes?limit=20');
+                const res = await fetch('/api/lab/genomes?limit=20', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 const data = await res.json();
                 if (data.genomes && data.genomes.length > 0) {
                     setGenomes(data.genomes);
@@ -24,7 +31,7 @@ export default function Lab() {
             }
         };
         fetchGenomes();
-    }, []);
+    }, [token]);
 
     // Render D3 Graph
     useEffect(() => {

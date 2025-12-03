@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Eye, Activity, GitCommit, ArrowRight, Terminal } from 'lucide-react';
 import CyberCard from '../components/CyberCard';
+import { useAuth } from '../auth/AuthContext';
 
 export default function Observability() {
+    const { token } = useAuth();
     const [decisions, setDecisions] = useState([]);
     const [selectedDecision, setSelectedDecision] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -10,8 +12,11 @@ export default function Observability() {
 
     // Fetch initial decisions
     const fetchDecisions = async () => {
+        if (!token) return;
         try {
-            const res = await fetch('/api/decisions?limit=20');
+            const res = await fetch('/api/decisions?limit=20', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             const data = await res.json();
 
             if (data && data.decisions && data.decisions.length > 0) {
@@ -60,7 +65,7 @@ export default function Observability() {
         return () => {
             eventSource.close();
         };
-    }, []);
+    }, [token]);
 
     return (
         <div className="flex h-[calc(100vh-8rem)] gap-6 relative">
