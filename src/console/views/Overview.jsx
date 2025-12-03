@@ -1,153 +1,137 @@
 import React, { useState, useEffect } from 'react';
+import { Activity, Globe, Zap, Server, Shield, Clock } from 'lucide-react';
+import CyberCard from '../components/CyberCard';
+import StatDial from '../components/StatDial';
+import DataGrid from '../components/DataGrid';
 
-export default function Overview() {
-    const [stats, setStats] = useState(null);
-    const [loading, setLoading] = useState(true);
+const Overview = () => {
+    const [metrics, setMetrics] = useState({
+        requests: 2458921,
+        bandwidth: 845,
+        latency: 42,
+        savings: 1240
+    });
 
-    useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const apiKey = localStorage.getItem('ac_api_key');
-                if (!apiKey) return;
-
-                const res = await fetch('/api/stats', {
-                    headers: { 'X-API-Key': apiKey }
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    setStats(data);
-                }
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchStats();
-        const interval = setInterval(fetchStats, 5000);
-        return () => clearInterval(interval);
-    }, []);
-
-    if (loading) return <div className="p-8 text-slate-400">Loading stats...</div>;
+    // Mock Live Events
+    const [events, setEvents] = useState([
+        { id: 1, type: 'CACHE_HIT', source: 'Agent-Alpha', hash: '8f2a...9b1c', time: '10:42:01' },
+        { id: 2, type: 'OPTIMIZATION', source: 'Swarm-Beta', hash: '3d4e...1f2a', time: '10:41:58' },
+        { id: 3, type: 'SEC_SCAN', source: 'Sentinel-01', hash: 'SCAN_COMPLETE', time: '10:41:45' },
+        { id: 4, type: 'CACHE_MISS', source: 'Agent-Gamma', hash: '1a2b...3c4d', time: '10:41:30' },
+    ]);
 
     return (
-        <div className="p-8 max-w-7xl mx-auto">
-            <header className="mb-8">
-                <h2 className="text-3xl font-bold text-white mb-2">Overview</h2>
-                <p className="text-slate-400">Real-time platform metrics</p>
-            </header>
+        <div className="space-y-6">
+            {/* Top Row: Global Status & Key Metrics */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                {/* Hit Rate Dial */}
-                <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 flex flex-col items-center justify-center relative overflow-hidden">
-                    <h3 className="text-slate-400 text-sm font-medium absolute top-6 left-6">Cache Hit Rate</h3>
-                    <div className="relative w-48 h-24 mt-8">
-                        <svg className="w-full h-full" viewBox="0 0 200 100">
-                            {/* Background Arc */}
-                            <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#1e293b" strokeWidth="20" strokeLinecap="round" />
-                            {/* Value Arc */}
-                            <path
-                                d="M 20 100 A 80 80 0 0 1 180 100"
-                                fill="none"
-                                stroke="#4ade80"
-                                strokeWidth="20"
-                                strokeLinecap="round"
-                                strokeDasharray="251.2"
-                                strokeDashoffset={251.2 * (1 - (stats?.hitRate || 0) / 100)}
-                                className="transition-all duration-1000 ease-out"
-                            />
-                        </svg>
-                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-center">
-                            <div className="text-4xl font-bold text-white">{stats?.hitRate || 0}%</div>
+                {/* Global Map Placeholder */}
+                <CyberCard title="Global Grid Status" icon={Globe} className="lg:col-span-2 min-h-[300px]">
+                    <div className="w-full h-full flex items-center justify-center bg-[rgba(0,0,0,0.3)] rounded border border-[rgba(255,255,255,0.05)] relative overflow-hidden">
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--hud-accent)_0%,_transparent_70%)] opacity-10 animate-pulse"></div>
+                        <div className="text-center">
+                            <Globe size={64} className="mx-auto text-[var(--hud-accent)] opacity-50 mb-4" />
+                            <p className="text-[var(--hud-text-dim)] font-mono text-sm">
+                                GRID VISUALIZATION ONLINE<br />
+                                <span className="text-[var(--hud-success)]">3 REGIONS ACTIVE</span>
+                            </p>
                         </div>
                     </div>
-                    <div className="mt-4 text-xs text-slate-500">
-                        {stats?.hits || 0} hits / {stats?.misses || 0} misses
-                    </div>
-                </div>
+                </CyberCard>
 
-                {/* Traffic Chart (Simulated for Demo) */}
-                <div className="lg:col-span-2 bg-slate-900/50 border border-slate-800 rounded-xl p-6">
-                    <h3 className="text-slate-400 text-sm font-medium mb-4">Request Traffic (24h)</h3>
-                    <div className="h-48 w-full flex items-end gap-1">
-                        {[...Array(24)].map((_, i) => {
-                            const height = Math.random() * 80 + 20; // Mock data
-                            return (
-                                <div key={i} className="flex-1 bg-slate-800 hover:bg-cyan-500/50 transition-colors rounded-t-sm relative group" style={{ height: `${height}%` }}>
-                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-slate-900 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 border border-slate-700">
-                                        {Math.floor(height * 10)} reqs
-                                    </div>
-                                </div>
-                            );
-                        })}
+                {/* System Health Dials */}
+                <CyberCard title="System Health" icon={Activity} className="flex flex-col justify-center">
+                    <div className="grid grid-cols-2 gap-4">
+                        <StatDial value={98} label="Uptime" sublabel="30 Days" color="var(--hud-success)" />
+                        <StatDial value={87} label="Cache Hit" sublabel="Global" color="var(--hud-accent)" />
+                        <StatDial value={42} max={100} label="CPU Load" sublabel="Cluster" color="var(--hud-warning)" />
+                        <StatDial value={12} max={100} label="Memory" sublabel="Usage" color="var(--hud-accent-secondary)" />
                     </div>
-                    <div className="flex justify-between text-xs text-slate-600 mt-2">
-                        <span>24h ago</span>
-                        <span>12h ago</span>
-                        <span>Now</span>
-                    </div>
-                </div>
+                </CyberCard>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <StatCard
-                    label="Requests Today"
-                    value={stats?.requestsToday || 0}
-                    sub={`${(stats?.monthlyQuota || 10000) - (stats?.used || 0)} remaining`}
-                    icon="📉"
-                />
-                <StatCard
-                    label="Money Saved"
-                    value={`$${(stats?.costSaved || 0).toFixed(2)}`}
-                    valueColor="text-green-400"
-                    sub="This month"
-                    icon="💰"
-                />
-                <StatCard
-                    label="Avg Latency"
-                    value={`${stats?.avgLatency || 0}ms`}
-                    valueColor="text-cyan-400"
-                    sub={`P95: ${stats?.latencyP95 || 0}ms`}
-                    icon="⚡"
-                />
+            {/* Middle Row: Metric Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <CyberCard className="p-0">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-[var(--hud-text-dim)] text-xs uppercase tracking-wider mb-1">Total Requests</p>
+                            <h3 className="text-2xl font-mono font-bold text-white">2.4M</h3>
+                        </div>
+                        <Zap className="text-[var(--hud-accent)] opacity-50" size={24} />
+                    </div>
+                    <div className="mt-2 text-xs text-[var(--hud-success)] flex items-center">
+                        <span>↑ 12.5%</span>
+                        <span className="text-[var(--hud-text-dim)] ml-1">vs last week</span>
+                    </div>
+                </CyberCard>
+
+                <CyberCard className="p-0">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-[var(--hud-text-dim)] text-xs uppercase tracking-wider mb-1">Bandwidth Saved</p>
+                            <h3 className="text-2xl font-mono font-bold text-white">845 GB</h3>
+                        </div>
+                        <Server className="text-[var(--hud-accent-secondary)] opacity-50" size={24} />
+                    </div>
+                    <div className="mt-2 text-xs text-[var(--hud-success)] flex items-center">
+                        <span>↑ 8.2%</span>
+                        <span className="text-[var(--hud-text-dim)] ml-1">vs last week</span>
+                    </div>
+                </CyberCard>
+
+                <CyberCard className="p-0">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-[var(--hud-text-dim)] text-xs uppercase tracking-wider mb-1">Avg Latency</p>
+                            <h3 className="text-2xl font-mono font-bold text-white">42ms</h3>
+                        </div>
+                        <Activity className="text-[var(--hud-warning)] opacity-50" size={24} />
+                    </div>
+                    <div className="mt-2 text-xs text-[var(--hud-success)] flex items-center">
+                        <span>↓ 15ms</span>
+                        <span className="text-[var(--hud-text-dim)] ml-1">improvement</span>
+                    </div>
+                </CyberCard>
+
+                <CyberCard className="p-0">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-[var(--hud-text-dim)] text-xs uppercase tracking-wider mb-1">Cost Savings</p>
+                            <h3 className="text-2xl font-mono font-bold text-white">$1,240</h3>
+                        </div>
+                        <Shield className="text-[var(--hud-success)] opacity-50" size={24} />
+                    </div>
+                    <div className="mt-2 text-xs text-[var(--hud-success)] flex items-center">
+                        <span>↑ 18%</span>
+                        <span className="text-[var(--hud-text-dim)] ml-1">vs last week</span>
+                    </div>
+                </CyberCard>
             </div>
 
-            <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6">
-                <h3 className="text-lg font-bold mb-4">Cache Freshness Distribution</h3>
-                <div className="flex h-4 rounded-full overflow-hidden mb-4">
-                    <div className="bg-green-500 h-full transition-all duration-500" style={{ width: `${(stats?.freshness?.fresh || 0) / ((stats?.freshness?.fresh || 1) + (stats?.freshness?.stale || 0) + (stats?.freshness?.expired || 0)) * 100}%` }}></div>
-                    <div className="bg-yellow-500 h-full transition-all duration-500" style={{ width: `${(stats?.freshness?.stale || 0) / ((stats?.freshness?.fresh || 1) + (stats?.freshness?.stale || 0) + (stats?.freshness?.expired || 0)) * 100}%` }}></div>
-                    <div className="bg-red-500 h-full transition-all duration-500" style={{ width: `${(stats?.freshness?.expired || 0) / ((stats?.freshness?.fresh || 1) + (stats?.freshness?.stale || 0) + (stats?.freshness?.expired || 0)) * 100}%` }}></div>
-                </div>
-                <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                        <div className="text-2xl font-bold text-green-500">{stats?.freshness?.fresh || 0}</div>
-                        <div className="text-xs text-slate-400">Fresh</div>
-                    </div>
-                    <div>
-                        <div className="text-2xl font-bold text-yellow-500">{stats?.freshness?.stale || 0}</div>
-                        <div className="text-xs text-slate-400">Stale</div>
-                    </div>
-                    <div>
-                        <div className="text-2xl font-bold text-red-500">{stats?.freshness?.expired || 0}</div>
-                        <div className="text-xs text-slate-400">Expired</div>
-                    </div>
-                </div>
-            </div>
+            {/* Bottom Row: Live Event Log */}
+            <CyberCard title="Live Event Stream" icon={Clock} action={<button className="text-xs text-[var(--hud-accent)] hover:underline">View All</button>}>
+                <DataGrid
+                    columns={[
+                        { header: 'Time', accessor: 'time' },
+                        {
+                            header: 'Type', accessor: 'type', render: (row) => (
+                                <span className={`text-xs font-bold px-2 py-1 rounded ${row.type === 'CACHE_HIT' ? 'bg-green-500/10 text-green-400' :
+                                        row.type === 'CACHE_MISS' ? 'bg-red-500/10 text-red-400' :
+                                            'bg-blue-500/10 text-blue-400'
+                                    }`}>
+                                    {row.type}
+                                </span>
+                            )
+                        },
+                        { header: 'Source', accessor: 'source' },
+                        { header: 'Hash / ID', accessor: 'hash', render: (row) => <span className="font-mono text-[var(--hud-text-dim)]">{row.hash}</span> },
+                    ]}
+                    data={events}
+                />
+            </CyberCard>
         </div>
     );
-}
+};
 
-function StatCard({ label, value, sub, valueColor = "text-white", icon }) {
-    return (
-        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 relative overflow-hidden group hover:border-slate-700 transition-colors">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-4xl grayscale">
-                {icon}
-            </div>
-            <div className="text-sm text-slate-400 mb-2">{label}</div>
-            <div className={`text-3xl font-bold mb-1 ${valueColor}`}>{value}</div>
-            <div className="text-xs text-slate-500">{sub}</div>
-        </div>
-    );
-}
+export default Overview;
