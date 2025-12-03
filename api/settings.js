@@ -71,7 +71,12 @@ export default async function handler(req) {
             const settings = settingsStr ? JSON.parse(settingsStr) : {
                 semantic_correction: true,
                 cognitive_sentinel: true,
-                constraint_enforcement: true
+                constraint_enforcement: true,
+                agent_config: {
+                    autonomy_level: 'supervised', // supervised | autonomous
+                    max_daily_spend: 5.00,
+                    allow_tool_creation: false
+                }
             }; // Default to all ON
             return json({ settings });
         }

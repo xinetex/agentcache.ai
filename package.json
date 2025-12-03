@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && rm -rf dist && mkdir -p dist && cp -r studio-dist/* dist/ || true",
+    "build": "npm run test -- --run && vite build && rm -rf dist && mkdir -p dist && cp -r studio-dist/* dist/ || true",
     "preview": "vite preview",
     "mcp:build": "tsc src/mcp/server.ts --outDir dist/mcp --module NodeNext --moduleResolution NodeNext --target ES2022",
     "mcp:dev": "tsx src/mcp/server.ts",

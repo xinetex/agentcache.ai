@@ -1,5 +1,8 @@
 {
-  "regions": ["iad1", "sfo1"],
+  "regions": [
+    "iad1",
+    "sfo1"
+  ],
   "functions": {
     "api/**/*.js": {
       "memory": 1024,
@@ -19,16 +22,54 @@
     }
   ],
   "rewrites": [
-    { "source": "/studio", "destination": "/studio.html" },
-    { "source": "/studio/:path*", "destination": "/studio.html" },
-    { "source": "/daily", "destination": "/daily.html" },
-    { "source": "/visualizations", "destination": "/visualizations.html" },
-    { "source": "/docs", "destination": "/docs.html" },
-    { "source": "/docs/:doc.md", "destination": "/md.html?doc=:doc" },
-    { "source": "/blog", "destination": "/blog.html" },
-    { "source": "/login", "destination": "/login.html" },
-    { "source": "/privacy", "destination": "/privacy.html" },
-    { "source": "/terms", "destination": "/terms.html" }
+    {
+      "source": "/studio",
+      "destination": "/studio.html"
+    },
+    {
+      "source": "/studio/:path*",
+      "destination": "/studio.html"
+    },
+    {
+      "source": "/daily",
+      "destination": "/daily.html"
+    },
+    {
+      "source": "/visualizations",
+      "destination": "/visualizations.html"
+    },
+    {
+      "source": "/docs",
+      "destination": "/docs.html"
+    },
+    {
+      "source": "/docs/:doc.md",
+      "destination": "/md.html?doc=:doc"
+    },
+    {
+      "source": "/blog",
+      "destination": "/blog.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/login.html"
+    },
+    {
+      "source": "/console",
+      "destination": "/dashboard.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/dashboard.html"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/privacy.html"
+    },
+    {
+      "source": "/terms",
+      "destination": "/terms.html"
+    }
   ],
   "headers": [
     {

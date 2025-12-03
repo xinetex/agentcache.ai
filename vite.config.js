@@ -19,6 +19,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         studio: resolve(__dirname, 'studio.html'),
+        dashboard: resolve(__dirname, 'public/dashboard.html'),
         pipeline_studio: resolve(__dirname, 'public/pipeline-studio.html'),
         gov_portal: resolve(__dirname, 'public/gov-portal.html'),
       },
