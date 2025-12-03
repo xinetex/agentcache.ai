@@ -18,8 +18,8 @@ export default function App() {
                 return (
                     <SectorProvider>
                         <WorkspaceDashboard
-                            onLoadPipeline={(p) => console.log('Load', p)}
-                            onNewPipeline={() => console.log('New')}
+                            onLoadPipeline={(p) => window.location.href = `/studio.html?pipeline=${p.id}`}
+                            onNewPipeline={() => window.location.href = '/studio.html?new=true'}
                         />
                     </SectorProvider>
                 );
