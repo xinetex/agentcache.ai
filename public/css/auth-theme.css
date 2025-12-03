@@ -4,26 +4,33 @@
    =================================== */
 
 :root {
-  /* Color Palette */
-  --auth-primary: #0ea5e9; /* sky-500 */
-  --auth-primary-hover: #0284c7; /* sky-600 */
-  --auth-primary-light: rgba(14, 165, 233, 0.1);
-  --auth-accent: #06b6d4; /* cyan-500 */
-  
-  --auth-bg: #020617; /* slate-950 */
-  --auth-surface: rgba(15, 23, 42, 0.6); /* slate-900 with transparency */
-  --auth-border: rgba(71, 85, 105, 0.3); /* slate-600 transparent */
+  /* Color Palette - Agentic Theme */
+  --auth-primary: #00f3ff;
+  /* hud-accent */
+  --auth-primary-hover: #00c2cc;
+  --auth-primary-light: rgba(0, 243, 255, 0.1);
+  --auth-accent: #00f3ff;
+
+  --auth-bg: #030508;
+  /* hud-bg */
+  --auth-surface: rgba(6, 11, 20, 0.85);
+  /* hud-panel-bg */
+  --auth-border: rgba(0, 243, 255, 0.3);
+  /* hud-border */
   --auth-border-focus: var(--auth-primary);
-  
-  --auth-text: #f1f5f9; /* slate-100 */
-  --auth-text-dim: #94a3b8; /* slate-400 */
-  --auth-text-muted: #64748b; /* slate-500 */
-  
-  --auth-success: #10b981; /* emerald-500 */
-  --auth-success-bg: rgba(16, 185, 129, 0.1);
-  --auth-error: #ef4444; /* red-500 */
+
+  --auth-text: #e0f7fa;
+  /* hud-text */
+  --auth-text-dim: rgba(224, 247, 250, 0.6);
+  /* hud-text-dim */
+  --auth-text-muted: rgba(224, 247, 250, 0.4);
+
+  --auth-success: #00f3ff;
+  /* hud-accent as success for cyber feel */
+  --auth-success-bg: rgba(0, 243, 255, 0.1);
+  --auth-error: #ef4444;
   --auth-error-bg: rgba(239, 68, 68, 0.1);
-  
+
   /* Typography */
   --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
@@ -32,7 +39,7 @@
 /* Base Styles */
 body.auth-page {
   background-color: var(--auth-bg);
-  background-image: 
+  background-image:
     radial-gradient(circle at 20% 50%, rgba(14, 165, 233, 0.08) 0%, transparent 50%),
     radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
     linear-gradient(rgba(71, 85, 105, 0.03) 1px, transparent 1px),
@@ -65,6 +72,7 @@ body.auth-page {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -275,19 +283,22 @@ body.auth-page {
 .auth-message-error {
   background: var(--auth-error-bg);
   border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #fca5a5; /* red-300 */
+  color: #fca5a5;
+  /* red-300 */
 }
 
 .auth-message-success {
   background: var(--auth-success-bg);
   border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #6ee7b7; /* emerald-300 */
+  color: #6ee7b7;
+  /* emerald-300 */
 }
 
 .auth-message-info {
   background: var(--auth-primary-light);
   border: 1px solid rgba(14, 165, 233, 0.3);
-  color: #7dd3fc; /* sky-300 */
+  color: #7dd3fc;
+  /* sky-300 */
 }
 
 /* Divider */
@@ -343,7 +354,9 @@ body.auth-page {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Utility Classes */
@@ -388,7 +401,7 @@ body.auth-page {
   .auth-container {
     padding: 1.75rem;
   }
-  
+
   .auth-title {
     font-size: 1.5rem;
   }

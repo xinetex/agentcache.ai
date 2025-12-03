@@ -32,6 +32,40 @@ export default function Sidebar({ activeView, onViewChange }) {
                         {item.label}
                     </button>
                 ))}
+                <button
+                    onClick={() => onViewChange('lab')}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${activeView === 'lab'
+                        ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-[0_0_10px_rgba(6,182,212,0.1)]'
+                        : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/50'
+                        }`}
+                >
+                    <span className="text-lg">🧬</span>
+                    Lab
+                </button>
+
+                <button
+                    onClick={() => onViewChange('observability')}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${activeView === 'observability'
+                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]'
+                            : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/50'
+                        }`}
+                >
+                    <span className="text-lg">👁️</span>
+                    Observability
+                </button>
+
+                <div className="my-4 border-t border-slate-800/50"></div>
+
+                <button
+                    onClick={() => onViewChange('governance')}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${activeView === 'governance'
+                        ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.1)]'
+                        : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/50'
+                        }`}
+                >
+                    <span className="text-lg">⚖️</span>
+                    Governance
+                </button>
             </nav>
 
             <div className="p-4 border-t border-slate-800">

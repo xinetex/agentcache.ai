@@ -3,6 +3,8 @@ import Sidebar from './components/Sidebar';
 import Overview from './views/Overview';
 import Swarm from './views/Swarm';
 import DataExplorer from './views/DataExplorer';
+import Lab from './views/Lab';
+import Observability from './views/Observability';
 import Governance from './views/Governance';
 import WorkspaceDashboard from '../components/WorkspaceDashboard';
 import { SectorProvider } from '../context/SectorContext';
@@ -25,6 +27,10 @@ export default function App() {
                 );
             case 'swarm':
                 return <Swarm />;
+            case 'lab':
+                return <Lab />;
+            case 'observability':
+                return <Observability />;
             case 'data':
                 return <DataExplorer />;
             case 'governance':

@@ -1,22 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Terms of Service | AgentCache.ai</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/premium.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              500: '#0ea5e9',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
 </head>
-<body class="bg-neutral-950 text-neutral-100 antialiased">
-  
-  <header class="sticky top-0 z-50 backdrop-blur bg-neutral-950/80 border-b border-white/10">
-    <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-3">
-        <div class="h-8 w-8 rounded-md bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold">AC</div>
-        <span class="font-semibold">AgentCache<span class="text-neutral-400">.ai</span></span>
+
+<body class="bg-neutral-950 text-neutral-100 antialiased selection:bg-cyan-500 selection:text-white">
+
+  <!-- Navigation -->
+  <nav class="fixed w-full z-50 glass">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div
+          class="w-6 h-6 border border-[var(--hud-accent)] bg-[var(--hud-accent)]/20 flex items-center justify-center">
+          <div class="w-3 h-3 bg-[var(--hud-accent)]"></div>
+        </div>
+        <span class="font-bold text-xl tracking-widest uppercase text-[var(--hud-accent)]">AgentCache</span>
+      </div>
+
+      <div class="hidden md:flex gap-6 relative">
+        <!-- Platform Dropdown -->
+        <div class="relative group">
+          <button
+            class="text-sm font-bold tracking-wider text-[var(--hud-text-dim)] hover:text-[var(--hud-accent)] transition flex items-center gap-1 uppercase">
+            Platform
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+              </path>
+            </svg>
+          </button>
+          <div
+            class="absolute top-full left-0 mt-2 w-64 glass-dark p-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all border border-[var(--hud-accent)]/30">
+            <a href="/#cognitive" class="block px-4 py-3 hover:bg-[var(--hud-accent)]/10 group/item">
+              <div class="font-bold text-[var(--hud-text)] group-hover/item:text-[var(--hud-accent)] tracking-wide">
+                COGNITIVE MEMORY OS</div>
+              <div class="text-xs text-[var(--hud-text-dim)] font-mono">3-TIER ARCHITECTURE</div>
+            </a>
+            <a href="/#moonshot"
+              class="block px-4 py-3 hover:bg-[var(--hud-accent)]/10 group/item border-t border-[var(--hud-border)]/30">
+              <div class="font-bold text-[var(--hud-text)] group-hover/item:text-[var(--hud-accent)] tracking-wide">
+                REASONING CACHE</div>
+              <div class="text-xs text-[var(--hud-text-dim)] font-mono">98% COST SAVINGS</div>
+            </a>
+            <a href="/monitor.html"
+              class="block px-4 py-3 hover:bg-[var(--hud-accent)]/10 group/item border-t border-[var(--hud-border)]/30">
+              <div class="font-bold text-[var(--hud-text)] group-hover/item:text-[var(--hud-accent)] tracking-wide">
+                MEMORY MONITOR</div>
+              <div class="text-xs text-[var(--hud-text-dim)] font-mono">LIVE DEMO</div>
+            </a>
+            <a href="/#robotics"
+              class="block px-4 py-3 hover:bg-[var(--hud-accent)]/10 group/item border-t border-[var(--hud-border)]/30">
+              <div class="font-bold text-[var(--hud-text)] group-hover/item:text-[var(--hud-accent)] tracking-wide">
+                ROBOTICS & FLEET</div>
+              <div class="text-xs text-[var(--hud-text-dim)] font-mono">HIVE MIND LEARNING</div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Developers Dropdown -->
+        <div class="relative group">
+          <button
+            class="text-sm font-bold tracking-wider text-[var(--hud-text-dim)] hover:text-[var(--hud-accent)] transition flex items-center gap-1 uppercase">
+            Developers
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+              </path>
+            </svg>
+          </button>
+          <div
+            class="absolute top-full left-0 mt-2 w-56 glass-dark p-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all border border-[var(--hud-accent)]/30">
+            <a href="/docs.html" class="block px-4 py-3 hover:bg-[var(--hud-accent)]/10 group/item">
+              <div class="font-bold text-[var(--hud-text)] group-hover/item:text-[var(--hud-accent)] tracking-wide">
+                DOCUMENTATION</div>
+              <div class="text-xs text-[var(--hud-text-dim)] font-mono">API REFERENCE</div>
+            </a>
+            <a href="/docs.html#quickstart"
+              class="block px-4 py-3 hover:bg-[var(--hud-accent)]/10 group/item border-t border-[var(--hud-border)]/30">
+              <div class="font-bold text-[var(--hud-text)] group-hover/item:text-[var(--hud-accent)] tracking-wide">
+                QUICK START</div>
+              <div class="text-xs text-[var(--hud-text-dim)] font-mono">30 SECOND SETUP</div>
+            </a>
+            <a href="/changelog.html"
+              class="block px-4 py-3 hover:bg-[var(--hud-accent)]/10 group/item border-t border-[var(--hud-border)]/30">
+              <div class="font-bold text-[var(--hud-text)] group-hover/item:text-[var(--hud-accent)] tracking-wide">
+                CHANGELOG</div>
+              <div class="text-xs text-[var(--hud-text-dim)] font-mono">WHAT'S NEW</div>
+            </a>
+          </div>
+        </div>
+
+        <a href="/blog.html"
+          class="text-sm font-bold tracking-wider text-[var(--hud-text-dim)] hover:text-[var(--hud-accent)] transition uppercase flex items-center">Blog</a>
+        <a href="/pricing.html"
+          class="text-sm font-bold tracking-wider text-[var(--hud-text-dim)] hover:text-[var(--hud-accent)] transition uppercase flex items-center">Pricing</a>
+      </div>
+
+      <a href="/signup.html"
+        class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full text-sm font-medium transition-all border border-white/10">
+        Launch Wizard
       </a>
-      <a href="/" class="text-sm text-neutral-400 hover:text-white transition">← Back to Home</a>
     </div>
-  </header>
+  </nav>
 
   <main class="mx-auto max-w-5xl px-6 py-16">
     <h1 class="text-5xl font-bold mb-4">Terms of Service</h1>
@@ -27,17 +132,22 @@
       <section>
         <h2 class="text-3xl font-bold text-white mb-6">1. Agreement to Terms</h2>
         <p class="mb-4">
-          These Terms of Service ("Terms", "Agreement") constitute a legally binding agreement between you ("User", "you", or "your") 
-          and Drgnflai.org ("Company", "we", "us", or "our") concerning your access to and use of the AgentCache.ai website 
+          These Terms of Service ("Terms", "Agreement") constitute a legally binding agreement between you ("User",
+          "you", or "your")
+          and Drgnflai.org ("Company", "we", "us", or "our") concerning your access to and use of the AgentCache.ai
+          website
           (the "Site") and related services (collectively, the "Service").
         </p>
         <p class="mb-4">
-          BY ACCESSING OR USING THE SERVICE, YOU ACKNOWLEDGE THAT YOU HAVE READ, UNDERSTOOD, AND AGREE TO BE BOUND BY THESE TERMS. 
+          BY ACCESSING OR USING THE SERVICE, YOU ACKNOWLEDGE THAT YOU HAVE READ, UNDERSTOOD, AND AGREE TO BE BOUND BY
+          THESE TERMS.
           IF YOU DO NOT AGREE TO THESE TERMS, YOU MAY NOT ACCESS OR USE THE SERVICE.
         </p>
         <p>
-          We reserve the right to modify these Terms at any time. Material changes will be notified via email at least thirty (30) 
-          days prior to taking effect. Your continued use of the Service after changes become effective constitutes acceptance of 
+          We reserve the right to modify these Terms at any time. Material changes will be notified via email at least
+          thirty (30)
+          days prior to taking effect. Your continued use of the Service after changes become effective constitutes
+          acceptance of
           the modified Terms.
         </p>
       </section>
@@ -45,23 +155,28 @@
       <section>
         <h2 class="text-3xl font-bold text-white mb-6">2. Description of Service</h2>
         <p class="mb-4">
-          AgentCache.ai provides edge caching infrastructure for artificial intelligence and large language model (LLM) API calls 
-          (the "Service"). The Service operates as a caching layer between User applications and third-party LLM providers including 
+          AgentCache.ai provides edge caching infrastructure for artificial intelligence and large language model (LLM)
+          API calls
+          (the "Service"). The Service operates as a caching layer between User applications and third-party LLM
+          providers including
           but not limited to OpenAI, Anthropic, and similar services.
         </p>
         <p>
-          The Service is designed to reduce latency and costs associated with LLM API calls by storing and retrieving previously 
-          executed requests. We make no representations or warranties regarding the availability, reliability, or performance of 
+          The Service is designed to reduce latency and costs associated with LLM API calls by storing and retrieving
+          previously
+          executed requests. We make no representations or warranties regarding the availability, reliability, or
+          performance of
           third-party LLM providers.
         </p>
       </section>
 
       <section>
         <h2 class="text-3xl font-bold text-white mb-6">3. Account Registration and Eligibility</h2>
-        
+
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">3.1 Eligibility</h3>
         <p class="mb-4">
-          You must be at least eighteen (18) years of age to use the Service. By using the Service, you represent and warrant that 
+          You must be at least eighteen (18) years of age to use the Service. By using the Service, you represent and
+          warrant that
           you meet this age requirement and have the legal capacity to enter into this Agreement.
         </p>
 
@@ -77,28 +192,35 @@
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">3.3 Account Termination</h3>
         <p>
-          We reserve the right to suspend or terminate your account at any time, with or without notice, for violation of these 
+          We reserve the right to suspend or terminate your account at any time, with or without notice, for violation
+          of these
           Terms or for any other reason we deem appropriate in our sole discretion.
         </p>
       </section>
 
       <section>
         <h2 class="text-3xl font-bold text-white mb-6">4. Acceptable Use Policy</h2>
-        
+
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">4.1 Permitted Use</h3>
         <p class="mb-4">
-          You may use the Service only for lawful purposes and in accordance with these Terms. You agree not to use the Service:
+          You may use the Service only for lawful purposes and in accordance with these Terms. You agree not to use the
+          Service:
         </p>
 
         <ul class="list-disc list-inside space-y-2 ml-4 mb-6">
           <li>In any way that violates any applicable federal, state, local, or international law or regulation</li>
-          <li>To transmit, or procure the sending of, any advertising or promotional material without our prior written consent</li>
-          <li>To impersonate or attempt to impersonate the Company, a Company employee, another user, or any other person or entity</li>
+          <li>To transmit, or procure the sending of, any advertising or promotional material without our prior written
+            consent</li>
+          <li>To impersonate or attempt to impersonate the Company, a Company employee, another user, or any other
+            person or entity</li>
           <li>To engage in any conduct that restricts or inhibits anyone's use or enjoyment of the Service</li>
-          <li>To introduce any viruses, trojan horses, worms, logic bombs, or other material that is malicious or technologically harmful</li>
-          <li>To attempt to gain unauthorized access to, interfere with, damage, or disrupt any parts of the Service</li>
+          <li>To introduce any viruses, trojan horses, worms, logic bombs, or other material that is malicious or
+            technologically harmful</li>
+          <li>To attempt to gain unauthorized access to, interfere with, damage, or disrupt any parts of the Service
+          </li>
           <li>To use the Service in any manner that could disable, overburden, damage, or impair the Service</li>
-          <li>To use any robot, spider, or other automatic device to access the Service for any purpose without our express written permission</li>
+          <li>To use any robot, spider, or other automatic device to access the Service for any purpose without our
+            express written permission</li>
           <li>To circumvent, disable, or otherwise interfere with security-related features of the Service</li>
           <li>To resell, sublicense, or otherwise commercialize the Service without express written permission</li>
         </ul>
@@ -117,113 +239,131 @@
 
       <section>
         <h2 class="text-3xl font-bold text-white mb-6">5. Service Plans and Billing</h2>
-        
+
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">5.1 Subscription Plans</h3>
         <p class="mb-4">
-          The Service offers various subscription plans with different features, usage limits, and pricing. Current plans and 
-          pricing are available at agentcache.ai/pricing. We reserve the right to modify plans and pricing at any time with 
+          The Service offers various subscription plans with different features, usage limits, and pricing. Current
+          plans and
+          pricing are available at agentcache.ai/pricing. We reserve the right to modify plans and pricing at any time
+          with
           thirty (30) days' notice to existing subscribers.
         </p>
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">5.2 Billing and Payment</h3>
         <p class="mb-4">
-          Subscription fees are billed in advance on a monthly or annual basis, depending on your selected plan. By providing 
-          payment information, you authorize us to charge all fees incurred through your account. All payments are processed 
+          Subscription fees are billed in advance on a monthly or annual basis, depending on your selected plan. By
+          providing
+          payment information, you authorize us to charge all fees incurred through your account. All payments are
+          processed
           through Stripe, Inc., a third-party payment processor.
         </p>
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">5.3 Automatic Renewal</h3>
         <p class="mb-4">
-          Your subscription will automatically renew at the end of each billing period unless you cancel prior to the renewal date. 
+          Your subscription will automatically renew at the end of each billing period unless you cancel prior to the
+          renewal date.
           You may cancel your subscription at any time through your account dashboard.
         </p>
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">5.4 Refund Policy</h3>
         <p class="mb-4">
-          All fees are non-refundable except as required by applicable law. We do not provide refunds or credits for partial 
+          All fees are non-refundable except as required by applicable law. We do not provide refunds or credits for
+          partial
           months or unused service. If we terminate your account for cause, you will not be entitled to any refund.
         </p>
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">5.5 Taxes</h3>
         <p>
-          You are responsible for all applicable taxes. If we are required to collect or pay taxes on fees charged to you, 
+          You are responsible for all applicable taxes. If we are required to collect or pay taxes on fees charged to
+          you,
           such taxes will be invoiced to you as part of your subscription fee.
         </p>
       </section>
 
       <section>
         <h2 class="text-3xl font-bold text-white mb-6">6. Service Usage Limits</h2>
-        
+
         <p class="mb-4">
-          Each subscription plan includes specific usage limits (e.g., number of API requests, cache storage, bandwidth). 
+          Each subscription plan includes specific usage limits (e.g., number of API requests, cache storage,
+          bandwidth).
           Usage limits are detailed in your account dashboard and at agentcache.ai/pricing.
         </p>
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">6.1 Rate Limiting</h3>
         <p class="mb-4">
-          We implement rate limiting to ensure fair usage and system stability. Rate limits vary by subscription plan. 
+          We implement rate limiting to ensure fair usage and system stability. Rate limits vary by subscription plan.
           Exceeding rate limits may result in temporary request throttling or rejection.
         </p>
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">6.2 Quota Exceeded</h3>
         <p>
-          If you exceed your plan's usage quota, additional requests will be blocked until: (a) your quota resets at the 
+          If you exceed your plan's usage quota, additional requests will be blocked until: (a) your quota resets at the
           beginning of the next billing period, or (b) you upgrade to a higher plan with increased limits.
         </p>
       </section>
 
       <section>
         <h2 class="text-3xl font-bold text-white mb-6">7. Intellectual Property Rights</h2>
-        
+
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">7.1 Service Content</h3>
         <p class="mb-4">
-          The Service and its original content, features, and functionality are and will remain the exclusive property of 
-          Drgnflai.org and its licensors. The Service is protected by copyright, trademark, and other laws of the United States 
+          The Service and its original content, features, and functionality are and will remain the exclusive property
+          of
+          Drgnflai.org and its licensors. The Service is protected by copyright, trademark, and other laws of the United
+          States
           and foreign countries.
         </p>
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">7.2 User Content</h3>
         <p class="mb-4">
-          You retain all rights to content you cache through the Service ("User Content"). By using the Service, you grant us 
-          a limited, non-exclusive, royalty-free license to store, cache, and transmit User Content solely for the purpose of 
+          You retain all rights to content you cache through the Service ("User Content"). By using the Service, you
+          grant us
+          a limited, non-exclusive, royalty-free license to store, cache, and transmit User Content solely for the
+          purpose of
           providing the Service to you.
         </p>
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">7.3 Feedback</h3>
         <p>
-          Any feedback, comments, or suggestions you provide regarding the Service ("Feedback") will become our sole property. 
+          Any feedback, comments, or suggestions you provide regarding the Service ("Feedback") will become our sole
+          property.
           We may use Feedback for any purpose without obligation to you.
         </p>
       </section>
 
       <section>
         <h2 class="text-3xl font-bold text-white mb-6">8. Data and Privacy</h2>
-        
+
         <p class="mb-4">
-          Your use of the Service is also governed by our Privacy Policy, available at agentcache.ai/privacy.html, which is 
+          Your use of the Service is also governed by our Privacy Policy, available at agentcache.ai/privacy.html, which
+          is
           incorporated into these Terms by reference.
         </p>
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">8.1 Data Storage</h3>
         <p class="mb-4">
-          Cached content is stored encrypted and automatically deleted after the retention period specified in your request 
-          (default: seven (7) days). We do not use cached content for training, marketing, or any purpose other than providing 
+          Cached content is stored encrypted and automatically deleted after the retention period specified in your
+          request
+          (default: seven (7) days). We do not use cached content for training, marketing, or any purpose other than
+          providing
           the Service.
         </p>
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">8.2 Data Security</h3>
         <p>
-          We implement industry-standard security measures to protect your data, including TLS 1.3 encryption in transit and 
-          AES-256 encryption at rest. However, no security system is impenetrable, and we cannot guarantee the absolute security 
+          We implement industry-standard security measures to protect your data, including TLS 1.3 encryption in transit
+          and
+          AES-256 encryption at rest. However, no security system is impenetrable, and we cannot guarantee the absolute
+          security
           of your data.
         </p>
       </section>
 
       <section>
         <h2 class="text-3xl font-bold text-white mb-6">9. Service Availability</h2>
-        
+
         <p class="mb-4">
-          We strive to maintain high service availability but do not guarantee uninterrupted access. The Service may be 
+          We strive to maintain high service availability but do not guarantee uninterrupted access. The Service may be
           temporarily unavailable due to:
         </p>
         <ul class="list-disc list-inside space-y-2 ml-4 mb-4">
@@ -234,23 +374,27 @@
         </ul>
 
         <p class="mb-4">
-          We will make reasonable efforts to provide advance notice of scheduled maintenance. In the event of Service unavailability, 
+          We will make reasonable efforts to provide advance notice of scheduled maintenance. In the event of Service
+          unavailability,
           the Service includes automatic failover mechanisms to route requests directly to LLM providers.
         </p>
 
         <p>
-          <strong>Service Level Agreement (SLA):</strong> For paid plans, we target 99.9% uptime calculated monthly, excluding 
+          <strong>Service Level Agreement (SLA):</strong> For paid plans, we target 99.9% uptime calculated monthly,
+          excluding
           scheduled maintenance windows. SLA credits, if applicable, are detailed in your subscription agreement.
         </p>
       </section>
 
       <section>
         <h2 class="text-3xl font-bold text-white mb-6">10. Warranties and Disclaimers</h2>
-        
+
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">10.1 NO WARRANTIES</h3>
         <p class="mb-4">
-          THE SERVICE IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, 
-          INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND 
+          THE SERVICE IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS
+          OR IMPLIED,
+          INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE,
+          AND
           NON-INFRINGEMENT.
         </p>
 
@@ -266,18 +410,22 @@
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">10.3 Third-Party Services</h3>
         <p>
-          The Service integrates with third-party LLM providers (OpenAI, Anthropic, etc.). We are not responsible for the 
-          availability, accuracy, quality, or legality of content provided by these third-party services. Your use of third-party 
+          The Service integrates with third-party LLM providers (OpenAI, Anthropic, etc.). We are not responsible for
+          the
+          availability, accuracy, quality, or legality of content provided by these third-party services. Your use of
+          third-party
           services is subject to their respective terms of service.
         </p>
       </section>
 
       <section>
         <h2 class="text-3xl font-bold text-white mb-6">11. Limitation of Liability</h2>
-        
+
         <p class="mb-4">
-          TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL DRGNFLAI.ORG, ITS AFFILIATES, OFFICERS, DIRECTORS, 
-          EMPLOYEES, AGENTS, OR LICENSORS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, 
+          TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL DRGNFLAI.ORG, ITS AFFILIATES, OFFICERS,
+          DIRECTORS,
+          EMPLOYEES, AGENTS, OR LICENSORS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE
+          DAMAGES,
           INCLUDING WITHOUT LIMITATION:
         </p>
 
@@ -290,29 +438,36 @@
         </ul>
 
         <p class="mb-4">
-          This limitation applies regardless of the legal theory on which the claim is based (contract, tort, negligence, 
+          This limitation applies regardless of the legal theory on which the claim is based (contract, tort,
+          negligence,
           strict liability, or otherwise), even if we have been advised of the possibility of such damages.
         </p>
 
         <p class="mb-4">
-          TO THE MAXIMUM EXTENT PERMITTED BY LAW, OUR AGGREGATE LIABILITY FOR ALL CLAIMS ARISING OUT OF OR RELATED TO THESE 
-          TERMS OR THE SERVICE SHALL NOT EXCEED THE GREATER OF: (A) THE AMOUNT YOU PAID US IN THE TWELVE (12) MONTHS PRECEDING 
+          TO THE MAXIMUM EXTENT PERMITTED BY LAW, OUR AGGREGATE LIABILITY FOR ALL CLAIMS ARISING OUT OF OR RELATED TO
+          THESE
+          TERMS OR THE SERVICE SHALL NOT EXCEED THE GREATER OF: (A) THE AMOUNT YOU PAID US IN THE TWELVE (12) MONTHS
+          PRECEDING
           THE CLAIM, OR (B) ONE HUNDRED DOLLARS ($100.00 USD).
         </p>
 
         <p>
-          Some jurisdictions do not allow the exclusion or limitation of incidental or consequential damages. In such jurisdictions, 
+          Some jurisdictions do not allow the exclusion or limitation of incidental or consequential damages. In such
+          jurisdictions,
           our liability is limited to the greatest extent permitted by law.
         </p>
       </section>
 
       <section>
         <h2 class="text-3xl font-bold text-white mb-6">12. Indemnification</h2>
-        
+
         <p>
-          You agree to defend, indemnify, and hold harmless Drgnflai.org, its affiliates, licensors, and service providers, and 
-          its and their respective officers, directors, employees, contractors, agents, licensors, suppliers, successors, and assigns 
-          from and against any claims, liabilities, damages, judgments, awards, losses, costs, expenses, or fees (including 
+          You agree to defend, indemnify, and hold harmless Drgnflai.org, its affiliates, licensors, and service
+          providers, and
+          its and their respective officers, directors, employees, contractors, agents, licensors, suppliers,
+          successors, and assigns
+          from and against any claims, liabilities, damages, judgments, awards, losses, costs, expenses, or fees
+          (including
           reasonable attorneys' fees) arising out of or relating to:
         </p>
 
@@ -327,126 +482,152 @@
 
       <section>
         <h2 class="text-3xl font-bold text-white mb-6">13. Dispute Resolution and Governing Law</h2>
-        
+
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">13.1 Governing Law</h3>
         <p class="mb-4">
-          These Terms shall be governed by and construed in accordance with the laws of the United States and the State in which 
+          These Terms shall be governed by and construed in accordance with the laws of the United States and the State
+          in which
           Drgnflai.org maintains its principal place of business, without regard to conflict of law principles.
         </p>
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">13.2 Informal Resolution</h3>
         <p class="mb-4">
-          Before filing any formal dispute, you agree to contact us at legal@agentcache.ai to attempt informal resolution. 
+          Before filing any formal dispute, you agree to contact us at legal@agentcache.ai to attempt informal
+          resolution.
           We will attempt to resolve the dispute informally within sixty (60) days.
         </p>
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">13.3 Arbitration Agreement</h3>
         <p class="mb-4">
-          If informal resolution fails, any dispute arising out of or related to these Terms or the Service shall be resolved by 
-          binding arbitration in accordance with the Commercial Arbitration Rules of the American Arbitration Association (AAA). 
-          The arbitration shall be conducted by a single arbitrator and shall take place virtually or in a location mutually 
+          If informal resolution fails, any dispute arising out of or related to these Terms or the Service shall be
+          resolved by
+          binding arbitration in accordance with the Commercial Arbitration Rules of the American Arbitration
+          Association (AAA).
+          The arbitration shall be conducted by a single arbitrator and shall take place virtually or in a location
+          mutually
           agreed upon by the parties.
         </p>
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">13.4 Exceptions to Arbitration</h3>
         <p class="mb-4">
-          Either party may seek injunctive or other equitable relief in any court of competent jurisdiction to prevent the 
+          Either party may seek injunctive or other equitable relief in any court of competent jurisdiction to prevent
+          the
           actual or threatened infringement, misappropriation, or violation of intellectual property rights.
         </p>
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">13.5 Class Action Waiver</h3>
         <p>
-          YOU AGREE THAT ANY ARBITRATION OR PROCEEDING SHALL BE LIMITED TO THE DISPUTE BETWEEN YOU AND DRGNFLAI.ORG INDIVIDUALLY. 
-          YOU WAIVE ANY RIGHT TO PARTICIPATE IN A CLASS ACTION, PRIVATE ATTORNEY GENERAL ACTION, OR OTHER REPRESENTATIVE PROCEEDING.
+          YOU AGREE THAT ANY ARBITRATION OR PROCEEDING SHALL BE LIMITED TO THE DISPUTE BETWEEN YOU AND DRGNFLAI.ORG
+          INDIVIDUALLY.
+          YOU WAIVE ANY RIGHT TO PARTICIPATE IN A CLASS ACTION, PRIVATE ATTORNEY GENERAL ACTION, OR OTHER REPRESENTATIVE
+          PROCEEDING.
         </p>
       </section>
 
       <section>
         <h2 class="text-3xl font-bold text-white mb-6">14. Termination</h2>
-        
+
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">14.1 Termination by You</h3>
         <p class="mb-4">
-          You may terminate your account at any time by accessing your account settings or contacting us at support@agentcache.ai. 
-          Termination will be effective at the end of your current billing period. You will not receive a refund for any unused 
+          You may terminate your account at any time by accessing your account settings or contacting us at
+          support@agentcache.ai.
+          Termination will be effective at the end of your current billing period. You will not receive a refund for any
+          unused
           portion of your subscription.
         </p>
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">14.2 Termination by Us</h3>
         <p class="mb-4">
-          We may terminate or suspend your account immediately, without prior notice or liability, for any reason, including 
+          We may terminate or suspend your account immediately, without prior notice or liability, for any reason,
+          including
           without limitation if you breach these Terms. Upon termination:
         </p>
 
         <ul class="list-disc list-inside space-y-2 ml-4 mb-4">
           <li>Your right to access and use the Service will immediately cease</li>
-          <li>All data associated with your account, including cached content, will be deleted within seven (7) days</li>
+          <li>All data associated with your account, including cached content, will be deleted within seven (7) days
+          </li>
           <li>You remain liable for all fees accrued prior to termination</li>
           <li>Sections of these Terms that by their nature should survive termination shall survive</li>
         </ul>
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">14.3 Data Retrieval</h3>
         <p>
-          Upon termination, you have seven (7) days to export any data you wish to retain. After this period, we will permanently 
+          Upon termination, you have seven (7) days to export any data you wish to retain. After this period, we will
+          permanently
           delete all data associated with your account.
         </p>
       </section>
 
       <section>
         <h2 class="text-3xl font-bold text-white mb-6">15. General Provisions</h2>
-        
+
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">15.1 Entire Agreement</h3>
         <p class="mb-4">
-          These Terms, together with our Privacy Policy and any other policies referenced herein, constitute the entire agreement 
+          These Terms, together with our Privacy Policy and any other policies referenced herein, constitute the entire
+          agreement
           between you and Drgnflai.org regarding the Service and supersede all prior agreements and understandings.
         </p>
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">15.2 Severability</h3>
         <p class="mb-4">
-          If any provision of these Terms is held to be invalid or unenforceable, such provision shall be struck and the remaining 
+          If any provision of these Terms is held to be invalid or unenforceable, such provision shall be struck and the
+          remaining
           provisions shall be enforced to the fullest extent under law.
         </p>
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">15.3 Waiver</h3>
         <p class="mb-4">
-          No waiver of any term of these Terms shall be deemed a further or continuing waiver of such term or any other term, and 
-          our failure to assert any right or provision under these Terms shall not constitute a waiver of such right or provision.
+          No waiver of any term of these Terms shall be deemed a further or continuing waiver of such term or any other
+          term, and
+          our failure to assert any right or provision under these Terms shall not constitute a waiver of such right or
+          provision.
         </p>
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">15.4 Assignment</h3>
         <p class="mb-4">
-          You may not assign or transfer these Terms or your rights hereunder without our prior written consent. We may assign 
+          You may not assign or transfer these Terms or your rights hereunder without our prior written consent. We may
+          assign
           these Terms without restriction. Any attempted assignment in violation of this section is void.
         </p>
 
         <h3 class="text-xl font-semibold text-neutral-200 mb-3">15.5 Force Majeure</h3>
         <p>
-          We shall not be liable for any failure to perform our obligations hereunder where such failure results from causes 
-          beyond our reasonable control, including acts of God, war, terrorism, riots, embargoes, acts of civil or military 
-          authorities, fire, floods, accidents, network infrastructure failures, strikes, or shortages of transportation, fuel, 
+          We shall not be liable for any failure to perform our obligations hereunder where such failure results from
+          causes
+          beyond our reasonable control, including acts of God, war, terrorism, riots, embargoes, acts of civil or
+          military
+          authorities, fire, floods, accidents, network infrastructure failures, strikes, or shortages of
+          transportation, fuel,
           energy, labor, or materials.
         </p>
       </section>
 
       <section>
         <h2 class="text-3xl font-bold text-white mb-6">16. Contact Information</h2>
-        
+
         <p class="mb-4">
           For questions or concerns regarding these Terms, please contact us at:
         </p>
 
         <div class="bg-neutral-900 border border-neutral-800 rounded-lg p-6">
-          <p class="mb-2"><strong>Email:</strong> <a href="mailto:legal@agentcache.ai" class="text-indigo-400 hover:text-indigo-300">legal@agentcache.ai</a></p>
-          <p class="mb-2"><strong>Support:</strong> <a href="mailto:support@agentcache.ai" class="text-indigo-400 hover:text-indigo-300">support@agentcache.ai</a></p>
+          <p class="mb-2"><strong>Email:</strong> <a href="mailto:legal@agentcache.ai"
+              class="text-indigo-400 hover:text-indigo-300">legal@agentcache.ai</a></p>
+          <p class="mb-2"><strong>Support:</strong> <a href="mailto:support@agentcache.ai"
+              class="text-indigo-400 hover:text-indigo-300">support@agentcache.ai</a></p>
           <p class="mb-2"><strong>Organization:</strong> Drgnflai.org</p>
-          <p><strong>Website:</strong> <a href="https://drgnflai.org" class="text-indigo-400 hover:text-indigo-300">drgnflai.org</a></p>
+          <p><strong>Website:</strong> <a href="https://drgnflai.org"
+              class="text-indigo-400 hover:text-indigo-300">drgnflai.org</a></p>
         </div>
       </section>
 
       <section>
         <div class="bg-neutral-900 border border-indigo-500/30 rounded-lg p-6 mt-12">
           <p class="text-sm text-neutral-400">
-            <strong class="text-white">Acknowledgment:</strong> By using AgentCache.ai, you acknowledge that you have read these 
-            Terms of Service, understand them, and agree to be bound by them. If you do not agree to these Terms, you must not 
+            <strong class="text-white">Acknowledgment:</strong> By using AgentCache.ai, you acknowledge that you have
+            read these
+            Terms of Service, understand them, and agree to be bound by them. If you do not agree to these Terms, you
+            must not
             use the Service.
           </p>
         </div>
@@ -457,12 +638,14 @@
 
   <footer class="border-t border-white/10 py-8 px-6 mt-16">
     <div class="mx-auto max-w-5xl text-center text-sm text-neutral-500">
-      © 2025 AgentCache.ai by <a href="https://drgnflai.org" class="text-indigo-400 hover:text-indigo-300">Drgnflai.org</a> • 
-      <a href="/privacy.html" class="hover:text-white">Privacy</a> • 
+      © 2025 AgentCache.ai by <a href="https://drgnflai.org"
+        class="text-indigo-400 hover:text-indigo-300">Drgnflai.org</a> •
+      <a href="/privacy.html" class="hover:text-white">Privacy</a> •
       <a href="/terms.html" class="hover:text-white">Terms</a> •
       <a href="/acceptable-use.html" class="hover:text-white">Acceptable Use</a>
     </div>
   </footer>
 
 </body>
+
 </html>

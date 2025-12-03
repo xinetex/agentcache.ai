@@ -2,21 +2,22 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - AgentCache</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/auth-theme.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up - AgentCache</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/auth-theme.css">
 </head>
 
 <body class="auth-page">
   <div class="auth-container">
     <!-- Logo -->
     <div class="auth-logo">
-      <div class="auth-logo-icon">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-        </svg>
+      <div class="auth-logo-icon"
+        style="background: none; box-shadow: none; border: 1px solid var(--auth-accent); background-color: rgba(0, 243, 255, 0.2);">
+        <div style="width: 12px; height: 12px; background-color: var(--auth-accent);"></div>
       </div>
       <span class="auth-logo-text">AgentCache</span>
     </div>
@@ -31,14 +32,13 @@
     <form id="signup-form" class="auth-form">
       <div class="auth-field">
         <label for="name" class="auth-label">Full Name</label>
-        <input type="text" id="name" name="name" required
-          class="auth-input" placeholder="John Doe">
+        <input type="text" id="name" name="name" required class="auth-input" placeholder="John Doe">
       </div>
 
       <div class="auth-field">
         <label for="email" class="auth-label">Email</label>
-        <input type="email" id="email" name="email" required autocomplete="email"
-          class="auth-input" placeholder="you@example.com">
+        <input type="email" id="email" name="email" required autocomplete="email" class="auth-input"
+          placeholder="you@example.com">
       </div>
 
       <div class="auth-field">
@@ -130,7 +130,7 @@
 
         // Show success message
         showSuccess('Account created successfully! Redirecting...');
-        
+
         // Redirect after brief delay
         setTimeout(() => {
           window.location.href = REDIRECT_URL;

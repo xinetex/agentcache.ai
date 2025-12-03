@@ -8,6 +8,21 @@ body {
   font-family: 'Inter', sans-serif;
 }
 
+:root {
+  --hud-bg: #030508;
+  --hud-panel-bg: rgba(6, 11, 20, 0.85);
+  --hud-border: rgba(0, 243, 255, 0.3);
+  --hud-text: #e0f7fa;
+  --hud-text-dim: rgba(224, 247, 250, 0.6);
+  --hud-accent: #00f3ff;
+}
+
+.glass-dark {
+  background: rgba(5, 10, 20, 0.95);
+  border: 1px solid var(--hud-border);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
 /* Animated Gradient Background */
 .animated-bg {
   position: fixed;

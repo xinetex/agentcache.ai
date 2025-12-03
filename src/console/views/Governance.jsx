@@ -1,12 +1,27 @@
 import React, { useState, useEffect } from 'react';
 
+const PRESETS = [
+    { id: 'Darwin', icon: '🦁', label: 'Darwin', desc: 'Survival of the fittest. High mutation, ruthless culling.', color: 'text-orange-400', border: 'border-orange-500/50', bg: 'bg-orange-500/10' },
+    { id: 'Utopia', icon: '🤝', label: 'Utopia', desc: 'High cooperation, shared rewards, altruistic caching.', color: 'text-cyan-400', border: 'border-cyan-500/50', bg: 'bg-cyan-500/10' },
+    { id: 'WallStreet', icon: '📈', label: 'Wall Street', desc: 'Profit maximization. High competition for tokens.', color: 'text-emerald-400', border: 'border-emerald-500/50', bg: 'bg-emerald-500/10' },
+    { id: 'ArtistColony', icon: '🎨', label: 'Artist Colony', desc: 'High temperature, novelty seeking, creative risks.', color: 'text-pink-400', border: 'border-pink-500/50', bg: 'bg-pink-500/10' },
+    { id: 'DoomerPrepper', icon: '🛡️', label: 'Doomer Prepper', desc: 'Extreme safety, redundancy, low risk tolerance.', color: 'text-slate-400', border: 'border-slate-500/50', bg: 'bg-slate-500/10' },
+];
+
 export default function Governance() {
+    const [currentMode, setCurrentMode] = useState(null);
     const [org, setOrg] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [switching, setSwitching] = useState(false);
 
     useEffect(() => {
-        // Mock data for now, replacing with real API call structure
-        // In a real scenario, we would fetch from /api/organization
+        // Fetch Governance Mode
+        fetch('/api/governance/presets')
+            .then(res => res.json())
+            .then(data => setCurrentMode(data.mode || 'Default'))
+            .catch(err => console.error("Failed to fetch mode:", err));
+
+        // Mock Org Data
         setTimeout(() => {
             setOrg({
                 name: 'Acme Corp',
@@ -27,14 +42,66 @@ export default function Governance() {
         }, 800);
     }, []);
 
+    const handleSwitchMode = async (mode) => {
+        setSwitching(true);
+        try {
+            const res = await fetch('/api/governance/presets', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mode, parameters: { timestamp: Date.now() } })
+            });
+            if (res.ok) {
+                setCurrentMode(mode);
+            }
+        } catch (err) {
+            console.error("Failed to switch mode:", err);
+        } finally {
+            setSwitching(false);
+        }
+    };
+
     if (loading) return <div className="p-8 text-slate-400">Loading governance data...</div>;
 
     return (
         <div className="p-8 max-w-7xl mx-auto">
             <header className="mb-8">
                 <h2 className="text-3xl font-bold text-white mb-2">Governance</h2>
-                <p className="text-slate-400">Organization settings, access control, and security policies</p>
+                <p className="text-slate-400">Organization settings, access control, and <span className="text-purple-400">Reality Switching</span>.</p>
             </header>
+
+            {/* Reality Switcher */}
+            <section className="mb-12">
+                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <span className="text-purple-500">🔮</span> Reality Switcher
+                    <span className="text-xs font-normal text-slate-500 ml-2 border border-slate-700 px-2 py-0.5 rounded">Global Simulation Parameters</span>
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {PRESETS.map(preset => {
+                        const isActive = currentMode === preset.id;
+                        return (
+                            <button
+                                key={preset.id}
+                                onClick={() => handleSwitchMode(preset.id)}
+                                disabled={switching}
+                                className={`relative p-4 rounded-xl border text-left transition-all ${isActive
+                                        ? `${preset.bg} ${preset.border} shadow-[0_0_20px_rgba(0,0,0,0.3)] scale-[1.02]`
+                                        : 'bg-slate-900/40 border-slate-800 hover:border-slate-600 hover:bg-slate-800/60'
+                                    }`}
+                            >
+                                {isActive && (
+                                    <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.8)]"></div>
+                                )}
+                                <div className="text-2xl mb-2">{preset.icon}</div>
+                                <div className={`font-bold mb-1 ${isActive ? 'text-white' : 'text-slate-300'}`}>{preset.label}</div>
+                                <div className="text-xs text-slate-500 leading-relaxed">{preset.desc}</div>
+                            </button>
+                        );
+                    })}
+                </div>
+            </section>
+
+            <div className="border-t border-slate-800/50 my-8"></div>
 
             {/* Organization Details */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
