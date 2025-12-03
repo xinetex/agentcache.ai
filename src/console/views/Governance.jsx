@@ -15,31 +15,33 @@ export default function Governance() {
     const [switching, setSwitching] = useState(false);
 
     useEffect(() => {
-        // Fetch Governance Mode
-        fetch('/api/governance/presets')
-            .then(res => res.json())
-            .then(data => setCurrentMode(data.mode || 'Default'))
-            .catch(err => console.error("Failed to fetch mode:", err));
+        const fetchData = async () => {
+            try {
+                const [orgRes, membersRes, keysRes, modeRes] = await Promise.all([
+                    fetch('/api/governance/org'),
+                    fetch('/api/governance/members'),
+                    fetch('/api/governance/keys'),
+                    fetch('/api/governance/presets')
+                ]);
 
-        // Mock Org Data
-        setTimeout(() => {
-            setOrg({
-                name: 'Acme Corp',
-                id: 'org_123456789',
-                plan: 'Professional',
-                role: 'Owner',
-                members: [
-                    { id: 'u_1', name: 'Alice Admin', email: 'alice@acme.com', role: 'owner' },
-                    { id: 'u_2', name: 'Bob Builder', email: 'bob@acme.com', role: 'member' },
-                    { id: 'u_3', name: 'Charlie Cache', email: 'charlie@acme.com', role: 'viewer' },
-                ],
-                apiKeys: [
-                    { prefix: 'ac_live_', created: '2025-11-01', scopes: ['cache:read', 'cache:write'] },
-                    { prefix: 'ac_test_', created: '2025-11-15', scopes: ['cache:read'] },
-                ]
-            });
-            setLoading(false);
-        }, 800);
+                const orgData = await orgRes.json();
+                const membersData = await membersRes.json();
+                const keysData = await keysRes.json();
+                const modeData = await modeRes.json();
+
+                setOrg({
+                    ...orgData,
+                    members: membersData.members,
+                    apiKeys: keysData.apiKeys
+                });
+                setCurrentMode(modeData.mode || 'Default');
+            } catch (err) {
+                console.error("Failed to fetch governance data:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
     }, []);
 
     const handleSwitchMode = async (mode) => {
@@ -85,8 +87,8 @@ export default function Governance() {
                                 onClick={() => handleSwitchMode(preset.id)}
                                 disabled={switching}
                                 className={`relative p-4 rounded-xl border text-left transition-all ${isActive
-                                        ? `${preset.bg} ${preset.border} shadow-[0_0_20px_rgba(0,0,0,0.3)] scale-[1.02]`
-                                        : 'bg-slate-900/40 border-slate-800 hover:border-slate-600 hover:bg-slate-800/60'
+                                    ? `${preset.bg} ${preset.border} shadow-[0_0_20px_rgba(0,0,0,0.3)] scale-[1.02]`
+                                    : 'bg-slate-900/40 border-slate-800 hover:border-slate-600 hover:bg-slate-800/60'
                                     }`}
                             >
                                 {isActive && (

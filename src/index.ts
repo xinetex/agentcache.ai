@@ -43,6 +43,7 @@ import { provisionClient, getApiKeyInfo, provisionJettyThunder } from './api/pro
 import decisionsRouter from './api/decisions.js';
 import galaxyRouter from './api/galaxy.js';
 import explorerRouter from './api/explorer.js';
+import governanceRouter from './api/governance.js';
 
 app.post('/api/provision', provisionClient);
 app.get('/api/provision/:api_key', getApiKeyInfo);
@@ -52,6 +53,7 @@ app.post('/api/provision/jettythunder', provisionJettyThunder);
 app.route('/api/decisions', decisionsRouter);
 app.route('/api/galaxy', galaxyRouter);
 app.route('/api/explorer', explorerRouter);
+app.route('/api/governance', governanceRouter);
 
 // Serve static files (landing page - defaults to community.html)
 app.get('/', (c) => {

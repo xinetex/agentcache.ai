@@ -44,3 +44,39 @@ export const decisions = pgTable('decisions', {
     outcome: jsonb('outcome'),
     timestamp: timestamp('timestamp').defaultNow(),
 });
+
+// --- Governance: Organizations & Access ---
+export const organizations = pgTable('organizations', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: text('name').notNull(),
+    plan: text('plan').default('free'), // 'free', 'pro', 'enterprise'
+    region: text('region').default('us-east-1'),
+    createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const users = pgTable('users', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    email: text('email').notNull().unique(),
+    name: text('name'),
+    avatarUrl: text('avatar_url'),
+    createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const members = pgTable('members', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    orgId: uuid('org_id').references(() => organizations.id),
+    userId: uuid('user_id').references(() => users.id),
+    role: text('role').default('viewer'), // 'owner', 'admin', 'member', 'viewer'
+    joinedAt: timestamp('joined_at').defaultNow(),
+});
+
+export const apiKeys = pgTable('api_keys', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    orgId: uuid('org_id').references(() => organizations.id),
+    prefix: text('prefix').notNull(), // e.g., 'ac_live_'
+    hash: text('hash').notNull(), // Hashed secret
+    scopes: text('scopes').array(), // ['cache:read', 'cache:write']
+    lastUsedAt: timestamp('last_used_at'),
+    createdAt: timestamp('created_at').defaultNow(),
+    expiresAt: timestamp('expires_at'),
+});

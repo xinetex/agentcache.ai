@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-
+import CyberCard from '../components/CyberCard';
+import { FlaskConical, Activity } from 'lucide-react';
 const STATES = ['START', 'L1_CHECK', 'L2_CHECK', 'L3_SEARCH', 'COGNITIVE', 'LLM_CALL', 'END'];
 
 export default function Lab() {
@@ -122,74 +123,69 @@ export default function Lab() {
     }, [selectedGenome]);
 
     return (
-        <div className="flex h-full bg-slate-950 text-slate-100 font-sans">
+        <div className="h-[calc(100vh-8rem)] flex gap-6">
 
             {/* Sidebar: Genome List */}
-            <div className="w-80 border-r border-slate-800 flex flex-col bg-slate-900/50 backdrop-blur">
-                <div className="p-4 border-b border-slate-800">
-                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                        <span className="text-cyan-500">🧬</span> Evolutionary Lab
-                    </h2>
-                    <p className="text-xs text-slate-500 mt-1">Observing Generation {genomes.length > 0 ? genomes[0].generation : 0}</p>
-                </div>
+            <div className="w-80 flex flex-col gap-4">
+                <CyberCard title="Evolutionary Lab" icon={FlaskConical} className="flex-1 flex flex-col">
+                    <div className="text-xs text-[var(--hud-text-dim)] mb-4">
+                        Observing Generation <span className="text-[var(--hud-accent)] font-mono">{genomes.length > 0 ? genomes[0].generation : 0}</span>
+                    </div>
+                    <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-2">
+                        {genomes.map(genome => (
+                            <div
+                                key={genome.id}
+                                onClick={() => setSelectedGenome(genome)}
+                                className={`p-3 rounded border cursor-pointer transition-all ${selectedGenome?.id === genome.id
+                                    ? 'bg-[var(--hud-accent)]/10 border-[var(--hud-accent)] shadow-[0_0_10px_var(--hud-accent)]'
+                                    : 'bg-black border-[var(--hud-border)] hover:border-[var(--hud-text)]'
+                                    }`}
+                            >
+                                <div className="flex justify-between items-center mb-1">
+                                    <span className="text-xs font-mono text-[var(--hud-text-dim)]">Gen {genome.generation}</span>
+                                    <span className="text-xs font-bold text-[var(--hud-success)]">Fit: {Math.round(genome.fitness || 0)}</span>
+                                </div>
+                                <div className="text-[10px] text-[var(--hud-text-dim)] truncate font-mono">{genome.id.split('-').pop()}</div>
 
-                <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                    {genomes.map(genome => (
-                        <div
-                            key={genome.id}
-                            onClick={() => setSelectedGenome(genome)}
-                            className={`p-3 rounded-lg cursor-pointer transition-all border ${selectedGenome?.id === genome.id
-                                ? 'bg-cyan-500/10 border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.15)]'
-                                : 'bg-slate-800/50 border-slate-700/50 hover:bg-slate-800 hover:border-slate-600'
-                                }`}
-                        >
-                            <div className="flex justify-between items-center mb-1">
-                                <span className="text-xs font-mono text-slate-400">Gen {genome.generation}</span>
-                                <span className="text-xs font-bold text-emerald-400">Fit: {Math.round(genome.fitness || 0)}</span>
+                                {/* Mini Phenotype Preview */}
+                                <div className="mt-2 flex gap-1 overflow-hidden opacity-50">
+                                    {genome.phenotype?.slice(0, 5).map((step, i) => (
+                                        <div key={i} className="w-1 h-3 rounded-full bg-[var(--hud-text-dim)]" title={step}></div>
+                                    ))}
+                                </div>
                             </div>
-                            <div className="text-xs text-slate-500 truncate font-mono">{genome.id.split('-').pop()}</div>
-
-                            {/* Mini Phenotype Preview */}
-                            <div className="mt-2 flex gap-1 overflow-hidden opacity-50">
-                                {genome.phenotype?.slice(0, 5).map((step, i) => (
-                                    <div key={i} className="w-1 h-3 rounded-full bg-slate-600" title={step}></div>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                </CyberCard>
             </div>
 
             {/* Main: Visualization */}
-            <div className="flex-1 relative overflow-hidden">
-
-                {/* Header Overlay */}
-                <div className="absolute top-4 left-4 z-10 pointer-events-none">
-                    <h1 className="text-2xl font-bold text-white tracking-tight">Genome Visualization</h1>
-                    <p className="text-slate-400 text-sm">Markov Chain Probability Matrix</p>
-                </div>
-
-                {/* D3 Container */}
-                <svg ref={svgRef} className="w-full h-full cursor-grab active:cursor-grabbing"></svg>
-
-                {/* Legend/Info */}
-                <div className="absolute bottom-4 right-4 bg-slate-900/80 backdrop-blur border border-slate-700 p-4 rounded-lg max-w-xs text-xs text-slate-400">
-                    <h3 className="text-white font-bold mb-2">Structure Analysis</h3>
-                    <p className="mb-2">
-                        Thicker lines indicate higher transition probability.
-                        This genome favors <span className="text-cyan-400">L1 &rarr; L3</span> transitions,
-                        optimizing for semantic recall over raw LLM calls.
-                    </p>
-                    <div className="flex items-center gap-2 mt-2">
-                        <div className="w-2 h-2 rounded-full bg-cyan-500"></div>
-                        <span>High Probability</span>
+            <div className="flex-1 flex flex-col gap-6">
+                <CyberCard className="flex-1 relative overflow-hidden p-0">
+                    <div className="absolute top-4 left-4 z-10 pointer-events-none">
+                        <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                            <Activity size={20} className="text-[var(--hud-accent)]" />
+                            Genome Visualization
+                        </h1>
+                        <p className="text-[var(--hud-text-dim)] text-xs font-mono">Markov Chain Probability Matrix</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-cyan-500/20"></div>
-                        <span>Low Probability</span>
-                    </div>
-                </div>
 
+                    {/* D3 Container */}
+                    <svg ref={svgRef} className="w-full h-full cursor-grab active:cursor-grabbing bg-black/50"></svg>
+
+                    {/* Legend */}
+                    <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur border border-[var(--hud-border)] p-4 rounded max-w-xs text-xs text-[var(--hud-text-dim)]">
+                        <h3 className="text-white font-bold mb-2">Structure Analysis</h3>
+                        <p className="mb-2 leading-relaxed">
+                            Thicker lines indicate higher transition probability.
+                            This genome favors <span className="text-[var(--hud-accent)]">L1 &rarr; L3</span> transitions.
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                            <div className="w-2 h-2 rounded-full bg-[var(--hud-accent)]"></div>
+                            <span>High Probability</span>
+                        </div>
+                    </div>
+                </CyberCard>
             </div>
         </div>
     );
