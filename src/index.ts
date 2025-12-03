@@ -40,9 +40,16 @@ app.route('/api/integrations/vercel', vercelIntegration);
 
 // Provision API endpoints
 import { provisionClient, getApiKeyInfo, provisionJettyThunder } from './api/provision-hono.js';
+import decisionsRouter from './api/decisions.js';
+import galaxyRouter from './api/galaxy.js';
+
 app.post('/api/provision', provisionClient);
 app.get('/api/provision/:api_key', getApiKeyInfo);
 app.post('/api/provision/jettythunder', provisionJettyThunder);
+
+// Mount Decisions & Galaxy API
+app.route('/api/decisions', decisionsRouter);
+app.route('/api/galaxy', galaxyRouter);
 
 // Serve static files (landing page - defaults to community.html)
 app.get('/', (c) => {
@@ -88,26 +95,26 @@ async function trackUsage(apiKey: string, tier: string = 'free') {
   const now = new Date();
   const monthKey = `usage:${keyHash}:m:${now.toISOString().slice(0, 7)}`;
   const quotaKey = `usage:${keyHash}:quota`;
-  
+
   // Get tier-based quota
   const quota = getTierQuota(tier);
-  
+
   // Update quota in Redis for caching
   await redis.set(quotaKey, quota.toString());
   await redis.set(`usage:${keyHash}:tier`, tier);
-  
+
   // Increment usage
   const used = await redis.incr(monthKey);
   if (used === 1) {
     // First request this month - set 35 day expiry
     await redis.expire(monthKey, 3024000);
   }
-  
+
   // Check quota (-1 = unlimited for enterprise)
   if (quota !== -1 && used > quota) {
     return { exceeded: true, used, quota, remaining: 0 };
   }
-  
+
   return { exceeded: false, used, quota, remaining: quota === -1 ? -1 : quota - used };
 }
 
@@ -135,10 +142,10 @@ async function authenticateApiKey(c: any) {
   try {
     const keyHash = createHash('sha256').update(apiKey).digest('hex');
     const cacheKey = `tier:${keyHash}`;
-    
+
     let tier = 'free'; // default
     let tierFeatures = null;
-    
+
     // Check Redis cache first (5 min TTL)
     const cachedTier = await redis.get(cacheKey);
     if (cachedTier) {
@@ -150,35 +157,35 @@ async function authenticateApiKey(c: any) {
         SELECT tier, key_hash, is_active FROM api_keys 
         WHERE is_active = TRUE
       `;
-      
+
       for (const record of keys) {
         const match = await bcrypt.compare(apiKey, record.key_hash);
         if (match) {
           tier = record.tier || 'free';
           tierFeatures = getTierFeatures(tier);
-          
+
           // Cache tier in Redis for 5 minutes
           await redis.setex(cacheKey, 300, tier);
           break;
         }
       }
     }
-    
+
     // Track usage with tier-based quota
     const usage = await trackUsage(apiKey, tier);
-    
+
     if (usage.exceeded) {
       return c.json({
         error: 'Monthly quota exceeded',
         quota: usage.quota,
         used: usage.used,
         tier: tier,
-        message: tier === 'free' 
-          ? 'Your free tier includes 10,000 requests/month. Upgrade to Pro for 1M requests/month.' 
+        message: tier === 'free'
+          ? 'Your free tier includes 10,000 requests/month. Upgrade to Pro for 1M requests/month.'
           : 'Monthly quota exceeded. Contact support to upgrade your plan.'
       }, 429);
     }
-    
+
     // Attach tier info to context
     c.set('apiKey', apiKey);
     c.set('tier', tier);
@@ -590,7 +597,7 @@ app.delete('/api/listeners', async (c) => {
     }
 
     const success = urlMonitor.unregisterListener(id);
-    
+
     if (!success) {
       return c.json({ error: 'Listener not found' }, 404);
     }
@@ -689,7 +696,7 @@ app.post('/api/edges/optimal', async (c) => {
 
     // Get active edges
     const edges = await jettySpeedDb.getActiveEdges();
-    
+
     // Get edge metrics (or use mock data)
     const metrics = await jettySpeedDb.getAllEdgeMetrics();
 
@@ -783,7 +790,7 @@ app.get('/api/jetty-speed/chunk/:fileId/:chunkIndex', async (c) => {
       // Cache hit!
       const latency = Date.now() - startTime;
       const chunkBuffer = Buffer.from(cached, 'base64');
-      
+
       return new Response(chunkBuffer, {
         status: 200,
         headers: {
@@ -797,7 +804,7 @@ app.get('/api/jetty-speed/chunk/:fileId/:chunkIndex', async (c) => {
     // Cache miss - fetch from Lyve if URL provided
     if (lyveDownloadUrl) {
       const lyveResponse = await fetch(lyveDownloadUrl);
-      
+
       if (!lyveResponse.ok) {
         return c.json({ error: 'Failed to fetch from Lyve' }, 502);
       }
@@ -975,23 +982,23 @@ app.get('/api/overflow/stats', async (c) => {
 
   try {
     const partners = ['redis-labs', 'pinecone', 'together-ai'];
-    
+
     const stats = await Promise.all(
       partners.map(async (partnerId) => {
         const [cacheStats, webhookStats] = await Promise.all([
           redis.hgetall(`partner:${partnerId}:stats`),
           redis.hgetall(`partner:${partnerId}:webhooks`)
         ]);
-        
+
         const hits = parseInt(cacheStats.hits || '0');
         const misses = parseInt(cacheStats.misses || '0');
         const sets = parseInt(cacheStats.sets || '0');
         const totalRequests = hits + misses;
-        
+
         const webhookSuccess = parseInt(webhookStats.success || '0');
         const webhookFailure = parseInt(webhookStats.failure || '0');
         const totalWebhooks = webhookSuccess + webhookFailure;
-        
+
         return {
           id: partnerId,
           cache: {
@@ -1013,8 +1020,8 @@ app.get('/api/overflow/stats', async (c) => {
         };
       })
     );
-    
-    return c.json({ 
+
+    return c.json({
       partners: stats,
       timestamp: new Date().toISOString()
     });
@@ -1031,19 +1038,19 @@ app.post('/api/qr/generate', async (c) => {
   try {
     const { neon } = await import('@neondatabase/serverless');
     const sql = neon(process.env.DATABASE_URL || '');
-    
+
     // Generate 6-digit code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
-    
+
     // Store in database
     await sql`
       INSERT INTO qr_pairing_codes (code, status, expires_at)
       VALUES (${code}, 'pending', ${expiresAt.toISOString()})
     `;
-    
+
     const qrUrl = `${process.env.PUBLIC_URL || 'https://agentcache.ai'}/mobile-auth.html?code=${code}`;
-    
+
     return c.json({
       code,
       qrUrl,
@@ -1064,22 +1071,22 @@ app.post('/api/qr/approve', async (c) => {
     const sql = neon(process.env.DATABASE_URL || '');
     const body = await c.req.json();
     const { code, email } = body;
-    
+
     if (!code || !email) {
       return c.json({ error: 'Code and email required' }, 400);
     }
-    
+
     // Verify code exists and is pending
     const pairing = await sql`
       SELECT * FROM qr_pairing_codes 
       WHERE code = ${code} AND status = 'pending' AND expires_at > NOW()
       LIMIT 1
     `;
-    
+
     if (!pairing || pairing.length === 0) {
       return c.json({ error: 'Invalid or expired code' }, 404);
     }
-    
+
     // Provision API key
     const { generateApiKey } = await import('./services/provisioning.js');
     const userId = email.replace(/[^a-z0-9]/gi, '_').toLowerCase();
@@ -1088,11 +1095,11 @@ app.post('/api/qr/approve', async (c) => {
       integration: 'qr_auth',
       project_id: `qr_${Date.now()}`
     });
-    
+
     // Set quota in Redis
     const keyHash = createHash('sha256').update(apiKey).digest('hex');
     await redis.set(`usage:${keyHash}:quota`, '10000');
-    
+
     // Update pairing record
     await sql`
       UPDATE qr_pairing_codes 
@@ -1102,7 +1109,7 @@ app.post('/api/qr/approve', async (c) => {
           approved_at = NOW()
       WHERE code = ${code}
     `;
-    
+
     return c.json({
       success: true,
       message: 'API key provisioned'
@@ -1121,23 +1128,23 @@ app.get('/api/qr/status', async (c) => {
     const { neon } = await import('@neondatabase/serverless');
     const sql = neon(process.env.DATABASE_URL || '');
     const code = c.req.query('code');
-    
+
     if (!code) {
       return c.json({ error: 'Code required' }, 400);
     }
-    
+
     const pairing = await sql`
       SELECT status, api_key, email FROM qr_pairing_codes 
       WHERE code = ${code}
       LIMIT 1
     `;
-    
+
     if (!pairing || pairing.length === 0) {
       return c.json({ error: 'Code not found' }, 404);
     }
-    
+
     const result = pairing[0];
-    
+
     if (result.status === 'approved') {
       return c.json({
         status: 'approved',
@@ -1145,7 +1152,7 @@ app.get('/api/qr/status', async (c) => {
         email: result.email
       });
     }
-    
+
     return c.json({ status: result.status });
   } catch (error: any) {
     console.error('[QR Auth] Status error:', error);

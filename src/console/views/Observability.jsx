@@ -11,15 +11,22 @@ export default function Observability() {
     // Fetch initial decisions
     const fetchDecisions = async () => {
         try {
-            // Mock data for now if API fails or is empty
-            const mockDecisions = Array.from({ length: 10 }).map((_, i) => ({
-                id: `dec-${Math.random().toString(36).substr(2, 9)}`,
-                action: ['CACHE_HIT', 'REROUTE', 'OPTIMIZE', 'SCALE_UP'][Math.floor(Math.random() * 4)],
-                timestamp: new Date(Date.now() - i * 60000).toISOString(),
-                reasoning: "Latency threshold exceeded in eu-west-1. Rerouting traffic to us-east-1 for optimal performance.",
-                outcome: { status: "success", latency_saved: "45ms" }
-            }));
-            setDecisions(mockDecisions);
+            const res = await fetch('/api/decisions?limit=20');
+            const data = await res.json();
+
+            if (data && data.decisions && data.decisions.length > 0) {
+                setDecisions(data.decisions);
+            } else {
+                // Keep mock data only if no real data exists yet (for demo purposes)
+                const mockDecisions = Array.from({ length: 5 }).map((_, i) => ({
+                    id: `demo-${Math.random().toString(36).substr(2, 9)}`,
+                    action: 'SYSTEM_READY',
+                    timestamp: new Date().toISOString(),
+                    reasoning: "System initialized. Waiting for live traffic...",
+                    outcome: { status: "ready" }
+                }));
+                setDecisions(mockDecisions);
+            }
             setLoading(false);
         } catch (err) {
             console.error("Failed to fetch decisions:", err);
@@ -80,8 +87,8 @@ export default function Observability() {
                                 key={decision.id}
                                 onClick={() => setSelectedDecision(decision)}
                                 className={`p-3 rounded border cursor-pointer transition-all duration-200 group ${selectedDecision?.id === decision.id
-                                        ? 'bg-[rgba(0,243,255,0.1)] border-[var(--hud-accent)]'
-                                        : 'bg-[rgba(255,255,255,0.03)] border-transparent hover:border-[rgba(0,243,255,0.3)]'
+                                    ? 'bg-[rgba(0,243,255,0.1)] border-[var(--hud-accent)]'
+                                    : 'bg-[rgba(255,255,255,0.03)] border-transparent hover:border-[rgba(0,243,255,0.3)]'
                                     }`}
                             >
                                 <div className="flex justify-between items-center mb-1">

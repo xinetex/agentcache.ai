@@ -4,21 +4,76 @@ import CyberCard from '../components/CyberCard';
 import StatDial from '../components/StatDial';
 import DataGrid from '../components/DataGrid';
 
+import React, { useState, useEffect } from 'react';
+import { Activity, Globe, Zap, Server, Shield, Clock } from 'lucide-react';
+import CyberCard from '../components/CyberCard';
+import StatDial from '../components/StatDial';
+import DataGrid from '../components/DataGrid';
+
 const Overview = () => {
     const [metrics, setMetrics] = useState({
-        requests: 2458921,
-        bandwidth: 845,
-        latency: 42,
-        savings: 1240
+        requests: 0,
+        bandwidth: 0,
+        latency: 0,
+        savings: 0,
+        hitRate: 0,
+        uptime: 100
     });
+    const [events, setEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Mock Live Events
-    const [events, setEvents] = useState([
-        { id: 1, type: 'CACHE_HIT', source: 'Agent-Alpha', hash: '8f2a...9b1c', time: '10:42:01' },
-        { id: 2, type: 'OPTIMIZATION', source: 'Swarm-Beta', hash: '3d4e...1f2a', time: '10:41:58' },
-        { id: 3, type: 'SEC_SCAN', source: 'Sentinel-01', hash: 'SCAN_COMPLETE', time: '10:41:45' },
-        { id: 4, type: 'CACHE_MISS', source: 'Agent-Gamma', hash: '1a2b...3c4d', time: '10:41:30' },
-    ]);
+    useEffect(() => {
+        // Fetch Metrics
+        const fetchMetrics = async () => {
+            try {
+                const res = await fetch('/api/admin-stats', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('agentcache_token')}` }
+                });
+                const data = await res.json();
+
+                if (data && !data.error) {
+                    setMetrics({
+                        requests: data.total_requests_today || 0,
+                        bandwidth: Math.round((data.tokens_saved_today || 0) / 1000), // Approx KB/MB
+                        latency: 42, // Still mocked as we don't have real latency stats yet
+                        savings: data.cost_saved_today ? parseFloat(data.cost_saved_today.replace('$', '')) : 0,
+                        hitRate: data.hit_rate || 0,
+                        uptime: 99.9
+                    });
+                }
+            } catch (err) {
+                console.error("Failed to fetch admin stats:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchMetrics();
+        const interval = setInterval(fetchMetrics, 30000); // Refresh every 30s
+
+        // Connect to Event Stream
+        const eventSource = new EventSource('/api/events/stream');
+
+        eventSource.onmessage = (e) => {
+            const event = JSON.parse(e.data);
+            if (event.type === 'sys:connected') return;
+
+            const newEvent = {
+                id: Date.now(),
+                type: event.type.toUpperCase(),
+                source: event.agentId || 'System',
+                hash: event.hash ? `${event.hash.substring(0, 8)}...` : '-',
+                time: new Date().toLocaleTimeString()
+            };
+
+            setEvents(prev => [newEvent, ...prev].slice(0, 10));
+        };
+
+        return () => {
+            clearInterval(interval);
+            eventSource.close();
+        };
+    }, []);
 
     return (
         <div className="space-y-6">
@@ -42,8 +97,8 @@ const Overview = () => {
                 {/* System Health Dials */}
                 <CyberCard title="System Health" icon={Activity} className="flex flex-col justify-center">
                     <div className="grid grid-cols-2 gap-4">
-                        <StatDial value={98} label="Uptime" sublabel="30 Days" color="var(--hud-success)" />
-                        <StatDial value={87} label="Cache Hit" sublabel="Global" color="var(--hud-accent)" />
+                        <StatDial value={metrics.uptime} label="Uptime" sublabel="30 Days" color="var(--hud-success)" />
+                        <StatDial value={metrics.hitRate} label="Cache Hit" sublabel="Global" color="var(--hud-accent)" />
                         <StatDial value={42} max={100} label="CPU Load" sublabel="Cluster" color="var(--hud-warning)" />
                         <StatDial value={12} max={100} label="Memory" sublabel="Usage" color="var(--hud-accent-secondary)" />
                     </div>
@@ -56,27 +111,29 @@ const Overview = () => {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-[var(--hud-text-dim)] text-xs uppercase tracking-wider mb-1">Total Requests</p>
-                            <h3 className="text-2xl font-mono font-bold text-white">2.4M</h3>
+                            <h3 className="text-2xl font-mono font-bold text-white">
+                                {metrics.requests.toLocaleString()}
+                            </h3>
                         </div>
                         <Zap className="text-[var(--hud-accent)] opacity-50" size={24} />
                     </div>
                     <div className="mt-2 text-xs text-[var(--hud-success)] flex items-center">
-                        <span>↑ 12.5%</span>
-                        <span className="text-[var(--hud-text-dim)] ml-1">vs last week</span>
+                        <span>Today</span>
                     </div>
                 </CyberCard>
 
                 <CyberCard className="p-0">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-[var(--hud-text-dim)] text-xs uppercase tracking-wider mb-1">Bandwidth Saved</p>
-                            <h3 className="text-2xl font-mono font-bold text-white">845 GB</h3>
+                            <p className="text-[var(--hud-text-dim)] text-xs uppercase tracking-wider mb-1">Tokens Saved</p>
+                            <h3 className="text-2xl font-mono font-bold text-white">
+                                {metrics.bandwidth.toLocaleString()} k
+                            </h3>
                         </div>
                         <Server className="text-[var(--hud-accent-secondary)] opacity-50" size={24} />
                     </div>
                     <div className="mt-2 text-xs text-[var(--hud-success)] flex items-center">
-                        <span>↑ 8.2%</span>
-                        <span className="text-[var(--hud-text-dim)] ml-1">vs last week</span>
+                        <span>Est. Bandwidth</span>
                     </div>
                 </CyberCard>
 
@@ -84,13 +141,12 @@ const Overview = () => {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-[var(--hud-text-dim)] text-xs uppercase tracking-wider mb-1">Avg Latency</p>
-                            <h3 className="text-2xl font-mono font-bold text-white">42ms</h3>
+                            <h3 className="text-2xl font-mono font-bold text-white">{metrics.latency}ms</h3>
                         </div>
                         <Activity className="text-[var(--hud-warning)] opacity-50" size={24} />
                     </div>
                     <div className="mt-2 text-xs text-[var(--hud-success)] flex items-center">
-                        <span>↓ 15ms</span>
-                        <span className="text-[var(--hud-text-dim)] ml-1">improvement</span>
+                        <span>Global Avg</span>
                     </div>
                 </CyberCard>
 
@@ -98,13 +154,12 @@ const Overview = () => {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-[var(--hud-text-dim)] text-xs uppercase tracking-wider mb-1">Cost Savings</p>
-                            <h3 className="text-2xl font-mono font-bold text-white">$1,240</h3>
+                            <h3 className="text-2xl font-mono font-bold text-white">${metrics.savings.toFixed(2)}</h3>
                         </div>
                         <Shield className="text-[var(--hud-success)] opacity-50" size={24} />
                     </div>
                     <div className="mt-2 text-xs text-[var(--hud-success)] flex items-center">
-                        <span>↑ 18%</span>
-                        <span className="text-[var(--hud-text-dim)] ml-1">vs last week</span>
+                        <span>Today</span>
                     </div>
                 </CyberCard>
             </div>
@@ -116,9 +171,9 @@ const Overview = () => {
                         { header: 'Time', accessor: 'time' },
                         {
                             header: 'Type', accessor: 'type', render: (row) => (
-                                <span className={`text-xs font-bold px-2 py-1 rounded ${row.type === 'CACHE_HIT' ? 'bg-green-500/10 text-green-400' :
-                                        row.type === 'CACHE_MISS' ? 'bg-red-500/10 text-red-400' :
-                                            'bg-blue-500/10 text-blue-400'
+                                <span className={`text-xs font-bold px-2 py-1 rounded ${row.type.includes('HIT') ? 'bg-green-500/10 text-green-400' :
+                                    row.type.includes('MISS') ? 'bg-red-500/10 text-red-400' :
+                                        'bg-blue-500/10 text-blue-400'
                                     }`}>
                                     {row.type}
                                 </span>
@@ -129,6 +184,9 @@ const Overview = () => {
                     ]}
                     data={events}
                 />
+                {events.length === 0 && (
+                    <div className="p-4 text-center text-[var(--hud-text-dim)] italic">Waiting for events...</div>
+                )}
             </CyberCard>
         </div>
     );

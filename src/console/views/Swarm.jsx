@@ -8,43 +8,75 @@ export default function Swarm() {
     const [discoveries, setDiscoveries] = useState([]);
     const [session, setSession] = useState(null);
 
-    // Mock Data Simulation
     useEffect(() => {
-        setLeaderboard([
-            { rank: 1, name: 'Alpha-Zero-Cache', score: 9850, sector: 'Finance' },
-            { rank: 2, name: 'Medi-Bot-V9', score: 8720, sector: 'Healthcare' },
-            { rank: 3, name: 'Deep-Seeker', score: 8100, sector: 'Research' },
-            { rank: 4, name: 'Nexus-Prime', score: 7950, sector: 'General' },
-            { rank: 5, name: 'Cyber-Core', score: 7200, sector: 'Infrastructure' },
-        ]);
+        // Fetch Leaderboard (Top Users)
+        const fetchLeaderboard = async () => {
+            try {
+                const res = await fetch('/api/admin-stats', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('agentcache_token')}` }
+                });
+                const data = await res.json();
 
-        const discoveryInterval = setInterval(() => {
-            const newDiscovery = {
-                id: Date.now(),
-                agent: ['Alpha', 'Beta', 'Gamma', 'Delta', 'Omega'][Math.floor(Math.random() * 5)],
-                pattern: ['L1-L3-Hybrid', 'Vector-Collapse', 'Semantic-Bridge', 'Temporal-Shift'][Math.floor(Math.random() * 4)],
-                improvement: Math.floor(Math.random() * 20) + 5,
-                time: new Date().toLocaleTimeString()
-            };
-            setDiscoveries(prev => [newDiscovery, ...prev].slice(0, 8));
-        }, 3000);
+                if (data && data.top_users) {
+                    const topAgents = data.top_users.map((u, i) => ({
+                        rank: i + 1,
+                        name: u.email.split('@')[0] || 'Unknown Agent',
+                        score: u.requests,
+                        sector: 'General'
+                    }));
+                    setLeaderboard(topAgents);
+                } else {
+                    // Fallback if no data
+                    setLeaderboard([
+                        { rank: 1, name: 'System-Prime', score: 1000, sector: 'Core' }
+                    ]);
+                }
+            } catch (err) {
+                console.error("Failed to fetch leaderboard:", err);
+            }
+        };
 
+        fetchLeaderboard();
+        const interval = setInterval(fetchLeaderboard, 60000); // Refresh every minute
+
+        // Connect to Event Stream for "Discoveries"
+        const eventSource = new EventSource('/api/events/stream');
+
+        eventSource.onmessage = (e) => {
+            const event = JSON.parse(e.data);
+            if (event.type === 'sys:connected') return;
+
+            // Simulate a "discovery" on cache hits or optimizations
+            if (event.type === 'CACHE_HIT' || event.type === 'OPTIMIZATION' || Math.random() > 0.7) {
+                const newDiscovery = {
+                    id: Date.now(),
+                    agent: event.agentId || 'Swarm-Node',
+                    pattern: event.type === 'CACHE_HIT' ? 'Pattern Match' : 'Optimization Found',
+                    improvement: Math.floor(Math.random() * 20) + 5, // Simulating efficiency gain
+                    time: new Date().toLocaleTimeString()
+                };
+                setDiscoveries(prev => [newDiscovery, ...prev].slice(0, 8));
+            }
+        };
+
+        // Mock Session Status
         setSession({
             status: 'Running Experiment #8492',
             progress: 45,
-            target: 'Optimize Latency (Healthcare)'
+            target: 'Global Latency Optimization'
         });
 
         const progressInterval = setInterval(() => {
             setSession(prev => ({
                 ...prev,
-                progress: Math.min(100, prev.progress + 1)
+                progress: prev.progress >= 100 ? 0 : prev.progress + 1
             }));
         }, 1000);
 
         return () => {
-            clearInterval(discoveryInterval);
+            clearInterval(interval);
             clearInterval(progressInterval);
+            eventSource.close();
         };
     }, []);
 
@@ -78,17 +110,10 @@ export default function Swarm() {
             {/* Center: Visualization Area */}
             <div className="lg:col-span-1 flex flex-col gap-6 relative">
                 <CyberCard className="flex-1 relative overflow-hidden p-0 border-[var(--hud-accent)] shadow-[0_0_30px_rgba(0,243,255,0.1)]">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(0,243,255,0.1)_0%,_transparent_70%)] animate-pulse"></div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-center z-10">
-                            <Hexagon size={64} className="mx-auto text-[var(--hud-accent)] animate-spin-slow mb-4" />
-                            <h3 className="text-xl font-['Rajdhani'] font-bold text-white tracking-widest">NEURAL GALAXY</h3>
-                            <p className="text-xs font-mono text-[var(--hud-text-dim)] mt-2">VISUALIZATION ENGINE ONLINE</p>
-                        </div>
-                    </div>
+                    <NeuralGalaxy />
 
                     {/* Active Session Overlay */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-[rgba(0,0,0,0.8)] backdrop-blur p-4 border-t border-[var(--hud-border)]">
+                    <div className="absolute bottom-0 left-0 right-0 bg-[rgba(0,0,0,0.8)] backdrop-blur p-4 border-t border-[var(--hud-border)] pointer-events-none">
                         <div className="flex justify-between items-center mb-2">
                             <span className="text-xs font-bold text-[var(--hud-text-dim)]">ACTIVE EXPERIMENT</span>
                             <span className="text-xs font-mono text-[var(--hud-accent)] animate-pulse">RUNNING</span>
