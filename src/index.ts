@@ -42,6 +42,7 @@ app.route('/api/integrations/vercel', vercelIntegration);
 import { provisionClient, getApiKeyInfo, provisionJettyThunder } from './api/provision-hono.js';
 import decisionsRouter from './api/decisions.js';
 import galaxyRouter from './api/galaxy.js';
+import explorerRouter from './api/explorer.js';
 
 app.post('/api/provision', provisionClient);
 app.get('/api/provision/:api_key', getApiKeyInfo);
@@ -50,6 +51,7 @@ app.post('/api/provision/jettythunder', provisionJettyThunder);
 // Mount Decisions & Galaxy API
 app.route('/api/decisions', decisionsRouter);
 app.route('/api/galaxy', galaxyRouter);
+app.route('/api/explorer', explorerRouter);
 
 // Serve static files (landing page - defaults to community.html)
 app.get('/', (c) => {

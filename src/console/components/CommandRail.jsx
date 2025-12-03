@@ -8,7 +8,8 @@ import {
     Shield,
     Settings,
     LogOut,
-    ChevronRight
+    ChevronRight,
+    Workflow
 } from 'lucide-react';
 
 const CommandRail = ({ activeView, setActiveView, user }) => {
@@ -16,6 +17,7 @@ const CommandRail = ({ activeView, setActiveView, user }) => {
 
     const menuItems = [
         { id: 'overview', label: 'Overview', icon: LayoutGrid },
+        { id: 'pipeline', label: 'Pipeline Studio', icon: Workflow },
         { id: 'swarm', label: 'Swarm Intelligence', icon: Hexagon },
         { id: 'observability', label: 'Observability', icon: Activity },
         { id: 'lab', label: 'Research Lab', icon: FlaskConical },
@@ -40,8 +42,8 @@ const CommandRail = ({ activeView, setActiveView, user }) => {
                             key={item.id}
                             onClick={() => setActiveView(item.id)}
                             className={`relative flex items-center h-12 px-4 mx-2 rounded-lg transition-all duration-200 group ${isActive
-                                    ? 'bg-[rgba(0,243,255,0.1)] text-[var(--hud-accent)] shadow-[0_0_15px_rgba(0,243,255,0.2)]'
-                                    : 'text-[var(--hud-text-dim)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                                ? 'bg-[rgba(0,243,255,0.1)] text-[var(--hud-accent)] shadow-[0_0_15px_rgba(0,243,255,0.2)]'
+                                : 'text-[var(--hud-text-dim)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                                 }`}
                         >
                             <Icon size={20} className={`min-w-[20px] transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />

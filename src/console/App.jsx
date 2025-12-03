@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import CommandRail from './components/CommandRail';
 import HUD from './components/HUD';
 import Overview from './views/Overview';
+import PipelineStudio from './views/PipelineStudio';
 import Swarm from './views/Swarm';
 import Observability from './views/Observability';
 import Lab from './views/Lab';
@@ -27,6 +28,7 @@ const App = () => {
     const renderView = () => {
         switch (activeView) {
             case 'overview': return <Overview />;
+            case 'pipeline': return <PipelineStudio />;
             case 'swarm': return <Swarm />;
             case 'observability': return <Observability />;
             case 'lab': return <Lab />;

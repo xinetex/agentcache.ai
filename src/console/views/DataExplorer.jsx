@@ -1,85 +1,212 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Database, DollarSign, Search, Server, ArrowRight, Layers } from 'lucide-react';
+import CyberCard from '../components/CyberCard';
+import DataGrid from '../components/DataGrid';
+import StatDial from '../components/StatDial';
 
 export default function DataExplorer() {
-    const [input, setInput] = useState('');
-    const [result, setResult] = useState(null);
+    const [activeTab, setActiveTab] = useState('cash'); // 'cash', 'inspector', 'embeddings'
+    const [nodes, setNodes] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [embeddingInput, setEmbeddingInput] = useState('');
+    const [embeddingResult, setEmbeddingResult] = useState(null);
 
-    const handleGenerate = async () => {
-        if (!input.trim()) return;
+    // Fetch Cache Nodes
+    useEffect(() => {
+        if (activeTab === 'inspector') {
+            fetchNodes();
+        }
+    }, [activeTab]);
+
+    const fetchNodes = async () => {
         setLoading(true);
-        setResult(null);
-
         try {
-            const apiKey = localStorage.getItem('ac_api_key');
-            const res = await fetch('/api/embeddings', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-API-Key': apiKey || ''
-                },
-                body: JSON.stringify({ text: input })
-            });
-
+            const res = await fetch('/api/explorer/nodes?limit=50');
             const data = await res.json();
-            setResult(data);
+            if (data.nodes) setNodes(data.nodes);
         } catch (err) {
             console.error(err);
-            setResult({ error: err.message });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleGenerateEmbedding = async () => {
+        if (!embeddingInput.trim()) return;
+        setLoading(true);
+        try {
+            const res = await fetch('/api/embeddings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: embeddingInput })
+            });
+            const data = await res.json();
+            setEmbeddingResult(data);
+        } catch (err) {
+            setEmbeddingResult({ error: err.message });
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="p-8 max-w-4xl mx-auto">
-            <header className="mb-8">
-                <h2 className="text-3xl font-bold text-white mb-2">Data Explorer</h2>
-                <p className="text-slate-400">Inspect L3 Cache and test Embeddings</p>
-            </header>
+        <div className="h-[calc(100vh-8rem)] flex flex-col gap-6">
 
-            <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 mb-8">
-                <h3 className="text-lg font-bold mb-4">Embedding Generator</h3>
-                <div className="flex gap-4 mb-4">
-                    <input
-                        type="text"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder="Enter text to vectorize..."
-                        className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-green-500"
-                        onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
-                    />
-                    <button
-                        onClick={handleGenerate}
-                        disabled={loading}
-                        className="px-6 py-2 bg-green-600 hover:bg-green-500 text-white font-semibold rounded-lg disabled:opacity-50"
-                    >
-                        {loading ? 'Generating...' : 'Generate'}
-                    </button>
+            {/* Header / Tabs */}
+            <div className="flex items-center justify-between">
+                <div className="flex gap-2 bg-black/50 p-1 rounded-lg border border-[var(--hud-border)]">
+                    {[
+                        { id: 'cash', label: 'Cash Activity', icon: DollarSign },
+                        { id: 'inspector', label: 'Cache Inspector', icon: Database },
+                        { id: 'embeddings', label: 'Vector Lab', icon: Layers }
+                    ].map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`px-4 py-2 rounded flex items-center gap-2 text-sm font-bold transition-all ${activeTab === tab.id
+                                    ? 'bg-[var(--hud-accent)] text-black shadow-[0_0_10px_var(--hud-accent)]'
+                                    : 'text-[var(--hud-text-dim)] hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
+                                }`}
+                        >
+                            <tab.icon size={16} />
+                            {tab.label}
+                        </button>
+                    ))}
                 </div>
+            </div>
 
-                {result && (
-                    <div className="bg-slate-950 rounded-lg p-4 border border-slate-800 overflow-hidden">
-                        <div className="flex justify-between items-center mb-2">
-                            <span className={`text-xs font-bold px-2 py-1 rounded ${result.cached ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
-                                {result.cached ? 'CACHE HIT' : 'CACHE MISS'}
-                            </span>
-                            <span className="text-xs text-slate-500">{result.model}</span>
+            {/* Content Area */}
+            <div className="flex-1 overflow-hidden">
+
+                {/* CASH ACTIVITY TAB */}
+                {activeTab === 'cash' && (
+                    <div className="h-full grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4">
+                        {/* ROI Stats */}
+                        <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <CyberCard className="bg-[rgba(0,255,128,0.05)] border-[var(--hud-success)]">
+                                <div className="text-[var(--hud-text-dim)] text-xs uppercase tracking-wider mb-1">Total Value Realized</div>
+                                <div className="text-3xl font-mono font-bold text-[var(--hud-success)]">$4,291.50</div>
+                                <div className="text-xs text-[var(--hud-success)] mt-2 flex items-center gap-1">
+                                    <ArrowRight size={12} className="-rotate-45" /> +12% this week
+                                </div>
+                            </CyberCard>
+                            <CyberCard>
+                                <div className="text-[var(--hud-text-dim)] text-xs uppercase tracking-wider mb-1">Compute Saved</div>
+                                <div className="text-3xl font-mono font-bold text-white">142h 30m</div>
+                            </CyberCard>
+                            <CyberCard>
+                                <div className="text-[var(--hud-text-dim)] text-xs uppercase tracking-wider mb-1">API Calls Deflected</div>
+                                <div className="text-3xl font-mono font-bold text-[var(--hud-accent)]">84,201</div>
+                            </CyberCard>
+                            <CyberCard>
+                                <div className="text-[var(--hud-text-dim)] text-xs uppercase tracking-wider mb-1">Avg Cost / Query</div>
+                                <div className="text-3xl font-mono font-bold text-[var(--hud-accent-secondary)]">$0.0002</div>
+                            </CyberCard>
                         </div>
 
-                        {result.embedding ? (
-                            <div>
-                                <div className="text-xs text-slate-400 mb-2">Vector (first 5 dims):</div>
-                                <code className="text-cyan-400 text-sm">
-                                    [{result.embedding.slice(0, 5).map(n => n.toFixed(4)).join(', ')}, ...]
-                                </code>
-                                <div className="text-xs text-slate-500 mt-2">Total dimensions: {result.embedding.length}</div>
+                        {/* Detailed Breakdown */}
+                        <CyberCard title="Cost Analysis" className="lg:col-span-2">
+                            <div className="h-64 flex items-end justify-between gap-2 px-4 pb-4 border-b border-[var(--hud-border)]">
+                                {/* Mock Bar Chart */}
+                                {[40, 65, 45, 80, 55, 90, 70].map((h, i) => (
+                                    <div key={i} className="w-full bg-[var(--hud-accent)]/20 hover:bg-[var(--hud-accent)]/40 transition-colors rounded-t relative group" style={{ height: `${h}%` }}>
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-black border border-[var(--hud-border)] px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10">
+                                            ${(h * 1.5).toFixed(2)} Saved
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                        ) : (
-                            <div className="text-red-400">{result.error}</div>
-                        )}
+                            <div className="flex justify-between mt-2 text-xs text-[var(--hud-text-dim)] font-mono px-4">
+                                <span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span>
+                            </div>
+                        </CyberCard>
+
+                        <CyberCard title="Top Earners" className="lg:col-span-1">
+                            <DataGrid
+                                columns={[
+                                    { header: 'Agent', accessor: 'agent' },
+                                    { header: 'Saved', accessor: 'saved', render: r => <span className="text-[var(--hud-success)] font-mono">${r.saved}</span> }
+                                ]}
+                                data={[
+                                    { agent: 'Clinical-Bot-1', saved: '1,204.50' },
+                                    { agent: 'Trading-Alpha', saved: '940.20' },
+                                    { agent: 'Legal-Reviewer', saved: '850.00' },
+                                    { agent: 'Support-Swarm', saved: '420.10' },
+                                ]}
+                            />
+                        </CyberCard>
                     </div>
                 )}
+
+                {/* INSPECTOR TAB */}
+                {activeTab === 'inspector' && (
+                    <CyberCard title="Global Knowledge Graph" icon={Database} className="h-full flex flex-col animate-in fade-in slide-in-from-bottom-4">
+                        <div className="flex-1 overflow-hidden">
+                            <DataGrid
+                                columns={[
+                                    { header: 'ID', accessor: 'id', render: r => <span className="font-mono text-xs text-[var(--hud-text-dim)]">{r.id.substring(0, 8)}...</span> },
+                                    { header: 'Prompt / Query', accessor: 'prompt', render: r => <span className="text-white truncate max-w-[300px] block">{r.prompt}</span> },
+                                    { header: 'Vector', accessor: 'embedding', render: r => <span className="font-mono text-xs text-[var(--hud-accent)]">[{r.embedding?.length || 1536} dims]</span> },
+                                    { header: 'Verified', accessor: 'lastVerifiedAt', render: r => <span className="text-xs text-[var(--hud-text-dim)]">{new Date(r.lastVerifiedAt).toLocaleDateString()}</span> }
+                                ]}
+                                data={nodes}
+                            />
+                            {loading && <div className="p-4 text-center text-[var(--hud-accent)] animate-pulse">Scanning Neural Lattice...</div>}
+                        </div>
+                    </CyberCard>
+                )}
+
+                {/* EMBEDDINGS TAB */}
+                {activeTab === 'embeddings' && (
+                    <div className="h-full grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-4">
+                        <CyberCard title="Vector Laboratory" icon={Layers}>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-xs text-[var(--hud-text-dim)] uppercase tracking-wider mb-2 block">Input Text</label>
+                                    <textarea
+                                        value={embeddingInput}
+                                        onChange={e => setEmbeddingInput(e.target.value)}
+                                        className="w-full h-32 bg-black border border-[var(--hud-border)] rounded p-3 text-sm focus:border-[var(--hud-accent)] focus:outline-none transition-colors"
+                                        placeholder="Enter text to vectorize..."
+                                    />
+                                </div>
+                                <button
+                                    onClick={handleGenerateEmbedding}
+                                    disabled={loading}
+                                    className="btn-cyber btn-cyber-primary w-full py-3 font-bold flex items-center justify-center gap-2"
+                                >
+                                    {loading ? <Search className="animate-spin" size={16} /> : <Search size={16} />}
+                                    GENERATE VECTOR
+                                </button>
+                            </div>
+                        </CyberCard>
+
+                        <CyberCard title="Vector Output" className="font-mono text-xs">
+                            {embeddingResult ? (
+                                <div className="h-full overflow-y-auto custom-scrollbar space-y-4">
+                                    <div className="flex items-center justify-between p-2 rounded bg-[rgba(255,255,255,0.05)]">
+                                        <span className="text-[var(--hud-text-dim)]">Status</span>
+                                        <span className={embeddingResult.cached ? 'text-[var(--hud-success)]' : 'text-[var(--hud-warning)]'}>
+                                            {embeddingResult.cached ? 'CACHE HIT' : 'CACHE MISS'}
+                                        </span>
+                                    </div>
+
+                                    <div>
+                                        <div className="text-[var(--hud-text-dim)] mb-1">Vector Preview (First 50 dims)</div>
+                                        <div className="p-3 rounded bg-black border border-[var(--hud-border)] text-[var(--hud-accent)] break-all leading-relaxed">
+                                            [{embeddingResult.embedding?.slice(0, 50).map(n => n.toFixed(4)).join(', ')}...]
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="h-full flex items-center justify-center text-[var(--hud-text-dim)] italic">
+                                    Waiting for input...
+                                </div>
+                            )}
+                        </CyberCard>
+                    </div>
+                )}
+
             </div>
         </div>
     );
