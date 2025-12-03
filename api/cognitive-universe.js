@@ -5,7 +5,11 @@
  * Connected to new schema: query_flow_analytics, cognitive_operations, latent_space_embeddings, cross_sector_intelligence
  */
 
-import { neon } from '@neondatabase/serverless';
+export const config = {
+    runtime: 'nodejs',
+};
+
+import { db } from '../src/db/client';
 
 export default async function handler(req, res) {
     // CORS headers
@@ -40,23 +44,23 @@ export default async function handler(req, res) {
             case 'metrics':
                 const metrics = await aggregateMetrics(sql, startTime);
                 return res.status(200).json({ timeRange, timestamp: new Date().toISOString(), metrics });
-            
+
             case 'latent-space':
                 const latentData = await getLatentSpaceData(sql, startTime);
                 return res.status(200).json({ timeRange, timestamp: new Date().toISOString(), latentData });
-            
+
             case 'cross-sector':
                 const crossSectorData = await getCrossSectorIntelligence(sql);
                 return res.status(200).json({ timestamp: new Date().toISOString(), crossSectorData });
-            
+
             case 'operations':
                 const operations = await getRecentOperations(sql, 20);
                 return res.status(200).json({ timestamp: new Date().toISOString(), operations });
-            
+
             case 'query-flow':
                 const queryFlow = await getQueryFlowData(sql, startTime);
                 return res.status(200).json({ timeRange, timestamp: new Date().toISOString(), queryFlow });
-            
+
             default:
                 // Return all data
                 const allMetrics = await aggregateMetrics(sql, startTime);
@@ -316,7 +320,7 @@ async function getLatentSpaceData(sql, startTime) {
             ORDER BY created_at DESC
             LIMIT 200
         `;
-        
+
         return embeddings.map(e => ({
             x: parseFloat(e.embedding_x),
             y: parseFloat(e.embedding_y),
@@ -350,7 +354,7 @@ async function getCrossSectorIntelligence(sql) {
             ORDER BY queries_influenced DESC
             LIMIT 50
         `;
-        
+
         return flows.map(f => ({
             source: f.source_sector,
             target: f.target_sector,
@@ -382,7 +386,7 @@ async function getRecentOperations(sql, limit = 20) {
             ORDER BY created_at DESC
             LIMIT ${limit}
         `;
-        
+
         return operations.map(op => ({
             type: op.operation_type,
             category: op.operation_category,
@@ -411,12 +415,12 @@ async function getQueryFlowData(sql, startTime) {
             WHERE created_at >= ${startTime}
             GROUP BY cache_decision
         `;
-        
+
         const totals = {};
         flowCounts.forEach(row => {
             totals[row.cache_decision] = parseInt(row.count);
         });
-        
+
         return {
             L1: totals.L1 || 0,
             L2: totals.L2 || 0,
@@ -445,7 +449,7 @@ async function getCognitiveOperationsMetrics(sql, startTime) {
             FROM cognitive_operations
             WHERE created_at >= ${startTime}
         `;
-        
+
         const row = metrics[0] || {};
         return {
             validationCount: parseInt(row.validation_count) || 0,
@@ -482,16 +486,16 @@ async function getSectorMetrics(sql, startTime) {
             WHERE created_at >= ${startTime}
             GROUP BY sector
         `;
-        
+
         return sectorData.map(s => {
             const hitRate = parseFloat(s.hit_rate) || 0;
             const latency = parseInt(s.avg_latency_ms) || 50;
-            
+
             let health = 'good';
             if (hitRate > 90 && latency < 45) health = 'excellent';
             else if (hitRate < 75 || latency > 70) health = 'warning';
             else if (hitRate < 60 || latency > 100) health = 'critical';
-            
+
             return {
                 name: s.sector.charAt(0).toUpperCase() + s.sector.slice(1),
                 icon: getSectorIcon(s.sector),

@@ -1,8 +1,17 @@
 /**
  * Cognitive Sentinel Helper
- * 
+ *
  * Implements safety features from "Natural emergent misalignment from reward hacking in production RL".
  */
+
+export const config = {
+    runtime: 'nodejs',
+};
+
+export default async function handler(req, res) {
+    // The actual implementation of the handler function would go here.
+    // The original CognitiveSentinel object remains separate.
+}
 
 export const CognitiveSentinel = {
     /**

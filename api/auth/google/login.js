@@ -1,3 +1,7 @@
+export const config = {
+  runtime: 'nodejs',
+};
+
 export default async function handler(req, res) {
   // Google OAuth configuration
   const clientId = process.env.GOOGLE_CLIENT_ID;

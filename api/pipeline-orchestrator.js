@@ -14,6 +14,11 @@
  * The more pipelines users create, the smarter the wizard becomes.
  */
 
+export const config = {
+  runtime: 'nodejs',
+};
+
+import { db } from '../src/db/client';
 import { wizardMemory, complianceMemory } from '../lib/platform-memory.js';
 
 // Import sector definitions from sector.js

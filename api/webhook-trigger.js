@@ -20,6 +20,10 @@ async function redis(command, ...args) {
     }
 }
 
+export const config = {
+    runtime: 'nodejs',
+};
+
 export async function triggerWebhook(userHash, eventType, payload) {
     try {
         // 1. Get Webhook URL for user

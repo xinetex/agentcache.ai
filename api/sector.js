@@ -357,21 +357,25 @@ const SECTOR_NODES = {
         description: 'HIPAA-compliant PHI detection and redaction',
         category: 'validation',
         config: [
-          { id: 'mode', name: 'Mode', type: 'select', options: [
-            { value: 'detect', label: 'Detect Only (Log)' },
-            { value: 'redact', label: 'Redact PHI' },
-            { value: 'block', label: 'Block if PHI Found' },
-          ], default: 'block' },
-          { id: 'phi_types', name: 'PHI Types', type: 'multiselect', options: [
-            { value: 'patient_name', label: 'Patient Names' },
-            { value: 'mrn', label: 'Medical Record Numbers' },
-            { value: 'ssn', label: 'Social Security Numbers' },
-            { value: 'dob', label: 'Dates of Birth' },
-            { value: 'address', label: 'Addresses' },
-            { value: 'phone', label: 'Phone Numbers' },
-            { value: 'diagnosis', label: 'Diagnosis Codes (ICD-10)' },
-            { value: 'medication', label: 'Medication Names' },
-          ], default: ['patient_name', 'mrn', 'ssn', 'dob'] },
+          {
+            id: 'mode', name: 'Mode', type: 'select', options: [
+              { value: 'detect', label: 'Detect Only (Log)' },
+              { value: 'redact', label: 'Redact PHI' },
+              { value: 'block', label: 'Block if PHI Found' },
+            ], default: 'block'
+          },
+          {
+            id: 'phi_types', name: 'PHI Types', type: 'multiselect', options: [
+              { value: 'patient_name', label: 'Patient Names' },
+              { value: 'mrn', label: 'Medical Record Numbers' },
+              { value: 'ssn', label: 'Social Security Numbers' },
+              { value: 'dob', label: 'Dates of Birth' },
+              { value: 'address', label: 'Addresses' },
+              { value: 'phone', label: 'Phone Numbers' },
+              { value: 'diagnosis', label: 'Diagnosis Codes (ICD-10)' },
+              { value: 'medication', label: 'Medication Names' },
+            ], default: ['patient_name', 'mrn', 'ssn', 'dob']
+          },
           { id: 'audit_log', name: 'Log PHI Access', type: 'boolean', default: true },
         ],
       },
@@ -382,13 +386,15 @@ const SECTOR_NODES = {
         description: 'Validate medical responses against clinical knowledge bases',
         category: 'validation',
         config: [
-          { id: 'sources', name: 'Knowledge Sources', type: 'multiselect', options: [
-            { value: 'pubmed', label: 'PubMed' },
-            { value: 'cochrane', label: 'Cochrane Library' },
-            { value: 'uptodate', label: 'UpToDate' },
-            { value: 'fda', label: 'FDA Drug Database' },
-            { value: 'cdc', label: 'CDC Guidelines' },
-          ], default: ['pubmed', 'fda'] },
+          {
+            id: 'sources', name: 'Knowledge Sources', type: 'multiselect', options: [
+              { value: 'pubmed', label: 'PubMed' },
+              { value: 'cochrane', label: 'Cochrane Library' },
+              { value: 'uptodate', label: 'UpToDate' },
+              { value: 'fda', label: 'FDA Drug Database' },
+              { value: 'cdc', label: 'CDC Guidelines' },
+            ], default: ['pubmed', 'fda']
+          },
           { id: 'confidence_min', name: 'Min Confidence', type: 'number', default: 0.9 },
           { id: 'require_citations', name: 'Require Citations', type: 'boolean', default: true },
           { id: 'flag_contraindications', name: 'Flag Contraindications', type: 'boolean', default: true },
@@ -401,12 +407,14 @@ const SECTOR_NODES = {
         description: 'Connect to Epic, Cerner, or FHIR-based EHR systems',
         category: 'source',
         config: [
-          { id: 'ehr_type', name: 'EHR System', type: 'select', options: [
-            { value: 'epic', label: 'Epic MyChart' },
-            { value: 'cerner', label: 'Cerner Millennium' },
-            { value: 'fhir', label: 'Generic FHIR R4' },
-            { value: 'allscripts', label: 'Allscripts' },
-          ], default: 'fhir' },
+          {
+            id: 'ehr_type', name: 'EHR System', type: 'select', options: [
+              { value: 'epic', label: 'Epic MyChart' },
+              { value: 'cerner', label: 'Cerner Millennium' },
+              { value: 'fhir', label: 'Generic FHIR R4' },
+              { value: 'allscripts', label: 'Allscripts' },
+            ], default: 'fhir'
+          },
           { id: 'fhir_endpoint', name: 'FHIR Endpoint', type: 'string' },
           { id: 'oauth_enabled', name: 'OAuth 2.0', type: 'boolean', default: true },
         ],
@@ -418,11 +426,13 @@ const SECTOR_NODES = {
         description: 'Immutable audit trail for all PHI access (required for HIPAA)',
         category: 'output',
         config: [
-          { id: 'storage', name: 'Audit Storage', type: 'select', options: [
-            { value: 'postgres', label: 'PostgreSQL (WORM)' },
-            { value: 's3', label: 'AWS S3 (Object Lock)' },
-            { value: 'azure', label: 'Azure Immutable Blob' },
-          ], default: 'postgres' },
+          {
+            id: 'storage', name: 'Audit Storage', type: 'select', options: [
+              { value: 'postgres', label: 'PostgreSQL (WORM)' },
+              { value: 's3', label: 'AWS S3 (Object Lock)' },
+              { value: 'azure', label: 'Azure Immutable Blob' },
+            ], default: 'postgres'
+          },
           { id: 'retention_years', name: 'Retention (Years)', type: 'number', default: 7 },
           { id: 'include_response', name: 'Log Full Response', type: 'boolean', default: false },
         ],
@@ -447,17 +457,21 @@ const SECTOR_NODES = {
         description: 'Detect and mask payment card data per PCI-DSS requirements',
         category: 'validation',
         config: [
-          { id: 'mode', name: 'Mode', type: 'select', options: [
-            { value: 'mask', label: 'Mask (Last 4 Digits)' },
-            { value: 'tokenize', label: 'Tokenize' },
-            { value: 'block', label: 'Block Transaction' },
-          ], default: 'mask' },
-          { id: 'card_types', name: 'Card Types', type: 'multiselect', options: [
-            { value: 'visa', label: 'Visa' },
-            { value: 'mastercard', label: 'Mastercard' },
-            { value: 'amex', label: 'American Express' },
-            { value: 'discover', label: 'Discover' },
-          ], default: ['visa', 'mastercard', 'amex', 'discover'] },
+          {
+            id: 'mode', name: 'Mode', type: 'select', options: [
+              { value: 'mask', label: 'Mask (Last 4 Digits)' },
+              { value: 'tokenize', label: 'Tokenize' },
+              { value: 'block', label: 'Block Transaction' },
+            ], default: 'mask'
+          },
+          {
+            id: 'card_types', name: 'Card Types', type: 'multiselect', options: [
+              { value: 'visa', label: 'Visa' },
+              { value: 'mastercard', label: 'Mastercard' },
+              { value: 'amex', label: 'American Express' },
+              { value: 'discover', label: 'Discover' },
+            ], default: ['visa', 'mastercard', 'amex', 'discover']
+          },
           { id: 'detect_cvv', name: 'Detect CVV', type: 'boolean', default: true },
         ],
       },
@@ -468,12 +482,14 @@ const SECTOR_NODES = {
         description: 'Validate against sanctions lists and politically exposed persons',
         category: 'validation',
         config: [
-          { id: 'lists', name: 'Screening Lists', type: 'multiselect', options: [
-            { value: 'ofac', label: 'OFAC SDN List' },
-            { value: 'eu_sanctions', label: 'EU Sanctions' },
-            { value: 'pep', label: 'Politically Exposed Persons' },
-            { value: 'adverse_media', label: 'Adverse Media' },
-          ], default: ['ofac', 'pep'] },
+          {
+            id: 'lists', name: 'Screening Lists', type: 'multiselect', options: [
+              { value: 'ofac', label: 'OFAC SDN List' },
+              { value: 'eu_sanctions', label: 'EU Sanctions' },
+              { value: 'pep', label: 'Politically Exposed Persons' },
+              { value: 'adverse_media', label: 'Adverse Media' },
+            ], default: ['ofac', 'pep']
+          },
           { id: 'fuzzy_match', name: 'Fuzzy Matching', type: 'boolean', default: true },
           { id: 'match_threshold', name: 'Match Threshold', type: 'number', default: 0.85 },
         ],
@@ -485,18 +501,22 @@ const SECTOR_NODES = {
         description: 'Real-time market data with cache invalidation on price changes',
         category: 'source',
         config: [
-          { id: 'provider', name: 'Data Provider', type: 'select', options: [
-            { value: 'bloomberg', label: 'Bloomberg' },
-            { value: 'refinitiv', label: 'Refinitiv' },
-            { value: 'polygon', label: 'Polygon.io' },
-            { value: 'alpaca', label: 'Alpaca Markets' },
-          ], default: 'polygon' },
-          { id: 'asset_classes', name: 'Asset Classes', type: 'multiselect', options: [
-            { value: 'equities', label: 'Equities' },
-            { value: 'options', label: 'Options' },
-            { value: 'forex', label: 'Forex' },
-            { value: 'crypto', label: 'Crypto' },
-          ], default: ['equities'] },
+          {
+            id: 'provider', name: 'Data Provider', type: 'select', options: [
+              { value: 'bloomberg', label: 'Bloomberg' },
+              { value: 'refinitiv', label: 'Refinitiv' },
+              { value: 'polygon', label: 'Polygon.io' },
+              { value: 'alpaca', label: 'Alpaca Markets' },
+            ], default: 'polygon'
+          },
+          {
+            id: 'asset_classes', name: 'Asset Classes', type: 'multiselect', options: [
+              { value: 'equities', label: 'Equities' },
+              { value: 'options', label: 'Options' },
+              { value: 'forex', label: 'Forex' },
+              { value: 'crypto', label: 'Crypto' },
+            ], default: ['equities']
+          },
           { id: 'staleness_threshold', name: 'Max Staleness (sec)', type: 'number', default: 60 },
         ],
       },
@@ -507,11 +527,13 @@ const SECTOR_NODES = {
         description: 'Regulatory-compliant audit logging with 7-year retention',
         category: 'output',
         config: [
-          { id: 'regulations', name: 'Compliance', type: 'multiselect', options: [
-            { value: 'sec_17a4', label: 'SEC 17a-4' },
-            { value: 'finra_4511', label: 'FINRA 4511' },
-            { value: 'mifid2', label: 'MiFID II' },
-          ], default: ['sec_17a4', 'finra_4511'] },
+          {
+            id: 'regulations', name: 'Compliance', type: 'multiselect', options: [
+              { value: 'sec_17a4', label: 'SEC 17a-4' },
+              { value: 'finra_4511', label: 'FINRA 4511' },
+              { value: 'mifid2', label: 'MiFID II' },
+            ], default: ['sec_17a4', 'finra_4511']
+          },
           { id: 'worm_storage', name: 'WORM Storage', type: 'boolean', default: true },
         ],
       },
@@ -535,16 +557,20 @@ const SECTOR_NODES = {
         description: 'Detect and protect attorney-client privileged communications',
         category: 'validation',
         config: [
-          { id: 'mode', name: 'Mode', type: 'select', options: [
-            { value: 'flag', label: 'Flag for Review' },
-            { value: 'redact', label: 'Redact Privileged' },
-            { value: 'block', label: 'Block from Cache' },
-          ], default: 'flag' },
-          { id: 'privilege_markers', name: 'Privilege Markers', type: 'multiselect', options: [
-            { value: 'attorney_client', label: 'Attorney-Client' },
-            { value: 'work_product', label: 'Work Product' },
-            { value: 'confidential', label: 'Confidential' },
-          ], default: ['attorney_client', 'work_product'] },
+          {
+            id: 'mode', name: 'Mode', type: 'select', options: [
+              { value: 'flag', label: 'Flag for Review' },
+              { value: 'redact', label: 'Redact Privileged' },
+              { value: 'block', label: 'Block from Cache' },
+            ], default: 'flag'
+          },
+          {
+            id: 'privilege_markers', name: 'Privilege Markers', type: 'multiselect', options: [
+              { value: 'attorney_client', label: 'Attorney-Client' },
+              { value: 'work_product', label: 'Work Product' },
+              { value: 'confidential', label: 'Confidential' },
+            ], default: ['attorney_client', 'work_product']
+          },
         ],
       },
       {
@@ -554,18 +580,22 @@ const SECTOR_NODES = {
         description: 'Connect to Westlaw, LexisNexis, or court databases',
         category: 'source',
         config: [
-          { id: 'provider', name: 'Research Provider', type: 'select', options: [
-            { value: 'westlaw', label: 'Westlaw' },
-            { value: 'lexisnexis', label: 'LexisNexis' },
-            { value: 'casetext', label: 'Casetext' },
-            { value: 'fastcase', label: 'Fastcase' },
-            { value: 'courtlistener', label: 'CourtListener (Free)' },
-          ], default: 'casetext' },
-          { id: 'jurisdictions', name: 'Jurisdictions', type: 'multiselect', options: [
-            { value: 'federal', label: 'Federal' },
-            { value: 'state', label: 'State Courts' },
-            { value: 'international', label: 'International' },
-          ], default: ['federal', 'state'] },
+          {
+            id: 'provider', name: 'Research Provider', type: 'select', options: [
+              { value: 'westlaw', label: 'Westlaw' },
+              { value: 'lexisnexis', label: 'LexisNexis' },
+              { value: 'casetext', label: 'Casetext' },
+              { value: 'fastcase', label: 'Fastcase' },
+              { value: 'courtlistener', label: 'CourtListener (Free)' },
+            ], default: 'casetext'
+          },
+          {
+            id: 'jurisdictions', name: 'Jurisdictions', type: 'multiselect', options: [
+              { value: 'federal', label: 'Federal' },
+              { value: 'state', label: 'State Courts' },
+              { value: 'international', label: 'International' },
+            ], default: ['federal', 'state']
+          },
         ],
       },
       {
@@ -575,11 +605,13 @@ const SECTOR_NODES = {
         description: 'Verify legal citations and check for overruled precedents',
         category: 'validation',
         config: [
-          { id: 'citation_format', name: 'Citation Format', type: 'select', options: [
-            { value: 'bluebook', label: 'Bluebook' },
-            { value: 'alwd', label: 'ALWD' },
-            { value: 'auto', label: 'Auto-detect' },
-          ], default: 'bluebook' },
+          {
+            id: 'citation_format', name: 'Citation Format', type: 'select', options: [
+              { value: 'bluebook', label: 'Bluebook' },
+              { value: 'alwd', label: 'ALWD' },
+              { value: 'auto', label: 'Auto-detect' },
+            ], default: 'bluebook'
+          },
           { id: 'check_overruled', name: 'Check if Overruled', type: 'boolean', default: true },
           { id: 'check_negative_treatment', name: 'Check Negative Treatment', type: 'boolean', default: true },
         ],
@@ -591,12 +623,14 @@ const SECTOR_NODES = {
         description: 'Track cache usage per client matter for billing',
         category: 'output',
         config: [
-          { id: 'billing_integration', name: 'Billing System', type: 'select', options: [
-            { value: 'clio', label: 'Clio' },
-            { value: 'mycase', label: 'MyCase' },
-            { value: 'practicepanther', label: 'PracticePanther' },
-            { value: 'manual', label: 'Manual Export' },
-          ], default: 'clio' },
+          {
+            id: 'billing_integration', name: 'Billing System', type: 'select', options: [
+              { value: 'clio', label: 'Clio' },
+              { value: 'mycase', label: 'MyCase' },
+              { value: 'practicepanther', label: 'PracticePanther' },
+              { value: 'manual', label: 'Manual Export' },
+            ], default: 'clio'
+          },
           { id: 'track_tokens', name: 'Track Token Usage', type: 'boolean', default: true },
           { id: 'track_cost', name: 'Track Cost per Matter', type: 'boolean', default: true },
         ],
@@ -621,18 +655,22 @@ const SECTOR_NODES = {
         description: 'Protect student education records per FERPA requirements',
         category: 'validation',
         config: [
-          { id: 'mode', name: 'Mode', type: 'select', options: [
-            { value: 'warn', label: 'Warn Only' },
-            { value: 'redact', label: 'Redact Student Data' },
-            { value: 'block', label: 'Block if Student Data Found' },
-          ], default: 'redact' },
-          { id: 'protected_fields', name: 'Protected Fields', type: 'multiselect', options: [
-            { value: 'student_id', label: 'Student IDs' },
-            { value: 'grades', label: 'Grades/GPA' },
-            { value: 'disciplinary', label: 'Disciplinary Records' },
-            { value: 'financial_aid', label: 'Financial Aid' },
-            { value: 'parent_info', label: 'Parent Information' },
-          ], default: ['student_id', 'grades', 'disciplinary'] },
+          {
+            id: 'mode', name: 'Mode', type: 'select', options: [
+              { value: 'warn', label: 'Warn Only' },
+              { value: 'redact', label: 'Redact Student Data' },
+              { value: 'block', label: 'Block if Student Data Found' },
+            ], default: 'redact'
+          },
+          {
+            id: 'protected_fields', name: 'Protected Fields', type: 'multiselect', options: [
+              { value: 'student_id', label: 'Student IDs' },
+              { value: 'grades', label: 'Grades/GPA' },
+              { value: 'disciplinary', label: 'Disciplinary Records' },
+              { value: 'financial_aid', label: 'Financial Aid' },
+              { value: 'parent_info', label: 'Parent Information' },
+            ], default: ['student_id', 'grades', 'disciplinary']
+          },
         ],
       },
       {
@@ -642,18 +680,22 @@ const SECTOR_NODES = {
         description: 'Connect to Canvas, Blackboard, Moodle, or Google Classroom',
         category: 'source',
         config: [
-          { id: 'lms_type', name: 'LMS Platform', type: 'select', options: [
-            { value: 'canvas', label: 'Canvas' },
-            { value: 'blackboard', label: 'Blackboard' },
-            { value: 'moodle', label: 'Moodle' },
-            { value: 'google_classroom', label: 'Google Classroom' },
-            { value: 'schoology', label: 'Schoology' },
-          ], default: 'canvas' },
-          { id: 'sync_frequency', name: 'Sync Frequency', type: 'select', options: [
-            { value: 'realtime', label: 'Real-time' },
-            { value: 'hourly', label: 'Hourly' },
-            { value: 'daily', label: 'Daily' },
-          ], default: 'hourly' },
+          {
+            id: 'lms_type', name: 'LMS Platform', type: 'select', options: [
+              { value: 'canvas', label: 'Canvas' },
+              { value: 'blackboard', label: 'Blackboard' },
+              { value: 'moodle', label: 'Moodle' },
+              { value: 'google_classroom', label: 'Google Classroom' },
+              { value: 'schoology', label: 'Schoology' },
+            ], default: 'canvas'
+          },
+          {
+            id: 'sync_frequency', name: 'Sync Frequency', type: 'select', options: [
+              { value: 'realtime', label: 'Real-time' },
+              { value: 'hourly', label: 'Hourly' },
+              { value: 'daily', label: 'Daily' },
+            ], default: 'hourly'
+          },
         ],
       },
       {
@@ -663,13 +705,15 @@ const SECTOR_NODES = {
         description: 'Ensure responses are age-appropriate and educationally sound',
         category: 'validation',
         config: [
-          { id: 'grade_level', name: 'Grade Level', type: 'select', options: [
-            { value: 'k5', label: 'K-5 (Elementary)' },
-            { value: '6-8', label: '6-8 (Middle School)' },
-            { value: '9-12', label: '9-12 (High School)' },
-            { value: 'college', label: 'College/University' },
-            { value: 'professional', label: 'Professional Development' },
-          ], default: 'college' },
+          {
+            id: 'grade_level', name: 'Grade Level', type: 'select', options: [
+              { value: 'k5', label: 'K-5 (Elementary)' },
+              { value: '6-8', label: '6-8 (Middle School)' },
+              { value: '9-12', label: '9-12 (High School)' },
+              { value: 'college', label: 'College/University' },
+              { value: 'professional', label: 'Professional Development' },
+            ], default: 'college'
+          },
           { id: 'check_age_appropriate', name: 'Age-Appropriate Check', type: 'boolean', default: true },
           { id: 'check_accuracy', name: 'Factual Accuracy Check', type: 'boolean', default: true },
           { id: 'cite_sources', name: 'Require Educational Sources', type: 'boolean', default: true },
@@ -682,12 +726,14 @@ const SECTOR_NODES = {
         description: 'Track student engagement and learning outcomes',
         category: 'output',
         config: [
-          { id: 'metrics', name: 'Track Metrics', type: 'multiselect', options: [
-            { value: 'questions_asked', label: 'Questions Asked' },
-            { value: 'topics', label: 'Topics Covered' },
-            { value: 'time_spent', label: 'Time on Task' },
-            { value: 'comprehension', label: 'Comprehension Signals' },
-          ], default: ['questions_asked', 'topics'] },
+          {
+            id: 'metrics', name: 'Track Metrics', type: 'multiselect', options: [
+              { value: 'questions_asked', label: 'Questions Asked' },
+              { value: 'topics', label: 'Topics Covered' },
+              { value: 'time_spent', label: 'Time on Task' },
+              { value: 'comprehension', label: 'Comprehension Signals' },
+            ], default: ['questions_asked', 'topics']
+          },
           { id: 'anonymize', name: 'Anonymize Data', type: 'boolean', default: true },
         ],
       },
@@ -711,13 +757,15 @@ const SECTOR_NODES = {
         description: 'Connect to Shopify, Magento, or product databases',
         category: 'source',
         config: [
-          { id: 'platform', name: 'E-Commerce Platform', type: 'select', options: [
-            { value: 'shopify', label: 'Shopify' },
-            { value: 'magento', label: 'Magento' },
-            { value: 'bigcommerce', label: 'BigCommerce' },
-            { value: 'woocommerce', label: 'WooCommerce' },
-            { value: 'custom', label: 'Custom API' },
-          ], default: 'shopify' },
+          {
+            id: 'platform', name: 'E-Commerce Platform', type: 'select', options: [
+              { value: 'shopify', label: 'Shopify' },
+              { value: 'magento', label: 'Magento' },
+              { value: 'bigcommerce', label: 'BigCommerce' },
+              { value: 'woocommerce', label: 'WooCommerce' },
+              { value: 'custom', label: 'Custom API' },
+            ], default: 'shopify'
+          },
           { id: 'sync_inventory', name: 'Sync Inventory', type: 'boolean', default: true },
           { id: 'invalidate_on_price_change', name: 'Invalidate on Price Change', type: 'boolean', default: true },
         ],
@@ -729,16 +777,20 @@ const SECTOR_NODES = {
         description: 'Cache product recommendations with personalization',
         category: 'cache',
         config: [
-          { id: 'algorithm', name: 'Algorithm', type: 'select', options: [
-            { value: 'collaborative', label: 'Collaborative Filtering' },
-            { value: 'content', label: 'Content-Based' },
-            { value: 'hybrid', label: 'Hybrid' },
-          ], default: 'hybrid' },
-          { id: 'personalization', name: 'Personalization Level', type: 'select', options: [
-            { value: 'none', label: 'Generic (Best Hit Rate)' },
-            { value: 'segment', label: 'Segment-Based' },
-            { value: 'individual', label: 'Individual (Lower Hit Rate)' },
-          ], default: 'segment' },
+          {
+            id: 'algorithm', name: 'Algorithm', type: 'select', options: [
+              { value: 'collaborative', label: 'Collaborative Filtering' },
+              { value: 'content', label: 'Content-Based' },
+              { value: 'hybrid', label: 'Hybrid' },
+            ], default: 'hybrid'
+          },
+          {
+            id: 'personalization', name: 'Personalization Level', type: 'select', options: [
+              { value: 'none', label: 'Generic (Best Hit Rate)' },
+              { value: 'segment', label: 'Segment-Based' },
+              { value: 'individual', label: 'Individual (Lower Hit Rate)' },
+            ], default: 'segment'
+          },
           { id: 'ttl', name: 'Cache TTL (sec)', type: 'number', default: 3600 },
         ],
       },
@@ -761,12 +813,14 @@ const SECTOR_NODES = {
         description: 'Track cache impact on conversion rates and revenue',
         category: 'output',
         config: [
-          { id: 'track_events', name: 'Track Events', type: 'multiselect', options: [
-            { value: 'product_view', label: 'Product Views' },
-            { value: 'add_to_cart', label: 'Add to Cart' },
-            { value: 'checkout', label: 'Checkout Start' },
-            { value: 'purchase', label: 'Purchase' },
-          ], default: ['product_view', 'add_to_cart', 'purchase'] },
+          {
+            id: 'track_events', name: 'Track Events', type: 'multiselect', options: [
+              { value: 'product_view', label: 'Product Views' },
+              { value: 'add_to_cart', label: 'Add to Cart' },
+              { value: 'checkout', label: 'Checkout Start' },
+              { value: 'purchase', label: 'Purchase' },
+            ], default: ['product_view', 'add_to_cart', 'purchase']
+          },
           { id: 'attribution', name: 'Cache Attribution', type: 'boolean', default: true },
         ],
       },
@@ -790,12 +844,14 @@ const SECTOR_NODES = {
         description: 'Index codebase for context-aware code generation',
         category: 'source',
         config: [
-          { id: 'repo_type', name: 'Repository', type: 'select', options: [
-            { value: 'github', label: 'GitHub' },
-            { value: 'gitlab', label: 'GitLab' },
-            { value: 'bitbucket', label: 'Bitbucket' },
-            { value: 'local', label: 'Local Directory' },
-          ], default: 'github' },
+          {
+            id: 'repo_type', name: 'Repository', type: 'select', options: [
+              { value: 'github', label: 'GitHub' },
+              { value: 'gitlab', label: 'GitLab' },
+              { value: 'bitbucket', label: 'Bitbucket' },
+              { value: 'local', label: 'Local Directory' },
+            ], default: 'github'
+          },
           { id: 'include_patterns', name: 'Include Patterns', type: 'string', default: '**/*.{ts,js,py,go}' },
           { id: 'exclude_patterns', name: 'Exclude Patterns', type: 'string', default: '**/node_modules/**' },
         ],
@@ -807,18 +863,22 @@ const SECTOR_NODES = {
         description: 'Detect and block API keys, passwords, tokens in prompts/responses',
         category: 'validation',
         config: [
-          { id: 'mode', name: 'Mode', type: 'select', options: [
-            { value: 'warn', label: 'Warn Only' },
-            { value: 'redact', label: 'Redact Secrets' },
-            { value: 'block', label: 'Block if Secret Found' },
-          ], default: 'redact' },
-          { id: 'patterns', name: 'Secret Patterns', type: 'multiselect', options: [
-            { value: 'aws', label: 'AWS Keys' },
-            { value: 'github', label: 'GitHub Tokens' },
-            { value: 'openai', label: 'OpenAI Keys' },
-            { value: 'stripe', label: 'Stripe Keys' },
-            { value: 'generic', label: 'Generic Secrets' },
-          ], default: ['aws', 'github', 'openai', 'stripe', 'generic'] },
+          {
+            id: 'mode', name: 'Mode', type: 'select', options: [
+              { value: 'warn', label: 'Warn Only' },
+              { value: 'redact', label: 'Redact Secrets' },
+              { value: 'block', label: 'Block if Secret Found' },
+            ], default: 'redact'
+          },
+          {
+            id: 'patterns', name: 'Secret Patterns', type: 'multiselect', options: [
+              { value: 'aws', label: 'AWS Keys' },
+              { value: 'github', label: 'GitHub Tokens' },
+              { value: 'openai', label: 'OpenAI Keys' },
+              { value: 'stripe', label: 'Stripe Keys' },
+              { value: 'generic', label: 'Generic Secrets' },
+            ], default: ['aws', 'github', 'openai', 'stripe', 'generic']
+          },
         ],
       },
       {
@@ -840,11 +900,13 @@ const SECTOR_NODES = {
         description: 'Track API costs per project/developer',
         category: 'output',
         config: [
-          { id: 'group_by', name: 'Group By', type: 'select', options: [
-            { value: 'project', label: 'Project' },
-            { value: 'developer', label: 'Developer' },
-            { value: 'model', label: 'Model' },
-          ], default: 'project' },
+          {
+            id: 'group_by', name: 'Group By', type: 'select', options: [
+              { value: 'project', label: 'Project' },
+              { value: 'developer', label: 'Developer' },
+              { value: 'model', label: 'Model' },
+            ], default: 'project'
+          },
           { id: 'budget_alert', name: 'Daily Budget Alert ($)', type: 'number', default: 50 },
         ],
       },
@@ -868,12 +930,14 @@ const SECTOR_NODES = {
         description: 'Connect to Databricks, Snowflake, or BigQuery',
         category: 'source',
         config: [
-          { id: 'platform', name: 'Platform', type: 'select', options: [
-            { value: 'databricks', label: 'Databricks' },
-            { value: 'snowflake', label: 'Snowflake' },
-            { value: 'bigquery', label: 'BigQuery' },
-            { value: 'redshift', label: 'Redshift' },
-          ], default: 'databricks' },
+          {
+            id: 'platform', name: 'Platform', type: 'select', options: [
+              { value: 'databricks', label: 'Databricks' },
+              { value: 'snowflake', label: 'Snowflake' },
+              { value: 'bigquery', label: 'BigQuery' },
+              { value: 'redshift', label: 'Redshift' },
+            ], default: 'databricks'
+          },
           { id: 'catalog', name: 'Catalog/Database', type: 'string' },
           { id: 'schema', name: 'Schema', type: 'string' },
         ],
@@ -885,12 +949,14 @@ const SECTOR_NODES = {
         description: 'Cache vector embeddings to avoid recomputation',
         category: 'cache',
         config: [
-          { id: 'model', name: 'Embedding Model', type: 'select', options: [
-            { value: 'text-embedding-3-small', label: 'OpenAI Small' },
-            { value: 'text-embedding-3-large', label: 'OpenAI Large' },
-            { value: 'voyage-large-2', label: 'Voyage AI' },
-            { value: 'bge-large', label: 'BGE Large' },
-          ], default: 'text-embedding-3-small' },
+          {
+            id: 'model', name: 'Embedding Model', type: 'select', options: [
+              { value: 'text-embedding-3-small', label: 'OpenAI Small' },
+              { value: 'text-embedding-3-large', label: 'OpenAI Large' },
+              { value: 'voyage-large-2', label: 'Voyage AI' },
+              { value: 'bge-large', label: 'BGE Large' },
+            ], default: 'text-embedding-3-small'
+          },
           { id: 'dimension', name: 'Dimensions', type: 'number', default: 1536 },
           { id: 'ttl_days', name: 'TTL (days)', type: 'number', default: 30 },
         ],
@@ -902,12 +968,14 @@ const SECTOR_NODES = {
         description: 'Log cache experiments to MLflow or W&B',
         category: 'output',
         config: [
-          { id: 'platform', name: 'Tracking Platform', type: 'select', options: [
-            { value: 'mlflow', label: 'MLflow' },
-            { value: 'wandb', label: 'Weights & Biases' },
-            { value: 'neptune', label: 'Neptune' },
-            { value: 'comet', label: 'Comet ML' },
-          ], default: 'mlflow' },
+          {
+            id: 'platform', name: 'Tracking Platform', type: 'select', options: [
+              { value: 'mlflow', label: 'MLflow' },
+              { value: 'wandb', label: 'Weights & Biases' },
+              { value: 'neptune', label: 'Neptune' },
+              { value: 'comet', label: 'Comet ML' },
+            ], default: 'mlflow'
+          },
           { id: 'log_params', name: 'Log Parameters', type: 'boolean', default: true },
           { id: 'log_metrics', name: 'Log Metrics', type: 'boolean', default: true },
         ],
@@ -921,11 +989,13 @@ const SECTOR_NODES = {
         config: [
           { id: 'track_sources', name: 'Track Data Sources', type: 'boolean', default: true },
           { id: 'track_transformations', name: 'Track Transformations', type: 'boolean', default: true },
-          { id: 'export_format', name: 'Export Format', type: 'select', options: [
-            { value: 'openlineage', label: 'OpenLineage' },
-            { value: 'marquez', label: 'Marquez' },
-            { value: 'json', label: 'JSON' },
-          ], default: 'openlineage' },
+          {
+            id: 'export_format', name: 'Export Format', type: 'select', options: [
+              { value: 'openlineage', label: 'OpenLineage' },
+              { value: 'marquez', label: 'Marquez' },
+              { value: 'json', label: 'JSON' },
+            ], default: 'openlineage'
+          },
         ],
       },
     ],
@@ -948,12 +1018,14 @@ const SECTOR_NODES = {
         description: 'Authenticate via Okta, Azure AD, or SAML',
         category: 'source',
         config: [
-          { id: 'provider', name: 'Identity Provider', type: 'select', options: [
-            { value: 'okta', label: 'Okta' },
-            { value: 'azure_ad', label: 'Azure AD' },
-            { value: 'google', label: 'Google Workspace' },
-            { value: 'saml', label: 'Generic SAML' },
-          ], default: 'okta' },
+          {
+            id: 'provider', name: 'Identity Provider', type: 'select', options: [
+              { value: 'okta', label: 'Okta' },
+              { value: 'azure_ad', label: 'Azure AD' },
+              { value: 'google', label: 'Google Workspace' },
+              { value: 'saml', label: 'Generic SAML' },
+            ], default: 'okta'
+          },
           { id: 'namespace_from_group', name: 'Namespace from Group', type: 'boolean', default: true },
         ],
       },
@@ -964,17 +1036,21 @@ const SECTOR_NODES = {
         description: 'Connect to Confluence, Notion, or SharePoint',
         category: 'source',
         config: [
-          { id: 'source', name: 'Knowledge Source', type: 'select', options: [
-            { value: 'confluence', label: 'Confluence' },
-            { value: 'notion', label: 'Notion' },
-            { value: 'sharepoint', label: 'SharePoint' },
-            { value: 'guru', label: 'Guru' },
-          ], default: 'confluence' },
-          { id: 'sync_frequency', name: 'Sync Frequency', type: 'select', options: [
-            { value: 'realtime', label: 'Real-time' },
-            { value: 'hourly', label: 'Hourly' },
-            { value: 'daily', label: 'Daily' },
-          ], default: 'daily' },
+          {
+            id: 'source', name: 'Knowledge Source', type: 'select', options: [
+              { value: 'confluence', label: 'Confluence' },
+              { value: 'notion', label: 'Notion' },
+              { value: 'sharepoint', label: 'SharePoint' },
+              { value: 'guru', label: 'Guru' },
+            ], default: 'confluence'
+          },
+          {
+            id: 'sync_frequency', name: 'Sync Frequency', type: 'select', options: [
+              { value: 'realtime', label: 'Real-time' },
+              { value: 'hourly', label: 'Hourly' },
+              { value: 'daily', label: 'Daily' },
+            ], default: 'daily'
+          },
         ],
       },
       {
@@ -984,13 +1060,15 @@ const SECTOR_NODES = {
         description: 'Route queries to department-specific caches',
         category: 'cache',
         config: [
-          { id: 'departments', name: 'Departments', type: 'multiselect', options: [
-            { value: 'hr', label: 'Human Resources' },
-            { value: 'it', label: 'IT Support' },
-            { value: 'finance', label: 'Finance' },
-            { value: 'legal', label: 'Legal' },
-            { value: 'sales', label: 'Sales' },
-          ], default: ['hr', 'it'] },
+          {
+            id: 'departments', name: 'Departments', type: 'multiselect', options: [
+              { value: 'hr', label: 'Human Resources' },
+              { value: 'it', label: 'IT Support' },
+              { value: 'finance', label: 'Finance' },
+              { value: 'legal', label: 'Legal' },
+              { value: 'sales', label: 'Sales' },
+            ], default: ['hr', 'it']
+          },
           { id: 'auto_detect', name: 'Auto-Detect Department', type: 'boolean', default: true },
         ],
       },
@@ -1001,17 +1079,21 @@ const SECTOR_NODES = {
         description: 'Track usage by department, team, and user',
         category: 'output',
         config: [
-          { id: 'group_by', name: 'Group By', type: 'multiselect', options: [
-            { value: 'department', label: 'Department' },
-            { value: 'team', label: 'Team' },
-            { value: 'user', label: 'User' },
-            { value: 'topic', label: 'Topic' },
-          ], default: ['department', 'team'] },
-          { id: 'export_to', name: 'Export To', type: 'select', options: [
-            { value: 'dashboard', label: 'AgentCache Dashboard' },
-            { value: 'datadog', label: 'Datadog' },
-            { value: 'newrelic', label: 'New Relic' },
-          ], default: 'dashboard' },
+          {
+            id: 'group_by', name: 'Group By', type: 'multiselect', options: [
+              { value: 'department', label: 'Department' },
+              { value: 'team', label: 'Team' },
+              { value: 'user', label: 'User' },
+              { value: 'topic', label: 'Topic' },
+            ], default: ['department', 'team']
+          },
+          {
+            id: 'export_to', name: 'Export To', type: 'select', options: [
+              { value: 'dashboard', label: 'AgentCache Dashboard' },
+              { value: 'datadog', label: 'Datadog' },
+              { value: 'newrelic', label: 'New Relic' },
+            ], default: 'dashboard'
+          },
         ],
       },
     ],
@@ -1032,11 +1114,11 @@ const SECTOR_NODES = {
 
 function detectSector(context) {
   const scores = {};
-  
+
   for (const [id, sector] of Object.entries(SECTORS)) {
     scores[id] = { score: 0, signals: [] };
   }
-  
+
   // Namespace patterns (highest weight)
   if (context.namespace) {
     for (const [id, sector] of Object.entries(SECTORS)) {
@@ -1049,7 +1131,7 @@ function detectSector(context) {
       }
     }
   }
-  
+
   // Query keywords
   if (context.query) {
     const q = context.query.toLowerCase();
@@ -1062,7 +1144,7 @@ function detectSector(context) {
       }
     }
   }
-  
+
   // Environment variables
   if (context.env) {
     for (const [id, sector] of Object.entries(SECTORS)) {
@@ -1074,7 +1156,7 @@ function detectSector(context) {
       }
     }
   }
-  
+
   // Explicit header
   if (context.headers?.['x-agentcache-sector']) {
     const explicit = context.headers['x-agentcache-sector'];
@@ -1083,18 +1165,18 @@ function detectSector(context) {
       scores[explicit].signals.push('Explicit sector header');
     }
   }
-  
+
   // Find winner
   let best = 'enterprise';
   let bestScore = 0;
-  
+
   for (const [id, data] of Object.entries(scores)) {
     if (data.score > bestScore) {
       bestScore = data.score;
       best = id;
     }
   }
-  
+
   return {
     sector: SECTORS[best],
     confidence: Math.min(bestScore / 100, 1),
@@ -1110,11 +1192,11 @@ function detectSector(context) {
 function buildConfig(sector, overrides = {}) {
   const s = typeof sector === 'string' ? SECTORS[sector] : sector;
   if (!s) return null;
-  
+
   return {
     sector: s.id,
     sectorName: s.name,
-    
+
     cache: {
       defaultTtl: overrides.ttl || s.cache.defaultTtl,
       maxTtl: s.cache.maxTtl,
@@ -1122,27 +1204,27 @@ function buildConfig(sector, overrides = {}) {
       semanticEnabled: s.cache.allowSemanticCache,
       semanticThreshold: s.cache.semanticThreshold,
     },
-    
+
     compliance: {
       frameworks: s.compliance.frameworks,
       auditLevel: s.compliance.auditLogging,
       retentionDays: s.compliance.retentionDays,
       dataResidency: s.compliance.dataResidency,
     },
-    
+
     data: {
       piiMode: s.data.piiDetection,
       sensitiveFields: s.data.sensitiveFields,
       encryptionRequired: s.data.encryptionRequired,
     },
-    
+
     validation: {
       cognitive: s.validation.cognitiveValidation,
       hallucination: s.validation.hallucinationCheck,
       minConfidence: s.validation.confidenceThreshold,
       requireCitations: s.validation.citationsRequired,
     },
-    
+
     alerts: {
       maxLatencyMs: s.performance.maxLatencyMs,
       minHitRate: s.performance.targetHitRate,
@@ -1159,11 +1241,11 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-AgentCache-Sector');
-  
+
   if (req.method === 'OPTIONS') return res.status(200).end();
-  
+
   const path = req.url?.split('?')[0] || '';
-  
+
   try {
     // GET /api/sector - List all sectors
     if (req.method === 'GET' && (path === '/api/sector' || path === '/api/sector/')) {
@@ -1178,12 +1260,12 @@ export default async function handler(req, res) {
         })),
       });
     }
-    
+
     // POST /api/sector/detect - Auto-detect sector
     if (req.method === 'POST' && path.endsWith('/detect')) {
       const context = req.body || {};
       const detection = detectSector(context);
-      
+
       return res.status(200).json({
         success: true,
         detected: {
@@ -1197,19 +1279,19 @@ export default async function handler(req, res) {
         warnings: generateWarnings(detection.sector, context),
       });
     }
-    
+
     // GET /api/sector/:id - Get sector profile + nodes
     const sectorMatch = path.match(/\/api\/sector\/([a-z]+)$/);
     if (req.method === 'GET' && sectorMatch) {
       const sectorId = sectorMatch[1];
       const sector = SECTORS[sectorId];
-      
+
       if (!sector) {
         return res.status(404).json({ success: false, error: 'Sector not found' });
       }
-      
+
       const sectorNodes = SECTOR_NODES[sectorId] || { nodes: [], templates: [] };
-      
+
       return res.status(200).json({
         success: true,
         sector,
@@ -1218,27 +1300,27 @@ export default async function handler(req, res) {
         config: buildConfig(sector),
       });
     }
-    
+
     // POST /api/sector/:id/configure - Generate config
     const configMatch = path.match(/\/api\/sector\/([a-z]+)\/configure$/);
     if (req.method === 'POST' && configMatch) {
       const sectorId = configMatch[1];
       const sector = SECTORS[sectorId];
-      
+
       if (!sector) {
         return res.status(404).json({ success: false, error: 'Sector not found' });
       }
-      
+
       const overrides = req.body || {};
       const config = buildConfig(sector, overrides);
-      
+
       return res.status(200).json({
         success: true,
         config,
         code: generateConfigCode(config),
       });
     }
-    
+
     // Default
     return res.status(200).json({
       success: true,
@@ -1251,7 +1333,7 @@ export default async function handler(req, res) {
         { method: 'POST', path: '/api/sector/:id/configure', description: 'Generate optimized config' },
       ],
     });
-    
+
   } catch (error) {
     console.error('Sector API error:', error);
     return res.status(500).json({
@@ -1268,7 +1350,7 @@ export default async function handler(req, res) {
 
 function generateWarnings(sector, context) {
   const warnings = [];
-  
+
   if (sector.compliance.frameworks.includes('HIPAA') && !context.env?.HIPAA_MODE) {
     warnings.push({
       type: 'compliance',
@@ -1277,7 +1359,7 @@ function generateWarnings(sector, context) {
       action: 'Set HIPAA_MODE=true in environment variables',
     });
   }
-  
+
   if (sector.data.encryptionRequired && !context.env?.ENCRYPTION_KEY) {
     warnings.push({
       type: 'security',
@@ -1286,7 +1368,7 @@ function generateWarnings(sector, context) {
       action: 'Configure ENCRYPTION_KEY for data-at-rest encryption',
     });
   }
-  
+
   if (sector.compliance.dataResidency && !context.env?.DATA_REGION) {
     warnings.push({
       type: 'compliance',
@@ -1295,7 +1377,7 @@ function generateWarnings(sector, context) {
       action: 'Set DATA_REGION to ensure compliance with data locality requirements',
     });
   }
-  
+
   return warnings;
 }
 
