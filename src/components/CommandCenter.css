@@ -2,7 +2,7 @@
 
 .command-center {
   min-height: 100vh;
-  background: radial-gradient(ellipse at top, #1e293b 0%, #0f172a 50%, #020617 100%);
+  background: radial-gradient(ellipse at top, var(--hud-bg) 0%, #0f172a 50%, #020617 100%);
   position: relative;
   overflow-x: hidden;
   padding: 0;
@@ -28,7 +28,7 @@
   height: 100%;
   z-index: 0;
   pointer-events: none;
-  background: 
+  background:
     radial-gradient(circle at 20% 50%, rgba(56, 189, 248, 0.05) 0%, transparent 50%),
     radial-gradient(circle at 80% 50%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
 }
@@ -42,7 +42,7 @@
   justify-content: space-between;
   align-items: flex-start;
   padding: 1.5rem 2rem;
-  background: rgba(15, 23, 42, 0.7);
+  background: var(--hud-panel-bg);
   border-bottom: 1px solid rgba(56, 189, 248, 0.15);
   backdrop-filter: blur(24px) saturate(180%);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
@@ -67,18 +67,21 @@
 .pulse-indicator {
   width: 8px;
   height: 8px;
-  background: #10b981;
+  background: var(--hud-success);
   border-radius: 50%;
   animation: pulse 2s infinite;
   box-shadow: 0 0 16px rgba(16, 185, 129, 1), 0 0 32px rgba(16, 185, 129, 0.5);
 }
 
 @keyframes pulse {
-  0%, 100% { 
+
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
-  50% { 
+
+  50% {
     opacity: 0.6;
     transform: scale(1.2);
   }
@@ -88,7 +91,7 @@
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.05em;
-  color: #10b981;
+  color: var(--hud-success);
   text-transform: uppercase;
 }
 
@@ -96,7 +99,7 @@
   font-size: 1.875rem;
   font-weight: 600;
   letter-spacing: -0.015em;
-  color: #f8fafc;
+  color: var(--hud-text);
   margin: 0.5rem 0;
   display: flex;
   align-items: center;
@@ -109,7 +112,7 @@
 
 .subtitle {
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--hud-text-dim);
   margin: 0;
 }
 
@@ -119,7 +122,7 @@
   background: rgba(56, 189, 248, 0.15);
   border: 1px solid rgba(56, 189, 248, 0.4);
   border-radius: 0.375rem;
-  color: #38bdf8;
+  color: var(--hud-accent);
   font-weight: 600;
   letter-spacing: 0.05em;
 }
@@ -149,7 +152,7 @@
 }
 
 .kpi {
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--hud-panel-bg);
   padding: 1.5rem 2rem;
   display: flex;
   flex-direction: column;
@@ -185,7 +188,7 @@
 .kpi-label {
   font-size: 0.75rem;
   font-weight: 500;
-  color: #64748b;
+  color: var(--hud-text-dim);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -193,7 +196,7 @@
 .kpi-value {
   font-size: 1.875rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--hud-text);
   font-family: 'Geist Mono', monospace;
   letter-spacing: -0.02em;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
@@ -214,7 +217,7 @@
 
 /* Control Panels - Glass Morphism */
 .control-panel {
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--hud-panel-bg);
   border: 1px solid rgba(56, 189, 248, 0.1);
   border-radius: 0;
   padding: 2rem;
@@ -267,7 +270,7 @@
 .panel-indicator {
   width: 8px;
   height: 8px;
-  background: #38bdf8;
+  background: var(--hud-accent);
   border-radius: 50%;
   box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
 }
@@ -342,7 +345,8 @@
 }
 
 .btn-glow {
-  display: none; /* Remove glow effect */
+  display: none;
+  /* Remove glow effect */
 }
 
 .btn-content {
@@ -363,18 +367,19 @@
   font-size: 0.9375rem;
   font-weight: 600;
   letter-spacing: 0;
-  color: #f8fafc;
+  color: var(--hud-text);
   text-align: center;
 }
 
 .btn-sublabel {
   font-size: 0.8125rem;
-  color: #64748b;
+  color: var(--hud-text-dim);
   text-align: center;
 }
 
 .btn-pulse {
-  display: none; /* Remove pulse effect */
+  display: none;
+  /* Remove pulse effect */
 }
 
 /* Metrics Panel */
@@ -441,7 +446,7 @@
 .metric-value {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--hud-text);
   margin: 0.5rem 0;
   font-family: 'Geist Mono', monospace;
   letter-spacing: -0.015em;
@@ -449,7 +454,7 @@
 
 .metric-label {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--hud-text-dim);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 0.75rem;
@@ -501,13 +506,13 @@
 .gauge-value {
   font-size: 1.75rem;
   font-weight: 700;
-  fill: #f8fafc;
+  fill: var(--hud-text);
   font-family: 'Geist Mono', monospace;
 }
 
 .gauge-label {
   font-size: 0.8125rem;
-  color: #64748b;
+  color: var(--hud-text-dim);
   text-align: center;
   text-transform: capitalize;
   letter-spacing: 0;
@@ -544,7 +549,7 @@
 }
 
 .stat-dot.active {
-  background: #10b981;
+  background: var(--hud-success);
   box-shadow: 0 0 4px rgba(16, 185, 129, 0.6);
 }
 
@@ -569,13 +574,13 @@
 .stat-badge.success {
   background: rgba(16, 185, 129, 0.1);
   border-color: rgba(16, 185, 129, 0.4);
-  color: #10b981;
+  color: var(--hud-success);
 }
 
 .stat-badge.info {
   background: rgba(56, 189, 248, 0.1);
   border-color: rgba(56, 189, 248, 0.4);
-  color: #38bdf8;
+  color: var(--hud-accent);
 }
 
 /* Floating Action Hint - Hidden for professional look */
@@ -588,16 +593,16 @@
   .control-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .gauges-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .command-header {
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .time-display {
     font-size: 1.5rem;
   }
@@ -607,21 +612,21 @@
   .command-center {
     padding: 1rem;
   }
-  
+
   .command-title {
     font-size: 1.75rem;
   }
-  
+
   .metrics-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .floating-hint {
     bottom: 1rem;
     right: 1rem;
     left: 1rem;
   }
-  
+
   .hint-content {
     max-width: 100%;
   }
