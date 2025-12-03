@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Database, DollarSign, Search, Server, ArrowRight, Layers } from 'lucide-react';
+import { Database, Activity, Search, Server, ArrowRight, Layers } from 'lucide-react';
 import CyberCard from '../components/CyberCard';
 import DataGrid from '../components/DataGrid';
 import StatDial from '../components/StatDial';
@@ -56,7 +56,7 @@ export default function DataExplorer() {
             <div className="flex items-center justify-between">
                 <div className="flex gap-2 bg-black/50 p-1 rounded-lg border border-[var(--hud-border)]">
                     {[
-                        { id: 'cash', label: 'Cash Activity', icon: DollarSign },
+                        { id: 'cash', label: 'Cache Activity', icon: Activity },
                         { id: 'inspector', label: 'Cache Inspector', icon: Database },
                         { id: 'embeddings', label: 'Vector Lab', icon: Layers }
                     ].map(tab => (
@@ -64,8 +64,8 @@ export default function DataExplorer() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`px-4 py-2 rounded flex items-center gap-2 text-sm font-bold transition-all ${activeTab === tab.id
-                                    ? 'bg-[var(--hud-accent)] text-black shadow-[0_0_10px_var(--hud-accent)]'
-                                    : 'text-[var(--hud-text-dim)] hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
+                                ? 'bg-[var(--hud-accent)] text-black shadow-[0_0_10px_var(--hud-accent)]'
+                                : 'text-[var(--hud-text-dim)] hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
                                 }`}
                         >
                             <tab.icon size={16} />
@@ -78,40 +78,40 @@ export default function DataExplorer() {
             {/* Content Area */}
             <div className="flex-1 overflow-hidden">
 
-                {/* CASH ACTIVITY TAB */}
+                {/* CACHE ACTIVITY TAB */}
                 {activeTab === 'cash' && (
                     <div className="h-full grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4">
-                        {/* ROI Stats */}
+                        {/* Cache Stats */}
                         <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-4 gap-6">
                             <CyberCard className="bg-[rgba(0,255,128,0.05)] border-[var(--hud-success)]">
-                                <div className="text-[var(--hud-text-dim)] text-xs uppercase tracking-wider mb-1">Total Value Realized</div>
-                                <div className="text-3xl font-mono font-bold text-[var(--hud-success)]">$4,291.50</div>
+                                <div className="text-[var(--hud-text-dim)] text-xs uppercase tracking-wider mb-1">Global Hit Rate</div>
+                                <div className="text-3xl font-mono font-bold text-[var(--hud-success)]">94.2%</div>
                                 <div className="text-xs text-[var(--hud-success)] mt-2 flex items-center gap-1">
-                                    <ArrowRight size={12} className="-rotate-45" /> +12% this week
+                                    <ArrowRight size={12} className="-rotate-45" /> +2.4% this week
                                 </div>
                             </CyberCard>
                             <CyberCard>
-                                <div className="text-[var(--hud-text-dim)] text-xs uppercase tracking-wider mb-1">Compute Saved</div>
-                                <div className="text-3xl font-mono font-bold text-white">142h 30m</div>
+                                <div className="text-[var(--hud-text-dim)] text-xs uppercase tracking-wider mb-1">Data Cached</div>
+                                <div className="text-3xl font-mono font-bold text-white">4.2 TB</div>
                             </CyberCard>
                             <CyberCard>
-                                <div className="text-[var(--hud-text-dim)] text-xs uppercase tracking-wider mb-1">API Calls Deflected</div>
-                                <div className="text-3xl font-mono font-bold text-[var(--hud-accent)]">84,201</div>
+                                <div className="text-[var(--hud-text-dim)] text-xs uppercase tracking-wider mb-1">Requests Served</div>
+                                <div className="text-3xl font-mono font-bold text-[var(--hud-accent)]">8.4M</div>
                             </CyberCard>
                             <CyberCard>
-                                <div className="text-[var(--hud-text-dim)] text-xs uppercase tracking-wider mb-1">Avg Cost / Query</div>
-                                <div className="text-3xl font-mono font-bold text-[var(--hud-accent-secondary)]">$0.0002</div>
+                                <div className="text-[var(--hud-text-dim)] text-xs uppercase tracking-wider mb-1">Avg Latency</div>
+                                <div className="text-3xl font-mono font-bold text-[var(--hud-accent-secondary)]">12ms</div>
                             </CyberCard>
                         </div>
 
                         {/* Detailed Breakdown */}
-                        <CyberCard title="Cost Analysis" className="lg:col-span-2">
+                        <CyberCard title="Throughput Analysis" className="lg:col-span-2">
                             <div className="h-64 flex items-end justify-between gap-2 px-4 pb-4 border-b border-[var(--hud-border)]">
                                 {/* Mock Bar Chart */}
                                 {[40, 65, 45, 80, 55, 90, 70].map((h, i) => (
                                     <div key={i} className="w-full bg-[var(--hud-accent)]/20 hover:bg-[var(--hud-accent)]/40 transition-colors rounded-t relative group" style={{ height: `${h}%` }}>
                                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-black border border-[var(--hud-border)] px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10">
-                                            ${(h * 1.5).toFixed(2)} Saved
+                                            {h * 100} req/s
                                         </div>
                                     </div>
                                 ))}
@@ -121,17 +121,17 @@ export default function DataExplorer() {
                             </div>
                         </CyberCard>
 
-                        <CyberCard title="Top Earners" className="lg:col-span-1">
+                        <CyberCard title="Top Agents" className="lg:col-span-1">
                             <DataGrid
                                 columns={[
                                     { header: 'Agent', accessor: 'agent' },
-                                    { header: 'Saved', accessor: 'saved', render: r => <span className="text-[var(--hud-success)] font-mono">${r.saved}</span> }
+                                    { header: 'Ops/Sec', accessor: 'ops', render: r => <span className="text-[var(--hud-success)] font-mono">{r.ops}</span> }
                                 ]}
                                 data={[
-                                    { agent: 'Clinical-Bot-1', saved: '1,204.50' },
-                                    { agent: 'Trading-Alpha', saved: '940.20' },
-                                    { agent: 'Legal-Reviewer', saved: '850.00' },
-                                    { agent: 'Support-Swarm', saved: '420.10' },
+                                    { agent: 'Clinical-Bot-1', ops: '1,204' },
+                                    { agent: 'Trading-Alpha', ops: '940' },
+                                    { agent: 'Legal-Reviewer', ops: '850' },
+                                    { agent: 'Support-Swarm', ops: '420' },
                                 ]}
                             />
                         </CyberCard>
