@@ -2,57 +2,69 @@ import { Hono } from 'hono';
 import { db } from '../db/client.js';
 import { organizations, users, members, apiKeys } from '../db/schema.js';
 import { eq, and } from 'drizzle-orm';
+import { authMiddleware, requireRole } from './auth.js';
 
 const app = new Hono();
 
-// Mock Auth Middleware (Replace with real auth later)
-const getContextOrgId = (c) => 'org_123456789'; // TODO: Extract from JWT
+// Apply Auth Middleware to all routes
+app.use('*', authMiddleware);
 
 // GET /api/governance/org - Get current org details
-app.get('/org', async (c) => {
-    // For now, return a mock org if DB is empty, or fetch real one
-    // This ensures the UI has something to show immediately
+app.get('/org', requireRole('viewer'), async (c) => {
+    const user = c.get('user');
+
+    // Fetch real org data
+    const member = await db.select().from(members).where(eq(members.userId, user.id)).limit(1);
+    if (!member.length) return c.json({ error: 'No org found' }, 404);
+
+    const org = await db.select().from(organizations).where(eq(organizations.id, member[0].orgId)).limit(1);
+
     return c.json({
-        id: 'org_123456789',
-        name: 'Acme Corp',
-        plan: 'Professional',
-        role: 'Owner',
-        region: 'US-East (N. Virginia)'
+        ...org[0],
+        role: member[0].role
     });
 });
 
 // GET /api/governance/members - List team members
-app.get('/members', async (c) => {
-    // Mock data for now until we have real users seeded
-    return c.json({
-        members: [
-            { id: 'u_1', name: 'Alice Admin', email: 'alice@acme.com', role: 'owner' },
-            { id: 'u_2', name: 'Bob Builder', email: 'bob@acme.com', role: 'member' },
-            { id: 'u_3', name: 'Charlie Cache', email: 'charlie@acme.com', role: 'viewer' },
-        ]
-    });
+app.get('/members', requireRole('viewer'), async (c) => {
+    const user = c.get('user');
+
+    // Fetch members of the user's org
+    const orgMembers = await db.select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        role: members.role
+    })
+        .from(members)
+        .innerJoin(users, eq(members.userId, users.id))
+        .where(eq(members.orgId, user.orgId));
+
+    return c.json({ members: orgMembers });
 });
 
 // GET /api/governance/keys - List API keys
-app.get('/keys', async (c) => {
-    // Mock data for now
+app.get('/keys', requireRole('admin'), async (c) => {
+    const user = c.get('user');
+
+    const keys = await db.select().from(apiKeys).where(eq(apiKeys.orgId, user.orgId));
+
     return c.json({
-        apiKeys: [
-            { prefix: 'ac_live_', created: '2025-11-01', scopes: ['cache:read', 'cache:write'] },
-            { prefix: 'ac_test_', created: '2025-11-15', scopes: ['cache:read'] },
-        ]
+        apiKeys: keys.map(k => ({
+            ...k,
+            hash: '********' // Redact hash
+        }))
     });
 });
 
 // POST /api/governance/presets - Switch Reality (Mock for now)
-app.post('/presets', async (c) => {
+app.post('/presets', requireRole('owner'), async (c) => {
     const body = await c.req.json();
-    // In a real app, this would update the org's config
     return c.json({ success: true, mode: body.mode });
 });
 
 // GET /api/governance/presets - Get current mode
-app.get('/presets', async (c) => {
+app.get('/presets', requireRole('viewer'), async (c) => {
     return c.json({ mode: 'Darwin' });
 });
 

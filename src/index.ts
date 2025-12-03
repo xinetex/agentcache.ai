@@ -44,10 +44,14 @@ import decisionsRouter from './api/decisions.js';
 import galaxyRouter from './api/galaxy.js';
 import explorerRouter from './api/explorer.js';
 import governanceRouter from './api/governance.js';
+import authRouter from './api/auth.js';
 
 app.post('/api/provision', provisionClient);
 app.get('/api/provision/:api_key', getApiKeyInfo);
 app.post('/api/provision/jettythunder', provisionJettyThunder);
+
+// Mount Auth API
+app.route('/api/auth', authRouter);
 
 // Mount Decisions & Galaxy API
 app.route('/api/decisions', decisionsRouter);
