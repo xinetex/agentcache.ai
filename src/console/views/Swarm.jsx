@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
 import { Hexagon, Trophy, Radio, Zap } from 'lucide-react';
 import CyberCard from '../components/CyberCard';
 import DataGrid from '../components/DataGrid';
+import NeuralGalaxy from '../components/NeuralGalaxy';
 import { useAuth } from '../auth/AuthContext';
 
 export default function Swarm() {

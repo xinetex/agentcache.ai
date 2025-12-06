@@ -44,6 +44,7 @@ import decisionsRouter from './api/decisions.js';
 import galaxyRouter from './api/galaxy.js';
 import explorerRouter from './api/explorer.js';
 import governanceRouter from './api/governance.js';
+import labRouter from './api/lab.js';
 import authRouter from './api/auth.js';
 
 app.post('/api/provision', provisionClient);
@@ -58,6 +59,7 @@ app.route('/api/decisions', decisionsRouter);
 app.route('/api/galaxy', galaxyRouter);
 app.route('/api/explorer', explorerRouter);
 app.route('/api/governance', governanceRouter);
+app.route('/api/lab', labRouter);
 
 // Serve static files (landing page - defaults to community.html)
 app.get('/', (c) => {
