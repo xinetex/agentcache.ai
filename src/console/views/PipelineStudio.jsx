@@ -80,6 +80,50 @@ export default function PipelineStudio() {
         setShowWizard(false);
     };
 
+    // Save Logic
+    const handleSave = async () => {
+        try {
+            const token = localStorage.getItem('agentcache_token');
+            if (!token) {
+                alert('Authentication required. Please log in.');
+                return;
+            }
+
+            // Minimal payload from current state
+            const payload = {
+                name: `Pipeline ${new Date().toLocaleTimeString()}`,
+                sector: config.useCase || 'custom',
+                nodes: nodes,
+                connections: edges,
+                description: `Generated via Wizard (${config.performance})`,
+                complexity: { tier: 'moderate', score: nodes.length * 10 },
+                monthlyCost: 0,
+                features: ['cache', 'llm']
+            };
+
+            const res = await fetch('/api/pipelines/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                alert(`Pipeline Saved! ID: ${data.pipeline.id}`);
+            } else {
+                throw new Error(data.error || 'Unknown error');
+            }
+
+        } catch (e) {
+            console.error('Save failed', e);
+            alert(`Failed to save: ${e.message}`);
+        }
+    };
+
     return (
         <div className="h-[calc(100vh-8rem)] flex gap-6 relative">
             {/* Left Sidebar: Palette */}
@@ -115,7 +159,7 @@ export default function PipelineStudio() {
                     <button onClick={() => setShowWizard(true)} className="btn-cyber px-4 py-2 flex items-center gap-2 text-xs">
                         <Wand2 size={14} /> Wizard
                     </button>
-                    <button className="btn-cyber px-4 py-2 flex items-center gap-2 text-xs">
+                    <button onClick={handleSave} className="btn-cyber px-4 py-2 flex items-center gap-2 text-xs">
                         <Save size={14} /> Save
                     </button>
                     <button className="btn-cyber btn-cyber-primary px-4 py-2 flex items-center gap-2 text-xs">
