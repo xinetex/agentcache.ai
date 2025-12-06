@@ -107,3 +107,9 @@ export function getTierQuota(tierId: string): number {
 export function getAllTiers(): Tier[] {
   return Object.values(TIERS);
 }
+
+// Helper to get features for a tier
+export function getTierFeatures(tierId: string): TierFeatures | null {
+  const tier = getTier(tierId);
+  return tier?.features || TIERS.FREE.features;
+}

@@ -101,9 +101,9 @@ export async function provisionClient(c: Context) {
     });
 
     // Create default namespace
-    const namespace = `${integration}_${project_id}`;
+    const generatedNamespace = `${integration}_${project_id}`;
     await createNamespace({
-      name: namespace,
+      name: generatedNamespace,
       user_id,
       sector,
       use_case
@@ -116,14 +116,14 @@ export async function provisionClient(c: Context) {
       project_id,
       config_id: `${integration}_config`,
       api_key: apiKey,
-      namespace
+      namespace: generatedNamespace
     });
 
     // Return provisioning details
     return c.json({
       success: true,
       api_key: apiKey,
-      namespace,
+      namespace: generatedNamespace,
       rate_limit: effectiveRateLimit,
       tier,
       provisioned_at: new Date().toISOString(),

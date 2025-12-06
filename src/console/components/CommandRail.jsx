@@ -16,10 +16,10 @@ const CommandRail = ({ activeView, setActiveView, user }) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
     const menuItems = [
-        { id: 'overview', label: 'Overview', icon: LayoutGrid },
+        { id: 'swarm', label: 'Neural Ops Center', icon: Activity }, // Default Home
+        { id: 'overview', label: 'System Overview', icon: LayoutGrid },
         { id: 'pipeline', label: 'Pipeline Studio', icon: Workflow },
-        { id: 'swarm', label: 'Swarm Intelligence', icon: Hexagon },
-        { id: 'observability', label: 'Observability', icon: Activity },
+        { id: 'observability', label: 'Observability', icon: Database }, // Switched icon for variety
         { id: 'lab', label: 'Research Lab', icon: FlaskConical },
         { id: 'data', label: 'Data Explorer', icon: Database },
         { id: 'governance', label: 'Governance', icon: Shield },

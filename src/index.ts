@@ -15,6 +15,7 @@ import { stableStringify, stableHash } from './lib/stable-json.js';
 import { generateEmbedding } from './lib/llm/embeddings.js';
 import { upsertMemory, queryMemory } from './lib/vector.js';
 import bcrypt from 'bcryptjs';
+import { neon } from '@neondatabase/serverless';
 
 const sql = neon(process.env.DATABASE_URL || '');
 

@@ -14,7 +14,8 @@ import { AuthProvider, useAuth } from './auth/AuthContext';
 import LoginOverlay from './components/LoginOverlay';
 
 const AppContent = () => {
-    const [activeView, setActiveView] = useState('overview');
+    // "Neural Ops" (swarm) is now the default landing experience
+    const [activeView, setActiveView] = useState('swarm');
     const { user, loading } = useAuth();
 
     if (loading) return <div className="h-screen flex items-center justify-center text-[var(--hud-accent)] font-mono">INITIALIZING...</div>;
