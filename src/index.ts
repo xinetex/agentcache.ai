@@ -9,9 +9,11 @@ import { redis } from './lib/redis.js';
 import { ContextManager } from './infrastructure/ContextManager.js';
 import vercelIntegration from './integrations/vercel.js';
 import { antiCache } from './mcp/anticache.js';
-import { neon } from '@neondatabase/serverless';
 import { getTierQuota, getTierFeatures, getAllTiers } from './config/tiers.js';
 import { canUseNamespace, isTTLAllowed, getFeatureLimit } from './lib/tierChecker.js';
+import { stableStringify, stableHash } from './lib/stable-json.js';
+import { generateEmbedding } from './lib/llm/embeddings.js';
+import { upsertMemory, queryMemory } from './lib/vector.js';
 import bcrypt from 'bcryptjs';
 
 const sql = neon(process.env.DATABASE_URL || '');
@@ -82,11 +84,13 @@ const CacheRequestSchema = z.object({
   })),
   temperature: z.number().optional().default(0.7),
   ttl: z.number().optional().default(604800), // 7 days
+  semantic: z.boolean().optional().default(false), // Semantic Caching
 });
 
 type CacheRequest = z.infer<typeof CacheRequestSchema>;
 
 // Helper: Generate cache key
+// Helper: Generate cache key using Deterministic Serialization
 function generateCacheKey(req: CacheRequest): string {
   const data = {
     provider: req.provider,
@@ -94,7 +98,7 @@ function generateCacheKey(req: CacheRequest): string {
     messages: req.messages,
     temperature: req.temperature,
   };
-  const hash = createHash('sha256').update(JSON.stringify(data)).digest('hex');
+  const hash = stableHash(data);
   return `agentcache:v1:${req.provider}:${req.model}:${hash}`;
 }
 
@@ -244,10 +248,38 @@ app.post('/api/cache/check', async (c) => {
     const exists = await redis.exists(key);
     const ttl = exists ? await redis.ttl(key) : 0;
 
+    let semanticHit = false;
+    let similarity = 0;
+    let semanticKey = null;
+
+    // Semantic Caching Layer (Prototype)
+    if (!exists && req.semantic) {
+      try {
+        // Flatten last user message for query
+        const lastMsg = req.messages[req.messages.length - 1]?.content || '';
+        if (lastMsg) {
+          // Search vector store
+          const results = await queryMemory(lastMsg, 1);
+          if (results && results.length > 0) {
+            const match = results[0];
+            if (match.score > 0.95) { // Strict threshold
+              semanticHit = true;
+              similarity = match.score;
+              semanticKey = match.metadata?.cacheKey;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("[Semantic] Lookup failed:", err);
+      }
+    } // semantic check
+
     return c.json({
-      cached: exists === 1,
-      key: key.slice(-16),
-      ttl,
+      cached: exists === 1 || semanticHit,
+      key: semanticHit ? semanticKey : key.slice(-16),
+      ttl: semanticHit ? 3600 : ttl, // Mock TTL for semantic
+      type: semanticHit ? 'semantic' : 'exact',
+      similarity: semanticHit ? similarity : 1.0
     });
   } catch (error: any) {
     return c.json({ error: error.message }, 400);
@@ -371,6 +403,17 @@ app.post('/api/cache/set', async (c) => {
 
     // Register with invalidator
     cacheInvalidator.registerCache(key, metadata);
+
+    // Populate Semantic Cache (Async)
+    const lastMsg = req.messages[req.messages.length - 1]?.content;
+    if (lastMsg && process.env.UPSTASH_VECTOR_REST_URL) {
+      // We don't await this to keep latency low
+      upsertMemory(key, lastMsg, {
+        cacheKey: key,
+        namespace,
+        responsePreview: response.substring(0, 100)
+      }).catch(err => console.error("[Semantic] Indexing failed:", err));
+    }
 
     return c.json({
       success: true,

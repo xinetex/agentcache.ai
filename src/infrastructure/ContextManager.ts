@@ -83,15 +83,41 @@ export class ContextManager {
         }
 
         // 3. Merge Contexts
+        // Prefix Optimization via "Stable Ordering" (Whitepaper 4.3)
+        // Ensure that the prompt prefix (Memories/System) remains stable to maximize KV-Cache reuse.
+        // Order: [L3 Memories] + [L2 Recent History]
         const messages = [
-            ...longTermMemories,
-            ...recentHistory
+            ...longTermMemories, // STABLE PREFIX CANDIDATES
+            ...recentHistory     // DYNAMIC SUFFIX
         ];
 
         return {
             messages,
             source: longTermMemories.length > 0 ? 'HYBRID' : 'L2'
         };
+    }
+
+    /**
+     * assemblePrompt
+     * Enforces strict ordering for Prefix Caching:
+     * [System Prompt] + [Tools] + [L3 Memories] + [L2 History]
+     */
+    public assemblePrompt(systemPrompt: string, context: ContextResponse, tools?: string): Message[] {
+        const prefix: Message[] = [];
+
+        // 1. System Prompt (Anchor)
+        if (systemPrompt) {
+            prefix.push({ role: 'system', content: systemPrompt });
+        }
+
+        // 2. Tools (Static Definition)
+        if (tools) {
+            prefix.push({ role: 'system', content: `Available Tools:\n${tools}` });
+        }
+
+        // 3. L3 Memories (Semi-Static Context)
+        // 4. L2 History (Dynamic Suffix)
+        return [...prefix, ...context.messages];
     }
 
     /**

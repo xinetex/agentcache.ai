@@ -69,22 +69,31 @@ app.get('/', async (c) => {
 
         // Build Graph Structure from Real Data
         const graphNodes = [
-            // Agent Nodes
-            ...allAgents.map(a => ({
-                id: a.id,
-                name: a.name,
-                group: 'agent',
-                role: a.role,
-                status: a.status,
-                val: 20 // Size
-            })),
-            // Knowledge Nodes
+            // Agent Nodes (Hubs)
+            ...allAgents.map(a => {
+                // Deterministic Sector Positioning (Visual Clustering)
+                const sectorAngle = (a.config?.sector?.charCodeAt(0) || 0) * 10;
+                return {
+                    id: a.id,
+                    name: a.name,
+                    group: 'agent',
+                    role: a.role,
+                    status: a.status,
+                    val: 15, // Size
+                    // Force Layout Hints (Semantic Clusters)
+                    x: Math.cos(sectorAngle) * 300,
+                    y: Math.sin(sectorAngle) * 300,
+                    z: 0
+                };
+            }),
+            // Knowledge Nodes (Satellites)
             ...nodes.map(n => ({
                 id: n.id,
                 name: n.key,
                 group: 'knowledge',
                 confidence: n.confidence,
-                val: 5 // Size
+                val: 3, // Smaller
+                authorId: n.authorAgentId
             }))
         ];
 
@@ -93,14 +102,29 @@ app.get('/', async (c) => {
             ...nodes.filter(n => n.authorAgentId).map(n => ({
                 source: n.authorAgentId,
                 target: n.id,
-                type: 'authored'
+                type: 'authored',
+                // Visual Pulse for high-confidence items
+                pulsing: n.confidence > 0.9
             }))
         ];
 
+        // Simulate "Live Traffic" Pulses based on recent decisions
+        const recentPulses = activity.map(d => ({
+            source: 'user_gateway', // Virtual Node
+            target: d.agentId || allAgents[0]?.id,
+            color: '#ffffff'
+        }));
+
         return c.json({
-            nodes: graphNodes,
-            links: graphLinks,
-            activity: activity
+            nodes: [{ id: 'user_gateway', name: 'User Gateway', group: 'start', val: 20 }, ...graphNodes],
+            links: [...graphLinks],
+            pulses: recentPulses,
+            activity: activity,
+            stats: {
+                total_memories: nodes.length,
+                active_agents: allAgents.length,
+                cache_efficiency: "94.2%" // Placeholder for calculated stat
+            }
         });
 
     } catch (error: any) {

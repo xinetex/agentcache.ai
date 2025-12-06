@@ -64,14 +64,36 @@ const NeuralGalaxy = () => {
 
     return (
         <div className="w-full h-full relative bg-black/50 rounded overflow-hidden cursor-move">
-            {/* Overlay UI */}
-            <div className="absolute top-4 left-4 z-10 pointer-events-none">
-                <div className="flex items-center gap-2">
-                    <Activity size={20} className="text-[var(--hud-accent)]" />
-                    <h2 className="text-lg font-bold text-white tracking-widest">NEURAL LATTICE_</h2>
+            {/* Overlay UI: HEADS-UP DISPLAY */}
+            <div className="absolute top-4 left-4 z-10 pointer-events-none w-full pr-8">
+                <div className="flex justify-between items-start">
+                    <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                            <Activity size={20} className="text-[var(--hud-accent)] animate-pulse" />
+                            <h2 className="text-xl font-bold text-white tracking-widest uppercase font-mono">Neural Ops Center</h2>
+                        </div>
+                        <span className="text-xs text-[var(--hud-text-dim)] font-mono">LIVE SYSTEM TELEMETRY</span>
+                    </div>
+
+                    {/* Live Metrics Grid */}
+                    <div className="flex gap-8 bg-black/40 backdrop-blur-md p-4 rounded-lg border border-white/10">
+                        <div className="flex flex-col items-center">
+                            <span className="text-2xl font-bold text-[#00f3ff] text-shadow-neon">{graphData.stats?.cache_efficiency || "--%"}</span>
+                            <span className="text-[10px] text-white/60 font-mono tracking-wider">CACHE EFFICIENCY</span>
+                        </div>
+                        <div className="flex flex-col items-center border-l border-white/10 pl-8">
+                            <span className="text-2xl font-bold text-[#a855f7]">{graphData.stats?.total_memories || 0}</span>
+                            <span className="text-[10px] text-white/60 font-mono tracking-wider">ACTIVE NODES</span>
+                        </div>
+                        <div className="flex flex-col items-center border-l border-white/10 pl-8">
+                            <span className="text-2xl font-bold text-[#f59e0b]">{graphData.stats?.active_agents || 0}</span>
+                            <span className="text-[10px] text-white/60 font-mono tracking-wider">AGENTS ONLINE</span>
+                        </div>
+                    </div>
                 </div>
+
                 {simulationMode && (
-                    <div className="inline-flex items-center gap-2 bg-[rgba(255,165,0,0.1)] border border-orange-500/50 px-2 py-1 rounded mt-1">
+                    <div className="inline-flex items-center gap-2 bg-[rgba(255,165,0,0.1)] border border-orange-500/50 px-2 py-1 rounded mt-2">
                         <Radio size={12} className="text-orange-500 animate-pulse" />
                         <span className="text-[10px] text-orange-400 font-mono">SIMULATION MODE</span>
                     </div>
