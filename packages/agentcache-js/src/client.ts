@@ -1,4 +1,4 @@
-import type { AgentCacheConfig, CacheRequest, CacheResponse, Stats } from './types';
+import type { AgentCacheConfig, CacheRequest, CacheResponse, Stats } from './types.js';
 import fetch from 'node-fetch'; // Polyfill for Node environment if needed, though modern Node has fetch
 
 export class AgentCacheClient {

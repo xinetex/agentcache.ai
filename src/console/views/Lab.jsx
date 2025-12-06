@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import CyberCard from '../components/CyberCard';
+import ParallelCoordinates from '../components/ParallelCoordinates';
 import { FlaskConical, Activity } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 
@@ -33,101 +34,9 @@ export default function Lab() {
         fetchGenomes();
     }, [token]);
 
-    // Render D3 Graph
-    useEffect(() => {
-        if (!selectedGenome || !svgRef.current) return;
+    // Render (No Effect, handoff to Component)
+    // useEffect(() => { ... }, [selectedGenome]); discontinued manual d3 effect
 
-        // Clear previous graph
-        const svg = d3.select(svgRef.current);
-        svg.selectAll("*").remove();
-
-        const width = svgRef.current.clientWidth;
-        const height = svgRef.current.clientHeight;
-
-        // Prepare Data
-        const nodes = STATES.map(id => ({ id }));
-        const links = [];
-
-        Object.entries(selectedGenome.transitions).forEach(([source, targets]) => {
-            Object.entries(targets).forEach(([target, prob]) => {
-                if (prob > 0.05) { // Filter low probability noise
-                    links.push({ source, target, value: prob });
-                }
-            });
-        });
-
-        // Simulation
-        const simulation = d3.forceSimulation(nodes)
-            .force("link", d3.forceLink(links).id(d => d.id).distance(150))
-            .force("charge", d3.forceManyBody().strength(-500))
-            .force("center", d3.forceCenter(width / 2, height / 2))
-            .force("collide", d3.forceCollide(50));
-
-        // Draw Elements
-        const link = svg.append("g")
-            .selectAll("line")
-            .data(links)
-            .join("line")
-            .attr("stroke", "#0ea5e9") // Cyan-500
-            .attr("stroke-opacity", d => d.value) // Opacity based on probability
-            .attr("stroke-width", d => d.value * 5);
-
-        const node = svg.append("g")
-            .selectAll("g")
-            .data(nodes)
-            .join("g")
-            .call(d3.drag()
-                .on("start", dragstarted)
-                .on("drag", dragged)
-                .on("end", dragended));
-
-        // Node Circles
-        node.append("circle")
-            .attr("r", 20)
-            .attr("fill", "#0f172a") // Slate-900
-            .attr("stroke", "#0ea5e9")
-            .attr("stroke-width", 2);
-
-        // Node Labels
-        node.append("text")
-            .text(d => d.id)
-            .attr("x", 25)
-            .attr("y", 5)
-            .attr("fill", "#94a3b8") // Slate-400
-            .attr("font-size", "12px")
-            .attr("font-family", "monospace");
-
-        // Simulation Tick
-        simulation.on("tick", () => {
-            link
-                .attr("x1", d => d.source.x)
-                .attr("y1", d => d.source.y)
-                .attr("x2", d => d.target.x)
-                .attr("y2", d => d.target.y);
-
-            node
-                .attr("transform", d => `translate(${d.x},${d.y})`);
-        });
-
-        // Drag Functions
-        function dragstarted(event) {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
-            event.subject.fx = event.subject.x;
-            event.subject.fy = event.subject.y;
-        }
-
-        function dragged(event) {
-            event.subject.fx = event.x;
-            event.subject.fy = event.y;
-        }
-
-        function dragended(event) {
-            if (!event.active) simulation.alphaTarget(0);
-            event.subject.fx = null;
-            event.subject.fy = null;
-        }
-
-    }, [selectedGenome]);
 
     return (
         <div className="h-[calc(100vh-8rem)] flex gap-6">
@@ -172,25 +81,28 @@ export default function Lab() {
                     <div className="absolute top-4 left-4 z-10 pointer-events-none">
                         <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
                             <Activity size={20} className="text-[var(--hud-accent)]" />
-                            Genome Visualization
+                            Multi-Objective Fitness Landscape
                         </h1>
-                        <p className="text-[var(--hud-text-dim)] text-xs font-mono">Markov Chain Probability Matrix</p>
+                        <p className="text-[var(--hud-text-dim)] text-xs font-mono">Parallel Coordinates: Generation vs Fitness vs Complexity</p>
                     </div>
 
-                    {/* D3 Container */}
-                    <svg ref={svgRef} className="w-full h-full cursor-grab active:cursor-grabbing bg-black/50"></svg>
-
-                    {/* Legend */}
-                    <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur border border-[var(--hud-border)] p-4 rounded max-w-xs text-xs text-[var(--hud-text-dim)]">
-                        <h3 className="text-white font-bold mb-2">Structure Analysis</h3>
-                        <p className="mb-2 leading-relaxed">
-                            Thicker lines indicate higher transition probability.
-                            This genome favors <span className="text-[var(--hud-accent)]">L1 &rarr; L3</span> transitions.
-                        </p>
-                        <div className="flex items-center gap-2 mt-2">
-                            <div className="w-2 h-2 rounded-full bg-[var(--hud-accent)]"></div>
-                            <span>High Probability</span>
-                        </div>
+                    {/* Parallel Coordinates Visualization */}
+                    <div className="w-full h-full pt-16 pb-8 px-8 bg-black/50">
+                        {genomes.length > 0 ? (
+                            <ParallelCoordinates
+                                data={genomes.map(g => ({
+                                    ...g,
+                                    generation: g.generation,
+                                    fitness: g.fitness,
+                                    complexity: Math.random() * 100, // Mock metric if missing
+                                    latency: Math.random() * 500 // Mock metric if missing
+                                }))}
+                                dimensions={['generation', 'fitness', 'complexity', 'latency']}
+                                colorBy="fitness"
+                            />
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-[var(--hud-text-dim)]">awaiting genome data...</div>
+                        )}
                     </div>
                 </CyberCard>
             </div>

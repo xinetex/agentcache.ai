@@ -1,9 +1,17 @@
 {
     "name": "agentcache-js",
     "version": "1.0.0",
-    "description": "Official JavaScript/TypeScript Client for AgentCache.ai",
+    "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "require": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        },
+        "./src/*": "./src/*.ts"
+    },
     "scripts": {
         "build": "tsc",
         "prepublishOnly": "npm run build"

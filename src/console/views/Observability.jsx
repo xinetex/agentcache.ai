@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Eye, Activity, GitCommit, ArrowRight, Terminal } from 'lucide-react';
 import CyberCard from '../components/CyberCard';
+import AgentChord from '../components/AgentChord';
 import { useAuth } from '../auth/AuthContext';
 
 export default function Observability() {
@@ -82,8 +83,25 @@ export default function Observability() {
             </div>
 
             {/* Left: Decision Stream */}
-            <div className="w-1/3 min-w-[300px] flex flex-col">
-                <CyberCard title="Decision Stream" icon={Activity} className="h-full flex flex-col">
+            <div className="w-1/3 min-w-[300px] flex flex-col gap-4">
+                <CyberCard className="flex-0">
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setSelectedDecision(null)}
+                            className={`flex-1 py-2 text-xs font-bold rounded ${!selectedDecision ? 'bg-[var(--hud-accent)] text-black' : 'bg-black/40 text-[var(--hud-text-dim)] hover:text-white'}`}
+                        >
+                            SYSTEM CHORD
+                        </button>
+                        <button
+                            onClick={() => setSelectedDecision({})}
+                            className={`flex-1 py-2 text-xs font-bold rounded ${selectedDecision ? 'bg-[var(--hud-accent)] text-black' : 'bg-black/40 text-[var(--hud-text-dim)] hover:text-white'}`}
+                        >
+                            STREAM
+                        </button>
+                    </div>
+                </CyberCard>
+
+                <CyberCard title="Decision Stream" icon={Activity} className="flex-1 flex flex-col min-h-0">
                     <div className="flex-1 overflow-y-auto pr-2 space-y-2 custom-scrollbar">
                         {loading && <div className="p-4 text-center text-[var(--hud-text-dim)]">Loading stream...</div>}
 
@@ -114,49 +132,74 @@ export default function Observability() {
                 </CyberCard>
             </div>
 
-            {/* Right: Inspection Panel */}
+            {/* Right: Inspection / Visualization Panel */}
             <div className="flex-1 flex flex-col">
-                <CyberCard title="Trace Inspector" icon={Eye} className="h-full flex flex-col">
-                    {selectedDecision ? (
-                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-
-                            {/* Header Info */}
-                            <div className="flex items-center gap-4 pb-4 border-b border-[rgba(255,255,255,0.05)]">
-                                <div className="w-12 h-12 rounded bg-[rgba(0,243,255,0.1)] flex items-center justify-center border border-[var(--hud-accent)]">
-                                    <GitCommit size={24} className="text-[var(--hud-accent)]" />
-                                </div>
-                                <div>
-                                    <h2 className="text-xl font-bold text-white">{selectedDecision.action}</h2>
-                                    <p className="text-xs font-mono text-[var(--hud-text-dim)]">ID: {selectedDecision.id}</p>
-                                </div>
+                <CyberCard title={!selectedDecision ? "Agent Collaboration Topology" : "Trace Inspector"} icon={!selectedDecision ? GitCommit : Eye} className="h-full flex flex-col">
+                    {!selectedDecision ? (
+                        <div className="w-full h-full relative p-4">
+                            {/* Chord Diagram with Mock Matrix if no real stats yet */}
+                            <AgentChord
+                                matrix={[
+                                    [0, 5, 8, 2, 0],
+                                    [5, 0, 3, 1, 0],
+                                    [8, 3, 0, 4, 6],
+                                    [2, 1, 4, 0, 2],
+                                    [0, 0, 6, 2, 0]
+                                ]}
+                                agents={[
+                                    { name: 'Core Router' },
+                                    { name: 'Finance Agent' },
+                                    { name: 'Legal Analyst' },
+                                    { name: 'Coder Bot' },
+                                    { name: 'Creative Unit' }
+                                ]}
+                            />
+                            <div className="absolute bottom-4 left-4 text-[var(--hud-text-dim)] text-xs font-mono bg-black/80 p-2 rounded border border-[var(--hud-border)]">
+                                Inter-Agent Signal Volume (Last 1hr)
                             </div>
-
-                            {/* Reasoning Chain */}
-                            <div>
-                                <h3 className="text-xs font-bold text-[var(--hud-accent)] uppercase tracking-wider mb-2 flex items-center gap-2">
-                                    <ArrowRight size={14} /> Reasoning Chain
-                                </h3>
-                                <div className="p-4 rounded bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.05)] font-mono text-sm text-white leading-relaxed">
-                                    {selectedDecision.reasoning}
-                                </div>
-                            </div>
-
-                            {/* Outcome Data */}
-                            <div className="flex-1">
-                                <h3 className="text-xs font-bold text-[var(--hud-success)] uppercase tracking-wider mb-2 flex items-center gap-2">
-                                    <Terminal size={14} /> Execution Outcome
-                                </h3>
-                                <div className="p-4 rounded bg-black border border-[rgba(255,255,255,0.1)] font-mono text-xs text-[var(--hud-success)] overflow-x-auto">
-                                    <pre>{JSON.stringify(selectedDecision.outcome, null, 2)}</pre>
-                                </div>
-                            </div>
-
                         </div>
                     ) : (
-                        <div className="h-full flex flex-col items-center justify-center text-[var(--hud-text-dim)] opacity-50">
-                            <Activity size={64} className="mb-4 animate-pulse" />
-                            <p className="font-['Rajdhani'] text-lg tracking-wide">SELECT A TRACE TO INSPECT</p>
-                        </div>
+                        Object.keys(selectedDecision).length === 0 ? (
+                            <div className="h-full flex flex-col items-center justify-center text-[var(--hud-text-dim)] opacity-50">
+                                <Activity size={64} className="mb-4 animate-pulse" />
+                                <p className="font-['Rajdhani'] text-lg tracking-wide">SELECT A TRACE TO INSPECT</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+
+                                {/* Header Info */}
+                                <div className="flex items-center gap-4 pb-4 border-b border-[rgba(255,255,255,0.05)]">
+                                    <div className="w-12 h-12 rounded bg-[rgba(0,243,255,0.1)] flex items-center justify-center border border-[var(--hud-accent)]">
+                                        <GitCommit size={24} className="text-[var(--hud-accent)]" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-bold text-white">{selectedDecision.action}</h2>
+                                        <p className="text-xs font-mono text-[var(--hud-text-dim)]">ID: {selectedDecision.id}</p>
+                                    </div>
+                                </div>
+
+                                {/* Reasoning Chain */}
+                                <div>
+                                    <h3 className="text-xs font-bold text-[var(--hud-accent)] uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <ArrowRight size={14} /> Reasoning Chain
+                                    </h3>
+                                    <div className="p-4 rounded bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.05)] font-mono text-sm text-white leading-relaxed">
+                                        {selectedDecision.reasoning}
+                                    </div>
+                                </div>
+
+                                {/* Outcome Data */}
+                                <div className="flex-1">
+                                    <h3 className="text-xs font-bold text-[var(--hud-success)] uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <Terminal size={14} /> Execution Outcome
+                                    </h3>
+                                    <div className="p-4 rounded bg-black border border-[rgba(255,255,255,0.1)] font-mono text-xs text-[var(--hud-success)] overflow-x-auto">
+                                        <pre>{JSON.stringify(selectedDecision.outcome, null, 2)}</pre>
+                                    </div>
+                                </div>
+
+                            </div>
+                        )
                     )}
                 </CyberCard>
             </div>

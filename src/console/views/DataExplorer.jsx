@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Database, Activity, Search, Server, ArrowRight, Layers } from 'lucide-react';
 import CyberCard from '../components/CyberCard';
 import DataGrid from '../components/DataGrid';
+import KnowledgeCloud from '../components/KnowledgeCloud';
 import StatDial from '../components/StatDial';
 
 export default function DataExplorer() {
@@ -140,20 +141,35 @@ export default function DataExplorer() {
 
                 {/* INSPECTOR TAB */}
                 {activeTab === 'inspector' && (
-                    <CyberCard title="Global Knowledge Graph" icon={Database} className="h-full flex flex-col animate-in fade-in slide-in-from-bottom-4">
-                        <div className="flex-1 overflow-hidden">
-                            <DataGrid
-                                columns={[
-                                    { header: 'ID', accessor: 'id', render: r => <span className="font-mono text-xs text-[var(--hud-text-dim)]">{r.id.substring(0, 8)}...</span> },
-                                    { header: 'Prompt / Query', accessor: 'prompt', render: r => <span className="text-white truncate max-w-[300px] block">{r.prompt}</span> },
-                                    { header: 'Vector', accessor: 'embedding', render: r => <span className="font-mono text-xs text-[var(--hud-accent)]">[{r.embedding?.length || 1536} dims]</span> },
-                                    { header: 'Verified', accessor: 'lastVerifiedAt', render: r => <span className="text-xs text-[var(--hud-text-dim)]">{new Date(r.lastVerifiedAt).toLocaleDateString()}</span> }
-                                ]}
-                                data={nodes}
-                            />
-                            {loading && <div className="p-4 text-center text-[var(--hud-accent)] animate-pulse">Scanning Neural Lattice...</div>}
+                    <div className="h-full grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4">
+                        {/* Visualization Panel */}
+                        <div className="lg:col-span-2 flex flex-col">
+                            <CyberCard title="Knowledge Lattice (Public/Community)" icon={Activity} className="flex-1 relative overflow-hidden p-0">
+                                <div className="absolute top-0 left-0 w-full h-full">
+                                    <KnowledgeCloud nodes={nodes} />
+                                </div>
+                                {loading && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20 backdrop-blur-sm">
+                                        <div className="text-[var(--hud-accent)] animate-pulse font-mono">SCANNING SECTOR...</div>
+                                    </div>
+                                )}
+                            </CyberCard>
                         </div>
-                    </CyberCard>
+
+                        {/* Data Grid Panel */}
+                        <CyberCard title="Node Inspector" icon={Database} className="h-full flex flex-col">
+                            <div className="flex-1 overflow-hidden">
+                                <DataGrid
+                                    columns={[
+                                        { header: 'ID', accessor: 'id', render: r => <span className="font-mono text-xs text-[var(--hud-text-dim)]">{r.id.substring(0, 6)}...</span> },
+                                        { header: 'Key / Topic', accessor: 'key', render: r => <span className="text-white truncate max-w-[150px] block">{r.key || r.prompt || 'Untitled'}</span> },
+                                        { header: 'Conf.', accessor: 'confidence', render: r => <span className="text-[var(--hud-success)] font-mono">{(r.confidence * 100).toFixed(0)}%</span> }
+                                    ]}
+                                    data={nodes}
+                                />
+                            </div>
+                        </CyberCard>
+                    </div>
                 )}
 
                 {/* EMBEDDINGS TAB */}
