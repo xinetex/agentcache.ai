@@ -1,0 +1,10 @@
+{
+  "name": "my-agent-project",
+  "version": "1.0.0",
+  "pipeline": {
+    "default": {
+      "model": "gpt-4o",
+      "ttl": 3600
+    }
+  }
+}

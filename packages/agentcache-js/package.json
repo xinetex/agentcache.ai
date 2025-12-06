@@ -1,0 +1,23 @@
+{
+    "name": "agentcache-js",
+    "version": "1.0.0",
+    "description": "Official JavaScript/TypeScript Client for AgentCache.ai",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "prepublishOnly": "npm run build"
+    },
+    "keywords": [
+        "agentcache",
+        "ai",
+        "cache",
+        "llm",
+        "sdk"
+    ],
+    "author": "AgentCache Team",
+    "license": "MIT",
+    "devDependencies": {
+        "typescript": "^5.0.0"
+    }
+}

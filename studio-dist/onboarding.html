@@ -14,105 +14,15 @@
       min-height: 100vh;
     }
   </style>
+  <script type="module" crossorigin src="/assets/onboarding-DyaHuVZG.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
+  <link rel="modulepreload" crossorigin href="/assets/client-DwJ0wxic.js">
+  <link rel="stylesheet" crossorigin href="/assets/onboarding-CVDkYzXw.css">
 </head>
 
 <body>
   <div id="onboarding-root"></div>
 
-  <script type="module">
-    import React from 'https://esm.sh/react@18.2.0';
-    import ReactDOM from 'https://esm.sh/react-dom@18.2.0/client';
-    import CustomerPortalWizard from '/src/components/CustomerPortalWizard.jsx';
-
-    // Check authentication
-    const authToken = localStorage.getItem('agentcache_token');
-    if (!authToken) {
-      window.location.href = '/login.html?redirect=/onboarding.html';
-    }
-
-    // Handle completion
-    function handleOnboardingComplete(data) {
-      console.log('Onboarding completed:', data);
-
-      // Show success modal with API key
-      const modalHtml = `
-        <div id="successModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-          <div class="w-full max-w-lg rounded-2xl border border-emerald-500/50 bg-slate-900 shadow-2xl">
-            <div class="border-b border-slate-800 bg-gradient-to-r from-emerald-600/20 to-sky-600/20 px-6 py-4">
-              <h2 class="text-2xl font-bold text-white">🎉 Welcome to AgentCache!</h2>
-              <p class="text-sm text-slate-300 mt-1">Your workspace is ready</p>
-            </div>
-            
-            <div class="p-6 space-y-4">
-              <div class="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4">
-                <p class="text-sm font-semibold text-emerald-300 mb-2">💰 Projected Savings</p>
-                <p class="text-3xl font-bold text-emerald-400">$${data.projectedSavings.toLocaleString()}<span class="text-lg text-slate-400">/month</span></p>
-              </div>
-              
-              <div>
-                <p class="text-sm font-semibold text-slate-300 mb-2">📋 Your Starter Pipeline</p>
-                <p class="text-sm text-slate-400">${data.pipeline.description}</p>
-                <div class="mt-2 flex flex-wrap gap-1">
-                  ${data.pipeline.nodes.map(n => `<span class="inline-flex items-center rounded-full bg-slate-700/50 px-2 py-1 text-xs text-slate-300">${n.label}</span>`).join('')}
-                </div>
-              </div>
-              
-              <div class="rounded-xl border border-sky-500/40 bg-slate-800/50 p-4">
-                <div class="flex items-center justify-between mb-2">
-                  <p class="text-sm font-semibold text-sky-300">🔑 Your API Key</p>
-                  <button onclick="copyToClipboard('${data.apiKey}')" class="text-xs text-sky-400 hover:text-sky-300">Copy</button>
-                </div>
-                <code class="block text-xs font-mono text-slate-300 break-all bg-slate-900 p-2 rounded">${data.apiKey}</code>
-                <p class="text-xs text-amber-300 mt-2">⚠️ Save this key now - it won't be shown again!</p>
-              </div>
-              
-              <div class="grid grid-cols-3 gap-3 text-center">
-                <div>
-                  <p class="text-xs text-slate-500">Hit Rate</p>
-                  <p class="text-lg font-bold text-emerald-400">${Math.round(data.pipeline.estimatedHitRate * 100)}%</p>
-                </div>
-                <div>
-                  <p class="text-xs text-slate-500">Latency</p>
-                  <p class="text-lg font-bold text-sky-400">${data.pipeline.avgLatency}ms</p>
-                </div>
-                <div>
-                  <p class="text-xs text-slate-500">Compliance</p>
-                  <p class="text-lg font-bold text-purple-400">${data.pipeline.compliance?.join(', ') || 'Standard'}</p>
-                </div>
-              </div>
-            </div>
-            
-            <div class="border-t border-slate-800 px-6 py-4 bg-slate-900/50">
-              <a href="${data.dashboard_url}" class="block w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-sky-600 rounded-lg text-center text-sm font-semibold text-white hover:from-emerald-500 hover:to-sky-500">
-                Go to Workspace →
-              </a>
-            </div>
-          </div>
-        </div>
-      `;
-
-      document.body.insertAdjacentHTML('beforeend', modalHtml);
-    }
-
-    function handleClose() {
-      // User canceled onboarding
-      window.location.href = '/studio.html';
-    }
-
-    window.copyToClipboard = function (text) {
-      navigator.clipboard.writeText(text);
-      alert('API key copied to clipboard!');
-    };
-
-    // Render wizard
-    const root = ReactDOM.createRoot(document.getElementById('onboarding-root'));
-    root.render(
-      React.createElement(CustomerPortalWizard, {
-        onComplete: handleOnboardingComplete,
-        onClose: handleClose
-      })
-    );
-  </script>
 </body>
 
 </html>

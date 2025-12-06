@@ -67,15 +67,28 @@ class MockRedis {
 
 let client: any;
 
-if (REDIS_URL === 'mock' || REDIS_URL === 'redis://mock:6379') {
+if (REDIS_URL === 'mock' || REDIS_URL === 'redis://mock:6379' || (REDIS_URL && REDIS_URL.includes('@mock:')) || process.env.NODE_ENV === 'test') {
   client = new MockRedis();
 } else if (!REDIS_URL) {
-  console.error('❌ REDIS_URL not configured');
-  process.exit(1);
+  // If no URL and not test/mock, we warn but fallback to mock to prevent crash in dev
+  console.warn('⚠️ REDIS_URL not configured. Using In-Memory Mock Redis.');
+  client = new MockRedis();
 } else {
-  client = new (Redis as any)(REDIS_URL);
-  client.on('connect', () => console.log('✅ Redis connected'));
-  client.on('error', (err: Error) => console.error('❌ Redis error:', err));
+  try {
+    client = new (Redis as any)(REDIS_URL, {
+      maxRetriesPerRequest: 1, // Fail fast if config is bad
+      retryStrategy: (times) => {
+        if (times > 3) return null; // Stop retrying
+        return Math.min(times * 50, 2000);
+      }
+    });
+    client.on('connect', () => console.log('✅ Redis connected'));
+    // Suppress hard crash on error
+    client.on('error', (err: Error) => console.warn('Redis Connection Warning:', err.message));
+  } catch (e) {
+    console.warn('Failed to init Redis, falling back to mock', e);
+    client = new MockRedis();
+  }
 }
 
 // Redis client
