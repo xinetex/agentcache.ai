@@ -2,16 +2,84 @@ import Redis from 'ioredis';
 
 const REDIS_URL = process.env.REDIS_URL || process.env.UPSTASH_REDIS_URL;
 
-if (!REDIS_URL) {
+class MockRedis {
+  private data = new Map<string, any>();
+
+  constructor() {
+    console.log('⚠️ Using In-Memory Mock Redis');
+  }
+
+  on(event: string, cb: any) { return this; }
+
+  async rpush(key: string, val: string) {
+    if (!this.data.has(key)) this.data.set(key, []);
+    this.data.get(key).push(val);
+  }
+  async ltrim(key: string, start: number, end: number) { }
+  async expire(key: string, ttl: number) { }
+  async lrange(key: string, start: number, end: number) {
+    return this.data.get(key) || [];
+  }
+
+  // Sorted Sets (for PredictiveSynapse)
+  async zadd(key: string, ...args: (string | number)[]) {
+    // Mock: store as simple array, ignore score for now or implement proper zset if needed
+    if (!this.data.has(key)) this.data.set(key, new Map());
+    const zset = this.data.get(key);
+    // args is [score, member, score, member...]
+    for (let i = 0; i < args.length; i += 2) {
+      zset.set(args[i + 1], Number(args[i]));
+    }
+  }
+  async zincrby(key: string, increment: number, member: string) {
+    if (!this.data.has(key)) this.data.set(key, new Map());
+    const zset = this.data.get(key);
+    const old = zset.get(member) || 0;
+    zset.set(member, old + increment);
+    return old + increment;
+  }
+  async zrange(key: string, start: number, stop: number) {
+    // Return keys sorted by score asc (default)
+    if (!this.data.has(key)) return [];
+    const zset = this.data.get(key);
+    const entries = Array.from(zset.entries()).sort((a: any, b: any) => a[1] - b[1]); // ASC sort
+    const sliced = entries.slice(start, stop === -1 ? undefined : stop + 1);
+    return sliced.map(x => x[0]);
+  }
+
+  async zrevrange(key: string, start: number, stop: number, withScores?: string) {
+    // Return keys sorted by score desc
+    if (!this.data.has(key)) return [];
+    const zset = this.data.get(key);
+    // Sort entries
+    const entries = Array.from(zset.entries()).sort((a: any, b: any) => b[1] - a[1]);
+    const sliced = entries.slice(start, stop === -1 ? undefined : stop + 1);
+
+    if (withScores) {
+      return sliced.flatMap(x => x);
+    }
+    return sliced.map(x => x[0]);
+  }
+
+  async get(key: string) { return this.data.get(key); }
+  async set(key: string, val: string) { this.data.set(key, val); }
+}
+
+let client: any;
+
+if (REDIS_URL === 'mock' || REDIS_URL === 'redis://mock:6379') {
+  client = new MockRedis();
+} else if (!REDIS_URL) {
   console.error('❌ REDIS_URL not configured');
   process.exit(1);
+} else {
+  client = new (Redis as any)(REDIS_URL);
+  client.on('connect', () => console.log('✅ Redis connected'));
+  client.on('error', (err: Error) => console.error('❌ Redis error:', err));
 }
 
 // Redis client
-export const redis = new (Redis as any)(REDIS_URL);
-
-redis.on('connect', () => console.log('✅ Redis connected'));
-redis.on('error', (err: Error) => console.error('❌ Redis error:', err));
+export const redis = client;
 
 /**
  * Append a message to a session's conversation history (L2 Cache)

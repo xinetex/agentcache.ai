@@ -42,74 +42,85 @@ export default async function handler(req) {
     const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
     if (!redisUrl || !redisToken) return json({ error: 'Redis not configured' }, 500);
 
-    // Scenario selection
-    // 0: repeat exact (expected hit after first time)
-    // 1: small variation (miss → set)
-    // 2: gated private namespace (403 expected on free)
-    // 3: short TTL churn (set with small ttl, then re-get)
-    const scenario = Math.random() < 0.6 ? 0 : Math.random() < 0.8 ? 1 : Math.random() < 0.9 ? 2 : 3;
-
-    const base = pick(BASE_PROMPTS);
-    const variantSuffix = Math.random().toString(36).slice(2, 6);
-    const prompt = scenario === 1 ? `${base} ${variantSuffix}` : base;
-
-    const body = {
-      provider: 'openai',
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-    };
-
-    let result = { tier: 'L2', hit: false, status: 0, scenario };
-    const headers = { 'Content-Type': 'application/json', 'X-API-Key': apiKey };
-
-    if (scenario === 2) {
-      // Private namespace gate
-      const res = await fetch(`${API_BASE}/api/cache/set`, {
-        method: 'POST', headers,
-        body: JSON.stringify({ ...body, ttl: 60, response: 'gate-check', namespace: 'private_ns' }),
-      });
-      result.status = res.status;
-      result.hit = false;
-      result.gated = res.status === 403;
-    } else {
-      // Try get
-      const getRes = await fetch(`${API_BASE}/api/cache/get`, {
-        method: 'POST', headers, body: JSON.stringify(body),
-      });
-      result.status = getRes.status;
-      if (getRes.ok) {
-        const js = await getRes.json().catch(() => ({}));
-        result.hit = !!js.hit;
-      }
-      if (!getRes.ok) {
-        // Miss → set
-        const setRes = await fetch(`${API_BASE}/api/cache/set`, {
-          method: 'POST', headers,
-          body: JSON.stringify({ ...body, ttl: scenario === 3 ? 15 : 120, response: `ok:${base}` }),
-        });
-        result.setStatus = setRes.status;
-      }
-    }
-
-    // Update metrics in Redis (pipeline)
-    const now = Date.now();
-    const incrs = [];
-    incrs.push(['INCR', 'game:total']);
-    if (scenario === 2) incrs.push(['INCR', 'game:gated']);
-    if (result.hit) incrs.push(['INCR', 'game:hits']); else incrs.push(['INCR', 'game:misses']);
-    // Track tier distribution (we only use L2 today)
-    incrs.push(['INCR', result.hit ? 'game:l2' : 'game:llm']);
-    // Rolling window timestamps
-    incrs.push(['LPUSH', 'game:events', JSON.stringify({ t: now, scenario, base, prompt, hit: result.hit, status: result.status })]);
-    incrs.push(['LTRIM', 'game:events', '0', '99']);
-
-    await fetch(redisUrl, {
+    // 1. Fetch Active Genome (DNA) from Evolution Engine
+    const evoRes = await fetch(`${API_BASE}/api/game/evolution`, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${redisToken}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ commands: incrs })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get_active' })
     });
 
-    return json({ success: true, result });
+    let genome;
+    if (evoRes.ok) {
+      const data = await evoRes.json();
+      genome = data.genome;
+    }
+
+    // Fallback to random if no population
+    if (!genome) {
+      genome = { id: 'random_fallback', l1: { ttl: 60 }, model: { provider: 'openai' } };
+    }
+
+    // 2. Execute Simulation using Genome Config
+    const base = pick(BASE_PROMPTS);
+    const prompt = `${base} ${Math.random().toString(36).slice(2, 6)}`;
+
+    // Simulate latency based on Genome (Mocking the "Effect" of genes)
+    // In a real system, we'd configure the actual cache with these params.
+    // Here we simulate the performance characteristics to train the GA.
+
+    let latencyMs = 0;
+    let hit = false;
+
+    // Simulation Logic (The "Physics" of the Game)
+    // L1 hit?
+    if (genome.l1?.enabled && Math.random() < 0.8) {
+      latencyMs = 5;
+      hit = true;
+    }
+    // L2 hit? (if L1 missed)
+    else if (genome.l2?.enabled && Math.random() < 0.6) {
+      latencyMs = 50;
+      hit = true;
+    }
+    // LLM Call (Miss)
+    else {
+      latencyMs = genome.model?.provider === 'anthropic' ? 800 : 500;
+      hit = false;
+    }
+
+    // 3. Report Metrics back to Evolution Engine (Fitness Feedback)
+    // We store this in Redis so the `evolve` step can read it.
+    const METRICS_KEY = 'game:evolution:metrics';
+
+    // Fetch current metrics for this genome
+    const currentMetricsRes = await fetch(`${redisUrl}/hget/${METRICS_KEY}/${genome.id}`, {
+      headers: { Authorization: `Bearer ${redisToken}` }
+    });
+
+    let currentMetrics = { hits: 0, misses: 0, avgLatency: 0, count: 0 };
+    if (currentMetricsRes.ok) {
+      const raw = await currentMetricsRes.json();
+      if (raw.result) currentMetrics = JSON.parse(raw.result);
+    }
+
+    // Update Accumulator
+    currentMetrics.count++;
+    if (hit) currentMetrics.hits++; else currentMetrics.misses++;
+    // Rolling Average
+    currentMetrics.avgLatency = ((currentMetrics.avgLatency * (currentMetrics.count - 1)) + latencyMs) / currentMetrics.count;
+
+    // Save back
+    await fetch(`${redisUrl}/hset/${METRICS_KEY}/${genome.id}/${JSON.stringify(currentMetrics)}`, {
+      headers: { Authorization: `Bearer ${redisToken}` }
+    });
+
+    return json({
+      success: true,
+      genomeId: genome.id,
+      generation: genome.generation,
+      result: { hit, latencyMs }
+    });
+
   } catch (e) {
     return json({ error: e.message }, 500);
   }

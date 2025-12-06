@@ -1,4 +1,5 @@
 import { vectorIndex } from './vector.js';
+import { createHash } from 'crypto';
 
 export interface SemanticCacheResult {
     hit: boolean;
@@ -62,13 +63,10 @@ export class SemanticRouter {
         if (!this.index) return;
 
         try {
-            // Use a deterministic ID based on the query to avoid duplicates?
-            // Or just a random UUID? For semantic cache, we might want to overwrite exact matches,
-            // but "fuzzy" matches are distinct entries.
-            // Let's use a random ID for now, relying on the vector search to find the closest.
-            // In a production system, we might want to prune nearby vectors to keep the index clean.
-
-            const id = crypto.randomUUID();
+            // Use Deterministic ID (Content-Addressable)
+            // SHA-256 of the normalized query ensures that the same query always gets the same ID.
+            // This prevents duplicate entries for the exact same semantic query and allows overwriting.
+            const id = createHash('sha256').update(query.trim()).digest('hex');
 
             await this.index.upsert({
                 id,
