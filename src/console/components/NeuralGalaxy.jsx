@@ -86,40 +86,38 @@ const NeuralGalaxy = () => {
             )}
 
             {/* 3D Graph */}
-            <ForceGraph3D
-                ref={fgRef}
-                graphData={graphData}
-                nodeLabel="name"
-                nodeColor={getNodeColor}
-                nodeVal={node => node.val || 5}
-                nodeResolution={16} // High detail spheres
-
-                // Links
-                linkColor={() => 'rgba(0, 243, 255, 0.15)'}
-                linkWidth={1}
-                linkDirectionalParticles={2}
-                linkDirectionalParticleSpeed={0.005}
-                linkDirectionalParticleWidth={2}
-                linkDirectionalParticleColor={() => '#00f3ff'}
-
-                // Environment
-                backgroundColor="rgba(0,0,0,0)" // Transparent, let parent BG show through
-                showNavInfo={false}
-                bloomStrength={1.5}
-
-                // Interaction
-                enableNodeDrag={false}
-                onNodeClick={node => {
-                    const distance = 100;
-                    const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
-
-                    fgRef.current.cameraPosition(
-                        { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio },
-                        node,
-                        3000
-                    );
-                }}
-            />
+            {/* 3D Graph - Only render if we have data to prevent crash */}
+            {graphData.nodes.length > 0 && (
+                <ForceGraph3D
+                    ref={fgRef}
+                    graphData={graphData}
+                    nodeLabel="name"
+                    nodeColor={getNodeColor}
+                    nodeVal={node => node.val || 5}
+                    nodeResolution={16}
+                    linkColor={() => 'rgba(0, 243, 255, 0.15)'}
+                    linkWidth={1}
+                    linkDirectionalParticles={2}
+                    linkDirectionalParticleSpeed={0.005}
+                    linkDirectionalParticleWidth={2}
+                    linkDirectionalParticleColor={() => '#00f3ff'}
+                    backgroundColor="rgba(0,0,0,0)"
+                    showNavInfo={false}
+                    bloomStrength={1.5}
+                    enableNodeDrag={false}
+                    onNodeClick={node => {
+                        const distance = 100;
+                        const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
+                        if (fgRef.current) {
+                            fgRef.current.cameraPosition(
+                                { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio },
+                                node,
+                                3000
+                            );
+                        }
+                    }}
+                />
+            )}
 
             {/* Legend */}
             <div className="absolute bottom-4 left-4 z-10 pointer-events-none bg-black/60 backdrop-blur p-2 rounded border border-white/10">

@@ -46,6 +46,8 @@ import explorerRouter from './api/explorer.js';
 import governanceRouter from './api/governance.js';
 import labRouter from './api/lab.js';
 import authRouter from './api/auth.js';
+import adminStatsRouter from './api/admin-stats.js';
+import eventsRouter from './api/events.js';
 
 app.post('/api/provision', provisionClient);
 app.get('/api/provision/:api_key', getApiKeyInfo);
@@ -55,11 +57,14 @@ app.post('/api/provision/jettythunder', provisionJettyThunder);
 app.route('/api/auth', authRouter);
 
 // Mount Decisions & Galaxy API
+// Mount Decisions & Galaxy API
 app.route('/api/decisions', decisionsRouter);
 app.route('/api/galaxy', galaxyRouter);
 app.route('/api/explorer', explorerRouter);
 app.route('/api/governance', governanceRouter);
 app.route('/api/lab', labRouter);
+app.route('/api/admin-stats', adminStatsRouter);
+app.route('/api/events', eventsRouter);
 
 // Serve static files (landing page - defaults to community.html)
 app.get('/', (c) => {
