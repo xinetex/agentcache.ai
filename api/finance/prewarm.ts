@@ -41,15 +41,26 @@ export default async function handler(req: Request) {
         const start = Date.now();
         const jobId = `prewarm:${Date.now()}:${Math.random().toString(36).substr(2, 5)}`;
 
-        // In a real HFT system, this would push to a high-priority queue (e.g., Kafka/Redis Stream)
-        // For this demo, we'll simulate the "Fire and Forget" dispatch to the Swarm Grid
+        // Dispatch to High-Priority Queue (Redis)
+        const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
+        const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
-        // Simulate dispatch latency
+        if (UPSTASH_URL && UPSTASH_TOKEN) {
+            try {
+                // We use raw fetch or minimal client to keep cold start low for HFT
+                await fetch(`${UPSTASH_URL}/lpush/queue:finance:prewarm/${encodeURIComponent(JSON.stringify({ jobId, scenarios, priority, timestamp: Date.now() }))}`, {
+                    headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
+                });
+            } catch (e) {
+                console.error('Redis Dispatch Failed', e);
+            }
+        }
+
         const dispatchTime = Date.now() - start;
 
         const response = {
             jobId,
-            status: 'dispatched',
+            status: 'dispatched_to_queue', // Updated status
             count: scenarios.length,
             estimated_completion: `${scenarios.length * 50}ms`, // Fast pre-calc
             dispatch_latency: `${dispatchTime}ms`

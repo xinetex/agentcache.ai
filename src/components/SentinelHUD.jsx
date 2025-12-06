@@ -1,25 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { TrustCenter } from '../infrastructure/TrustCenter';
 
-// Mocking the service import for the frontend component since TrustCenter is a backend class
-// In a real app, this would fetch from an API endpoint.
-const mockTelemetry = () => {
-    const now = Date.now();
-    return {
-        active_nodes: 12,
-        threats_blocked: 14205 + Math.floor((now % 100000) / 1000),
-        global_latency_ms: 24 + Math.floor(Math.random() * 5),
-        cache_efficiency: 94.5
-    };
+// Real Telemetry Integration
+const fetchTelemetry = async () => {
+    try {
+        const res = await fetch('/api/telemetry');
+        if (!res.ok) throw new Error('Failed to fetch');
+        return await res.json();
+    } catch (e) {
+        console.warn('Telemetry offline, using fallback', e);
+        return {
+            active_nodes: 0,
+            threats_blocked: 0,
+            global_latency_ms: 0,
+            cache_efficiency: 0
+        };
+    }
 };
 
 export default function SentinelHUD() {
-    const [data, setData] = useState(mockTelemetry());
+    const [data, setData] = useState({
+        active_nodes: 0,
+        threats_blocked: 0,
+        global_latency_ms: 0,
+        cache_efficiency: 0
+    });
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            setData(mockTelemetry());
-        }, 1000);
+        // Initial Fetch
+        fetchTelemetry().then(setData);
+
+        // Polling
+        const interval = setInterval(async () => {
+            const fresh = await fetchTelemetry();
+            setData(fresh);
+        }, 3000); // 3s polling to be nice to the server
         return () => clearInterval(interval);
     }, []);
 

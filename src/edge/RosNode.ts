@@ -102,9 +102,32 @@ export class RosNode {
     }
 
     private async queryHiveVector(query: number[]) {
-        // Mock Cloud Implementation
-        // In Test, we will monkey-patch this.
-        return null;
+        // Connect to Hive API (Upstash Vector)
+        try {
+            const res = await fetch(`${this.hiveUrl}/vector`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'query', vector: query })
+            });
+
+            if (!res.ok) return null;
+
+            const data = await res.json();
+            if (data.matches && data.matches.length > 0) {
+                const match = data.matches[0];
+                return {
+                    engram: {
+                        vector: match.vector || query, // Vector might not be returned if not requested? Checked API, it is if includeVectors true, but we assume metadata has action
+                        action: match.metadata.action
+                    },
+                    similarity: match.score
+                };
+            }
+            return null;
+        } catch (e) {
+            console.error(`[${this.id}] Hive Query Failed:`, e);
+            return null;
+        }
     }
 
     private learn(vector: number[], action: Action) {
@@ -113,7 +136,20 @@ export class RosNode {
     }
 
     private async uploadToHiveVector(vector: number[], action: Action) {
-        // Mock Upload
+        // Asynchronously upload to Cloud Brain
+        try {
+            await fetch(`${this.hiveUrl}/vector`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'upload',
+                    vector,
+                    action
+                })
+            });
+        } catch (e) {
+            console.error(`[${this.id}] Hive Upload Failed:`, e);
+        }
     }
 
     /**
