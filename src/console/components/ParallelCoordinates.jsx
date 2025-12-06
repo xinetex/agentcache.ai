@@ -51,7 +51,7 @@ const ParallelCoordinates = ({ data, dimensions, colorBy = 'fitness' }) => {
         const line = d => d3.line()(dims.map(p => [x(p), y[p](d[p])]));
 
         // Color Scale
-        const color = d3.scaleSequential(d3.interpolateCyan) // Cyberpunk Theme
+        const color = d3.scaleSequential(d3.interpolateCool) // Cyberpunk Theme
             .domain(d3.extent(data, d => d[colorBy]));
 
         // Draw Lines
