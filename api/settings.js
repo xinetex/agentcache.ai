@@ -72,6 +72,9 @@ export default async function handler(req) {
                 semantic_correction: true,
                 cognitive_sentinel: true,
                 constraint_enforcement: true,
+                predictive_logic: true,        // Enable Predictive Synapse (Stage 4)
+                system_2_reasoning: true,      // Enable Meta-Cognition (Stage 7)
+                hive_mind: true,               // Enable Federated Learning (Stage 5)
                 agent_config: {
                     autonomy_level: 'supervised', // supervised | autonomous
                     max_daily_spend: 5.00,
