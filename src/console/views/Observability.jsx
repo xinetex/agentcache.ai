@@ -3,6 +3,7 @@ import { useAuth } from '../auth/AuthContext';
 import { MetricFlux } from '../../components/dashboard/MetricFlux';
 import { LiquidTraceFeed } from '../../components/dashboard/LiquidTraceFeed';
 import { NeuralGlassLayout } from '../../components/dashboard/NeuralGlassLayout';
+import { CognitiveMap } from '../../components/dashboard/CognitiveMap';
 
 export default function Observability() {
     const { token } = useAuth();
@@ -63,9 +64,9 @@ export default function Observability() {
     // Let's use the inner layout structure but responsive.
 
     return (
-        <div className="flex flex-col gap-8 h-full">
+        <div className="flex flex-col gap-6 h-full pb-6">
             {/* Header / HUD Integration */}
-            <div className="flex justify-between items-end border-b border-white/5 pb-4">
+            <div className="flex justify-between items-end border-b border-white/5 pb-2">
                 <div>
                     <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">
                         Neural Glass
@@ -76,13 +77,13 @@ export default function Observability() {
                 </div>
                 <div className="flex gap-2">
                     <span className="px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono animate-pulse">
-                        LIVE
+                        LIVE - CONNECTED
                     </span>
                 </div>
             </div>
 
             {/* Metrics Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 h-[100px]">
                 <MetricFlux
                     label="Cache Hit Rate"
                     value={`${metrics.hitRate}%`}
@@ -113,11 +114,18 @@ export default function Observability() {
                 />
             </div>
 
-            {/* Live Feed */}
-            <div className="flex-1 min-h-[400px]">
-                <LiquidTraceFeed traces={traces} />
+            {/* Main Viz Area: Map + Feed */}
+            <div className="flex-1 flex gap-6 min-h-0">
+                {/* Left: Global Map (The Asset Bank) */}
+                <div className="flex-[2] h-full min-h-[400px]">
+                    <CognitiveMap />
+                </div>
+
+                {/* Right: Live Feed (The Stream) */}
+                <div className="flex-1 h-full min-h-[400px]">
+                    <LiquidTraceFeed traces={traces} />
+                </div>
             </div>
         </div>
     );
 }
-
