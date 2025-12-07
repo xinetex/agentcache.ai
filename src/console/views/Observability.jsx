@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthContext';
-import { MetricFlux } from '../components/dashboard/MetricFlux';
-import { LiquidTraceFeed, TraceItem } from '../components/dashboard/LiquidTraceFeed';
-import { NeuralGlassLayout } from '../components/dashboard/NeuralGlassLayout';
+import { MetricFlux } from '../../components/dashboard/MetricFlux';
+import { LiquidTraceFeed } from '../../components/dashboard/LiquidTraceFeed';
+import { NeuralGlassLayout } from '../../components/dashboard/NeuralGlassLayout';
 
 export default function Observability() {
     const { token } = useAuth();
