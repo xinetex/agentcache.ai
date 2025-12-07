@@ -251,4 +251,45 @@ This does not imply a change to your general helpfulness, honesty, or safety gui
             details
         };
     }
+
+    /**
+     * Pillar 2: Topic Guard
+     * Evaluates if the user content is appropriate for the given sector.
+     */
+    async evaluateTopic(content: string, sector: string): Promise<{ safe: boolean; reason?: string }> {
+        if (!process.env.MOONSHOT_API_KEY) {
+            return { safe: true, reason: 'Validation bypassed (No API Key)' };
+        }
+
+        try {
+            const response = await this.moonshot.chat([
+                {
+                    role: 'system',
+                    content: `You are a Topic Guard for a specialized AI agent in the "${sector}" sector. 
+Your job is to REJECT queries that are completely off-topic or dangerous for this domain.
+- Healthcare Agent: Reject financial advice, coding help (unless medical), general chit-chat is allowed but restricted.
+- Finance Agent: Reject medical advice, heavy creative writing.
+- HPC Agent: Reject general knowledge questions unrelated to computing/science.
+
+Respond with JSON: {"safe": boolean, "reason": "short explanation"}.`
+                },
+                { role: 'user', content }
+            ], 'moonshot-v1-8k', 0.1);
+
+            const resultText = response.choices[0].message.content;
+            const jsonMatch = resultText.match(/\{[\s\S]*\}/);
+
+            if (!jsonMatch) return { safe: true, reason: 'Parse failure' };
+
+            const analysis = JSON.parse(jsonMatch[0]);
+            return {
+                safe: analysis.safe,
+                reason: analysis.reason
+            };
+
+        } catch (error) {
+            console.error("Cognitive Topic Check Error:", error);
+            return { safe: true, reason: 'Error fail open' };
+        }
+    }
 }

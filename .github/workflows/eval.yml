@@ -1,0 +1,49 @@
+name: MaxxEval CI
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      sector:
+        description: 'Sector to evaluate'
+        required: true
+        default: 'healthcare'
+        type: choice
+        options:
+        - healthcare
+        - finance
+        - hpc
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    env:
+      UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+      UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+      API_URL: https://agentcache.ai
+      
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install Dependencies
+        run: npm ci
+        
+      - name: Run EvalRunner
+        id: eval
+        run: npx tsx scripts/run-eval.ts ${{ inputs.sector || 'healthcare' }}
+        
+      - name: Report Results
+        run: |
+          echo "## 📊 Evaluation Results" >> $GITHUB_STEP_SUMMARY
+          echo "View the detailed trace visualization here:" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.eval.outputs.trace_url }}" >> $GITHUB_STEP_SUMMARY
+          
+      - name: Check for Regressions
+        run: echo "Basic smoke test passed. No regression checking implemented yet."

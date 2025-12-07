@@ -1,5 +1,7 @@
 export const config = { runtime: 'edge' };
 
+import { Tracer } from '../src/lib/observability/tracer.js';
+
 // Inline audit logging (simplified to avoid import issues)
 async function logAuditEvent(redis, event) {
   try {
@@ -73,14 +75,18 @@ function json(data, status = 200, complianceInfo = {}) {
     'access-control-allow-methods': 'POST, OPTIONS',
     'access-control-allow-headers': 'Content-Type, Authorization, X-API-Key, X-Cache-Namespace, X-Compliance-Mode',
   };
-  
+
   // Add compliance headers if mode is active
   if (complianceInfo.mode) {
     headers['x-compliance-mode'] = complianceInfo.mode;
     headers['x-data-residency'] = 'US';
     headers['x-provider-region'] = complianceInfo.providerRegion || 'US';
   }
-  
+
+  if (complianceInfo.traceId) {
+    headers['x-trace-id'] = complianceInfo.traceId;
+  }
+
   return new Response(JSON.stringify(data), { status, headers });
 }
 
@@ -143,15 +149,15 @@ const PROVIDER_COMPLIANCE = {
 function checkCompliance(provider, complianceMode) {
   const info = PROVIDER_COMPLIANCE[provider];
   if (!info) {
-    return { 
-      allowed: false, 
+    return {
+      allowed: false,
       reason: `Unknown provider: ${provider}`,
       alternatives: Object.keys(PROVIDER_COMPLIANCE).filter(p => PROVIDER_COMPLIANCE[p].fedramp)
     };
   }
   if (complianceMode === 'fedramp' && info.chinese) {
-    return { 
-      allowed: false, 
+    return {
+      allowed: false,
       reason: 'Chinese AI providers are not authorized in FedRAMP compliance mode',
       provider_region: info.region,
       alternatives: Object.keys(PROVIDER_COMPLIANCE).filter(p => PROVIDER_COMPLIANCE[p].fedramp)
@@ -218,10 +224,32 @@ function streamCachedResponse(text, model) {
   });
 }
 
-export default async function handler(req) {
+export default async function handler(req, ctx) {
   if (req.method === 'OPTIONS') {
     return json({ ok: true });
   }
+
+  // Initialize Tracer
+  // Initialize Tracer
+  const tracer = new Tracer({
+    redisUrl: getEnv().url,
+    redisToken: getEnv().token,
+    webhookUrl: process.env.MAXXEVAL_WEBHOOK_URL
+  });
+
+  // Ensure flush happens in background
+  if (ctx && ctx.waitUntil) {
+    ctx.waitUntil(tracer.flush());
+  } else {
+    // Fallback if no context (shouldn't happen with our server.js update but good safety)
+    // We don't await to avoid latency blocking
+    tracer.flush().catch(console.error);
+  }
+
+  const rootSpan = tracer.startSpan('cache_request', {
+    method: req.method,
+    url: req.url
+  });
 
   try {
     const authn = await auth(req);
@@ -244,14 +272,19 @@ export default async function handler(req) {
     const body = await req.json();
     const { key, value, provider, model, messages, temperature, response, ttl = 60 * 60 * 24 * 7, stream = false, semantic = false, similarity_threshold = 0.95 } = body || {};
 
+    // Add attributes to root span from body
+    rootSpan.attributes.provider = provider;
+    rootSpan.attributes.model = model;
+    rootSpan.attributes.namespace = namespace;
+
     // Check compliance mode
     const complianceMode = req.headers.get('x-compliance-mode'); // 'standard' | 'fedramp'
-    
+
     // Validate provider compliance before processing
     if (provider) {
       const compliance = checkCompliance(provider, complianceMode);
       if (!compliance.allowed) {
-        return json({ 
+        return json({
           error: compliance.reason,
           provider: provider,
           provider_region: compliance.provider_region,
@@ -355,17 +388,19 @@ export default async function handler(req) {
         ttl
       });
 
-      return json({ success: true, key: cacheKey.slice(-16), ttl }, 200, { mode: complianceMode, providerRegion: 'US' });
+      tracer.endSpan(rootSpan);
+      tracer.endSpan(rootSpan);
+      return json({ success: true, key: cacheKey.slice(-16), ttl }, 200, { mode: complianceMode, providerRegion: 'US', traceId: tracer.getTraceId() });
     }
 
     if (req.method === 'POST' && req.url.endsWith('/get')) {
       const startL1Check = Date.now();
-      
+
       // L1 Cache Check (in-memory, <5ms)
       const l1Hit = getL1(cacheKey);
       if (l1Hit) {
         const l1Latency = Date.now() - startL1Check;
-        
+
         // Audit log: L1 cache hit
         await logAuditEvent(redis, {
           type: 'cache_get',
@@ -379,16 +414,19 @@ export default async function handler(req) {
           cacheKeyHash: cacheKey.slice(-16),
           latency: l1Latency
         });
-        
-        return json({ 
-          hit: true, 
-          response: l1Hit, 
+
+        rootSpan.attributes.hit = true;
+        rootSpan.attributes.tier = 'L1';
+        tracer.endSpan(rootSpan);
+        return json({
+          hit: true,
+          response: l1Hit,
           tier: 'L1',
           latency_ms: l1Latency,
           cost_saved: '$0.02+'
-        }, 200, { mode: complianceMode, providerRegion: 'US' });
+        }, 200, { mode: complianceMode, providerRegion: 'US', traceId: tracer.getTraceId() });
       }
-      
+
       // L2 Cache Check (Redis, 20-50ms)
       const { url, token } = getEnv();
       const metaKey = `${cacheKey}:meta`;
@@ -423,6 +461,9 @@ export default async function handler(req) {
           namespace,
           cacheKeyHash: cacheKey.slice(-16)
         });
+
+        rootSpan.attributes.hit = false;
+        tracer.endSpan(rootSpan);
         return json({ hit: false }, 404);
       }
 
@@ -473,6 +514,7 @@ export default async function handler(req) {
         statsCommands.push(['HINCRBY', `usage:${authn.hash}`, 'hits', 1]);
       }
 
+      // Add trace info to stats if possible, or just fire and forget
       fetch(`${url}/pipeline`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
@@ -481,7 +523,7 @@ export default async function handler(req) {
 
       // Populate L1 cache for next request
       setL1(cacheKey, cachedValue);
-      
+
       // Audit log: L2 cache hit
       const l2Latency = Date.now() - startL1Check;
       await logAuditEvent(redis, {
@@ -498,23 +540,30 @@ export default async function handler(req) {
       });
 
       if (stream) {
+        // Tracing stream is hard, we end span early for now or we wrap stream (advanced)
+        rootSpan.attributes.hit = true;
+        rootSpan.attributes.stream = true;
+        tracer.endSpan(rootSpan);
         return streamCachedResponse(cachedValue, model);
       }
 
-      return json({ 
-        hit: true, 
-        response: cachedValue, 
+      rootSpan.attributes.hit = true;
+      rootSpan.attributes.tier = 'L2';
+      tracer.endSpan(rootSpan);
+      return json({
+        hit: true,
+        response: cachedValue,
         freshness,
         tier: 'L2',
         latency_ms: l2Latency,
         cost_saved: '$0.01+'
-      }, 200, { mode: complianceMode, providerRegion: 'US' });
+      }, 200, { mode: complianceMode, providerRegion: 'US', traceId: tracer.getTraceId() });
     }
 
     if (req.method === 'POST' && req.url.endsWith('/check')) {
       const exists = await redis('EXISTS', cacheKey);
       const ttlVal = await redis('TTL', cacheKey);
-      
+
       // Audit log: cache check
       await logAuditEvent(redis, {
         type: 'cache_check',
@@ -527,18 +576,20 @@ export default async function handler(req) {
         namespace,
         cacheKeyHash: cacheKey.slice(-16)
       });
-      
-      return json({ cached: !!exists, ttl: ttlVal || 0 });
+
+      return json({ cached: !!exists, ttl: ttlVal || 0 }, 200, { traceId: tracer.getTraceId() });
     }
 
+    tracer.endSpan(rootSpan);
     return json({ error: 'Not found' }, 404);
   } catch (err) {
+    tracer.endSpan(rootSpan, err);
     console.error('Cache API Error:', err);
     console.error('Error stack:', err?.stack);
-    return json({ 
-      error: 'Unexpected error', 
+    return json({
+      error: 'Unexpected error',
       details: err?.message || String(err),
       stack: err?.stack?.split('\n').slice(0, 3).join('; ') || 'No stack'
-    }, 500);
+    }, 500, { traceId: tracer.getTraceId() });
   }
 }

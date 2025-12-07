@@ -1,209 +1,123 @@
 import React, { useEffect, useState } from 'react';
-import { Eye, Activity, GitCommit, ArrowRight, Terminal } from 'lucide-react';
-import CyberCard from '../components/CyberCard';
-import AgentChord from '../components/AgentChord';
 import { useAuth } from '../auth/AuthContext';
+import { MetricFlux } from '../components/dashboard/MetricFlux';
+import { LiquidTraceFeed, TraceItem } from '../components/dashboard/LiquidTraceFeed';
+import { NeuralGlassLayout } from '../components/dashboard/NeuralGlassLayout';
 
 export default function Observability() {
     const { token } = useAuth();
-    const [decisions, setDecisions] = useState([]);
-    const [selectedDecision, setSelectedDecision] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [crumbs, setCrumbs] = useState([]);
+    const [metrics, setMetrics] = useState({
+        requests: 0,
+        hitRate: 0,
+        tokensSaved: 0,
+        costSaved: 0,
+        latency: 0
+    });
+    const [traces, setTraces] = useState([]);
 
-    // Fetch initial decisions
-    const fetchDecisions = async () => {
-        if (!token) return;
-        try {
-            const res = await fetch('/api/decisions?limit=20', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
-
-            if (data && data.decisions && data.decisions.length > 0) {
-                setDecisions(data.decisions);
-            } else {
-                // Keep mock data only if no real data exists yet (for demo purposes)
-                const mockDecisions = Array.from({ length: 5 }).map((_, i) => ({
-                    id: `demo-${Math.random().toString(36).substr(2, 9)}`,
-                    action: 'SYSTEM_READY',
-                    timestamp: new Date().toISOString(),
-                    reasoning: "System initialized. Waiting for live traffic...",
-                    outcome: { status: "ready" }
-                }));
-                setDecisions(mockDecisions);
-            }
-            setLoading(false);
-        } catch (err) {
-            console.error("Failed to fetch decisions:", err);
-            setLoading(false);
-        }
-    };
-
+    // Fetch Metrics
     useEffect(() => {
-        fetchDecisions();
+        const fetchStats = async () => {
+            try {
+                const res = await fetch('/api/observability/stats');
+                const data = await res.json();
+                if (!data.error) setMetrics(data);
+            } catch (err) {
+                console.error("Stats Error:", err);
+            }
+        };
+        fetchStats();
+        const interval = setInterval(fetchStats, 5000);
+        return () => clearInterval(interval);
+    }, []);
 
-        // Connect to SSE Stream
-        const eventSource = new EventSource('/api/events/stream');
+    // Subscribe to Live Feed
+    useEffect(() => {
+        const eventSource = new EventSource('/api/observability/stream');
 
         eventSource.onmessage = (e) => {
-            const event = JSON.parse(e.data);
+            try {
+                const payload = JSON.parse(e.data);
+                if (payload.type === 'traces' && Array.isArray(payload.data)) {
+                    // Parse inner JSON strings if redis returned strings
+                    const newTraces = payload.data.map(t => typeof t === 'string' ? JSON.parse(t) : t);
 
-            if (event.type !== 'sys:connected') {
-                const id = Math.random().toString(36).substr(2, 9);
-                setCrumbs(prev => [...prev, { id, ...event, x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 }]);
-
-                setTimeout(() => {
-                    setCrumbs(prev => prev.filter(c => c.id !== id));
-                }, 2000);
-            }
-
-            if (event.type === 'decision:recorded') {
-                fetchDecisions();
+                    setTraces(prev => {
+                        // Deduplicate based on ID
+                        const existingIds = new Set(prev.map(t => t.id));
+                        const uniqueNew = newTraces.filter(t => !existingIds.has(t.id));
+                        if (uniqueNew.length === 0) return prev;
+                        return [...uniqueNew, ...prev].slice(0, 50); // Keep last 50
+                    });
+                }
+            } catch (err) {
+                console.error("Stream Parse Error:", err);
             }
         };
 
-        return () => {
-            eventSource.close();
-        };
-    }, [token]);
+        return () => eventSource.close();
+    }, []);
+
+    // We render inside the existing App shell, but we want to maximize the "Liquid" feel.
+    // We can inject the NeuralGlassLayout styles or just use the inner parts.
+    // Let's use the inner layout structure but responsive.
 
     return (
-        <div className="flex h-[calc(100vh-8rem)] gap-6 relative">
-
-            {/* Visual Crumb Overlay (Global) */}
-            <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden">
-                {crumbs.map(crumb => (
-                    <div
-                        key={crumb.id}
-                        className="absolute w-2 h-2 rounded-full bg-[var(--hud-accent)] shadow-[0_0_10px_var(--hud-accent)] animate-ping"
-                        style={{ left: `${crumb.x}%`, top: `${crumb.y}%` }}
-                    />
-                ))}
+        <div className="flex flex-col gap-8 h-full">
+            {/* Header / HUD Integration */}
+            <div className="flex justify-between items-end border-b border-white/5 pb-4">
+                <div>
+                    <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">
+                        Neural Glass
+                    </h2>
+                    <p className="text-xs font-mono text-white/40 uppercase tracking-widest mt-1">
+                        System Observability Deck
+                    </p>
+                </div>
+                <div className="flex gap-2">
+                    <span className="px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono animate-pulse">
+                        LIVE
+                    </span>
+                </div>
             </div>
 
-            {/* Left: Decision Stream */}
-            <div className="w-1/3 min-w-[300px] flex flex-col gap-4">
-                <CyberCard className="flex-0">
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => setSelectedDecision(null)}
-                            className={`flex-1 py-2 text-xs font-bold rounded ${!selectedDecision ? 'bg-[var(--hud-accent)] text-black' : 'bg-black/40 text-[var(--hud-text-dim)] hover:text-white'}`}
-                        >
-                            SYSTEM CHORD
-                        </button>
-                        <button
-                            onClick={() => setSelectedDecision({})}
-                            className={`flex-1 py-2 text-xs font-bold rounded ${selectedDecision ? 'bg-[var(--hud-accent)] text-black' : 'bg-black/40 text-[var(--hud-text-dim)] hover:text-white'}`}
-                        >
-                            STREAM
-                        </button>
-                    </div>
-                </CyberCard>
-
-                <CyberCard title="Decision Stream" icon={Activity} className="flex-1 flex flex-col min-h-0">
-                    <div className="flex-1 overflow-y-auto pr-2 space-y-2 custom-scrollbar">
-                        {loading && <div className="p-4 text-center text-[var(--hud-text-dim)]">Loading stream...</div>}
-
-                        {decisions.map(decision => (
-                            <div
-                                key={decision.id}
-                                onClick={() => setSelectedDecision(decision)}
-                                className={`p-3 rounded border cursor-pointer transition-all duration-200 group ${selectedDecision?.id === decision.id
-                                    ? 'bg-[rgba(0,243,255,0.1)] border-[var(--hud-accent)]'
-                                    : 'bg-[rgba(255,255,255,0.03)] border-transparent hover:border-[rgba(0,243,255,0.3)]'
-                                    }`}
-                            >
-                                <div className="flex justify-between items-center mb-1">
-                                    <span className={`text-xs font-bold uppercase tracking-wider ${selectedDecision?.id === decision.id ? 'text-[var(--hud-accent)]' : 'text-white'
-                                        }`}>
-                                        {decision.action}
-                                    </span>
-                                    <span className="text-[10px] font-mono text-[var(--hud-text-dim)]">
-                                        {new Date(decision.timestamp).toLocaleTimeString()}
-                                    </span>
-                                </div>
-                                <div className="text-xs text-[var(--hud-text-dim)] line-clamp-2 font-mono group-hover:text-white transition-colors">
-                                    {decision.reasoning}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </CyberCard>
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <MetricFlux
+                    label="Cache Hit Rate"
+                    value={`${metrics.hitRate}%`}
+                    subValue="Global Efficiency"
+                    icon="activity"
+                    color="cyan"
+                />
+                <MetricFlux
+                    label="Est. Savings"
+                    value={`$${metrics.costSaved.toFixed(2)}`}
+                    subValue="Today's ROI"
+                    icon="dollar"
+                    color="emerald"
+                />
+                <MetricFlux
+                    label="Tokens Saved"
+                    value={`${(metrics.tokensSaved / 1000).toFixed(1)}k`}
+                    subValue="Bandwidth Preserved"
+                    icon="shield"
+                    color="amber"
+                />
+                <MetricFlux
+                    label="Avg Latency"
+                    value={`${metrics.latency}ms`}
+                    subValue="Edge Performance"
+                    icon="zap"
+                    color="rose"
+                />
             </div>
 
-            {/* Right: Inspection / Visualization Panel */}
-            <div className="flex-1 flex flex-col">
-                <CyberCard title={!selectedDecision ? "Agent Collaboration Topology" : "Trace Inspector"} icon={!selectedDecision ? GitCommit : Eye} className="h-full flex flex-col">
-                    {!selectedDecision ? (
-                        <div className="w-full h-full relative p-4">
-                            {/* Chord Diagram with Mock Matrix if no real stats yet */}
-                            <AgentChord
-                                matrix={[
-                                    [0, 5, 8, 2, 0],
-                                    [5, 0, 3, 1, 0],
-                                    [8, 3, 0, 4, 6],
-                                    [2, 1, 4, 0, 2],
-                                    [0, 0, 6, 2, 0]
-                                ]}
-                                agents={[
-                                    { name: 'Core Router' },
-                                    { name: 'Finance Agent' },
-                                    { name: 'Legal Analyst' },
-                                    { name: 'Coder Bot' },
-                                    { name: 'Creative Unit' }
-                                ]}
-                            />
-                            <div className="absolute bottom-4 left-4 text-[var(--hud-text-dim)] text-xs font-mono bg-black/80 p-2 rounded border border-[var(--hud-border)]">
-                                Inter-Agent Signal Volume (Last 1hr)
-                            </div>
-                        </div>
-                    ) : (
-                        Object.keys(selectedDecision).length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center text-[var(--hud-text-dim)] opacity-50">
-                                <Activity size={64} className="mb-4 animate-pulse" />
-                                <p className="font-['Rajdhani'] text-lg tracking-wide">SELECT A TRACE TO INSPECT</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-
-                                {/* Header Info */}
-                                <div className="flex items-center gap-4 pb-4 border-b border-[rgba(255,255,255,0.05)]">
-                                    <div className="w-12 h-12 rounded bg-[rgba(0,243,255,0.1)] flex items-center justify-center border border-[var(--hud-accent)]">
-                                        <GitCommit size={24} className="text-[var(--hud-accent)]" />
-                                    </div>
-                                    <div>
-                                        <h2 className="text-xl font-bold text-white">{selectedDecision.action}</h2>
-                                        <p className="text-xs font-mono text-[var(--hud-text-dim)]">ID: {selectedDecision.id}</p>
-                                    </div>
-                                </div>
-
-                                {/* Reasoning Chain */}
-                                <div>
-                                    <h3 className="text-xs font-bold text-[var(--hud-accent)] uppercase tracking-wider mb-2 flex items-center gap-2">
-                                        <ArrowRight size={14} /> Reasoning Chain
-                                    </h3>
-                                    <div className="p-4 rounded bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.05)] font-mono text-sm text-white leading-relaxed">
-                                        {selectedDecision.reasoning}
-                                    </div>
-                                </div>
-
-                                {/* Outcome Data */}
-                                <div className="flex-1">
-                                    <h3 className="text-xs font-bold text-[var(--hud-success)] uppercase tracking-wider mb-2 flex items-center gap-2">
-                                        <Terminal size={14} /> Execution Outcome
-                                    </h3>
-                                    <div className="p-4 rounded bg-black border border-[rgba(255,255,255,0.1)] font-mono text-xs text-[var(--hud-success)] overflow-x-auto">
-                                        <pre>{JSON.stringify(selectedDecision.outcome, null, 2)}</pre>
-                                    </div>
-                                </div>
-
-                            </div>
-                        )
-                    )}
-                </CyberCard>
+            {/* Live Feed */}
+            <div className="flex-1 min-h-[400px]">
+                <LiquidTraceFeed traces={traces} />
             </div>
-
         </div>
     );
 }
+

@@ -63,11 +63,27 @@ class EdgeRequest {
 const wrap = (handler) => async (req, res) => {
     try {
         const edgeReq = new EdgeRequest(req);
-        const edgeRes = await handler(edgeReq);
+        // Mock context with waitUntil
+        const ctx = {
+            waitUntil: (promise) => {
+                // In Node/Express, we just let the promise float or await it if we want to be strict
+                // But for "background" tasks, usually we just don't await it here to unblock response.
+                // However, to prevent unhandled rejections crashing, we catch.
+                Promise.resolve(promise).catch(err => console.error('Background task error:', err));
+            }
+        };
+        const edgeRes = await handler(edgeReq, ctx);
 
         // Convert Edge Response to Express Response
         const status = edgeRes.status || 200;
-        const data = await edgeRes.json();
+        const data = await edgeRes.json(); // This consumes the body!
+
+        // Handle headers
+        if (edgeRes.headers) {
+            edgeRes.headers.forEach((value, key) => {
+                res.setHeader(key, value);
+            });
+        }
 
         res.status(status).json(data);
     } catch (err) {

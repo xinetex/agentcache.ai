@@ -21,6 +21,7 @@ import TrafficEdge from './components/TrafficEdge';
 import NeuralGalaxy from './components/NeuralGalaxy';
 import { useTrafficSimulation } from './hooks/useTrafficSimulation';
 import './App.css';
+import TraceViewer from './components/TraceViewer';
 
 const edgeTypes = {
   traffic: TrafficEdge,
@@ -34,6 +35,16 @@ function App() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState(null);
+
+  // Trace Viewer State
+  const [traceId, setTraceId] = useState(null);
+
+  // Check URL for trace ID on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tid = params.get('trace');
+    if (tid) setTraceId(tid);
+  }, []);
 
   const [pipelineName, setPipelineName] = useState('Untitled Pipeline');
 
@@ -399,6 +410,18 @@ function App() {
         <WorkspaceGallery
           onLoadPreset={handleLoadPreset}
           onClose={() => setGalleryOpen(false)}
+        />
+      )}
+
+      {/* Global Trace Viewer Overlay */}
+      {traceId && (
+        <TraceViewer
+          traceId={traceId}
+          onClose={() => {
+            setTraceId(null);
+            // Optional: clear URL param
+            window.history.pushState({}, '', window.location.pathname);
+          }}
         />
       )}
     </div>
