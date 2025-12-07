@@ -14,8 +14,17 @@ import { AuthProvider, useAuth } from './auth/AuthContext';
 import LoginOverlay from './components/LoginOverlay';
 
 const AppContent = () => {
-    // "Neural Ops" (swarm) is now the default landing experience
-    const [activeView, setActiveView] = useState('swarm');
+    // "Neural Ops" (swarm) is default, unless URL specifies otherwise
+    const getInitialView = () => {
+        const path = window.location.pathname;
+        if (path.includes('observability')) return 'observability';
+        if (path.includes('pipeline')) return 'pipeline';
+        if (path.includes('lab')) return 'lab';
+        if (path.includes('data')) return 'data';
+        if (path.includes('governance')) return 'governance';
+        return 'swarm';
+    };
+    const [activeView, setActiveView] = useState(getInitialView());
     const { user, loading } = useAuth();
 
     if (loading) return <div className="h-screen flex items-center justify-center text-[var(--hud-accent)] font-mono">INITIALIZING...</div>;
