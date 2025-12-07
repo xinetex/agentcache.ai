@@ -126,12 +126,21 @@ export default function PipelineStudio() {
 
     return (
         <div className="h-[calc(100vh-8rem)] flex gap-6 relative">
+
             {/* Left Sidebar: Palette */}
             <div className="w-64 flex flex-col gap-4">
                 <CyberCard title="Node Palette" icon={Plus} className="flex-1">
                     <div className="space-y-2">
                         {['Source', 'Cache', 'LLM', 'Sector'].map(type => (
-                            <div key={type} className="p-3 rounded bg-[rgba(255,255,255,0.05)] border border-transparent hover:border-[var(--hud-accent)] cursor-grab active:cursor-grabbing transition-colors">
+                            <div
+                                key={type}
+                                draggable
+                                onDragStart={(event) => {
+                                    event.dataTransfer.setData('application/reactflow', type);
+                                    event.dataTransfer.effectAllowed = 'move';
+                                }}
+                                className="p-3 rounded bg-[rgba(255,255,255,0.05)] border border-transparent hover:border-[var(--hud-accent)] cursor-grab active:cursor-grabbing transition-colors"
+                            >
                                 <span className="text-sm font-bold text-white">{type} Node</span>
                             </div>
                         ))}
@@ -140,7 +149,33 @@ export default function PipelineStudio() {
             </div>
 
             {/* Main Canvas */}
-            <div className="flex-1 rounded-lg border border-[var(--hud-border)] bg-black/50 overflow-hidden relative">
+            <div className="flex-1 rounded-lg border border-[var(--hud-border)] bg-black/50 overflow-hidden relative"
+                onDragOver={(event) => {
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = 'move';
+                }}
+                onDrop={(event) => {
+                    event.preventDefault();
+                    const type = event.dataTransfer.getData('application/reactflow');
+                    if (!type) return;
+
+                    const reactFlowBounds = event.currentTarget.getBoundingClientRect();
+                    // Simple projection (can be improved with useReactFlow.project)
+                    const position = {
+                        x: event.clientX - reactFlowBounds.left - 75, // center horizontally roughly
+                        y: event.clientY - reactFlowBounds.top - 20
+                    };
+
+                    const newNode = {
+                        id: `${type}-${Date.now()}`,
+                        type: 'cyber',
+                        position,
+                        data: { label: `${type} Node`, type: type.toLowerCase(), details: 'New Node' },
+                    };
+
+                    setNodes((nds) => nds.concat(newNode));
+                }}
+            >
                 <ReactFlow
                     nodes={nodes}
                     edges={edges}

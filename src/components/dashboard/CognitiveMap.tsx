@@ -118,13 +118,15 @@ export function CognitiveMap() {
             {clusters.map((cluster) => (
                 <motion.div
                     key={cluster.id}
-                    className={`absolute rounded-full cursor-pointer flex items-center justify-center group ${cluster.color} bg-opacity-20 border border-white/20`}
+                    className={`absolute rounded-full cursor-grab active:cursor-grabbing flex items-center justify-center group ${cluster.color} bg-opacity-20 border border-white/20`}
                     style={{
                         left: `${cluster.x}%`,
                         top: `${cluster.y}%`,
                         width: Math.max(60, cluster.size * 1.5),
                         height: Math.max(60, cluster.size * 1.5),
                     }}
+                    drag
+                    dragMomentum={false}
                     initial={{ scale: 0 }}
                     animate={{
                         scale: 1,
@@ -171,8 +173,8 @@ export function CognitiveMap() {
                             <h2 className="text-2xl font-bold text-white mb-2 break-words">{selectedCluster.label}</h2>
                             <div className="flex items-center gap-2">
                                 <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${selectedCluster.state === 'crystallized'
-                                        ? 'bg-cyan-500/20 text-cyan-400'
-                                        : 'bg-rose-500/20 text-rose-400'
+                                    ? 'bg-cyan-500/20 text-cyan-400'
+                                    : 'bg-rose-500/20 text-rose-400'
                                     }`}>
                                     {selectedCluster.state === 'crystallized' ? 'Asset (Frozen)' : 'Liquid (Active)'}
                                 </span>
