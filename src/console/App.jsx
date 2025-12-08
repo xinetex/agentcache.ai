@@ -38,7 +38,19 @@ const AppContent = () => {
         return <RegisterOverlay />;
     }
 
-    if (!user) return <LoginOverlay />;
+    // Demo Mode Logic
+    const isDemo = new URLSearchParams(window.location.search).get('demo') === 'true';
+    const DEMO_USER = {
+        id: 'demo-guest',
+        name: 'Guest User',
+        email: 'guest@agentcache.ai',
+        role: 'viewer',
+        organizationId: 'org_demo'
+    };
+
+    const effectiveUser = user || (isDemo ? DEMO_USER : null);
+
+    if (!effectiveUser) return <LoginOverlay />;
 
     const renderView = () => {
         switch (activeView) {
@@ -58,10 +70,20 @@ const AppContent = () => {
     return (
         <div className="flex h-screen bg-[var(--hud-bg)] text-[var(--hud-text)] overflow-hidden font-sans selection:bg-[var(--hud-accent)] selection:text-black">
             {/* Fixed Command Rail (Left) */}
-            <CommandRail activeView={activeView} setActiveView={setActiveView} user={user} />
+            <CommandRail activeView={activeView} setActiveView={setActiveView} user={effectiveUser} />
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col pl-16 transition-all duration-300">
+                {/* Demo Mode Banner */}
+                {isDemo && (
+                    <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-1 text-center">
+                        <p className="text-xs font-mono text-amber-400">
+                            ⚡ DEMO MODE: You are viewing a read-only preview.
+                            <a href="/register" className="ml-2 underline font-bold hover:text-amber-300">Sign Up Free</a> to deploy.
+                        </p>
+                    </div>
+                )}
+
                 {/* Fixed HUD (Top) */}
                 <HUD />
 
