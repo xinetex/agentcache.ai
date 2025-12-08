@@ -137,7 +137,7 @@ export default function RegisterOverlay() {
                         </button>
 
                         <div className="text-center text-[10px] text-[var(--hud-text-dim)] font-mono mt-4">
-                            ALREADY INITIALIZED? <a href="/console" className="text-[var(--hud-accent)] hover:underline">ACCESS TERMINAL</a>
+                            ALREADY INITIALIZED? <button type="button" onClick={() => window.location.href = '/console?demo=false'} className="text-[var(--hud-accent)] hover:underline border-b border-[var(--hud-accent)]">ACCESS TERMINAL (LOGIN)</button>
                         </div>
                     </form>
                 </CyberCard>
