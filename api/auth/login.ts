@@ -47,12 +47,18 @@ export default async function handler(req, res) {
       return new Response(JSON.stringify({ error: 'Invalid credentials' }), { status: 401 });
     }
 
+    // Fetch user's organization
+    const members = await db.execute(sql`
+        SELECT org_id FROM members WHERE user_id = ${user.id} LIMIT 1
+    `);
+    const organizationId = members.length > 0 ? members[0].org_id : null;
+
     // Token Generation
     const token = generateToken({
       id: user.id,
       email: user.email,
       role: user.role,
-      organizationId: 'org_placeholder' // TODO: Join members table to get this
+      organizationId: organizationId
     });
 
     return new Response(JSON.stringify({
