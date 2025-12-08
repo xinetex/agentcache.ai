@@ -48,8 +48,8 @@ const AppContent = () => {
         return <RegisterOverlay />;
     }
 
-    // Demo Mode Logic
-    const isDemo = new URLSearchParams(window.location.search).get('demo') === 'true';
+    // Demo Mode Logic - FORCED ON by default until auth stabilizes
+    const isDemo = true; // new URLSearchParams(window.location.search).get('demo') === 'true';
     const DEMO_USER = {
         id: 'demo-guest',
         name: 'Guest User',
@@ -88,8 +88,8 @@ const AppContent = () => {
                 {isDemo && (
                     <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-1 text-center">
                         <p className="text-xs font-mono text-amber-400">
-                            ⚡ DEMO MODE: You are viewing a read-only preview.
-                            <a href="/register" className="ml-2 underline font-bold hover:text-amber-300">Sign Up Free</a> to deploy.
+                            ⚡ PREVIEW MODE: Registration is temporarily disabled for maintenance.
+                            <span className="ml-2 font-bold text-amber-300">System is Open.</span>
                         </p>
                     </div>
                 )}
