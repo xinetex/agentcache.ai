@@ -5,6 +5,7 @@ import { NeuralGlassLayout } from '../../components/dashboard/NeuralGlassLayout'
 import GameConsole from '../components/GameConsole';
 import CyberCard from '../components/CyberCard';
 import ContextSqueezeFrame from '../components/ContextSqueezeFrame';
+import EchoChamberFrame from '../components/EchoChamberFrame';
 
 export default function Lab() {
     const [activeTab, setActiveTab] = useState('simulation');
@@ -50,6 +51,7 @@ export default function Lab() {
             {activeTab === 'simulation' && !activeGame && <GameConsole onLaunch={handleLaunchGame} />}
             {activeTab === 'simulation' && activeGame === 'leak_hunter' && <LeakHunterFrame onExit={() => setActiveGame(null)} />}
             {activeTab === 'simulation' && activeGame === 'context_squeeze' && <ContextSqueezeFrame onExit={() => setActiveGame(null)} />}
+            {activeTab === 'simulation' && activeGame === 'echo_chamber' && <EchoChamberFrame onExit={() => setActiveGame(null)} />}
             {activeTab === 'compression' && <CompressionLab />}
             {activeTab === 'intelligence' && <IntelligenceLab />}
         </div>
