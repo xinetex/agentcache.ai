@@ -67,7 +67,7 @@ export default function Swarm() {
 
                 const newDiscovery = {
                     id: Date.now(),
-                    agent: event.agentId || `Agent - ${ Math.floor(Math.random() * 900) + 100 } `,
+                    agent: event.agentId || 'Agent - ' + (Math.floor(Math.random() * 900) + 100),
                     pattern: insights[Math.floor(Math.random() * insights.length)],
                     improvement: Math.floor(Math.random() * 20) + 5,
                     time: new Date().toLocaleTimeString()
