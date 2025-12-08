@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import ForceGraph3D from 'react-force-graph-3d';
 import { Activity, Radio } from 'lucide-react';
 
-const NeuralGalaxy = () => {
+const NeuralGalaxy = ({ onNodeClick }) => {
     const [graphData, setGraphData] = useState({ nodes: [], links: [] });
     const [simulationMode, setSimulationMode] = useState(false);
     const fgRef = useRef();
@@ -128,6 +128,7 @@ const NeuralGalaxy = () => {
                     bloomStrength={1.5}
                     enableNodeDrag={false}
                     onNodeClick={node => {
+                        // Camera focus logic
                         const distance = 100;
                         const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
                         if (fgRef.current) {
@@ -136,6 +137,10 @@ const NeuralGalaxy = () => {
                                 node,
                                 3000
                             );
+                        }
+                        // Bubble Up Event if prop provided
+                        if (onNodeClick) {
+                            onNodeClick(node);
                         }
                     }}
                 />

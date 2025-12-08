@@ -84,3 +84,47 @@ export const apiKeys = pgTable('api_keys', {
     createdAt: timestamp('created_at').defaultNow(),
     expiresAt: timestamp('expires_at'),
 });
+
+// --- Game Theory & Autonomous Lab ---
+export const gameSessions = pgTable('game_sessions', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id').references(() => users.id),
+    sessionType: text('session_type').notNull(), // 'leak_hunter', 'context_squeeze'
+    sector: text('sector'),
+    useCase: text('use_case'),
+    goal: text('goal'),
+    score: real('score').default(0),
+    success: boolean('success').default(false),
+    metrics: jsonb('metrics'),
+    startedAt: timestamp('started_at').defaultNow(),
+    completedAt: timestamp('completed_at'),
+    discoveredPattern: boolean('discovered_pattern').default(false),
+    patternNoveltyScore: real('pattern_novelty_score').default(0),
+    durationSeconds: real('duration_seconds'),
+});
+
+export const patternDiscoveries = pgTable('pattern_discoveries', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    sessionId: uuid('session_id').references(() => gameSessions.id),
+    discoveredBy: uuid('discovered_by').references(() => users.id), // Or Agent ID if applicable
+    patternName: text('pattern_name'),
+    patternDescription: text('pattern_description'),
+    sector: text('sector'),
+    useCase: text('use_case'),
+    configuration: jsonb('configuration'), // The "Recipe"
+    expectedHitRate: real('expected_hit_rate'),
+    expectedLatencyMs: real('expected_latency_ms'),
+    validationScore: real('validation_score'), // How good is it?
+    discoveredAt: timestamp('discovered_at').defaultNow(),
+});
+
+export const experimentResults = pgTable('experiment_results', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    sessionId: uuid('session_id').references(() => gameSessions.id),
+    experimentName: text('experiment_name'),
+    dataSource: text('data_source'),
+    requestCount: real('request_count'),
+    hitRate: real('hit_rate'),
+    costSavingsPercent: real('cost_savings_percent'),
+    testedAt: timestamp('tested_at').defaultNow(),
+});

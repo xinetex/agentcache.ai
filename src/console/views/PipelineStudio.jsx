@@ -9,7 +9,7 @@ import ReactFlow, {
     Position
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { Save, Play, Plus, Wand2, X } from 'lucide-react';
+import { Save, Play, Plus, Wand2, X, Share2, AlertTriangle } from 'lucide-react';
 import CyberCard from '../components/CyberCard';
 
 // Custom Node Components
@@ -43,6 +43,7 @@ export default function PipelineStudio() {
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
     const [showWizard, setShowWizard] = useState(true);
+    const [showPublish, setShowPublish] = useState(false); // NEW
     const [wizardStep, setWizardStep] = useState(1);
     const [config, setConfig] = useState({ useCase: '', performance: 'balanced' });
 
@@ -197,6 +198,9 @@ export default function PipelineStudio() {
                     <button onClick={handleSave} className="btn-cyber px-4 py-2 flex items-center gap-2 text-xs">
                         <Save size={14} /> Save
                     </button>
+                    <button onClick={() => setShowPublish(true)} className="btn-cyber px-4 py-2 flex items-center gap-2 text-xs hover:border-[var(--hud-accent-secondary)] hover:text-[var(--hud-accent-secondary)]">
+                        <Share2 size={14} /> Publish
+                    </button>
                     <button className="btn-cyber btn-cyber-primary px-4 py-2 flex items-center gap-2 text-xs">
                         <Play size={14} /> Deploy
                     </button>
@@ -266,6 +270,56 @@ export default function PipelineStudio() {
                                 </div>
                             </div>
                         )}
+                    </CyberCard>
+                </div>
+            )}
+
+            {/* Publish / Contribution Modal */}
+            {showPublish && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+                    <CyberCard className="w-[500px] border-l-4 border-l-[var(--hud-accent-secondary)]">
+                        <button onClick={() => setShowPublish(false)} className="absolute top-4 right-4 text-[var(--hud-text-dim)] hover:text-white">
+                            <X size={20} />
+                        </button>
+
+                        <div className="mb-6">
+                            <h2 className="text-xl font-bold text-[var(--hud-accent-secondary)] flex items-center gap-2">
+                                <Share2 size={24} /> CONTRIBUTE TO GALAXY
+                            </h2>
+                            <p className="text-xs font-mono text-[var(--hud-text-dim)]">PUBLISH PATTERN TO PUBLIC KNOWLEDGE GRAPH</p>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-xs font-bold text-white mb-1 block">PATTERN NAME</label>
+                                <input type="text" placeholder="e.g. Optimized RAG for Legal Docs" className="w-full bg-black border border-[var(--hud-border)] p-2 rounded text-white text-sm focus:border-[var(--hud-accent)] outline-none" />
+                            </div>
+
+                            <div>
+                                <label className="text-xs font-bold text-white mb-1 block">DESCRIPTION / ABSTRACT</label>
+                                <textarea rows="3" placeholder="Explain what problem this pattern solves..." className="w-full bg-black border border-[var(--hud-border)] p-2 rounded text-white text-sm focus:border-[var(--hud-accent)] outline-none"></textarea>
+                            </div>
+
+                            <div className="bg-yellow-500/10 border border-yellow-500/30 p-3 rounded flex items-start gap-2">
+                                <AlertTriangle size={16} className="text-yellow-500 shrink-0 mt-0.5" />
+                                <div className="text-xs text-yellow-200/80">
+                                    <span className="font-bold text-yellow-500 block mb-1">GOVERNANCE CHECK REQUIRED</span>
+                                    This pattern will be submitted to the Governance Council for PII and Safety review. It will not appear in the public Galaxy until verified (approx. 24h).
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end pt-2">
+                                <button
+                                    onClick={() => {
+                                        setShowPublish(false);
+                                        alert("Submission Received! Tracking ID: TRK-9942. Status: PENDING_REVIEW");
+                                    }}
+                                    className="btn-cyber btn-cyber-primary px-6 py-2 flex items-center gap-2 font-bold"
+                                >
+                                    <Share2 size={16} /> SUBMIT PATTERN
+                                </button>
+                            </div>
+                        </div>
                     </CyberCard>
                 </div>
             )}

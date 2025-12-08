@@ -1,243 +1,152 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../auth/AuthContext';
 
-const PRESETS = [
-    { id: 'Darwin', icon: '🦁', label: 'Darwin', desc: 'Survival of the fittest. High mutation, ruthless culling.', color: 'text-orange-400', border: 'border-orange-500/50', bg: 'bg-orange-500/10' },
-    { id: 'Utopia', icon: '🤝', label: 'Utopia', desc: 'High cooperation, shared rewards, altruistic caching.', color: 'text-cyan-400', border: 'border-cyan-500/50', bg: 'bg-cyan-500/10' },
-    { id: 'WallStreet', icon: '📈', label: 'Wall Street', desc: 'Profit maximization. High competition for tokens.', color: 'text-emerald-400', border: 'border-emerald-500/50', bg: 'bg-emerald-500/10' },
-    { id: 'ArtistColony', icon: '🎨', label: 'Artist Colony', desc: 'High temperature, novelty seeking, creative risks.', color: 'text-pink-400', border: 'border-pink-500/50', bg: 'bg-pink-500/10' },
-    { id: 'DoomerPrepper', icon: '🛡️', label: 'Doomer Prepper', desc: 'Extreme safety, redundancy, low risk tolerance.', color: 'text-slate-400', border: 'border-slate-500/50', bg: 'bg-slate-500/10' },
-];
+import React, { useState, useEffect } from 'react';
+import {
+    Shield,
+    AlertTriangle,
+    CheckCircle,
+    Lock,
+    Eye,
+    FileText,
+    Gavel
+} from 'lucide-react';
+import CyberCard from '../components/CyberCard';
+import DataGrid from '../components/DataGrid';
+import StatDial from '../components/StatDial';
 
 export default function Governance() {
-    const { token } = useAuth();
-    const [currentMode, setCurrentMode] = useState(null);
-    const [org, setOrg] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [switching, setSwitching] = useState(false);
+    const [stats, setStats] = useState({
+        trustScore: 98,
+        piiBlocked: 142,
+        biasDetected: 3,
+        auditsPassed: 850
+    });
+
+    const [policyLog, setPolicyLog] = useState([]);
 
     useEffect(() => {
-        if (!token) return;
-
-        const fetchData = async () => {
-            try {
-                const headers = { 'Authorization': `Bearer ${token}` };
-                const [orgRes, membersRes, keysRes, modeRes] = await Promise.all([
-                    fetch('/api/governance/org', { headers }),
-                    fetch('/api/governance/members', { headers }),
-                    fetch('/api/governance/keys', { headers }),
-                    fetch('/api/governance/presets', { headers })
-                ]);
-
-                if (!orgRes.ok) throw new Error('Failed to fetch org data');
-
-                const orgData = await orgRes.json();
-                const membersData = await membersRes.json();
-                const keysData = await keysRes.json();
-                const modeData = await modeRes.json();
-
-                setOrg({
-                    ...orgData,
-                    members: membersData.members || [],
-                    apiKeys: keysData.apiKeys || []
-                });
-                setCurrentMode(modeData.mode || 'Default');
-            } catch (err) {
-                console.error("Failed to fetch governance data:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, [token]);
-
-    const handleSwitchMode = async (mode) => {
-        setSwitching(true);
-        try {
-            const res = await fetch('/api/governance/presets', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mode, parameters: { timestamp: Date.now() } })
-            });
-            if (res.ok) {
-                setCurrentMode(mode);
-            }
-        } catch (err) {
-            console.error("Failed to switch mode:", err);
-        } finally {
-            setSwitching(false);
-        }
-    };
-
-    if (loading) return <div className="p-8 text-slate-400">Loading governance data...</div>;
+        // Mock Data Loading
+        setPolicyLog([
+            { id: 101, type: 'PII_REDACT', severity: 'HIGH', content: 'SSN detected in prompt', source: 'Triage-Bot-1', time: '10:42 AM' },
+            { id: 102, type: 'TOPIC_GUARD', severity: 'MEDIUM', content: 'Blocked "Political Advice"', source: 'Chat-v2', time: '10:38 AM' },
+            { id: 103, type: 'DATA_LEAK', severity: 'CRITICAL', content: 'API Key pattern in output', source: 'Dev-Agent', time: '10:15 AM' },
+            { id: 104, type: 'AUDIT_PASS', severity: 'LOW', content: 'Routine safety scan complete', source: 'System', time: '09:00 AM' },
+        ]);
+    }, []);
 
     return (
-        <div className="p-8 max-w-7xl mx-auto">
-            <header className="mb-8">
-                <h2 className="text-3xl font-bold text-white mb-2">Governance</h2>
-                <p className="text-slate-400">Organization settings, access control, and <span className="text-purple-400">Reality Switching</span>.</p>
-            </header>
-
-            {/* Reality Switcher */}
-            <section className="mb-12">
-                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                    <span className="text-purple-500">🔮</span> Reality Switcher
-                    <span className="text-xs font-normal text-slate-500 ml-2 border border-slate-700 px-2 py-0.5 rounded">Global Simulation Parameters</span>
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {PRESETS.map(preset => {
-                        const isActive = currentMode === preset.id;
-                        return (
-                            <button
-                                key={preset.id}
-                                onClick={() => handleSwitchMode(preset.id)}
-                                disabled={switching}
-                                className={`relative p-4 rounded-xl border text-left transition-all ${isActive
-                                    ? `${preset.bg} ${preset.border} shadow-[0_0_20px_rgba(0,0,0,0.3)] scale-[1.02]`
-                                    : 'bg-slate-900/40 border-slate-800 hover:border-slate-600 hover:bg-slate-800/60'
-                                    }`}
-                            >
-                                {isActive && (
-                                    <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.8)]"></div>
-                                )}
-                                <div className="text-2xl mb-2">{preset.icon}</div>
-                                <div className={`font-bold mb-1 ${isActive ? 'text-white' : 'text-slate-300'}`}>{preset.label}</div>
-                                <div className="text-xs text-slate-500 leading-relaxed">{preset.desc}</div>
-                            </button>
-                        );
-                    })}
+        <div className="space-y-6 animate-in fade-in duration-500">
+            {/* Header */}
+            <div className="flex justify-between items-center">
+                <div>
+                    <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+                        <Gavel className="text-[var(--hud-accent)]" />
+                        GOVERNANCE COUNCIL
+                    </h1>
+                    <p className="text-xs text-[var(--hud-text-dim)] font-mono mt-1">
+                        ETHICS OVERSIGHT & POLICY ENFORCEMENT
+                    </p>
                 </div>
-            </section>
-
-            <div className="border-t border-slate-800/50 my-8"></div>
-
-            {/* Organization Details */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                <div className="lg:col-span-2 bg-slate-900/50 border border-slate-800 rounded-xl p-6">
-                    <div className="flex justify-between items-start mb-6">
-                        <div>
-                            <h3 className="text-xl font-bold text-white">{org.name}</h3>
-                            <div className="text-sm text-slate-500 font-mono mt-1">ID: {org.id}</div>
-                        </div>
-                        <span className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-xs font-bold border border-purple-500/30">
-                            {org.plan.toUpperCase()} PLAN
-                        </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 bg-slate-950 rounded-lg border border-slate-800">
-                            <div className="text-xs text-slate-500 mb-1">Your Role</div>
-                            <div className="font-semibold text-green-400">{org.role}</div>
-                        </div>
-                        <div className="p-4 bg-slate-950 rounded-lg border border-slate-800">
-                            <div className="text-xs text-slate-500 mb-1">Region</div>
-                            <div className="font-semibold text-white">US-East (N. Virginia)</div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Compliance Status */}
-                <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6">
-                    <h3 className="text-lg font-bold mb-4">Compliance</h3>
-                    <div className="space-y-3">
-                        <ComplianceItem label="SOC 2 Type II" status="active" />
-                        <ComplianceItem label="GDPR" status="active" />
-                        <ComplianceItem label="HIPAA" status="pending" />
-                    </div>
-                </div>
-            </div>
-
-            {/* Members & Roles */}
-            <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 mb-8">
-                <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-lg font-bold">Team Members</h3>
-                    <button className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium rounded-lg transition-colors">
-                        Invite Member
+                <div className="flex gap-2">
+                    <button className="btn-cyber px-4 py-2 text-xs flex items-center gap-2">
+                        <FileText size={14} /> EXPORT AUDIT LOG
+                    </button>
+                    <button className="btn-cyber btn-cyber-primary px-4 py-2 text-xs flex items-center gap-2">
+                        <Shield size={14} /> POLICY CONFIG
                     </button>
                 </div>
-
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead>
-                            <tr className="border-b border-slate-800 text-slate-400">
-                                <th className="pb-3 pl-2">User</th>
-                                <th className="pb-3">Role</th>
-                                <th className="pb-3">2FA</th>
-                                <th className="pb-3 text-right pr-2">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-800">
-                            {org.members.map(member => (
-                                <tr key={member.id} className="group hover:bg-slate-800/30 transition-colors">
-                                    <td className="py-3 pl-2">
-                                        <div className="font-medium text-white">{member.name}</div>
-                                        <div className="text-slate-500">{member.email}</div>
-                                    </td>
-                                    <td className="py-3">
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize
-                      ${member.role === 'owner' ? 'bg-purple-500/10 text-purple-400' :
-                                                member.role === 'admin' ? 'bg-blue-500/10 text-blue-400' :
-                                                    'bg-slate-700/50 text-slate-400'}`}>
-                                            {member.role}
-                                        </span>
-                                    </td>
-                                    <td className="py-3">
-                                        <span className="text-green-400">Enabled</span>
-                                    </td>
-                                    <td className="py-3 text-right pr-2">
-                                        <button className="text-slate-500 hover:text-white">•••</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
             </div>
 
-            {/* API Keys */}
-            <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6">
-                <h3 className="text-lg font-bold mb-4">Active API Keys</h3>
-                <div className="space-y-3">
-                    {org.apiKeys.map((key, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-3 bg-slate-950 rounded-lg border border-slate-800">
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded bg-slate-900 flex items-center justify-center text-slate-400">
-                                    🔑
-                                </div>
-                                <div>
-                                    <div className="font-mono text-sm text-white">{key.prefix}****************</div>
-                                    <div className="text-xs text-slate-500">Created {key.created}</div>
-                                </div>
-                            </div>
-                            <div className="flex gap-2">
-                                {key.scopes.map(scope => (
-                                    <span key={scope} className="px-2 py-1 bg-slate-800 text-slate-300 text-xs rounded border border-slate-700">
-                                        {scope}
-                                    </span>
-                                ))}
-                            </div>
+            {/* Vitals Row */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <CyberCard className="border-l-4 border-l-[var(--hud-success)]">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <div className="text-[10px] text-[var(--hud-text-dim)] font-mono uppercase">Trust Score</div>
+                            <div className="text-3xl font-bold font-mono text-green-400">{stats.trustScore}/100</div>
                         </div>
-                    ))}
-                </div>
+                        <CheckCircle size={20} className="text-green-400" />
+                    </div>
+                </CyberCard>
+
+                <CyberCard className="border-l-4 border-l-red-500">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <div className="text-[10px] text-[var(--hud-text-dim)] font-mono uppercase">PII Redacted</div>
+                            <div className="text-3xl font-bold font-mono text-white">{stats.piiBlocked}</div>
+                        </div>
+                        <Lock size={20} className="text-red-500" />
+                    </div>
+                </CyberCard>
+
+                <CyberCard className="border-l-4 border-l-yellow-500">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <div className="text-[10px] text-[var(--hud-text-dim)] font-mono uppercase">Bias Warnings</div>
+                            <div className="text-3xl font-bold font-mono text-white">{stats.biasDetected}</div>
+                        </div>
+                        <AlertTriangle size={20} className="text-yellow-500" />
+                    </div>
+                </CyberCard>
+
+                <CyberCard className="border-l-4 border-l-blue-500">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <div className="text-[10px] text-[var(--hud-text-dim)] font-mono uppercase">Audits Passed</div>
+                            <div className="text-3xl font-bold font-mono text-white">{stats.auditsPassed}</div>
+                        </div>
+                        <Eye size={20} className="text-blue-500" />
+                    </div>
+                </CyberCard>
             </div>
-        </div>
-    );
-}
 
-function ComplianceItem({ label, status }) {
-    const colors = {
-        active: 'bg-green-500',
-        pending: 'bg-yellow-500',
-        inactive: 'bg-slate-500'
-    };
+            {/* Main Content Area */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-    return (
-        <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-300">{label}</span>
-            <div className="flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${colors[status]}`}></span>
-                <span className="text-xs text-slate-500 capitalize">{status}</span>
+                {/* Left: Active Policies */}
+                <CyberCard title="Safety Protocols" icon={Shield} className="h-full">
+                    <div className="space-y-3">
+                        {[
+                            { name: "HIPAA Guard", status: "Active", level: "Strict" },
+                            { name: "Topic Fence", status: "Active", level: "Custom" },
+                            { name: "Rate Limiter", status: "Active", level: "Standard" },
+                            { name: "Hallucination Check", status: "Beta", level: "Low" }
+                        ].map((p, i) => (
+                            <div key={i} className="flex justify-between items-center p-3 bg-white/5 rounded border border-white/10">
+                                <div>
+                                    <div className="font-bold text-sm text-white">{p.name}</div>
+                                    <div className="text-[10px] text-[var(--hud-text-dim)]">Level: {p.level}</div>
+                                </div>
+                                <span className="px-2 py-1 bg-green-500/20 text-green-400 text-[10px] rounded border border-green-500/30 uppercase">
+                                    {p.status}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </CyberCard>
+
+                {/* Right: Violation Log */}
+                <CyberCard title="Enforcement Log" icon={AlertTriangle} className="lg:col-span-2">
+                    <DataGrid
+                        columns={[
+                            { header: 'Time', accessor: 'time' },
+                            {
+                                header: 'Severity', accessor: 'severity', render: (row) => (
+                                    <span className={`text-[10px] font-bold px-2 py-1 rounded ${row.severity === 'CRITICAL' ? 'bg-red-500/20 text-red-400 border border-red-500/50' :
+                                            row.severity === 'HIGH' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/50' :
+                                                'bg-blue-500/20 text-blue-400 border border-blue-500/50'
+                                        }`}>
+                                        {row.severity}
+                                    </span>
+                                )
+                            },
+                            { header: 'Violation Type', accessor: 'type' },
+                            { header: 'Agent Source', accessor: 'source' },
+                            { header: 'Details', accessor: 'content', render: (row) => <span className="italic text-white/70">{row.content}</span> }
+                        ]}
+                        data={policyLog}
+                    />
+                </CyberCard>
+
             </div>
         </div>
     );

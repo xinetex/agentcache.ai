@@ -3,8 +3,11 @@ import { Activity, Globe, Zap, Server, Shield, Clock } from 'lucide-react';
 import CyberCard from '../components/CyberCard';
 import StatDial from '../components/StatDial';
 import DataGrid from '../components/DataGrid';
+import NeuralGalaxy from '../components/NeuralGalaxy';
 
 
+
+import WikiPage from '../components/WikiPage';
 
 const Overview = () => {
     const [metrics, setMetrics] = useState({
@@ -17,6 +20,7 @@ const Overview = () => {
     });
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedWikiNode, setSelectedWikiNode] = useState(null);
 
     useEffect(() => {
         // Fetch Metrics
@@ -72,22 +76,21 @@ const Overview = () => {
     }, []);
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 relative">
+            {/* Wiki Overlay */}
+            {selectedWikiNode && (
+                <WikiPage
+                    nodeId={selectedWikiNode.id}
+                    onClose={() => setSelectedWikiNode(null)}
+                />
+            )}
+
             {/* Top Row: Global Status & Key Metrics */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                {/* Global Map Placeholder */}
-                <CyberCard title="Global Grid Status" icon={Globe} className="lg:col-span-2 min-h-[300px]">
-                    <div className="w-full h-full flex items-center justify-center bg-[rgba(0,0,0,0.3)] rounded border border-[rgba(255,255,255,0.05)] relative overflow-hidden">
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--hud-accent)_0%,_transparent_70%)] opacity-10 animate-pulse"></div>
-                        <div className="text-center">
-                            <Globe size={64} className="mx-auto text-[var(--hud-accent)] opacity-50 mb-4" />
-                            <p className="text-[var(--hud-text-dim)] font-mono text-sm">
-                                GRID VISUALIZATION ONLINE<br />
-                                <span className="text-[var(--hud-success)]">3 REGIONS ACTIVE</span>
-                            </p>
-                        </div>
-                    </div>
+                {/* Global Map Placeholder -> Now NeuralGalaxy for Navigation */}
+                <CyberCard title="Galactic Knowledge Graph" icon={Globe} className="lg:col-span-2 min-h-[400px] p-0 overflow-hidden border-2 border-[var(--hud-accent)]/20 shadow-[0_0_20px_rgba(0,243,255,0.1)]">
+                    <NeuralGalaxy onNodeClick={(node) => setSelectedWikiNode(node)} />
                 </CyberCard>
 
                 {/* System Health Dials */}

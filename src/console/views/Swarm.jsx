@@ -1,15 +1,18 @@
+```javascript
 import React, { useState, useEffect } from 'react';
-import { Hexagon, Trophy, Radio, Zap } from 'lucide-react';
+import { Hexagon, Trophy, Radio, Zap, MessageSquare } from 'lucide-react';
 import CyberCard from '../components/CyberCard';
 import DataGrid from '../components/DataGrid';
 import NeuralGalaxy from '../components/NeuralGalaxy';
 import { useAuth } from '../auth/AuthContext';
+import CommsPanel from '../components/CommsPanel';
 
 export default function Swarm() {
     const { token } = useAuth();
     const [leaderboard, setLeaderboard] = useState([]);
     const [discoveries, setDiscoveries] = useState([]);
     const [session, setSession] = useState(null);
+    const [activeMode, setActiveMode] = useState('insights'); // 'insights' | 'comms'
 
     useEffect(() => {
         if (!token) return;
@@ -18,7 +21,7 @@ export default function Swarm() {
         const fetchLeaderboard = async () => {
             try {
                 const res = await fetch('/api/admin-stats', {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${ token } ` }
                 });
                 const data = await res.json();
 
@@ -52,12 +55,21 @@ export default function Swarm() {
             if (event.type === 'sys:connected') return;
 
             // Simulate a "discovery" on cache hits or optimizations
-            if (event.type === 'CACHE_HIT' || event.type === 'OPTIMIZATION' || Math.random() > 0.7) {
+            if (event.type === 'CACHE_HIT' || event.type === 'OPTIMIZATION' || Math.random() > 0.6) {
+                const insights = [
+                    "Detected semantic drift in Finance sector.",
+                    "Auto-optimizing latency for EU region.",
+                    "Identified new efficient routing path.",
+                    "Pruning 400 stale nodes to save memory.",
+                    "Crystallizing heavily used 'Legal-V2' pattern.",
+                    "Rejected hallucination attempt in Triage-Bot."
+                ];
+
                 const newDiscovery = {
                     id: Date.now(),
-                    agent: event.agentId || 'Swarm-Node',
-                    pattern: event.type === 'CACHE_HIT' ? 'Pattern Match' : 'Optimization Found',
-                    improvement: Math.floor(Math.random() * 20) + 5, // Simulating efficiency gain
+                    agent: event.agentId || `Agent - ${ Math.floor(Math.random() * 900) + 100 } `,
+                    pattern: insights[Math.floor(Math.random() * insights.length)],
+                    improvement: Math.floor(Math.random() * 20) + 5,
                     time: new Date().toLocaleTimeString()
                 };
                 setDiscoveries(prev => [newDiscovery, ...prev].slice(0, 8));
@@ -88,28 +100,48 @@ export default function Swarm() {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-8rem)]">
 
-            {/* Left Column: Discovery Feed */}
-            <div className="space-y-6">
-                <CyberCard title="Live Discoveries" icon={Radio} className="h-full flex flex-col">
-                    <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
-                        {discoveries.map(d => (
-                            <div key={d.id} className="p-3 rounded bg-[rgba(255,255,255,0.03)] border-l-2 border-[var(--hud-accent)] animate-in slide-in-from-left duration-300">
-                                <div className="flex justify-between items-start mb-1">
-                                    <span className="text-sm font-bold text-white">{d.agent}</span>
-                                    <span className="text-[10px] font-mono text-[var(--hud-text-dim)]">{d.time}</span>
+            {/* Left Column: Discovery Feed / Comms */}
+            <div className="space-y-6 h-full flex flex-col">
+                {/* Toggle Header */}
+                <div className="flex bg-black/40 rounded p-1 border border-white/5 w-fit">
+                    <button
+                        onClick={() => setActiveMode('insights')}
+                        className={`px - 3 py - 1 rounded text - [10px] font - bold font - mono transition - all flex items - center gap - 1 ${ activeMode === 'insights' ? 'bg-cyan-500/20 text-cyan-400' : 'text-white/40 hover:text-white' } `}
+                    >
+                        <Radio size={12} /> INSIGHTS
+                    </button>
+                    <button
+                        onClick={() => setActiveMode('comms')}
+                        className={`px - 3 py - 1 rounded text - [10px] font - bold font - mono transition - all flex items - center gap - 1 ${ activeMode === 'comms' ? 'bg-purple-500/20 text-purple-400' : 'text-white/40 hover:text-white' } `}
+                    >
+                        <MessageSquare size={12} /> COMMS
+                    </button>
+                </div>
+
+                {activeMode === 'insights' ? (
+                    <CyberCard title="Swarm Insights" icon={Radio} className="flex-1 flex flex-col min-h-0">
+                        <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+                            {discoveries.map(d => (
+                                <div key={d.id} className="p-3 rounded bg-[rgba(255,255,255,0.03)] border-l-2 border-[var(--hud-accent)] animate-in slide-in-from-left duration-300">
+                                    <div className="flex justify-between items-start mb-1">
+                                        <span className="text-sm font-bold text-white">{d.agent}</span>
+                                        <span className="text-[10px] font-mono text-[var(--hud-text-dim)]">{d.time}</span>
+                                    </div>
+                                    <div className="text-xs text-[var(--hud-text-dim)] mb-2">Insight: <span className="text-white italic">"{d.pattern}"</span></div>
+                                    <div className="flex items-center gap-1 text-xs font-mono text-[var(--hud-success)]">
+                                        <Zap size={12} />
+                                        <span>Outcome: +{d.improvement}% Efficiency</span>
+                                    </div>
                                 </div>
-                                <div className="text-xs text-[var(--hud-text-dim)] mb-2">Found: <span className="text-white">{d.pattern}</span></div>
-                                <div className="flex items-center gap-1 text-xs font-mono text-[var(--hud-success)]">
-                                    <Zap size={12} />
-                                    <span>+{d.improvement}% Efficiency</span>
-                                </div>
-                            </div>
-                        ))}
-                        {discoveries.length === 0 && (
-                            <div className="text-center text-[var(--hud-text-dim)] py-8 italic">Listening for swarm signals...</div>
-                        )}
-                    </div>
-                </CyberCard>
+                            ))}
+                            {discoveries.length === 0 && (
+                                <div className="text-center text-[var(--hud-text-dim)] py-8 italic">Listening for swarm signals...</div>
+                            )}
+                        </div>
+                    </CyberCard>
+                ) : (
+                    <CommsPanel className="flex-1 min-h-0" />
+                )}
             </div>
 
             {/* Center: Visualization Area */}
@@ -127,7 +159,7 @@ export default function Swarm() {
                         <div className="h-1 bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden">
                             <div
                                 className="h-full bg-[var(--hud-accent)] transition-all duration-300"
-                                style={{ width: `${session?.progress}%` }}
+                                style={{ width: `${ session?.progress }% ` }}
                             ></div>
                         </div>
                     </div>

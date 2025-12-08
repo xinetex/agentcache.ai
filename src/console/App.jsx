@@ -13,6 +13,7 @@ import Admin from './views/Admin';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import LoginOverlay from './components/LoginOverlay';
 import RegisterOverlay from './components/RegisterOverlay';
+import WelcomeTour from './components/WelcomeTour';
 
 const AppContent = () => {
     // "Neural Ops" (swarm) is default, unless URL specifies otherwise
@@ -29,7 +30,16 @@ const AppContent = () => {
         return 'swarm';
     };
     const [activeView, setActiveView] = useState(getInitialView());
+    const [showTour, setShowTour] = useState(false);
     const { user, loading } = useAuth();
+
+    useEffect(() => {
+        // Show tour on first visit (mock logic using localStorage)
+        const hasSeenTour = localStorage.getItem('ac_has_seen_tour');
+        if (!hasSeenTour && !loading && user) {
+            setShowTour(true);
+        }
+    }, [user, loading]);
 
     if (loading) return <div className="h-screen flex items-center justify-center text-[var(--hud-accent)] font-mono">INITIALIZING...</div>;
 
@@ -55,15 +65,15 @@ const AppContent = () => {
     const renderView = () => {
         switch (activeView) {
             case 'overview': return <Overview />;
-            case 'pipeline': return <PipelineStudio />;
             case 'swarm': return <Swarm />;
-            case 'observability': return <Observability />;
+            case 'pipeline': return <PipelineStudio />;
             case 'lab': return <Lab />;
+            case 'observability': return <Observability />;
             case 'data': return <DataExplorer />;
             case 'governance': return <Governance />;
             case 'settings': return <Settings />;
             case 'admin': return <Admin />;
-            default: return <Overview />;
+            default: return <Swarm />;
         }
     };
 
@@ -103,6 +113,17 @@ const AppContent = () => {
                     </div>
                 </main>
             </div>
+
+            {/* Onboarding Tour */}
+            {showTour && (
+                <WelcomeTour
+                    onClose={() => {
+                        setShowTour(false);
+                        localStorage.setItem('ac_has_seen_tour', 'true');
+                    }}
+                    isDemo={isDemo}
+                />
+            )}
         </div>
     );
 };
