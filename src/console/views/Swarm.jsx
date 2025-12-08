@@ -50,28 +50,32 @@ export default function Swarm() {
         const eventSource = new EventSource('/api/events/stream');
 
         eventSource.onmessage = (e) => {
-            const event = JSON.parse(e.data);
-            if (event.type === 'sys:connected') return;
+            try {
+                const event = JSON.parse(e.data);
+                if (event.type === 'sys:connected') return;
 
-            // Simulate a "discovery" on cache hits or optimizations
-            if (event.type === 'CACHE_HIT' || event.type === 'OPTIMIZATION' || Math.random() > 0.6) {
-                const insights = [
-                    "Detected semantic drift in Finance sector.",
-                    "Auto-optimizing latency for EU region.",
-                    "Identified new efficient routing path.",
-                    "Pruning 400 stale nodes to save memory.",
-                    "Crystallizing heavily used 'Legal-V2' pattern.",
-                    "Rejected hallucination attempt in Triage-Bot."
-                ];
+                // Simulate a "discovery" on cache hits or optimizations
+                if (event.type === 'CACHE_HIT' || event.type === 'OPTIMIZATION' || Math.random() > 0.6) {
+                    const insights = [
+                        "Detected semantic drift in Finance sector.",
+                        "Auto-optimizing latency for EU region.",
+                        "Identified new efficient routing path.",
+                        "Pruning 400 stale nodes to save memory.",
+                        "Crystallizing heavily used 'Legal-V2' pattern.",
+                        "Rejected hallucination attempt in Triage-Bot."
+                    ];
 
-                const newDiscovery = {
-                    id: Date.now(),
-                    agent: event.agentId || 'Agent - ' + (Math.floor(Math.random() * 900) + 100),
-                    pattern: insights[Math.floor(Math.random() * insights.length)],
-                    improvement: Math.floor(Math.random() * 20) + 5,
-                    time: new Date().toLocaleTimeString()
-                };
-                setDiscoveries(prev => [newDiscovery, ...prev].slice(0, 8));
+                    const newDiscovery = {
+                        id: Date.now(),
+                        agent: event.agentId || 'Agent - ' + (Math.floor(Math.random() * 900) + 100),
+                        pattern: event.pattern || insights[Math.floor(Math.random() * insights.length)],
+                        improvement: event.improvement || Math.floor(Math.random() * 20) + 5,
+                        time: new Date().toLocaleTimeString()
+                    };
+                    setDiscoveries(prev => [newDiscovery, ...prev].slice(0, 8));
+                }
+            } catch (err) {
+                console.warn("Stream parse error:", err);
             }
         };
 
