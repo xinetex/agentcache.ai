@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { User, Key, Users, Bell, Shield, Wallet } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { User, Key, Users, Bell, Shield, Wallet, Save, RefreshCw, Trash2, CheckCircle, Plus } from 'lucide-react';
 import CyberCard from '../components/CyberCard';
 import { useAuth } from '../auth/AuthContext';
 
@@ -44,7 +44,7 @@ export default function Settings() {
                 {/* Content Area */}
                 <div className="flex-1 overflow-y-auto pr-2">
                     {activeTab === 'profile' && <ProfileSettings user={user} />}
-                    {activeTab === 'api' && <ApiSettings />}
+                    {activeTab === 'api' && <ApiSettings user={user} />}
                     {activeTab === 'team' && <TeamSettings />}
                     {activeTab === 'billing' && <BillingSettings />}
                 </div>
@@ -54,6 +54,29 @@ export default function Settings() {
 }
 
 function ProfileSettings({ user }) {
+    const [displayName, setDisplayName] = useState(user?.displayName || 'Agent Architect');
+    const [saving, setSaving] = useState(false);
+    const [success, setSuccess] = useState(false);
+
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            await fetch('/api/settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-user-id': user?.id
+                },
+                body: JSON.stringify({ action: 'update_profile', displayName, email: user?.email })
+            });
+            setSuccess(true);
+            setTimeout(() => setSuccess(false), 3000);
+        } catch (err) {
+            console.error(err);
+        }
+        setSaving(false);
+    };
+
     return (
         <div className="space-y-6">
             <CyberCard title="Personal Information" icon={User}>
@@ -62,7 +85,8 @@ function ProfileSettings({ user }) {
                         <label className="text-xs text-white/40 uppercase font-bold tracking-wider">Display Name</label>
                         <input
                             type="text"
-                            defaultValue={user?.email?.split('@')[0] || 'Agent Architect'}
+                            value={displayName}
+                            onChange={(e) => setDisplayName(e.target.value)}
                             className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white focus:outline-none focus:border-cyan-500/50"
                         />
                     </div>
@@ -75,6 +99,18 @@ function ProfileSettings({ user }) {
                             className="w-full bg-white/5 border border-white/5 rounded px-3 py-2 text-white/50 cursor-not-allowed"
                         />
                     </div>
+                </div>
+                <div className="mt-6 flex justify-end">
+                    <button
+                        onClick={handleSave}
+                        disabled={saving}
+                        className={`flex items-center gap-2 px-6 py-2 rounded font-bold transition-all
+                            ${success ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50' : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 hover:bg-cyan-500/30'}
+                        `}
+                    >
+                        {saving ? <RefreshCw className="animate-spin" size={16} /> : success ? <CheckCircle size={16} /> : <Save size={16} />}
+                        {success ? 'Saved' : 'Save Changes'}
+                    </button>
                 </div>
             </CyberCard>
 
@@ -89,20 +125,73 @@ function ProfileSettings({ user }) {
     );
 }
 
-function ApiSettings() {
+function ApiSettings({ user }) {
+    const [keys, setKeys] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchKeys = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch(`/api/settings?type=keys`, {
+                headers: { 'x-user-id': user?.id }
+            });
+            const data = await res.json();
+            setKeys(data.keys || []);
+        } catch (err) {
+            console.error(err);
+        }
+        setLoading(false);
+    };
+
+    const createKey = async () => {
+        try {
+            await fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-user-id': user?.id },
+                body: JSON.stringify({ action: 'create_key' })
+            });
+            fetchKeys();
+        } catch (err) { console.error(err); }
+    };
+
+    const revokeKey = async (keyId) => {
+        if (!confirm('Are you sure? This action cannot be undone.')) return;
+        try {
+            await fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-user-id': user?.id },
+                body: JSON.stringify({ action: 'revoke_key', keyId })
+            });
+            fetchKeys();
+        } catch (err) { console.error(err); }
+    };
+
+    useEffect(() => { fetchKeys(); }, []);
+
     return (
         <div className="space-y-6">
             <CyberCard title="Active API Keys" icon={Key}>
                 <div className="p-2 space-y-4">
-                    <div className="flex justify-between items-center bg-white/5 p-4 rounded border border-white/10">
-                        <div>
-                            <div className="font-mono text-cyan-400 font-bold">sk-live-8f92...9d2a</div>
-                            <div className="text-xs text-white/40 mt-1">Created 2 days ago • Last used just now</div>
-                        </div>
-                        <button className="text-xs text-red-400 hover:text-red-300 border border-red-500/20 px-3 py-1.5 rounded bg-red-500/10">Revoke</button>
-                    </div>
-                    <button className="w-full py-2 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded hover:bg-cyan-500/20 transition-colors flex items-center justify-center gap-2 font-bold text-sm">
-                        <Key size={14} /> Generate New Key
+                    {loading ? (
+                        <div className="text-white/40 text-center py-4">Loading keys...</div>
+                    ) : keys.length === 0 ? (
+                        <div className="text-white/40 text-center py-4">No active keys found.</div>
+                    ) : (
+                        keys.map(k => (
+                            <div key={k.id} className="flex justify-between items-center bg-white/5 p-4 rounded border border-white/10">
+                                <div>
+                                    <div className="font-mono text-cyan-400 font-bold">{k.value}</div>
+                                    <div className="text-xs text-white/40 mt-1">Created {new Date(k.created).toLocaleDateString()}</div>
+                                </div>
+                                <button onClick={() => revokeKey(k.id)} className="text-xs text-red-400 hover:text-red-300 border border-red-500/20 px-3 py-1.5 rounded bg-red-500/10 hover:bg-red-500/20 flex items-center gap-1">
+                                    <Trash2 size={12} /> Revoke
+                                </button>
+                            </div>
+                        ))
+                    )}
+
+                    <button onClick={createKey} className="w-full py-2 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded hover:bg-cyan-500/20 transition-colors flex items-center justify-center gap-2 font-bold text-sm">
+                        <Plus size={14} /> Generate New Key
                     </button>
                 </div>
             </CyberCard>
@@ -157,3 +246,4 @@ function Toggle({ label, desc, defaultChecked }) {
         </div>
     );
 }
+

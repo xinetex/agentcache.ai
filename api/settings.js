@@ -1,92 +1,66 @@
+
+// Simulated Database (In-memory for edge/serverless demo)
+const API_KEYS = new Map();
+const USER_PROFILES = new Map();
+
+// Seed initial data
+const DEMO_USER_ID = 'user_123';
+API_KEYS.set(DEMO_USER_ID, [
+    { id: 'key_1', value: 'sk-live-8f92...9d2a', created: Date.now() - 172800000, lastUsed: Date.now() }
+]);
+
 export const config = { runtime: 'nodejs' };
 
-function json(data, status = 200) {
-    return new Response(JSON.stringify(data), {
-        status,
-        headers: {
-            'content-type': 'application/json; charset=utf-8',
-            'cache-control': 'no-store',
-            'access-control-allow-origin': '*',
-            'access-control-allow-methods': 'GET, POST, OPTIONS',
-            'access-control-allow-headers': 'Content-Type, Authorization',
-        },
-    });
-}
+export default async function handler(req, res) {
+    const { method } = req;
 
-const getEnv = () => ({
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN,
-});
+    // Simple auth check (mock)
+    const userId = req.headers['x-user-id'] || DEMO_USER_ID;
 
-async function redis(command, ...args) {
-    const { url, token } = getEnv();
-    if (!url || !token) throw new Error('Upstash not configured');
-    const path = `${command}/${args.map(encodeURIComponent).join('/')}`;
-    const res = await fetch(`${url}/${path}`, {
-        headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) throw new Error(`Upstash ${res.status}`);
-    const data = await res.json();
-    return data.result;
-}
+    if (method === 'GET') {
+        const type = new URL(req.url, 'http://localhost').searchParams.get('type');
 
-export default async function handler(req) {
-    if (req.method === 'OPTIONS') return json({ ok: true });
-
-    try {
-        // Auth Check
-        let apiKey;
-        let body = {};
-
-        if (req.method === 'POST') {
-            body = await req.json();
-            apiKey = body.apiKey;
-        } else {
-            const url = new URL(req.url);
-            apiKey = url.searchParams.get('apiKey');
+        if (type === 'keys') {
+            const keys = API_KEYS.get(userId) || [];
+            return new Response(JSON.stringify({ keys }), { headers: { 'Content-Type': 'application/json' } });
         }
 
-        if (!apiKey) return json({ error: 'API Key required' }, 400);
-
-        // Hash API Key
-        const enc = new TextEncoder();
-        const hashBuffer = await crypto.subtle.digest('SHA-256', enc.encode(apiKey));
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
-
-        const settingsKey = `user:${hash}:settings`;
-
-        if (req.method === 'POST') {
-            // Save Settings
-            const { settings } = body;
-            if (!settings) return json({ error: 'Settings required' }, 400);
-
-            await redis('SET', settingsKey, JSON.stringify(settings));
-            return json({ success: true, settings });
-        }
-
-        if (req.method === 'GET') {
-            // Get Settings
-            const settingsStr = await redis('GET', settingsKey);
-            const settings = settingsStr ? JSON.parse(settingsStr) : {
-                semantic_correction: true,
-                cognitive_sentinel: true,
-                constraint_enforcement: true,
-                predictive_logic: true,        // Enable Predictive Synapse (Stage 4)
-                system_2_reasoning: true,      // Enable Meta-Cognition (Stage 7)
-                hive_mind: true,               // Enable Federated Learning (Stage 5)
-                agent_config: {
-                    autonomy_level: 'supervised', // supervised | autonomous
-                    max_daily_spend: 5.00,
-                    allow_tool_creation: false
-                }
-            }; // Default to all ON
-            return json({ settings });
-        }
-
-        return json({ error: 'Method not allowed' }, 405);
-
-    } catch (err) {
-        return json({ error: 'Unexpected error', details: err?.message }, 500);
+        // Default: Get Profile
+        const profile = USER_PROFILES.get(userId) || { displayName: 'Agent Architect', email: 'user@example.com' };
+        return new Response(JSON.stringify({ profile }), { headers: { 'Content-Type': 'application/json' } });
     }
+
+    if (method === 'POST') {
+        const body = await req.json();
+        const { action } = body;
+
+        if (action === 'update_profile') {
+            const { displayName, email } = body;
+            USER_PROFILES.set(userId, { displayName, email }); // Mock save
+            return new Response(JSON.stringify({ success: true, profile: { displayName, email } }), { headers: { 'Content-Type': 'application/json' } });
+        }
+
+        if (action === 'create_key') {
+            const keys = API_KEYS.get(userId) || [];
+            const newKey = {
+                id: `key_${Date.now()}`,
+                value: `sk-live-${Math.random().toString(36).substring(2, 10)}${Math.random().toString(36).substring(2, 10)}`,
+                created: Date.now(),
+                lastUsed: null
+            };
+            keys.push(newKey);
+            API_KEYS.set(userId, keys);
+            return new Response(JSON.stringify({ success: true, key: newKey }), { headers: { 'Content-Type': 'application/json' } });
+        }
+
+        if (action === 'revoke_key') {
+            const { keyId } = body;
+            let keys = API_KEYS.get(userId) || [];
+            keys = keys.filter(k => k.id !== keyId);
+            API_KEYS.set(userId, keys);
+            return new Response(JSON.stringify({ success: true }), { headers: { 'Content-Type': 'application/json' } });
+        }
+    }
+
+    return new Response('Method Not Allowed', { status: 405 });
 }
