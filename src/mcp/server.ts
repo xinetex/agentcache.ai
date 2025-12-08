@@ -118,6 +118,11 @@ const HiveMemorySchema = z.object({
   modality: z.enum(['text', 'image', 'sensor']).optional().default('text'),
 });
 
+const CompressContextSchema = z.object({
+  text: z.string().describe('The long text or document context to compress'),
+  compression_ratio: z.enum(['16x', '32x', '128x']).optional().default('16x').describe('Target compression ratio'),
+});
+
 // API configuration
 const AGENTCACHE_API_URL = process.env.AGENTCACHE_API_URL || 'https://agentcache.ai';
 const API_KEY = process.env.AGENTCACHE_API_KEY || process.env.API_KEY || 'ac_demo_test123';
@@ -386,6 +391,18 @@ const tools: Tool[] = [
         modality: { type: 'string', enum: ['text', 'image', 'sensor'] }
       },
       required: ['input']
+    }
+  },
+  {
+    name: 'agentcache_compress_context',
+    description: 'Compress large text contexts into dense memory tokens using CLaRa-7B. Reduces token usage by 90% while retaining semantic meaning for RAG.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        text: { type: 'string', description: 'The long text or document context to compress' },
+        compression_ratio: { type: 'string', enum: ['16x', '32x', '128x'], description: 'Target compression ratio (default: 16x)' }
+      },
+      required: ['text']
     }
   },
 ];
@@ -657,6 +674,17 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               nearest_neighbor_simulation: 'match_found'
             }, null, 2)
           }]
+        };
+      }
+
+      case 'agentcache_compress_context': {
+        const params = CompressContextSchema.parse(args);
+        const result = await callAgentCacheAPI('/api/cognitive/compress', 'POST', {
+          text: params.text,
+          compression_ratio: params.compression_ratio
+        });
+        return {
+          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }]
         };
       }
 

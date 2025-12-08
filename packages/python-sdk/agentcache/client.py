@@ -161,3 +161,19 @@ class AgentCache:
         return self._request("POST", "/api/router/route", {
             "prompt": prompt
         })
+
+    def compress(self, text: str, ratio: str = "16x") -> Dict[str, Any]:
+        """
+        Compress text using CLaRa-7B cognitive compression.
+        
+        Args:
+            text: The text/document to compress
+            ratio: Compression ratio ("16x", "32x", "128x")
+            
+        Returns:
+            Dict containing 'compressed_text' and 'stats'
+        """
+        return self._request("POST", "/api/cognitive/compress", {
+            "text": text,
+            "compression_ratio": ratio
+        })
