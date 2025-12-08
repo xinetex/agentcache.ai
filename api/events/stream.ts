@@ -30,8 +30,34 @@ export default async function handler(req, res) {
         res.write(`data: ${JSON.stringify(event)}\n\n`);
     });
 
+
     // Send initial connection message
     res.write(`data: ${JSON.stringify({ type: 'sys:connected', timestamp: Date.now() })}\n\n`);
+
+    // REAL DATA FEED: Hacker News (Simulating "Pattern Discovery" from real world)
+    const { getTopStories } = await import('../../services/hackernews.js');
+
+    getTopStories().then(stories => {
+        let index = 0;
+        const interval = setInterval(() => {
+            if (index >= stories.length) {
+                index = 0; // Loop the feed for demo purposes
+            }
+            const story = stories[index];
+            const event = {
+                type: 'OPTIMIZATION',
+                agentId: 'Agent-HN-' + story.by,
+                pattern: "Analysis: " + story.title, // The real news title
+                improvement: Math.min(99, story.score), // Use score as improvement metric
+                timestamp: Date.now()
+            };
+            res.write(`data: ${JSON.stringify(event)}\n\n`);
+            index++;
+        }, 5000); // New story every 5 seconds
+
+        // Cleanup interval on close
+        req.on('close', () => clearInterval(interval));
+    });
 
     // Cleanup on close
     req.on('close', () => {
