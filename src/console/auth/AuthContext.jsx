@@ -41,10 +41,10 @@ export const AuthProvider = ({ children }) => {
 
             localStorage.setItem('agentcache_token', data.token);
             localStorage.setItem('agentcache_user', JSON.stringify(data.user));
-            return true;
+            return { success: true };
         } catch (err) {
             console.error(err);
-            return false; // Or throw to let UI handle error message
+            return { success: false, error: err.message || 'Login failed' };
         }
     };
 

@@ -10,6 +10,6 @@ const isLocal = connectionString.includes('localhost') || connectionString.inclu
 export const client = postgres(connectionString, {
     prepare: false,
     ssl: isLocal ? false : 'require', // Neon requires SSL
-    connect_timeout: 10 // Fail fast after 10s
+    connect_timeout: 5 // Fail fast after 5s
 });
 export const db = drizzle(client, { schema });

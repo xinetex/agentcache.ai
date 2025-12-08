@@ -15,9 +15,9 @@ export default function LoginOverlay() {
         setLoading(true);
         setError(null);
 
-        const success = await login(email, password);
-        if (!success) {
-            setError('Login failed. Please try again.');
+        const result = await login(email, password);
+        if (!result.success) {
+            setError(result.error);
         }
         setLoading(false);
     };
