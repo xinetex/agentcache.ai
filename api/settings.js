@@ -81,7 +81,7 @@ export default async function handler(req, res) {
                 // Insert
                 await db.execute(sql`
                     INSERT INTO api_keys (organization_id, key_prefix, key_hash, scopes, is_active)
-                    VALUES (${membership.org_id}, ${keyPrefix}, ${hash}, ${JSON.stringify(['*'])}, true)
+                    VALUES (${membership.org_id}, ${keyPrefix}, ${hash}, ${'{*}'}, true)
                 `);
 
                 // We return the raw secret ONLY once here

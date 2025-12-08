@@ -66,7 +66,7 @@ export default async function handler(req, res) {
 
     await db.execute(sql`
             INSERT INTO api_keys (organization_id, key_prefix, key_hash, scopes)
-            VALUES (${newOrg.id}, ${keyPrefix}, ${await bcryptjs.hash(randomSecret, 10)}, ${JSON.stringify(['cache:read', 'cache:write'])})
+            VALUES (${newOrg.id}, ${keyPrefix}, ${await bcryptjs.hash(randomSecret, 10)}, ${'{cache:read,cache:write}'})
         `);
 
     // Generate Token
