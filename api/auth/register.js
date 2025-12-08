@@ -1,202 +1,94 @@
+
 import bcryptjs from 'bcryptjs';
-import crypto from 'crypto';
+import { db } from '../../src/db/client';
+import { sql } from 'drizzle-orm';
 import { generateToken } from '../../lib/jwt.js';
-import { transaction } from '../../lib/db.js';
 
 const BCRYPT_ROUNDS = 10;
 
-function generateSlug(name) {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-    .substring(0, 50);
-}
-
-function generateApiKey() {
-  return 'ac_' + crypto.randomBytes(32).toString('hex');
-}
-
-function hashApiKey(apiKey) {
-  return crypto.createHash('sha256').update(apiKey).digest('hex');
-}
+export const config = { runtime: 'nodejs' };
 
 export default async function handler(req, res) {
-  if (req.method === 'OPTIONS') {
-    return res.status(200).json({ ok: true });
-  }
-
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return new Response('Method Not Allowed', { status: 405 });
   }
 
   try {
-    const { email, password, organizationName, sector, businessDescription } = req.body;
+    const { email, password, name, orgName } = await req.json();
 
-    // Validate input
     if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+      return new Response(JSON.stringify({ error: 'Email and password required' }), { status: 400 });
     }
 
-    if (!organizationName) {
-      return res.status(400).json({ error: 'Organization name is required' });
-    }
-
-    if (!sector) {
-      return res.status(400).json({ error: 'Sector is required' });
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: 'Invalid email format' });
-    }
-
-    // Validate password strength
-    if (password.length < 8) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+    // Check if user exists (Raw SQL)
+    const check = await db.execute(sql`SELECT id FROM users WHERE email = ${email} LIMIT 1`);
+    if (check.length > 0) {
+      return new Response(JSON.stringify({ error: 'User already exists' }), { status: 409 });
     }
 
     // Hash password
     const passwordHash = await bcryptjs.hash(password, BCRYPT_ROUNDS);
 
-    // Generate organization slug
-    const slug = generateSlug(organizationName);
+    // 1. Create User (Raw SQL)
+    const [newUser] = await db.execute(sql`
+            INSERT INTO users (email, password_hash, name, role, plan) 
+            VALUES (${email}, ${passwordHash}, ${name || email.split('@')[0]}, 'admin', 'free')
+            RETURNING *
+        `);
 
-    // Use transaction to create everything atomically
-    const result = await transaction(async (client) => {
-      // Check if user already exists
-      const existingUser = await client.query(
-        'SELECT id FROM users WHERE email = $1',
-        [email.toLowerCase()]
-      );
+    // 2. Create Organization (Raw SQL)
+    const slug = (orgName || newUser.name + "'s Org").toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Math.random().toString(36).substr(2, 5);
 
-      if (existingUser.rows.length > 0) {
-        throw new Error('An account with this email already exists');
-      }
+    const [newOrg] = await db.execute(sql`
+            INSERT INTO organizations (name, slug, sector, contact_email, plan, region)
+            VALUES (${orgName || newUser.name + "'s Org"}, ${slug}, 'general', ${email}, 'free', 'us-east-1')
+            RETURNING *
+        `);
 
-      // Check if org slug already exists
-      const existingOrg = await client.query(
-        'SELECT id FROM organizations WHERE slug = $1',
-        [slug]
-      );
+    // 3. Link Member (Raw SQL)
+    await db.execute(sql`
+            INSERT INTO members (user_id, org_id, role)
+            VALUES (${newUser.id}, ${newOrg.id}, 'owner')
+        `);
 
-      const finalSlug = existingOrg.rows.length > 0
-        ? `${slug}-${Date.now().toString(36)}`
-        : slug;
+    // 4. Create API Key (Raw SQL)
+    const keyPrefix = 'ac_live_';
+    const randomSecret = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
 
-      // Create organization
-      const orgResult = await client.query(`
-        INSERT INTO organizations (
-          name, slug, sector, contact_email, plan_tier, 
-          max_namespaces, max_api_keys, status
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        RETURNING id, name, slug, sector
-      `, [
-        organizationName,
-        finalSlug,
-        sector,
-        email.toLowerCase(),
-        'starter',
-        5,   // max_namespaces for starter
-        3,   // max_api_keys for starter
-        'active'
-      ]);
+    console.log("DEBUG: Inserting API Key for OrgID using CORRECT COLUMNS");
 
-      const org = orgResult.rows[0];
+    // Introspection Check
+    const cols = await db.execute(sql`
+            SELECT column_name FROM information_schema.columns 
+            WHERE table_name = 'api_keys'
+        `);
+    console.log("DEBUG: api_keys columns seen by register.js:", cols.map(c => c.column_name).join(', '));
 
-      // Create user as owner
-      const userResult = await client.query(`
-        INSERT INTO users (
-          email, password_hash, organization_id, role, is_active
-        ) VALUES ($1, $2, $3, $4, $5)
-        RETURNING id, email, organization_id, role
-      `, [
-        email.toLowerCase(),
-        passwordHash,
-        org.id,
-        'owner',
-        true
-      ]);
+    await db.execute(sql`
+            INSERT INTO api_keys (organization_id, key_prefix, key_hash, scopes)
+            VALUES (${newOrg.id}, ${keyPrefix}, ${await bcryptjs.hash(randomSecret, 10)}, ${JSON.stringify(['cache:read', 'cache:write'])})
+        `);
 
-      const user = userResult.rows[0];
-
-      // Create default namespaces based on sector
-      const namespaces = [];
-      if (sector === 'filestorage') {
-        const nsNames = ['storage', 'cdn', 'metadata'];
-        for (const name of nsNames) {
-          const nsResult = await client.query(`
-            INSERT INTO namespaces (
-              organization_id, name, display_name, is_active
-            ) VALUES ($1, $2, $3, $4)
-            RETURNING id, name, display_name
-          `, [org.id, name, name.charAt(0).toUpperCase() + name.slice(1), true]);
-          namespaces.push(nsResult.rows[0]);
-        }
-      } else {
-        // Default namespace for other sectors
-        const nsResult = await client.query(`
-          INSERT INTO namespaces (
-            organization_id, name, display_name, is_active
-          ) VALUES ($1, $2, $3, $4)
-          RETURNING id, name, display_name
-        `, [org.id, 'default', 'Default', true]);
-        namespaces.push(nsResult.rows[0]);
-      }
-
-      // Generate API key
-      const apiKey = generateApiKey();
-      const keyHash = hashApiKey(apiKey);
-
-      await client.query(`
-        INSERT INTO api_keys (
-          organization_id, key, key_hash, is_active
-        ) VALUES ($1, $2, $3, $4)
-      `, [org.id, apiKey, keyHash, true]);
-
-      return { user, org, namespaces, apiKey };
-    });
-
-    // Generate JWT token
+    // Generate Token
     const token = generateToken({
-      userId: result.user.id,
-      email: result.user.email,
-      organizationId: result.user.organization_id,
-      role: result.user.role,
+      id: newUser.id,
+      email: newUser.email,
+      role: newUser.role,
+      organizationId: newOrg.id
     });
 
-    return res.status(201).json({
-      token,
-      user: {
-        id: result.user.id,
-        email: result.user.email,
-        organizationId: result.user.organization_id,
-        organizationName: result.org.name,
-        organizationSlug: result.org.slug,
-        role: result.user.role,
-      },
-      organization: {
-        id: result.org.id,
-        name: result.org.name,
-        slug: result.org.slug,
-        sector: result.org.sector,
-      },
-      namespaces: result.namespaces,
-      apiKey: result.apiKey,  // Only shown once!
-      message: 'Account created successfully'
+    return new Response(JSON.stringify({
+      success: true,
+      user: newUser,
+      organization: newOrg,
+      apiKey: keyPrefix + randomSecret,
+      token
+    }), {
+      headers: { 'Content-Type': 'application/json' }
     });
 
-  } catch (error) {
-    console.error('Registration error:', error);
-
-    if (error.message === 'An account with this email already exists') {
-      return res.status(409).json({ error: error.message });
-    }
-
-    return res.status(500).json({
-      error: 'An error occurred during registration. Please try again.',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+  } catch (err) {
+    console.error('Register error:', err);
+    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
   }
 }

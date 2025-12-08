@@ -1,129 +1,76 @@
+
 import bcrypt from 'bcryptjs';
 import { generateToken } from '../../lib/jwt.js';
-import { neon } from '@neondatabase/serverless';
-
-const sql = neon(process.env.DATABASE_URL);
+import { db } from '../../src/db/client';
+import { sql } from 'drizzle-orm';
+import { users } from '../../src/db/schema';
+import { eq } from 'drizzle-orm';
 
 export const config = {
   runtime: 'nodejs'
 };
 
-/**
- * POST /api/auth/login
- * Authenticate customer and return JWT token
- * 
- * Request body:
- * {
- *   email: string,
- *   password: string
- * }
- * 
- * Response:
- * {
- *   success: true,
- *   token: string,
- *   user: { id, email, organization_id, role }
- * }
- */
-
 export default async function handler(req, res) {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-  // Handle OPTIONS for CORS
+  // CORS wrappers standard
   if (req.method === 'OPTIONS') {
-    return res.status(200).json({ ok: true });
+    return new Response(null, { status: 200, headers: { 'Access-Control-Allow-Origin': '*' } });
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
   }
 
   try {
-    // Parse body if it's a string (Vercel edge function format)
-    let body = req.body;
-    if (typeof body === 'string') {
-      body = JSON.parse(body);
-    }
-    const { email, password } = body;
+    const { email, password } = await req.json();
 
-    // Validate input
     if (!email || !password) {
-      return res.status(400).json({
-        error: 'Email and password are required'
-      });
+      return new Response(JSON.stringify({ error: 'Email and password required' }), { status: 400 });
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        error: 'Invalid email format'
-      });
+    // Find user by email (Raw SQL)
+    const usersFound = await db.execute(sql`
+        SELECT id, email, password_hash, role, plan, name
+        FROM users
+        WHERE email = ${email.toLowerCase()}
+        LIMIT 1
+    `);
+
+    const user = usersFound[0];
+
+    // Check if user exists
+    if (!user || !user.password_hash) {
+      return new Response(JSON.stringify({ error: 'Invalid credentials' }), { status: 401 });
     }
-
-    // Find user by email
-    const users = await sql`
-      SELECT *
-      FROM users
-      WHERE email = ${email.toLowerCase()} AND is_active = true
-    `;
-
-    if (users.length === 0) {
-      // Don't reveal whether user exists
-      return res.status(401).json({
-        error: 'Invalid email or password'
-      });
-    }
-
-    const user = users[0];
 
     // Verify password
     const passwordMatch = await bcrypt.compare(password, user.password_hash);
-
     if (!passwordMatch) {
-      return res.status(401).json({
-        error: 'Invalid email or password'
-      });
+      return new Response(JSON.stringify({ error: 'Invalid credentials' }), { status: 401 });
     }
 
-    // Update last login timestamp
-    await sql`
-      UPDATE users 
-      SET updated_at = NOW()
-      WHERE id = ${user.id}
-    `;
-
-    // Generate JWT token
+    // Token Generation
     const token = generateToken({
       id: user.id,
       email: user.email,
-      organization_id: user.organization_id,
-      role: user.role || 'member',
+      role: user.role,
+      organizationId: 'org_placeholder' // TODO: Join members table to get this
     });
 
-    return res.status(200).json({
+    return new Response(JSON.stringify({
       token,
       user: {
         id: user.id,
         email: user.email,
-        fullName: user.full_name,
-        organizationId: user.organization_id || null,
-        role: user.role || 'member',
-        emailVerified: user.email_verified || false,
-      },
+        name: user.name,
+        role: user.role,
+        plan: user.plan
+      }
+    }), {
+      headers: { 'Content-Type': 'application/json' }
     });
 
   } catch (error) {
     console.error('Login error:', error);
-    console.error('Error stack:', error.stack);
-
-    return res.status(500).json({
-      error: 'An error occurred during login. Please try again.',
-      message: error.message,
-      details: error.stack?.split('\n')[0]
-    });
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }

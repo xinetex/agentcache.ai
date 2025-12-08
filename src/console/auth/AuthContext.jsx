@@ -19,15 +19,21 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
     }, []);
 
-    const login = async (email) => {
+    const login = async (email, password) => {
         try {
-            const res = await fetch('/api/auth/dev-login', {
+            const endpoint = password ? '/api/auth/login' : '/api/auth/dev-login';
+            const body = password ? { email, password } : { email };
+
+            const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
+                body: JSON.stringify(body)
             });
 
-            if (!res.ok) throw new Error('Login failed');
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Login failed');
+            }
 
             const data = await res.json();
             setToken(data.token);
@@ -38,7 +44,7 @@ export const AuthProvider = ({ children }) => {
             return true;
         } catch (err) {
             console.error(err);
-            return false;
+            return false; // Or throw to let UI handle error message
         }
     };
 

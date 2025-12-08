@@ -6,6 +6,7 @@ import CyberCard from './CyberCard';
 export default function LoginOverlay() {
     const { login } = useAuth();
     const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -14,7 +15,7 @@ export default function LoginOverlay() {
         setLoading(true);
         setError(null);
 
-        const success = await login(email);
+        const success = await login(email, password);
         if (!success) {
             setError('Login failed. Please try again.');
         }
@@ -26,16 +27,29 @@ export default function LoginOverlay() {
             <div className="w-full max-w-md p-6">
                 <CyberCard title="Mission Control Access" icon={Lock} className="border-[var(--hud-accent)] shadow-[0_0_50px_rgba(0,243,255,0.2)]">
                     <form onSubmit={handleSubmit} className="space-y-6 mt-4">
-                        <div>
-                            <label className="block text-xs font-mono text-[var(--hud-text-dim)] mb-2">OPERATOR ID (EMAIL)</label>
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="alice@acme.com"
-                                className="w-full bg-black border border-[var(--hud-border)] rounded p-3 text-white focus:border-[var(--hud-accent)] focus:outline-none transition-colors"
-                                required
-                            />
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-mono text-[var(--hud-text-dim)] mb-2">OPERATOR ID (EMAIL)</label>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="alice@acme.com"
+                                    className="w-full bg-black border border-[var(--hud-border)] rounded p-3 text-white focus:border-[var(--hud-accent)] focus:outline-none transition-colors"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-mono text-[var(--hud-text-dim)] mb-2">ACCESS KEY (PASSWORD)</label>
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    className="w-full bg-black border border-[var(--hud-border)] rounded p-3 text-white focus:border-[var(--hud-accent)] focus:outline-none transition-colors"
+                                    required
+                                />
+                            </div>
                         </div>
 
                         {error && (

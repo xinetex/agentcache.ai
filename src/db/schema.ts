@@ -57,9 +57,13 @@ export const organizations = pgTable('organizations', {
 export const users = pgTable('users', {
     id: uuid('id').defaultRandom().primaryKey(),
     email: text('email').notNull().unique(),
+    passwordHash: text('password_hash'), // Nullable for OAuth users, required for email
     name: text('name'),
     avatarUrl: text('avatar_url'),
+    role: text('role').default('user'), // 'admin', 'user'
+    plan: text('plan').default('free'),
     createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
 });
 
 export const members = pgTable('members', {
