@@ -1,5 +1,8 @@
-
+const baseUrl = 'http://localhost:3000'; // Not used for internal handler calls
 import 'dotenv/config';
+
+console.log("VERIFY SCRIPT DB:", process.env.DATABASE_URL ? process.env.DATABASE_URL.split('@')[1] : 'UNDEFINED');
+
 import registerHandler from '../api/auth/register.js';
 import loginHandler from '../api/auth/login.js';
 import checkoutHandler from '../api/billing/checkout.js';
