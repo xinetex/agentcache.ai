@@ -10,7 +10,7 @@ import {
     Lock,
     Eye
 } from 'lucide-react';
-import CyberCard from '../CyberCard';
+import CyberCard from './CyberCard';
 
 export default function GameConsole({ onLaunch }) {
     const [selectedGame, setSelectedGame] = useState(null);
@@ -64,8 +64,8 @@ export default function GameConsole({ onLaunch }) {
                         key={game.id}
                         onClick={() => setSelectedGame(game)}
                         className={`w-full text-left p-4 rounded border transition-all relative overflow-hidden group ${selectedGame?.id === game.id
-                                ? `${game.border} ${game.bg} opacity-100`
-                                : 'border-[var(--hud-border)] bg-black/40 hover:bg-[rgba(255,255,255,0.05)] opacity-80'
+                            ? `${game.border} ${game.bg} opacity-100`
+                            : 'border-[var(--hud-border)] bg-black/40 hover:bg-[rgba(255,255,255,0.05)] opacity-80'
                             }`}
                     >
                         <div className="flex justify-between items-start mb-2">
@@ -81,8 +81,8 @@ export default function GameConsole({ onLaunch }) {
                         <div className="flex gap-1">
                             {[1, 2, 3].map(i => (
                                 <div key={i} className={`h-1 w-4 rounded-full ${game.difficulty === 'EXTREME' || (game.difficulty === 'HARD' && i < 3) || (game.difficulty === 'MEDIUM' && i < 2)
-                                        ? game.color.replace('text-', 'bg-')
-                                        : 'bg-white/10'
+                                    ? game.color.replace('text-', 'bg-')
+                                    : 'bg-white/10'
                                     }`}></div>
                             ))}
                         </div>
