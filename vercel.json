@@ -59,6 +59,10 @@
       "destination": "/dashboard.html"
     },
     {
+      "source": "/console/:path*",
+      "destination": "/dashboard.html"
+    },
+    {
       "source": "/dashboard",
       "destination": "/dashboard.html"
     },
