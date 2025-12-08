@@ -56,7 +56,7 @@ export default async function handler(req, res) {
         }
 
         if (method === 'POST') {
-            const body = await req.json();
+            const body = req.body;
             const { action } = body;
 
             if (action === 'update_profile') {

@@ -21,7 +21,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { email, password } = await req.json();
+    const { email, password } = req.body;
 
     if (!email || !password) {
       return new Response(JSON.stringify({ error: 'Email and password required' }), { status: 400 });
