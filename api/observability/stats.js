@@ -47,6 +47,19 @@ export default async function handler(req) {
         const total = hits + misses;
         const hitRate = total > 0 ? (hits / total) * 100 : 0;
 
+        // Fetch recent traces for advanced latency analysis (P50/P95)
+        const tracesRes = await fetch(`${UPSTASH_URL}/lrange/traces:recent/0/99`, {
+            headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
+        });
+        const traceData = await tracesRes.json();
+        const validLatencies = (traceData.result || [])
+            .map(s => { try { return JSON.parse(s).latency; } catch (e) { return 0; } })
+            .filter(l => l > 0)
+            .sort((a, b) => a - b);
+
+        const p50 = validLatencies.length ? validLatencies[Math.floor(validLatencies.length * 0.5)] : 0;
+        const p95 = validLatencies.length ? validLatencies[Math.floor(validLatencies.length * 0.95)] : 0;
+
         return new Response(JSON.stringify({
             requests: total,
             hits,
@@ -54,7 +67,11 @@ export default async function handler(req) {
             hitRate: Math.round(hitRate),
             tokensSaved: tokens,
             costSaved: cost,
-            latency: 45 // TODO: Calculate avg from recent signals if needed
+            latency: {
+                avg: p50, // fast approximation
+                p50,
+                p95
+            }
         }), {
             headers: { 'Content-Type': 'application/json' }
         });

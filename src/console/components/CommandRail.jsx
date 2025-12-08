@@ -23,6 +23,7 @@ const CommandRail = ({ activeView, setActiveView, user }) => {
         { id: 'lab', label: 'Research Lab', icon: FlaskConical },
         { id: 'data', label: 'Data Explorer', icon: Database },
         { id: 'governance', label: 'Governance', icon: Shield },
+        { id: 'settings', label: 'Settings', icon: Settings },
     ];
 
     return (

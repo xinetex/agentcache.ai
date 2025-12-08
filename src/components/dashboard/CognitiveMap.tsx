@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Globe, Snowflake, X, Zap } from 'lucide-react';
+import { Globe, Snowflake, X, Zap, Cloud, Wind, Thermometer, Radio } from 'lucide-react';
 
 interface Cluster {
     id: string;
@@ -19,27 +19,36 @@ interface NetworkStatus {
     connectivity: { name: string; latency: number; status: string }[];
 }
 
+interface Telemetry {
+    space: { station: string; latitude: number; longitude: number; altitude: number; velocity: number };
+    atmosphere: { location: string; temp_c: number; humidity: number; wind_kph: number };
+}
+
 export function CognitiveMap() {
     const [clusters, setClusters] = useState<Cluster[]>([]);
     const [network, setNetwork] = useState<NetworkStatus | null>(null);
+    const [telemetry, setTelemetry] = useState<Telemetry | null>(null);
     const [selectedCluster, setSelectedCluster] = useState<Cluster | null>(null);
     const [loading, setLoading] = useState(true);
 
     // Fetch REAL Data
     const fetchData = async () => {
         try {
-            const [clusterRes, networkRes] = await Promise.all([
+            const [clusterRes, networkRes, telemetryRes] = await Promise.all([
                 fetch('/api/observability/clusters'),
-                fetch('/api/observability/network')
+                fetch('/api/observability/network'),
+                fetch('/api/observability/telemetry')
             ]);
 
             const clusterData = await clusterRes.json();
             const networkData = await networkRes.json();
+            const telemetryData = await telemetryRes.json();
 
             if (Array.isArray(clusterData)) {
                 setClusters(clusterData);
             }
             setNetwork(networkData);
+            setTelemetry(telemetryData);
         } catch (err) {
             console.error("Failed to map cognitive landscape:", err);
         } finally {
@@ -49,7 +58,7 @@ export function CognitiveMap() {
 
     useEffect(() => {
         fetchData();
-        const interval = setInterval(fetchData, 10000); // Poll real data every 10s
+        const interval = setInterval(fetchData, 5000); // Poll every 5s for live movement
         return () => clearInterval(interval);
     }, []);
 
@@ -59,6 +68,14 @@ export function CognitiveMap() {
             c.id === id ? { ...c, state: 'crystallized', color: 'bg-cyan-400', value: c.value * 1.5 } : c
         ));
     };
+
+    // Helper: Map Lat/Long to % for Cyber Projection
+    const project = (lat: number, long: number) => ({
+        x: ((long + 180) / 360) * 100,
+        y: ((90 - lat) / 180) * 100
+    });
+
+    const issPos = telemetry ? project(telemetry.space.latitude, telemetry.space.longitude) : { x: 50, y: 50 };
 
     return (
         <div className="relative w-full h-full bg-slate-950 rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
@@ -83,8 +100,54 @@ export function CognitiveMap() {
                 <svg className="absolute inset-0 w-full h-full">
                     <line x1="20%" y1="40%" x2="50%" y2="30%" stroke="rgba(16, 185, 129, 0.2)" strokeWidth="1" strokeDasharray="5,5" />
                     <line x1="20%" y1="40%" x2="50%" y2="60%" stroke="rgba(16, 185, 129, 0.2)" strokeWidth="1" strokeDasharray="5,5" />
+
+                    {/* Dynamic Line to ISS if available */}
+                    {telemetry && (
+                        <line x1="20%" y1="40%" x2={`${issPos.x}%`} y2={`${issPos.y}%`} stroke="rgba(0, 243, 255, 0.1)" strokeWidth="1" />
+                    )}
                 </svg>
             </div>
+
+            {/* Living Grid Overlay (ISS & Weather) */}
+            {telemetry && (
+                <>
+                    {/* ISS Tracker */}
+                    <motion.div
+                        className="absolute w-8 h-8 -ml-4 -mt-4 flex items-center justify-center z-10 pointer-events-none"
+                        animate={{ left: `${issPos.x}%`, top: `${issPos.y}%` }}
+                        transition={{ duration: 5, ease: "linear" }}
+                    >
+                        <div className="absolute inset-0 border border-cyan-500/50 rounded-full animate-ping" />
+                        <div className="bg-black/50 p-1 rounded-full border border-cyan-400 text-cyan-400">
+                            <Radio size={12} />
+                        </div>
+                        <div className="absolute top-full mt-1 text-[8px] font-mono text-cyan-500 whitespace-nowrap">
+                            ISS (Alt: {Math.round(telemetry.space.altitude)}km)
+                        </div>
+                    </motion.div>
+
+                    {/* Weather Widget */}
+                    <div className="absolute bottom-4 left-4 p-3 bg-black/40 backdrop-blur border border-white/10 rounded-lg flex items-center gap-4 z-20">
+                        <div className="flex flex-col">
+                            <span className="text-[8px] text-white/40 uppercase tracking-widest">Atmosphere ({telemetry.atmosphere.location})</span>
+                            <div className="flex items-center gap-3 mt-1">
+                                <div className="flex items-center gap-1 text-white text-xs font-mono">
+                                    <Thermometer size={12} className="text-amber-400" />
+                                    {telemetry.atmosphere.temp_c}°C
+                                </div>
+                                <div className="flex items-center gap-1 text-white text-xs font-mono">
+                                    <Wind size={12} className="text-blue-400" />
+                                    {telemetry.atmosphere.wind_kph}kph
+                                </div>
+                                <div className="flex items-center gap-1 text-white text-xs font-mono">
+                                    <Cloud size={12} className="text-slate-400" />
+                                    {telemetry.atmosphere.humidity}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
 
             {/* Header / HUD */}
             <div className="absolute top-4 left-4 z-10 flex items-center gap-3 pointer-events-none">

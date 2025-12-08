@@ -8,10 +8,7 @@ import Observability from './views/Observability';
 import Lab from './views/Lab';
 import DataExplorer from './views/DataExplorer';
 import Governance from './views/Governance';
-import { SectorProvider } from '../context/SectorContext';
-
-import { AuthProvider, useAuth } from './auth/AuthContext';
-import LoginOverlay from './components/LoginOverlay';
+import Settings from './views/Settings';
 
 const AppContent = () => {
     // "Neural Ops" (swarm) is default, unless URL specifies otherwise
@@ -22,6 +19,7 @@ const AppContent = () => {
         if (path.includes('lab')) return 'lab';
         if (path.includes('data')) return 'data';
         if (path.includes('governance')) return 'governance';
+        if (path.includes('settings')) return 'settings';
         return 'swarm';
     };
     const [activeView, setActiveView] = useState(getInitialView());
@@ -39,6 +37,7 @@ const AppContent = () => {
             case 'lab': return <Lab />;
             case 'data': return <DataExplorer />;
             case 'governance': return <Governance />;
+            case 'settings': return <Settings />;
             default: return <Overview />;
         }
     };
