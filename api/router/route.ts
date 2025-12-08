@@ -1,4 +1,6 @@
-import { router } from '../../src/lib/llm/router';
+import { CognitiveRouter } from '../../src/infrastructure/CognitiveRouter.js';
+
+const router = new CognitiveRouter();
 
 export const config = {
     runtime: 'nodejs',
@@ -17,12 +19,18 @@ export default async function handler(req: Request) {
 
         if (!prompt) return new Response(JSON.stringify({ error: 'Prompt required' }), { status: 400 });
 
-        const result = router.route(prompt);
+        const route = await router.route(prompt);
+        // Cast to any to access internal analysis method until we fix TS types properly
+        const signals = (router as any).analyzeSignals(prompt);
 
-        return new Response(JSON.stringify(result), {
+        return new Response(JSON.stringify({
+            route,
+            signals,
+            timestamp: Date.now()
+        }), {
             headers: {
                 'Content-Type': 'application/json',
-                'Cache-Control': 'public, max-age=3600' // Route decisions are highly cacheable!
+                'Cache-Control': 'no-store' // Real-time analysis should not be cached
             }
         });
 
