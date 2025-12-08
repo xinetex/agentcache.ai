@@ -1,4 +1,3 @@
-```javascript
 import React, { useState, useEffect } from 'react';
 import { Hexagon, Trophy, Radio, Zap, MessageSquare } from 'lucide-react';
 import CyberCard from '../components/CyberCard';
@@ -106,13 +105,13 @@ export default function Swarm() {
                 <div className="flex bg-black/40 rounded p-1 border border-white/5 w-fit">
                     <button
                         onClick={() => setActiveMode('insights')}
-                        className={`px - 3 py - 1 rounded text - [10px] font - bold font - mono transition - all flex items - center gap - 1 ${ activeMode === 'insights' ? 'bg-cyan-500/20 text-cyan-400' : 'text-white/40 hover:text-white' } `}
+                        className={`px-3 py-1 rounded text-[10px] font-bold font-mono transition-all flex items-center gap-1 ${activeMode === 'insights' ? 'bg-cyan-500/20 text-cyan-400' : 'text-white/40 hover:text-white'}`}
                     >
                         <Radio size={12} /> INSIGHTS
                     </button>
                     <button
                         onClick={() => setActiveMode('comms')}
-                        className={`px - 3 py - 1 rounded text - [10px] font - bold font - mono transition - all flex items - center gap - 1 ${ activeMode === 'comms' ? 'bg-purple-500/20 text-purple-400' : 'text-white/40 hover:text-white' } `}
+                        className={`px-3 py-1 rounded text-[10px] font-bold font-mono transition-all flex items-center gap-1 ${activeMode === 'comms' ? 'bg-purple-500/20 text-purple-400' : 'text-white/40 hover:text-white'}`}
                     >
                         <MessageSquare size={12} /> COMMS
                     </button>
@@ -159,7 +158,7 @@ export default function Swarm() {
                         <div className="h-1 bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden">
                             <div
                                 className="h-full bg-[var(--hud-accent)] transition-all duration-300"
-                                style={{ width: `${ session?.progress }% ` }}
+                                style={{ width: `${session?.progress}%` }}
                             ></div>
                         </div>
                     </div>
