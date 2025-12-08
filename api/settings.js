@@ -1,7 +1,7 @@
-
 import { db } from '../src/db/client';
 import { sql } from 'drizzle-orm';
 import bcryptjs from 'bcryptjs';
+import { parseBody } from '../lib/request.js';
 
 export const config = { runtime: 'nodejs' };
 
@@ -56,7 +56,7 @@ export default async function handler(req, res) {
         }
 
         if (method === 'POST') {
-            const body = req.body;
+            const body = await parseBody(req);
             const { action } = body;
 
             if (action === 'update_profile') {

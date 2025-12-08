@@ -4,6 +4,8 @@ import { db } from '../../src/db/client';
 import { sql } from 'drizzle-orm';
 import { generateToken } from '../../lib/jwt.js';
 
+import { parseBody } from '../../lib/request.js';
+
 const BCRYPT_ROUNDS = 10;
 
 export const config = { runtime: 'nodejs' };
@@ -14,7 +16,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { email, password, name, orgName } = req.body;
+    const { email, password, name, orgName } = await parseBody(req);
 
     if (!email || !password) {
       return new Response(JSON.stringify({ error: 'Email and password required' }), { status: 400 });

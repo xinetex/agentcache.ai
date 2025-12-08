@@ -3,8 +3,7 @@ import bcrypt from 'bcryptjs';
 import { generateToken } from '../../lib/jwt.js';
 import { db } from '../../src/db/client';
 import { sql } from 'drizzle-orm';
-import { users } from '../../src/db/schema';
-import { eq } from 'drizzle-orm';
+import { parseBody } from '../../lib/request.js';
 
 export const config = {
   runtime: 'nodejs'
@@ -21,7 +20,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { email, password } = req.body;
+    const { email, password } = await parseBody(req);
 
     if (!email || !password) {
       return new Response(JSON.stringify({ error: 'Email and password required' }), { status: 400 });
@@ -71,6 +70,13 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Login error:', error);
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    // Return explicit JSON error even for crashes
+    return new Response(JSON.stringify({
+      error: 'Internal Server Error',
+      details: error.message
+    }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
