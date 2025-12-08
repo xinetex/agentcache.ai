@@ -24,11 +24,11 @@
   "rewrites": [
     {
       "source": "/studio",
-      "destination": "/studio.html"
+      "destination": "/dashboard.html?demo=true"
     },
     {
       "source": "/studio/:path*",
-      "destination": "/studio.html"
+      "destination": "/dashboard.html?demo=true"
     },
     {
       "source": "/daily",
