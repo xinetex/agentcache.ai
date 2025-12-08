@@ -10,15 +10,9 @@ export const config = {
 };
 import { getUserFromRequest } from './auth.js';
 import { calculateMonthlyBill, COMPLEXITY_TIERS, calculateComplexity } from '../lib/complexity-calculator.js';
+import { PLAN_PRICES, QUOTAS, FEATURES } from '../src/config/pricing.js';
 
 const sql = neon(process.env.DATABASE_URL);
-
-// Plan pricing
-const PLAN_PRICES = {
-  starter: 49,
-  professional: 149,
-  enterprise: 499
-};
 
 /**
  * Main API handler
@@ -87,11 +81,8 @@ export default async function handler(req, res) {
       const bill = calculateMonthlyBill(pipelines, subscription.plan_tier);
 
       // Request quotas by plan
-      const quotas = {
-        starter: 100000,
-        professional: 1000000,
-        enterprise: 10000000
-      };
+      // Request quotas by plan
+      const quotas = QUOTAS;
 
       return res.status(200).json({
         current_period: {
@@ -201,65 +192,21 @@ export default async function handler(req, res) {
 
     // GET /api/billing/plans - Available plans
     if (method === 'GET' && path === '/api/billing/plans') {
+      const plans = Object.keys(PLAN_PRICES).map(id => ({
+        id,
+        name: id.charAt(0).toUpperCase() + id.slice(1),
+        price: PLAN_PRICES[id],
+        features: FEATURES[id],
+        limits: {
+          // Mapping back simplified limits for frontend compat
+          pipelines: id === 'starter' ? 3 : (id === 'professional' ? 10 : Infinity),
+          requests: QUOTAS[id],
+          max_complexity: id === 'starter' ? 'simple' : (id === 'professional' ? 'moderate' : 'enterprise')
+        }
+      }));
+
       return res.status(200).json({
-        plans: [
-          {
-            id: 'starter',
-            name: 'Starter',
-            price: PLAN_PRICES.starter,
-            features: [
-              '100,000 requests/month',
-              'Up to 3 pipelines',
-              'Simple pipelines only',
-              'L1 cache',
-              'Email support'
-            ],
-            limits: {
-              pipelines: 3,
-              requests: 100000,
-              max_complexity: 'simple'
-            }
-          },
-          {
-            id: 'professional',
-            name: 'Professional',
-            price: PLAN_PRICES.professional,
-            features: [
-              '1,000,000 requests/month',
-              'Up to 10 pipelines',
-              'Moderate complexity included',
-              'L1 + L2 cache',
-              'All sectors',
-              'Priority support'
-            ],
-            limits: {
-              pipelines: 10,
-              requests: 1000000,
-              max_complexity: 'moderate'
-            },
-            popular: true
-          },
-          {
-            id: 'enterprise',
-            name: 'Enterprise',
-            price: PLAN_PRICES.enterprise,
-            features: [
-              '10,000,000 requests/month',
-              'Unlimited pipelines',
-              'All complexity tiers included',
-              'L1 + L2 + L3 cache',
-              'RBAC & SSO',
-              'Audit logs',
-              'SLA guarantees',
-              'Dedicated support'
-            ],
-            limits: {
-              pipelines: Infinity,
-              requests: 10000000,
-              max_complexity: 'enterprise'
-            }
-          }
-        ],
+        plans,
         complexity_tiers: Object.entries(COMPLEXITY_TIERS).map(([key, tier]) => ({
           id: key,
           cost: tier.cost,
