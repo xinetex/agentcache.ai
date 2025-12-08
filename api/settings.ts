@@ -1,4 +1,4 @@
-import { db } from '../src/db/client';
+import { db } from '../src/db/client.js';
 import { sql } from 'drizzle-orm';
 import bcryptjs from 'bcryptjs';
 import { parseBody } from '../lib/request.js';

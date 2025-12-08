@@ -1,6 +1,6 @@
 
 import bcryptjs from 'bcryptjs';
-import { db } from '../../src/db/client';
+import { db } from '../../src/db/client.js';
 import { sql } from 'drizzle-orm';
 import { generateToken } from '../../lib/jwt.js';
 

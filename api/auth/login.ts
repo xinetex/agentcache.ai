@@ -1,7 +1,7 @@
 
 import bcrypt from 'bcryptjs';
 import { generateToken } from '../../lib/jwt.js';
-import { db } from '../../src/db/client';
+import { db } from '../../src/db/client.js';
 import { sql } from 'drizzle-orm';
 import { parseBody } from '../../lib/request.js';
 
