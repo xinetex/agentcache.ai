@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>AgentCache // Tactical Map</title>
+    <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
+    <script src="https://unpkg.com/@loaders.gl/core@latest/dist/dist.min.js"></script>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            font-family: 'Inter', sans-serif;
+        }
+
+        #control-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 300px;
+            z-index: 100;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        .stat span {
+            color: #fff;
+        }
+
+        .legend {
+            margin-top: 20px;
+            display: grid;
+            gap: 5px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="control-panel">
+        <h1>Pattern Agency // Tactical</h1>
+        <div class="stat">Active Nodes: <span id="node-count">0</span></div>
+        <div class="stat">Pipeline Flows: <span id="arc-count">0</span></div>
+        <div class="stat">Traffic Signals: <span id="traffic-count">0</span></div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="dot" style="background: #ff0055"></div> Traffic Sensor (High Load)
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background: #00ffc8"></div> Servitor Node
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background: #4444ff"></div> Neural Pipeline
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        const { DeckGL, HexagonLayer, ArcLayer, ScatterplotLayer } = deck;
+
+        // Initial View: NYC
+        const INITIAL_VIEW_STATE = {
+            longitude: -74.0060,
+            latitude: 40.7128,
+            zoom: 12,
+            pitch: 45,
+            bearing: 0
+        };
+
+        const deckgl = new DeckGL({
+            initialViewState: INITIAL_VIEW_STATE,
+            controller: true,
+            // Mapbox Dark Style (Using a public token or Carto for basemap)
+            // mapStyle: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+            mapStyle: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+            layers: []
+        });
+
+        async function fetchData() {
+            try {
+                const [nodesRes, arcsRes] = await Promise.all([
+                    fetch('/api/geo/nodes'),
+                    fetch('/api/geo/arcs')
+                ]);
+
+                const nodes = await nodesRes.json();
+                const arcs = await arcsRes.json();
+
+                // Update UI Stats
+                document.getElementById('node-count').innerText = nodes.length;
+                document.getElementById('arc-count').innerText = arcs.length;
+                document.getElementById('traffic-count').innerText = nodes.filter(n => n.type === 'sensor').length;
+
+                renderLayers(nodes, arcs);
+            } catch (e) { console.error(e); }
+        }
+
+        function renderLayers(nodes, arcs) {
+            const trafficNodes = nodes.filter(n => n.type === 'sensor');
+            const agentNodes = nodes.filter(n => n.type === 'agent');
+
+            const layers = [
+                // 1. Traffic Heatmap (Hexagons)
+                new HexagonLayer({
+                    id: 'traffic-heat',
+                    data: trafficNodes,
+                    getPosition: d => d.coordinates,
+                    radius: 100,
+                    elevationScale: 50,
+                    extruded: true,
+                    pickable: true,
+                    getFillColor: d => [255, 0, 85, 200], // Red for traffic
+                    opacity: 0.6
+                }),
+
+                // 2. Agents (Scatterplot)
+                new ScatterplotLayer({
+                    id: 'agents',
+                    data: agentNodes,
+                    getPosition: d => d.coordinates,
+                    getRadius: 50,
+                    getFillColor: [0, 255, 200],
+                    getLineColor: [0, 0, 0],
+                    stroked: true,
+                    pickable: true
+                }),
+
+                // 3. Neural Pipelines (Arcs)
+                new ArcLayer({
+                    id: 'pipelines',
+                    data: arcs,
+                    getSourcePosition: d => d.source,
+                    getTargetPosition: d => d.target,
+                    getSourceColor: [0, 255, 200],
+                    getTargetColor: [0, 100, 255],
+                    getWidth: 3
+                })
+            ];
+
+            deckgl.setProps({ layers });
+        }
+
+        // Initial Fetch
+        fetchData();
+
+        // Poll
+        setInterval(fetchData, 2000);
+
+    </script>
+</body>
+
+</html>

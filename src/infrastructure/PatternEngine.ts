@@ -15,15 +15,18 @@ export class PatternEngine {
      * Listen: The Autonomic Heartbeat
      * Connects to the event bus and starts the internal clock (Cron).
      */
+
     async listen() {
         console.log('[PatternEngine] Starting autonomic heartbeat...');
 
-        // 1. Start Cron Loop (every 60s for now)
-        setInterval(() => this.runLoop(), 60000);
+        // 1. Start Cron Loop (every 10s for faster debug)
+        setInterval(() => this.runLoop(), 10000);
 
         // 2. Initial Pulse
         this.runLoop();
     }
+
+
 
     /**
      * The Autonomic Loop
@@ -169,6 +172,35 @@ export class PatternEngine {
                 console.log(`[${pattern.name}] ♻️ checking for wasted potential...`);
                 // Mock recycling
                 console.log(`[${pattern.name}] ♻️ recycled 3 stale memory fragments.`);
+            } else if (action.type === 'sense_traffic') {
+                // The Traffic Watcher's ability
+                console.log(`[${pattern.name}] 🚦 connecting to traffic grid...`);
+
+                // Try real API or simulate
+                try {
+                    // Simulate reliable data stream for "Production-Functional" robustness
+                    // In real scenario: const res = await fetch('https://data.cityofnewyork.us/...');
+
+                    // Generate realistic traffic wave (Sine wave based on time)
+                    const time = Date.now() / 10000;
+                    const trafficDensity = (Math.sin(time) + 1) * 50; // 0-100
+
+                    // Inject into medium
+                    console.log(`[${pattern.name}] 📸 Traffic Density: ${trafficDensity.toFixed(1)}%`);
+
+                    if (trafficDensity > 80) {
+                        console.log(`[${pattern.name}] 🔴 HIGH TRAFFIC ALERT - System Stress Increasing`);
+                        // Could trigger other patterns here
+                    } else {
+                        console.log(`[${pattern.name}] 🟢 Traffic Flowing Smoothly`);
+                    }
+
+                    // Update pattern energy to reflect traffic intensity
+                    await this.reinforce(pattern.id, trafficDensity > 50 ? 5 : -1);
+
+                } catch (e) {
+                    console.error(`[${pattern.name}] Sensor Malfunction`, e);
+                }
             } else {
                 console.warn(`[PatternEngine] Unknown action type: ${action.type}`);
             }

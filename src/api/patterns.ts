@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { PatternEngine } from '../src/infrastructure/PatternEngine.js'; // Importing TS source as JS because of how Vite/TS might handle it or just ..ts if using bundler?
+import { PatternEngine } from '../infrastructure/PatternEngine.js'; // Importing TS source as JS because of how Vite/TS might handle it or just ..ts if using bundler?
 // Wait, api/patterns.js is JS. importing .ts file from JS requires build step or runtime support (tsx).
 // Since the project uses mixed JS/TS, I'll assume standard interop.
 // But importing '../src/infrastructure/PatternEngine.js' implies it's compiled.
@@ -56,4 +56,4 @@ patternsRouter.post('/banish', async (c) => {
     }
 });
 
-export default patternsRouter;
+export { patternsRouter };

@@ -55,7 +55,8 @@ import labRouter from './api/lab.js';
 import authRouter from './api/auth.js';
 import adminStatsRouter from './api/admin-stats.js';
 import eventsRouter from './api/events.js';
-import patternsRouter from './api/patterns.js';
+import { patternsRouter } from './api/patterns.js';
+import { geoRouter } from './api/geo.js';
 import { PatternEngine } from './infrastructure/PatternEngine.js';
 
 app.post('/api/provision', provisionClient);
@@ -75,6 +76,7 @@ app.route('/api/lab', labRouter);
 app.route('/api/admin-stats', adminStatsRouter);
 app.route('/api/events', eventsRouter);
 app.route('/api/patterns', patternsRouter);
+app.route('/api/geo', geoRouter);
 
 // Serve static files (landing page - defaults to community.html)
 app.get('/', (c) => {
