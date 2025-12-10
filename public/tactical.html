@@ -164,9 +164,13 @@
                         }
                     };
                 }
-                if (object.points) { // Cluster from HexLayers
                     return {
                         text: `Density Cluster: ${object.points.length} nodes`
+                    };
+                }
+                if (object.frequency) { // Crystal
+                    return {
+                         html: `<div style="color:cyan">💎 CRYSTAL FORMING</div><div>${object.label}</div><div>Freq: ${object.frequency}</div>`
                     };
                 }
                 return {
@@ -187,6 +191,7 @@
                 // Handle different response shapes (array vs {nodes, meta})
                 const nodes = Array.isArray(nodesData) ? nodesData : nodesData.nodes;
                 const meta = Array.isArray(nodesData) ? {} : nodesData.meta;
+                const crystals = nodesData.crystals || [];
 
                 // SOLAR AURORA EFFECT
                 if (meta.solar) {
@@ -218,11 +223,11 @@
                 document.getElementById('arc-count').innerText = arcs.length;
                 document.getElementById('traffic-count').innerText = nodes.filter(n => n.type === 'sensor').length;
 
-                renderLayers(nodes, arcs, packets);
+                renderLayers(nodes, arcs, packets, crystals);
             } catch (e) { console.error(e); }
         }
 
-        function renderLayers(nodes, arcs, packets) {
+        function renderLayers(nodes, arcs, packets, crystals) {
             const trafficNodes = nodes.filter(n => n.type === 'sensor');
             const agentNodes = nodes.filter(n => n.type === 'agent');
 
@@ -307,6 +312,20 @@
                     getLineWidth: 20,
                     opacity: 0.8,
                     // Animate opacity/radius?
+                }),
+                
+                // 5. SEMANTIC CRYSTALS (High Frequency Demand)
+                new ScatterplotLayer({
+                    id: 'crystals',
+                    data: crystals || [],
+                    getPosition: d => d.coordinates,
+                    getRadius: d => 100 + (d.frequency * 10), // Size grows with demand
+                    getFillColor: [0, 255, 255, 200], // Cyan/Diamond
+                    stroked: true,
+                    getLineColor: [255, 255, 255],
+                    getLineWidth: 5,
+                    pickable: true,
+                    // Add text label? Could use TextLayer but tooltip works for now
                 })
             ];
 

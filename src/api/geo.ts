@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { db } from '../db/client.js';
-import { patterns } from '../db/schema.js';
+import { db } from '../db/client.js';
+import { patterns, requestPatterns } from '../db/schema.js';
 import { desc, like } from 'drizzle-orm';
 import { redis } from '../lib/redis.js';
 
@@ -16,6 +17,13 @@ const CENTER = { lat: 40.7128, lon: -74.0060 };
 geoRouter.get('/nodes', async (c) => {
     try {
         const allPatterns = await db.select().from(patterns);
+
+        const allPatterns = await db.select().from(patterns);
+
+        // Fetch High Frequency Patterns (Crystals)
+        const topPatterns = await db.select().from(requestPatterns)
+            .orderBy(desc(requestPatterns.frequency))
+            .limit(5);
 
         // Fetch Global Solar State
         const solarState = await redis.get('mesh:global:solar') || '1.0';
@@ -68,6 +76,13 @@ geoRouter.get('/nodes', async (c) => {
 
         return c.json({
             nodes,
+            crystals: topPatterns.map((p, i) => ({
+                id: p.id,
+                label: p.semanticLabel,
+                frequency: p.frequency,
+                // Project into "Sky" or specific sector
+                coordinates: [CENTER.lon + (Math.cos(i) * 0.04), CENTER.lat + (Math.sin(i) * 0.04)]
+            })),
             meta: {
                 solar: parseFloat(solarState)
             }

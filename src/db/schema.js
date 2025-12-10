@@ -141,3 +141,12 @@ export const experimentResults = pgTable('experiment_results', {
     costSavingsPercent: real('cost_savings_percent'),
     testedAt: timestamp('tested_at').defaultNow(),
 });
+
+export const requestPatterns = pgTable('request_patterns', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    patternHash: text('pattern_hash').notNull().unique(), // Unique semantic hash
+    frequency: integer('frequency').default(1),
+    lastAccessed: timestamp('last_accessed').defaultNow(),
+    semanticLabel: text('semantic_label'), // e.g., 'Code', 'Creative', 'Fact'
+    avgLatencyMs: real('avg_latency_ms'),
+});

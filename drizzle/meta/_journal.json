@@ -15,6 +15,13 @@
       "when": 1765342122813,
       "tag": "0001_shallow_omega_red",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1765389965455,
+      "tag": "0002_common_iron_man",
+      "breakpoints": true
     }
   ]
 }
