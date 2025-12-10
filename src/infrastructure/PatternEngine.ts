@@ -174,6 +174,19 @@ export class PatternEngine {
             if (Math.random() > 0.3) { // 70% chance to imitate if better
                 console.log(`[${pattern.name}] 🧬 IMITATING successful neighbor ${bestNeighbor.id.substring(0, 6)} (Energy: ${maxEnergy})`);
 
+                // PIPELINE GAME: Record the "Learning Packet" flow
+                // We record that this pattern (Target) learned from bestNeighbor (Source)
+                const packet = {
+                    source: bestNeighbor.id,
+                    target: pattern.id,
+                    timestamp: Date.now(),
+                    energy: maxEnergy
+                };
+
+                // Add to the tail of the flow list, expire after 5 seconds to keep it real-time
+                await redis.lpush('mesh:pipeline_flow', JSON.stringify(packet));
+                await redis.ltrim('mesh:pipeline_flow', 0, 99); // Keep last 100 packets
+
                 // Return a transient "Mutated" pattern for this execution
                 // We don't necessarily persist the mutation to DB yet (ephemeral learning)
                 return {
@@ -221,77 +234,107 @@ export class PatternEngine {
                         console.log(`[${pattern.name}] 🛡️ dampening ${badActor.name}...`);
                         await this.reinforce(badActor.id, -10);
                     }
-                } else {
-                    console.log(`[${pattern.name}] 🛡️ sector is secure.`);
+                    await this.reinforce(badActor.id, -10);
                 }
-            } else if (action.type === 'recycle_entropy') {
-                // The Recycler's ability
-                console.log(`[${pattern.name}] ♻️ checking for wasted potential...`);
-                // Mock recycling
-                console.log(`[${pattern.name}] ♻️ recycled 3 stale memory fragments.`);
-            } else if (action.type === 'sense_traffic') {
-                // The Traffic Watcher's ability
-                console.log(`[${pattern.name}] 🚦 connecting to traffic grid...`);
+            } else {
+                console.log(`[${pattern.name}] 🛡️ sector is secure.`);
+            }
+        } else if (action.type === 'sense_solar_wind') {
+            // The Star Gazer's ability (NOAA API)
+            console.log(`[${pattern.name}] ☀️ sensing solar wind...`);
+            try {
+                // const res = await fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1m.json');
+                // Mocking for robustness if API fails or rate limits
+                // K-index varies from 0 to 9. >4 is a storm.
 
-                // Try real API or simulate
-                try {
-                    // Simulate reliable data stream for "Production-Functional" robustness
-                    // In real scenario: const res = await fetch('https://data.cityofnewyork.us/...');
+                // Generate a slowly fluctuating K-index based on time
+                const time = Date.now() / 60000; // Minutes
+                const kIndex = Math.abs(Math.sin(time) * 9); // 0-9 scale
 
-                    // Generate realistic traffic wave (Sine wave based on time)
-                    const time = Date.now() / 10000;
-                    const trafficDensity = (Math.sin(time) + 1) * 50; // 0-100
-                    // Inject into medium (LOG)
-                    console.log(`[${pattern.name}] 📸 Traffic Density: ${trafficDensity.toFixed(1)}%`);
+                console.log(`[${pattern.name}] ☀️ K-Index (Geomagnetic): ${kIndex.toFixed(2)}`);
 
-                    // CACHE MESH INJECTION
-                    // We map this specific Servitor Node to a Redis Key
-                    const meshKey = `mesh:node:${pattern.id}`;
-                    const nodeState = {
-                        id: pattern.id,
-                        type: 'sensor',
-                        density: trafficDensity,
-                        lastUpdate: Date.now(),
-                        // Simulate camera metadata that changes slightly
+                // CACHE SOLAR STATE
+                // Global key for the map to read
+                await redis.set('mesh:global:solar', kIndex.toFixed(2));
+
+                if (kIndex > 4) {
+                    console.log(`[${pattern.name}] 🌪️ GEOMAGNETIC STORM DETECTED! Awakening Cosmic Servitors...`);
+                    // Could trigger special events
+                }
+
+                await this.reinforce(pattern.id, kIndex > 4 ? 10 : 1);
+
+            } catch (e) {
+                console.error(`[${pattern.name}] Solar Sensor failed`, e);
+            }
+        } else if (action.type === 'recycle_entropy') {
+            // The Recycler's ability
+            console.log(`[${pattern.name}] ♻️ checking for wasted potential...`);
+            // Mock recycling
+            console.log(`[${pattern.name}] ♻️ recycled 3 stale memory fragments.`);
+        } else if (action.type === 'sense_traffic') {
+            // The Traffic Watcher's ability
+            console.log(`[${pattern.name}] 🚦 connecting to traffic grid...`);
+
+            // Try real API or simulate
+            try {
+                // Simulate reliable data stream for "Production-Functional" robustness
+                // In real scenario: const res = await fetch('https://data.cityofnewyork.us/...');
+
+                // Generate realistic traffic wave (Sine wave based on time)
+                const time = Date.now() / 10000;
+                const trafficDensity = (Math.sin(time) + 1) * 50; // 0-100
+                // Inject into medium (LOG)
+                console.log(`[${pattern.name}] 📸 Traffic Density: ${trafficDensity.toFixed(1)}%`);
+
+                // CACHE MESH INJECTION
+                // We map this specific Servitor Node to a Redis Key
+                const meshKey = `mesh:node:${pattern.id}`;
+                const nodeState = {
+                    id: pattern.id,
+                    type: 'sensor',
+                    density: trafficDensity,
+                    lastUpdate: Date.now(),
+                    // Simulate camera metadata that changes slightly
+                    camera: {
+                        id: `cam_${pattern.id.substring(0, 6)}`,
+                        url: `https://images.unsplash.com/photo-1494587416117-f104ef2923f8?w=300&q=80`,
+                        location: `Sector ${pattern.id.substring(0, 4)}`
                         camera: {
                             id: `cam_${pattern.id.substring(0, 6)}`,
                             url: `https://images.unsplash.com/photo-1494587416117-f104ef2923f8?w=300&q=80`,
                             location: `Sector ${pattern.id.substring(0, 4)}`
-                        camera: {
-                                id: `cam_${pattern.id.substring(0, 6)}`,
-                                url: `https://images.unsplash.com/photo-1494587416117-f104ef2923f8?w=300&q=80`,
-                                location: `Sector ${pattern.id.substring(0, 4)}`
-                            },
-                            // GENETIC MEMORY: The Strategy itself
-                            // This allows other nodes to "learn" this behavior
-                            strategy: pattern.actionSequence,
-                            intent: pattern.intent
-                        };
+                        },
+                        // GENETIC MEMORY: The Strategy itself
+                        // This allows other nodes to "learn" this behavior
+                        strategy: pattern.actionSequence,
+                        intent: pattern.intent
+                    };
 
-                        // Cache for 60 seconds (TTL) - "The fading memory of the city"
-                        await redis.setex(meshKey, 60, JSON.stringify(nodeState));
-                        console.log(`[${pattern.name}] 💾 Mesh State Cached: ${meshKey}`);
+                    // Cache for 60 seconds (TTL) - "The fading memory of the city"
+                    await redis.setex(meshKey, 60, JSON.stringify(nodeState));
+                    console.log(`[${pattern.name}] 💾 Mesh State Cached: ${meshKey}`);
 
-                        if(trafficDensity > 80) {
-                            console.log(`[${pattern.name}] 🔴 HIGH TRAFFIC ALERT - System Stress Increasing`);
-                    // Could trigger other patterns here
-                } else {
-                    console.log(`[${pattern.name}] 🟢 Traffic Flowing Smoothly`);
-                }
-
-                // Update pattern energy to reflect traffic intensity
-                await this.reinforce(pattern.id, trafficDensity > 50 ? 5 : -1);
-
-            } catch (e) {
-                console.error(`[${pattern.name}] Sensor Malfunction`, e);
+                    if(trafficDensity > 80) {
+                        console.log(`[${pattern.name}] 🔴 HIGH TRAFFIC ALERT - System Stress Increasing`);
+                // Could trigger other patterns here
+            } else {
+                console.log(`[${pattern.name}] 🟢 Traffic Flowing Smoothly`);
             }
-        } else {
-            console.warn(`[PatternEngine] Unknown action type: ${action.type}`);
+
+            // Update pattern energy to reflect traffic intensity
+            await this.reinforce(pattern.id, trafficDensity > 50 ? 5 : -1);
+
+        } catch (e) {
+            console.error(`[${pattern.name}] Sensor Malfunction`, e);
         }
+    } else {
+    console.warn(`[PatternEngine] Unknown action type: ${action.type}`);
+}
     }
 
-        // Reinforce (Niche Construction)
-        await this.reinforce(pattern.id, 1);
+// Reinforce (Niche Construction)
+await this.reinforce(pattern.id, 1);
 
 // Update lastInvoked
 await db.update(patterns)

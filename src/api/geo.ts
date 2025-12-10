@@ -17,6 +17,9 @@ geoRouter.get('/nodes', async (c) => {
     try {
         const allPatterns = await db.select().from(patterns);
 
+        // Fetch Global Solar State
+        const solarState = await redis.get('mesh:global:solar') || '1.0';
+
         const nodes = allPatterns.map((p, index) => {
             // Deterministic pseudo-random location based on ID
             const hash = p.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -63,7 +66,12 @@ geoRouter.get('/nodes', async (c) => {
             };
         });
 
-        return c.json(nodes);
+        return c.json({
+            nodes,
+            meta: {
+                solar: parseFloat(solarState)
+            }
+        });
     } catch (error: any) {
         return c.json({ error: error.message }, 500);
     }
@@ -108,6 +116,43 @@ geoRouter.get('/arcs', async (c) => {
     }
 
     return c.json(arcs);
+});
+
+/**
+ * GET /flow
+ * Returns active "Packet Flows" (Imitation Events) for the Pipeline Game
+ */
+geoRouter.get('/flow', async (c) => {
+    try {
+        // Fetch last 50 events from Redis List
+        // These represent "Learning Packets" traveling source -> target
+        const rawPackets = await redis.lrange('mesh:pipeline_flow', 0, 49);
+        const packets = rawPackets.map(p => JSON.parse(p));
+
+        // Enhance with coordinates
+        // We need to resolve ID -> Coords.
+        // For efficiency, we just re-calculate the deterministic coords for the IDs 
+        // (This mirrors the client-side logic avoids a full DB lookup for coords)
+
+        const resolveCoords = (id: string, nameHint: string = '') => {
+            const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            // Since we don't have the full name here easily without DB query, 
+            // we use a heuristic based on ID. 
+            // Note: In prod we'd hydrate this properly.
+            // For the Demo, we assume organic scatter unless we know better.
+            const randLat = ((hash % 100) / 1000) - 0.05;
+            const randLon = (((hash * 13) % 100) / 1000) - 0.05;
+            return [CENTER.lon + randLon, CENTER.lat + randLat];
+        };
+        // NOTE: The above coordinate resolution is imperfect because we lack the "Traffic" grid logic 
+        // which depends on array index.
+        // Better Approach: Frontend already has nodes. 
+        // We just return IDs and let frontend map them to positions.
+
+        return c.json(packets);
+    } catch (e) {
+        return c.json([]);
+    }
 });
 
 export { geoRouter };

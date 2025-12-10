@@ -11,8 +11,29 @@
         body {
             margin: 0;
             padding: 0;
+            padding: 0;
             background: #000;
             font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            /* AURORA BASE */
+            transition: background 2s ease;
+        }
+
+        /* AURORA OVERLAY */
+        #aurora-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            mix-blend-mode: screen;
+            opacity: 0.3;
+            background: radial-gradient(circle at 50% -20%, #00ff88, transparent 40%),
+                radial-gradient(circle at 80% 20%, #00ccff, transparent 40%);
+            filter: blur(50px);
+            transition: opacity 2s ease;
         }
 
         #control-panel {
@@ -69,6 +90,7 @@
 </head>
 
 <body>
+    <div id="aurora-layer"></div>
     <div id="control-panel">
         <h1>Pattern Agency // Tactical</h1>
         <div class="stat">Active Nodes: <span id="node-count">0</span></div>
@@ -160,19 +182,47 @@
                     fetch('/api/geo/arcs')
                 ]);
 
-                const nodes = await nodesRes.json();
+
+                const nodesData = await nodesRes.json();
+                // Handle different response shapes (array vs {nodes, meta})
+                const nodes = Array.isArray(nodesData) ? nodesData : nodesData.nodes;
+                const meta = Array.isArray(nodesData) ? {} : nodesData.meta;
+
+                // SOLAR AURORA EFFECT
+                if (meta.solar) {
+                    const solarIntensity = Math.min(meta.solar / 5, 1); // 0 to 1 based on K-index
+                    const aurora = document.getElementById('aurora-layer');
+                    aurora.style.opacity = 0.2 + (solarIntensity * 0.6); // Base 0.2, max 0.8
+                    // Shift hue based on storm intensity?
+                    if (meta.solar > 4) {
+                        aurora.style.background = `radial-gradient(circle at 50% -20%, #ff0055, transparent 50%)`; // Red Storm
+                        document.getElementById('node-count').innerText = "⚠️ GEOMAGNETIC STORM";
+                        document.getElementById('node-count').style.color = "#ff0055";
+                    } else {
+                         document.getElementById('node-count').style.color = "#fff";
+                    }
+                }
+
                 const arcs = await arcsRes.json();
+                
+                // Fetch LIVE PACKETS
+                let packets = [];
+                try {
+                    const flowRes = await fetch('/api/geo/flow');
+                    packets = await flowRes.json();
+                    document.getElementById('arc-count').innerText = packets.length;
+                } catch(e) {}
 
                 // Update UI Stats
                 document.getElementById('node-count').innerText = nodes.length;
                 document.getElementById('arc-count').innerText = arcs.length;
                 document.getElementById('traffic-count').innerText = nodes.filter(n => n.type === 'sensor').length;
 
-                renderLayers(nodes, arcs);
+                renderLayers(nodes, arcs, packets);
             } catch (e) { console.error(e); }
         }
 
-        function renderLayers(nodes, arcs) {
+        function renderLayers(nodes, arcs, packets) {
             const trafficNodes = nodes.filter(n => n.type === 'sensor');
             const agentNodes = nodes.filter(n => n.type === 'agent');
 
@@ -226,6 +276,37 @@
                     getWidth: 3,
                     // KINETIC UPGRADE: Pulse width based on time
                     widthScale: Math.sin(Date.now() / 500) + 2
+                }),
+                
+                // 4. PACKET GAME LAYER (Data Flow)
+                // Visualizing the "Learning Packets" from Redis
+                // We use simple Scatterplot for packets, or we could use IconLayer
+                new ScatterplotLayer({
+                    id: 'packets',
+                    data: packets || [], // Passed from valid scope or global
+                    getPosition: d => {
+                        // Interpolate position based on time?
+                        // For MVP, just show them at TARGET (Absorption)
+                        // To show movement we need the source/target coords and a time uniform.
+                        // Simplified: Show them as bright pulses at the global coordinates resolved by ID.
+                        // Since we don't have easy coord resolution here without passing nodes map,
+                        // we can rely on the API to return coords (which I mocked in /flow endpoint).
+                        // Wait, /api/geo/flow returns { source: ID, target: ID, ... } logic in Step 3 mocked coords.
+                        // Let's check `api/geo.ts` Step 3 output...
+                        // It returns { ...packet } but I didn't actually add the `resolveCoords` result to the object in Step 3!
+                        // I just defined the function but didn't map it.
+                        // Bug in previous step. Fix: I will rely on finding the node in `nodes` array by ID here.
+                        
+                        const targetNode = nodes.find(n => n.id === d.target);
+                        return targetNode ? targetNode.coordinates : [0,0];
+                    },
+                    getRadius: 200, // Big pulse
+                    getFillColor: [255, 255, 255],
+                    stroked: true,
+                    getLineColor: [255, 255, 0],
+                    getLineWidth: 20,
+                    opacity: 0.8,
+                    // Animate opacity/radius?
                 })
             ];
 
