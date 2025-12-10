@@ -106,7 +106,36 @@
             // Mapbox Dark Style (Using a public token or Carto for basemap)
             // mapStyle: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
             mapStyle: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-            layers: []
+            layers: [],
+            getTooltip: ({ object }) => {
+                if (!object) return null;
+                if (object.type === 'sensor' && object.camera) {
+                    return {
+                        html: `
+                            <div style="width: 200px;">
+                                <h3 style="margin:0 0 5px; color:#ff0055">🚦 LIVE FEED</h3>
+                                <div style="font-size:0.8em; color:#888; margin-bottom:5px">${object.camera.location}</div>
+                                <img src="${object.camera.url}" style="width:100%; border-radius:4px; border:1px solid #ff0055"/>
+                                <div style="margin-top:5px; font-size:0.8em">Density: ${object.value}%</div>
+                            </div>
+                        `,
+                        style: {
+                            backgroundColor: '#000',
+                            color: '#fff',
+                            border: '1px solid #333',
+                            borderRadius: '8px'
+                        }
+                    };
+                }
+                if (object.points) { // Cluster from HexLayers
+                    return {
+                        text: `Density Cluster: ${object.points.length} nodes`
+                    };
+                }
+                return {
+                    text: `${object.name}\n${object.intent}`
+                };
+            }
         });
 
         async function fetchData() {
@@ -143,7 +172,10 @@
                     extruded: true,
                     pickable: true,
                     getFillColor: d => [255, 0, 85, 200], // Red for traffic
-                    opacity: 0.6
+                    opacity: 0.6,
+                    // Highlight on hover
+                    autoHighlight: true,
+                    highlightColor: [255, 0, 85, 255]
                 }),
 
                 // 2. Agents (Scatterplot)
@@ -155,7 +187,8 @@
                     getFillColor: [0, 255, 200],
                     getLineColor: [0, 0, 0],
                     stroked: true,
-                    pickable: true
+                    pickable: true,
+                    autoHighlight: true
                 }),
 
                 // 3. Neural Pipelines (Arcs)

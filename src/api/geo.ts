@@ -28,6 +28,8 @@ geoRouter.get('/nodes', async (c) => {
                 lat = CENTER.lat + (Math.sin(offset) * 0.02);
                 lon = CENTER.lon + (Math.cos(offset) * 0.02);
                 type = 'sensor';
+                // Mock Camera Feed (using reliable placeholder for demo)
+                // In production, this would come from the Servitor's 'metadata' field which scraped a real API
             } else {
                 // Scatter for organic agents
                 const randLat = ((hash % 100) / 1000) - 0.05;
@@ -43,7 +45,13 @@ geoRouter.get('/nodes', async (c) => {
                 type: type,
                 coordinates: [lon, lat], // GeoJSON is [lon, lat]
                 value: p.energyLevel || 1, // Determines height/radius
-                intent: p.intent
+                intent: p.intent,
+                // Add camera metadata
+                camera: type === 'sensor' ? {
+                    id: `cam_${p.id.substring(0, 6)}`,
+                    url: `https://images.unsplash.com/photo-1494587416117-f104ef2923f8?w=300&q=80`, // Reliable generic traffic image
+                    location: "NYC Grid Sector " + index
+                } : null
             };
         });
 
