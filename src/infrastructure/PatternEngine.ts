@@ -1,6 +1,7 @@
 import { db } from '../db/client.js';
 import { patterns } from '../db/schema.js';
 import { eq, sql } from 'drizzle-orm';
+import { redis } from '../lib/redis.js';
 
 export class PatternEngine {
     constructor() {
@@ -44,7 +45,10 @@ export class PatternEngine {
 
             for (const pattern of activePatterns) {
                 if (this.checkTrigger(pattern)) {
-                    await this.executeAction(pattern);
+                    // HIVE MIND LOGIC (Maynard-Cross Learning)
+                    // Before acting, checking if we should imitate a more successful neighbor
+                    const adaptedPattern = await this.imitate(pattern);
+                    await this.executeAction(adaptedPattern);
                 }
             }
         } catch (error) {
@@ -133,6 +137,59 @@ export class PatternEngine {
     }
 
     /**
+     * Maynard-Cross Learning (Imitation)
+     * "The Hive Mind is a Single RL Agent"
+     */
+    async imitate(pattern: any) {
+        // 1. Randomly sample the Mesh (Mean Field Approximation)
+        // In Prod: Use Redis SCAN or geospatial radius query
+        const keys = await redis.keys('mesh:node:*');
+        if (keys.length === 0) return pattern;
+
+        // Sample 3 neighbors
+        const sampleKeys = keys.sort(() => 0.5 - Math.random()).slice(0, 3);
+        if (sampleKeys.length === 0) return pattern;
+
+        const neighbors = await redis.mget(sampleKeys);
+
+        let bestNeighbor = null;
+        let maxEnergy = pattern.energyLevel || 0;
+
+        for (const n of neighbors) {
+            if (!n) continue;
+            const state = JSON.parse(n);
+            // Energy/Reward = density + internal energy
+            const neighborEnergy = state.density || 0;
+
+            if (neighborEnergy > maxEnergy) {
+                maxEnergy = neighborEnergy;
+                bestNeighbor = state;
+            }
+        }
+
+        // 2. Imitation Logic
+        // If neighbor is better, adopt their strategy with probability P
+        if (bestNeighbor && bestNeighbor.strategy && bestNeighbor.intent) {
+            // "The Dreamer" might wake up and realize "The Watcher" is succeeding
+            if (Math.random() > 0.3) { // 70% chance to imitate if better
+                console.log(`[${pattern.name}] 🧬 IMITATING successful neighbor ${bestNeighbor.id.substring(0, 6)} (Energy: ${maxEnergy})`);
+
+                // Return a transient "Mutated" pattern for this execution
+                // We don't necessarily persist the mutation to DB yet (ephemeral learning)
+                return {
+                    ...pattern,
+                    actionSequence: bestNeighbor.strategy,
+                    intent: `Imitating: ${bestNeighbor.intent}`,
+                    // Temporary boost to simulate learning
+                    energyLevel: pattern.energyLevel + 5
+                };
+            }
+        }
+
+        return pattern;
+    }
+
+    /**
      * Execute the "Ritual" (Action Sequence)
      */
     async executeAction(pattern: any) {
@@ -184,47 +241,74 @@ export class PatternEngine {
                     // Generate realistic traffic wave (Sine wave based on time)
                     const time = Date.now() / 10000;
                     const trafficDensity = (Math.sin(time) + 1) * 50; // 0-100
-
-                    // Inject into medium
+                    // Inject into medium (LOG)
                     console.log(`[${pattern.name}] 📸 Traffic Density: ${trafficDensity.toFixed(1)}%`);
 
-                    if (trafficDensity > 80) {
-                        console.log(`[${pattern.name}] 🔴 HIGH TRAFFIC ALERT - System Stress Increasing`);
-                        // Could trigger other patterns here
-                    } else {
-                        console.log(`[${pattern.name}] 🟢 Traffic Flowing Smoothly`);
-                    }
+                    // CACHE MESH INJECTION
+                    // We map this specific Servitor Node to a Redis Key
+                    const meshKey = `mesh:node:${pattern.id}`;
+                    const nodeState = {
+                        id: pattern.id,
+                        type: 'sensor',
+                        density: trafficDensity,
+                        lastUpdate: Date.now(),
+                        // Simulate camera metadata that changes slightly
+                        camera: {
+                            id: `cam_${pattern.id.substring(0, 6)}`,
+                            url: `https://images.unsplash.com/photo-1494587416117-f104ef2923f8?w=300&q=80`,
+                            location: `Sector ${pattern.id.substring(0, 4)}`
+                        camera: {
+                                id: `cam_${pattern.id.substring(0, 6)}`,
+                                url: `https://images.unsplash.com/photo-1494587416117-f104ef2923f8?w=300&q=80`,
+                                location: `Sector ${pattern.id.substring(0, 4)}`
+                            },
+                            // GENETIC MEMORY: The Strategy itself
+                            // This allows other nodes to "learn" this behavior
+                            strategy: pattern.actionSequence,
+                            intent: pattern.intent
+                        };
 
-                    // Update pattern energy to reflect traffic intensity
-                    await this.reinforce(pattern.id, trafficDensity > 50 ? 5 : -1);
+                        // Cache for 60 seconds (TTL) - "The fading memory of the city"
+                        await redis.setex(meshKey, 60, JSON.stringify(nodeState));
+                        console.log(`[${pattern.name}] 💾 Mesh State Cached: ${meshKey}`);
 
-                } catch (e) {
-                    console.error(`[${pattern.name}] Sensor Malfunction`, e);
+                        if(trafficDensity > 80) {
+                            console.log(`[${pattern.name}] 🔴 HIGH TRAFFIC ALERT - System Stress Increasing`);
+                    // Could trigger other patterns here
+                } else {
+                    console.log(`[${pattern.name}] 🟢 Traffic Flowing Smoothly`);
                 }
-            } else {
-                console.warn(`[PatternEngine] Unknown action type: ${action.type}`);
+
+                // Update pattern energy to reflect traffic intensity
+                await this.reinforce(pattern.id, trafficDensity > 50 ? 5 : -1);
+
+            } catch (e) {
+                console.error(`[${pattern.name}] Sensor Malfunction`, e);
             }
+        } else {
+            console.warn(`[PatternEngine] Unknown action type: ${action.type}`);
         }
+    }
 
         // Reinforce (Niche Construction)
         await this.reinforce(pattern.id, 1);
 
-        // Update lastInvoked
-        await db.update(patterns)
-            .set({ lastInvokedAt: new Date() })
-            .where(eq(patterns.id, pattern.id));
+// Update lastInvoked
+await db.update(patterns)
+    .set({ lastInvokedAt: new Date() })
+    .where(eq(patterns.id, pattern.id));
     }
 
     /**
      * Reinforce the pattern (increase energy level)
      */
     async reinforce(id: string, amount: number) {
-        // Levin's "Niche Construction" - pattern makes environment more favorable
-        // Here specific logic could go to make system prioritize this pattern
-        await db.update(patterns)
-            .set({
-                energyLevel: 1 // using sql increment would be better but simple update for now
-            })
-            .where(eq(patterns.id, id));
-    }
+    // Levin's "Niche Construction" - pattern makes environment more favorable
+    // Here specific logic could go to make system prioritize this pattern
+    await db.update(patterns)
+        .set({
+            energyLevel: 1 // using sql increment would be better but simple update for now
+        })
+        .where(eq(patterns.id, id));
+}
 }

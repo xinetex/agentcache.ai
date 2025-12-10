@@ -77,17 +77,32 @@
 
         <div class="legend">
             <div class="legend-item">
-                <div class="dot" style="background: #ff0055"></div> Traffic Sensor (High Load)
+                <div class="dot" style="background: #ff0055"></div> Traffic Sensing (High Reward)
             </div>
             <div class="legend-item">
-                <div class="dot" style="background: #00ffc8"></div> Servitor Node
+                <div class="dot" style="background: #00bcd4"></div> Dreaming (Exploration)
             </div>
             <div class="legend-item">
-                <div class="dot" style="background: #4444ff"></div> Neural Pipeline
+                <div class="dot" style="background: #4caf50"></div> Recycling (Maintenance)
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background: #ffffff"></div> Imitating Node
             </div>
         </div>
+
+        <button onclick="startHiveMindTour()" style="
+        margin-top: 20px;
+        width: 100%;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid #fff;
+        color: #fff;
+        padding: 5px;
+        cursor: pointer;
+        font-family: monospace;
+      ">▶ RUN HIVE MIND DEMO</button>
     </div>
 
+    <script src="tour.js"></script>
     <script type="text/javascript">
         const { DeckGL, HexagonLayer, ArcLayer, ScatterplotLayer } = deck;
 
@@ -184,14 +199,23 @@
                     data: agentNodes,
                     getPosition: d => d.coordinates,
                     getRadius: 50,
-                    getFillColor: [0, 255, 200],
+                    // COLOR STRATEGY: Visualizing Maynard-Cross Learning
+                    getFillColor: d => {
+                        const intent = d.intent ? d.intent.toLowerCase() : '';
+                        if (intent.includes('traffic') || intent.includes('monitor')) return [255, 0, 85]; // Red (Traffic)
+                        if (intent.includes('dream')) return [0, 188, 212]; // Cyan (Dreaming)
+                        if (intent.includes('recycle') || intent.includes('waste')) return [76, 175, 80]; // Green (Recycling)
+                        if (intent.includes('imitating')) return [255, 255, 255]; // White (Active Learning)
+                        return [100, 100, 100]; // Grey (Idle)
+                    },
                     getLineColor: [0, 0, 0],
                     stroked: true,
                     pickable: true,
                     autoHighlight: true
                 }),
 
-                // 3. Neural Pipelines (Arcs)
+                // 3. Neural Pipelines (Kinetic Arcs)
+                // We use a TripLayer logic or just animate the ArcLayer source/target colors over time
                 new ArcLayer({
                     id: 'pipelines',
                     data: arcs,
@@ -199,17 +223,22 @@
                     getTargetPosition: d => d.target,
                     getSourceColor: [0, 255, 200],
                     getTargetColor: [0, 100, 255],
-                    getWidth: 3
+                    getWidth: 3,
+                    // KINETIC UPGRADE: Pulse width based on time
+                    widthScale: Math.sin(Date.now() / 500) + 2
                 })
             ];
 
             deckgl.setProps({ layers });
+
+            // Kinetic Loop
+            requestAnimationFrame(() => renderLayers(nodes, arcs));
         }
 
         // Initial Fetch
         fetchData();
 
-        // Poll
+        // Data Refresh Loop (separate from animation loop)
         setInterval(fetchData, 2000);
 
     </script>

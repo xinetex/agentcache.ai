@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { db } from '../db/client.js';
 import { patterns } from '../db/schema.js';
 import { desc, like } from 'drizzle-orm';
+import { redis } from '../lib/redis.js';
 
 const geoRouter = new Hono();
 
@@ -28,8 +29,16 @@ geoRouter.get('/nodes', async (c) => {
                 lat = CENTER.lat + (Math.sin(offset) * 0.02);
                 lon = CENTER.lon + (Math.cos(offset) * 0.02);
                 type = 'sensor';
-                // Mock Camera Feed (using reliable placeholder for demo)
-                // In production, this would come from the Servitor's 'metadata' field which scraped a real API
+
+                // MESH CACHE LOOKUP
+                // Try to get real-time state from Redis Mesh
+                // Note: In a high-perf scenario we would use MGET for all IDs at start, but loop is fine for MVP.
+                let cachedState = null;
+                try {
+                    const rawMesh = await redis.get(`mesh:node:${p.id}`);
+                    if (rawMesh) cachedState = JSON.parse(rawMesh);
+                } catch (e) { }
+
             } else {
                 // Scatter for organic agents
                 const randLat = ((hash % 100) / 1000) - 0.05;
@@ -39,19 +48,18 @@ geoRouter.get('/nodes', async (c) => {
                 type = 'agent';
             }
 
+            // Resolve Display Values (Cache > DB Default)
+            const resolvedValue = (type === 'sensor' && cachedState) ? cachedState.density : (p.energyLevel || 1);
+            const resolvedCamera = (type === 'sensor' && cachedState) ? cachedState.camera : null;
+
             return {
                 id: p.id,
                 name: p.name,
                 type: type,
-                coordinates: [lon, lat], // GeoJSON is [lon, lat]
-                value: p.energyLevel || 1, // Determines height/radius
+                coordinates: [lon, lat],
+                value: resolvedValue,
                 intent: p.intent,
-                // Add camera metadata
-                camera: type === 'sensor' ? {
-                    id: `cam_${p.id.substring(0, 6)}`,
-                    url: `https://images.unsplash.com/photo-1494587416117-f104ef2923f8?w=300&q=80`, // Reliable generic traffic image
-                    location: "NYC Grid Sector " + index
-                } : null
+                camera: resolvedCamera
             };
         });
 
