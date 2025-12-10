@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentCache Observatory // Liquid Medium</title>
+    <style>
+        :root {
+            --bg-color: #000;
+            --text-color: #e0e0e0;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: white;
+            font-weight: 200;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin: 0;
+            mix-blend-mode: overlay;
+        }
+
+        .status {
+            color: #00ffc8;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: #00ffc8;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00ffc8;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .log {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            max-height: 200px;
+            overflow: hidden;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-cast {
+            pointer-events: auto;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 15px 30px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-cast:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: white;
+            box-shadow: 0 0 20px rgba(0, 255, 200, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="glcanvas"></canvas>
+
+    <div class="ui-layer">
+        <div>
+            <h1>Pattern Observatory</h1>
+            <div class="status">
+                <div class="dot"></div> EXCITABLE MEDIUM ACTIVE
+            </div>
+        </div>
+
+        <div class="log" id="log">
+            <!-- Logs -->
+        </div>
+
+        <div style="pointer-events: auto;">
+            <button class="btn-cast" onclick="invokeRandom()">Cast Sigil</button>
+        </div>
+    </div>
+
+    <!-- WRAPPER SCRIPT -->
+    <script>
+        const canvas = document.getElementById('glcanvas');
+        const gl = canvas.getContext('webgl');
+        const logEl = document.getElementById('log');
+
+        if (!gl) { alert('WebGL not supported'); }
+
+        // --- SHADERS ---
+        const vsSource = `
+            attribute vec4 aVertexPosition;
+            void main() {
+                gl_Position = aVertexPosition;
+            }
+        `;
+
+        const fsSource = `
+            precision mediump float;
+            uniform vec2 uResolution;
+            uniform float uTime;
+            uniform int uCount;
+            uniform vec3 uOrbs[20]; // x, y, energy
+            uniform vec3 uColors[20]; // r, g, b
+
+            // Simplex Noise (simplified)
+            vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+            vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+            vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+            float snoise(vec2 v) {
+                const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+                vec2 i  = floor(v + dot(v, C.yy) );
+                vec2 x0 = v - i + dot(i, C.xx);
+                vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+                vec4 x12 = x0.xyxy + C.xxzz;
+                x12.xy -= i1;
+                i = mod289(i);
+                vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+                vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+                m = m*m ;
+                return 130.0 * dot(m, vec3( dot(x0,p.x), dot(x12.xy,p.y), dot(x12.zw,p.z) ));
+            }
+
+            void main() {
+                vec2 uv = gl_FragCoord.xy / uResolution;
+                float aspect = uResolution.x / uResolution.y;
+                uv.x *= aspect;
+
+                vec3 color = vec3(0.0);
+                
+                // Base Fluid Field
+                float noise = snoise(uv * 3.0 + uTime * 0.1);
+                color += vec3(0.02, 0.05, 0.1) * (0.5 + 0.5 * noise);
+
+                // Metaballs (Orbs)
+                float field = 0.0;
+                vec3 orbColorAccum = vec3(0.0);
+
+                for(int i=0; i<20; i++) {
+                    if (i >= uCount) break;
+                    vec3 orb = uOrbs[i]; // x, y, energy
+                    vec2 pos = orb.xy;
+                    pos.x *= aspect; 
+                    
+                    float dist = distance(uv, pos);
+                    float radius = 0.05 + (orb.z * 0.01); 
+                    
+                    // Metaball function: 1 / dist
+                    float metaball = radius / (dist + 0.001);
+                    metaball = pow(metaball, 2.0); // Sharpen
+                    field += metaball;
+                    
+                    orbColorAccum += uColors[i] * metaball;
+                }
+
+                // Thresholding for Liquid Look
+                if (field > 0.8) {
+                    // Core
+                    color = mix(color, orbColorAccum / field, 0.8);
+                    color += vec3(0.2); // Highlight
+                } else if (field > 0.4) {
+                    // Glow / Aura
+                    color += (orbColorAccum / field) * 0.5;
+                }
+                
+                // Scanlines
+                color *= 0.9 + 0.1 * sin(gl_FragCoord.y * 0.5 + uTime * 5.0);
+
+                gl_FragColor = vec4(color, 1.0);
+            }
+        `;
+
+        // Shader Compile Helper
+        function initShaderProgram(gl, vsSource, fsSource) {
+            const vs = loadShader(gl, gl.VERTEX_SHADER, vsSource);
+            const fs = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
+            const p = gl.createProgram();
+            gl.attachShader(p, vs);
+            gl.attachShader(p, fs);
+            gl.linkProgram(p);
+            return p;
+        }
+        function loadShader(gl, type, source) {
+            const s = gl.createShader(type);
+            gl.shaderSource(s, source);
+            gl.compileShader(s);
+            if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+                console.error(gl.getShaderInfoLog(s));
+                gl.deleteShader(s);
+                return null;
+            }
+            return s;
+        }
+
+        const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
+        const programInfo = {
+            program: shaderProgram,
+            attribLocations: {
+                vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
+            },
+            uniformLocations: {
+                uResolution: gl.getUniformLocation(shaderProgram, 'uResolution'),
+                uTime: gl.getUniformLocation(shaderProgram, 'uTime'),
+                uCount: gl.getUniformLocation(shaderProgram, 'uCount'),
+                uOrbs: gl.getUniformLocation(shaderProgram, 'uOrbs'),
+                uColors: gl.getUniformLocation(shaderProgram, 'uColors'),
+            },
+        };
+
+        // Buffers
+        const positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        const positions = [-1.0, 1.0, 1.0, 1.0, -1.0, -1.0, 1.0, -1.0];
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+
+        // --- GAME LOGIC ---
+        let agents = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            gl.viewport(0, 0, canvas.width, canvas.height);
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Agent Class (CPU side simulation)
+        class Agent {
+            constructor(data) {
+                this.id = data.id;
+                this.update(data);
+                this.x = Math.random();
+                this.y = Math.random();
+                this.vx = (Math.random() - 0.5) * 0.002;
+                this.vy = (Math.random() - 0.5) * 0.002;
+            }
+            update(data) {
+                this.name = data.name;
+                this.energy = data.energyLevel || 1;
+                this.lastInvoked = new Date(data.lastInvokedAt).getTime();
+
+                // Color Logic
+                if (this.name.includes('Dreamer')) this.rgb = [0.6, 0.0, 1.0]; // Purple
+                else if (this.name.includes('Warden')) this.rgb = [1.0, 0.2, 0.2]; // Red
+                else if (this.name.includes('Recycler')) this.rgb = [0.0, 1.0, 0.5]; // Green
+                else this.rgb = [0.0, 0.8, 1.0]; // Cyan
+            }
+            move() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > 1) this.vx *= -1;
+                if (this.y < 0 || this.y > 1) this.vy *= -1;
+            }
+        }
+
+        async function fetchPatterns() {
+            try {
+                const res = await fetch('/api/patterns');
+                const data = await res.json();
+                if (data.patterns) {
+                    const foundIds = new Set();
+                    data.patterns.forEach(p => {
+                        foundIds.add(p.id);
+                        let agent = agents.find(a => a.id === p.id);
+                        if (agent) {
+                            if (new Date(p.lastInvokedAt).getTime() > agent.lastInvoked) {
+                                logMsg(`Pattern invoked: ${p.name}`);
+                            }
+                            agent.update(p);
+                        } else {
+                            agents.push(new Agent(p));
+                            logMsg(`New Pattern detected: ${p.name}`);
+                        }
+                    });
+                    agents = agents.filter(a => foundIds.has(a.id));
+                }
+            } catch (e) { }
+        }
+        setInterval(fetchPatterns, 1000);
+        fetchPatterns();
+
+        function logMsg(msg) {
+            const div = document.createElement('div');
+            div.innerText = `> ${msg}`;
+            logEl.prepend(div);
+        }
+
+        async function invokeRandom() {
+            const names = ["Spark", "Echo", "Flux", "Omen"];
+            const name = names[Math.floor(Math.random() * names.length)] + "-" + Math.floor(Math.random() * 100);
+            await fetch('/api/patterns/invoke', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: name,
+                    intent: "Transient Burst",
+                    actionSequence: { type: "log", message: "Bursting!" },
+                    energyLevel: 5
+                })
+            });
+            fetchPatterns();
+        }
+
+        // Render Loop
+        function render(now) {
+            const time = now * 0.001;
+
+            // Update Physics
+            agents.forEach(a => a.move());
+
+            // Prepare Uniforms
+            const orbsFlat = [];
+            const colorsFlat = [];
+            const count = Math.min(agents.length, 20); // Shader limit
+
+            for (let i = 0; i < 20; i++) {
+                if (i < count) {
+                    orbsFlat.push(agents[i].x, agents[i].y, agents[i].energy);
+                    colorsFlat.push(...agents[i].rgb);
+                } else {
+                    orbsFlat.push(0, 0, 0);
+                    colorsFlat.push(0, 0, 0);
+                }
+            }
+
+            // Draw
+            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+            gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition, 2, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
+
+            gl.useProgram(programInfo.program);
+
+            gl.uniform2f(programInfo.uniformLocations.uResolution, canvas.width, canvas.height);
+            gl.uniform1f(programInfo.uniformLocations.uTime, time);
+            gl.uniform1i(programInfo.uniformLocations.uCount, count);
+            gl.uniform3fv(programInfo.uniformLocations.uOrbs, new Float32Array(orbsFlat));
+            gl.uniform3fv(programInfo.uniformLocations.uColors, new Float32Array(colorsFlat));
+
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+            requestAnimationFrame(render);
+        }
+        requestAnimationFrame(render);
+    </script>
+</body>
+
+</html>

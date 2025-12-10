@@ -1,6 +1,7 @@
 import { Message } from './ContextManager.js';
 import { MoonshotClient } from '../lib/moonshot.js';
 import { redis } from '../lib/redis.js';
+import { VectorClient } from './VectorClient.js';
 
 export interface ValidationResult {
     valid: boolean;
@@ -10,9 +11,11 @@ export interface ValidationResult {
 
 export class CognitiveEngine {
     private moonshot: MoonshotClient;
+    private vectorClient: VectorClient;
 
     constructor() {
         this.moonshot = new MoonshotClient(process.env.MOONSHOT_API_KEY, redis);
+        this.vectorClient = new VectorClient(process.env.VECTOR_SERVICE_URL); // Env var or default
     }
 
     /**
@@ -116,6 +119,27 @@ export class CognitiveEngine {
         });
 
         return sorted;
+    }
+
+    /**
+     * Vector Memory: Store content embedding
+     */
+    async storeMemoryVector(id: number, content: string): Promise<boolean> {
+        // TODO: Get embedding from Moonshot or other Model
+        // const embedding = await this.moonshot.createEmbedding(content);
+        // For MVP/Blind Implementation, we stub this:
+        console.log(`[CognitiveEngine] Would embed and store: "${content}" with ID ${id}`);
+        // await this.vectorClient.addVectors([id], embedding);
+        return true;
+    }
+
+    /**
+     * Vector Memory: Search for similar content
+     */
+    async searchMemory(query: string): Promise<any[]> {
+        // const queryVector = await this.moonshot.createEmbedding(query);
+        // return await this.vectorClient.search(queryVector);
+        return [];
     }
 
     /**

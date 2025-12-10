@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, jsonb, timestamp, real, vector, boolean, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, jsonb, timestamp, real, vector, boolean, index, integer } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 // --- Agents: The Actors ---
@@ -43,6 +43,19 @@ export const decisions = pgTable('decisions', {
     reasoning: text('reasoning'), // Chain-of-thought dump
     outcome: jsonb('outcome'),
     timestamp: timestamp('timestamp').defaultNow(),
+});
+
+// --- Patterns: Autonomous Servitors (Magick/Biobiocomputation) ---
+export const patterns = pgTable('patterns', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: text('name').notNull(),
+    intent: text('intent').notNull(),
+    triggerCondition: jsonb('trigger_condition'), // { type: 'cron', value: '* * * * *' } or { type: 'event', value: 'high_latency' }
+    actionSequence: jsonb('action_sequence'), // The "Ritual"
+    energyLevel: integer('energy_level').default(0), // Reinforcement score
+    status: text('status').default('active'), // 'active', 'dormant', 'banished'
+    createdAt: timestamp('created_at').defaultNow(),
+    lastInvokedAt: timestamp('last_invoked_at'),
 });
 
 // --- Governance: Organizations & Access ---

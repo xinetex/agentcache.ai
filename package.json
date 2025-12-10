@@ -12,6 +12,7 @@
     "mcp:build": "tsc src/mcp/server.ts --outDir dist/mcp --module NodeNext --moduleResolution NodeNext --target ES2022",
     "mcp:dev": "tsx src/mcp/server.ts",
     "mcp:start": "node dist/mcp/server.js",
+    "sigil": "tsx src/cli/sigil.ts",
     "test": "vitest"
   },
   "dependencies": {

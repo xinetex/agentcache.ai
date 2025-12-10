@@ -19,7 +19,7 @@ import { neon } from '@neondatabase/serverless';
 
 const sql = neon(process.env.DATABASE_URL || '');
 
-const app = new Hono();
+export const app = new Hono();
 const contextManager = new ContextManager();
 
 // Initialize Anti-Cache components
@@ -27,6 +27,10 @@ const cacheInvalidator = new antiCache.CacheInvalidator();
 const urlMonitor = new antiCache.UrlMonitor();
 const freshnessCalculator = antiCache.FreshnessCalculator;
 const freshnessRules = new antiCache.FreshnessRuleEngine();
+
+// Initialize Autonomic Pattern Engine (The "Will")
+const patternEngine = new PatternEngine();
+patternEngine.listen();
 
 // Environment
 const PORT = process.env.PORT || 3001;
@@ -51,6 +55,8 @@ import labRouter from './api/lab.js';
 import authRouter from './api/auth.js';
 import adminStatsRouter from './api/admin-stats.js';
 import eventsRouter from './api/events.js';
+import patternsRouter from './api/patterns.js';
+import { PatternEngine } from './infrastructure/PatternEngine.js';
 
 app.post('/api/provision', provisionClient);
 app.get('/api/provision/:api_key', getApiKeyInfo);
@@ -68,6 +74,7 @@ app.route('/api/governance', governanceRouter);
 app.route('/api/lab', labRouter);
 app.route('/api/admin-stats', adminStatsRouter);
 app.route('/api/events', eventsRouter);
+app.route('/api/patterns', patternsRouter);
 
 // Serve static files (landing page - defaults to community.html)
 app.get('/', (c) => {
@@ -1248,9 +1255,12 @@ app.get('/api', (c) => {
 });
 
 // Start server
-console.log(`🚀 AgentCache.ai MVP starting on port ${PORT}`);
-console.log(`🎯 Demo API Key: ac_demo_test123`);
-serve({
-  fetch: app.fetch,
-  port: Number(PORT),
-});
+// Start server if not running in Vercel/Serverless environment
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
+  console.log(`🚀 AgentCache.ai MVP starting on port ${PORT}`);
+  console.log(`🎯 Demo API Key: ac_demo_test123`);
+  serve({
+    fetch: app.fetch,
+    port: Number(PORT),
+  });
+}

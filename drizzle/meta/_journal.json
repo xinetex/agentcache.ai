@@ -8,6 +8,13 @@
       "when": 1764739136216,
       "tag": "0000_romantic_hydra",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1765342122813,
+      "tag": "0001_shallow_omega_red",
+      "breakpoints": true
     }
   ]
 }
