@@ -30,7 +30,7 @@ function initVideoCache() {
             s3Endpoint: process.env.JETTYTHUNDER_S3_ENDPOINT || process.env.S3_ENDPOINT,
             s3AccessKey: process.env.JETTYTHUNDER_ACCESS_KEY || process.env.S3_ACCESS_KEY,
             s3SecretKey: process.env.JETTYTHUNDER_SECRET_KEY || process.env.S3_SECRET_KEY,
-            s3Bucket: process.env.JETTYTHUNDER_BUCKET || 'audio1-videos'
+            s3Bucket: process.env.JETTYTHUNDER_BUCKET || 'jettydata-prod'
         });
     }
     return videoCache;
