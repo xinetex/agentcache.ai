@@ -100,7 +100,9 @@ export default async function handler(req) {
         if (!videoPath) {
             // e.g. /api/cdn/stream/audio1/theme/logo.png
             const segments = url.pathname.split('/').filter(Boolean);
-            const apiIndex = segments.indexOf('stream');
+            let apiIndex = segments.indexOf('stream');
+            if (apiIndex === -1) apiIndex = segments.indexOf('media');
+
             if (apiIndex !== -1 && apiIndex < segments.length - 1) {
                 videoPath = segments.slice(apiIndex + 1).join('/');
             }

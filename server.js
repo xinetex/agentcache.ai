@@ -208,6 +208,12 @@ app.get('/hls/:jobId/:quality/:segment', (req, res, next) => {
     wrapCdn(cdnStreamHandler)(req, res);
 });
 
+// Branded Media Route
+app.get('/media/*', (req, res) => {
+    // The path will be parsed by cdnStreamHandler from req.url
+    wrapCdn(cdnStreamHandler)(req, res);
+});
+
 // Thumbnail Service Routes (proxy to internal microservice)
 const THUMBNAIL_SERVICE = process.env.THUMBNAIL_SERVICE_URL || 'http://thumbnail:8080';
 
