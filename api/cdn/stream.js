@@ -83,7 +83,9 @@ export default async function handler(req) {
         const url = new URL(req.url || '', 'http://localhost');
         let videoPath = url.searchParams.get('path');
 
-        // Also support path segments from URL params (for rewrites)
+        // Logic for path resolution:
+        // 1. If 'path' param exists, use it (e.g. ?path=audio1/theme/logo.png)
+        // 2. Otherwise try HLS jobId/quality/segment params
         if (!videoPath) {
             const jobId = url.searchParams.get('jobId');
             const quality = url.searchParams.get('quality');
@@ -94,10 +96,20 @@ export default async function handler(req) {
             }
         }
 
+        // 3. Fallback: Parse path segments from the URL directly if mapped
+        if (!videoPath) {
+            // e.g. /api/cdn/stream/audio1/theme/logo.png
+            const segments = url.pathname.split('/').filter(Boolean);
+            const apiIndex = segments.indexOf('stream');
+            if (apiIndex !== -1 && apiIndex < segments.length - 1) {
+                videoPath = segments.slice(apiIndex + 1).join('/');
+            }
+        }
+
         if (!videoPath) {
             return new Response(JSON.stringify({
                 error: 'Missing path parameter',
-                usage: '/api/cdn/stream?path=hls/jobId/720p/segment.ts'
+                usage: '/api/cdn/stream?path=audio1/theme/logo.png'
             }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json', ...corsHeaders() }
@@ -109,7 +121,7 @@ export default async function handler(req) {
 
         if (!data) {
             return new Response(JSON.stringify({
-                error: 'Segment not found',
+                error: 'Object not found',
                 path: videoPath
             }), {
                 status: 404,
@@ -123,15 +135,24 @@ export default async function handler(req) {
 
         // Determine content type
         let contentType = 'application/octet-stream';
-        if (videoPath.endsWith('.m3u8')) {
-            contentType = 'application/x-mpegURL';
-        } else if (videoPath.endsWith('.ts')) {
-            contentType = 'video/MP2T';
-        } else if (videoPath.endsWith('.mp4')) {
-            contentType = 'video/mp4';
+        const ext = videoPath.split('.').pop()?.toLowerCase();
+
+        const contentTypes = {
+            'm3u8': 'application/x-mpegURL',
+            'ts': 'video/MP2T',
+            'mp4': 'video/mp4',
+            'png': 'image/png',
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'svg': 'image/svg+xml',
+            'json': 'application/json'
+        };
+
+        if (ext && contentTypes[ext]) {
+            contentType = contentTypes[ext];
         }
 
-        // Return video data with caching headers
+        // Return data with caching headers
         return new Response(data, {
             status: 200,
             headers: {
