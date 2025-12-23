@@ -1,6 +1,7 @@
 import { Message } from './ContextManager.js';
 import { MoonshotClient } from '../lib/moonshot.js';
 import { redis } from '../lib/redis.js';
+import { upsertMemory, queryMemory } from '../lib/vector.js';
 import { VectorClient } from './VectorClient.js';
 
 export interface ValidationResult {
@@ -124,22 +125,37 @@ export class CognitiveEngine {
     /**
      * Vector Memory: Store content embedding
      */
-    async storeMemoryVector(id: number, content: string): Promise<boolean> {
-        // TODO: Get embedding from Moonshot or other Model
-        // const embedding = await this.moonshot.createEmbedding(content);
-        // For MVP/Blind Implementation, we stub this:
-        console.log(`[CognitiveEngine] Would embed and store: "${content}" with ID ${id}`);
-        // await this.vectorClient.addVectors([id], embedding);
-        return true;
+    /**
+     * Vector Memory: Store content embedding (Holographic Storage)
+     * "Freezing the state into the non-localized void"
+     */
+    async storeMemoryVector(id: string, content: string): Promise<boolean> {
+        try {
+            console.log(`[CognitiveEngine] 🕸️ Weaving memory into the hologram: "${content.substring(0, 30)}..."`);
+            await upsertMemory(id, content, { type: 'memory', timestamp: Date.now() });
+            return true;
+        } catch (e) {
+            console.error('[CognitiveEngine] Failed to store holographic memory:', e);
+            return false;
+        }
     }
 
     /**
      * Vector Memory: Search for similar content
      */
+    /**
+     * Vector Memory: Search for similar content (Associative Recall)
+     * "The light that triggers the re-actualization"
+     */
     async searchMemory(query: string): Promise<any[]> {
-        // const queryVector = await this.moonshot.createEmbedding(query);
-        // return await this.vectorClient.search(queryVector);
-        return [];
+        try {
+            console.log(`[CognitiveEngine] 🕯️ Searching the void for: "${query}"`);
+            const results = await queryMemory(query);
+            return results;
+        } catch (e) {
+            console.error('[CognitiveEngine] Failed to recall memory:', e);
+            return [];
+        }
     }
 
     /**

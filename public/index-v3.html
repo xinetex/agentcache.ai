@@ -417,6 +417,102 @@
         </div>
     </section>
 
+    <!-- Agentic Plan Caching -->
+    <section id="plans" class="py-24 bg-slate-900/50 border-t border-slate-800 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <!-- Content -->
+                <div>
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold mb-6">
+                        ⚡ New: Execution Caching
+                    </div>
+                    <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                        Don't Just Cache Data. <br>
+                        <span class="text-gradient">Cache the Plan.</span>
+                    </h2>
+                    <p class="text-xl text-slate-400 mb-8 leading-relaxed">
+                        Why figure out "How to scrape a website" 1,000 times? <strong>Agentic Plan Caching</strong>
+                        extracts structural templates from your agents' successful workflows and reuses them.
+                    </p>
+
+                    <div class="space-y-6 mb-8">
+                        <div class="flex items-start gap-4">
+                            <div
+                                class="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center text-orange-500 text-2xl">
+                                🗺️</div>
+                            <div>
+                                <h4 class="text-white font-bold">Plan Templates</h4>
+                                <p class="text-sm text-slate-400">Automatically identifies repeating multi-step patterns
+                                    and converts them into optimized, reusable templates.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div
+                                class="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center text-orange-500 text-2xl">
+                                📉</div>
+                            <div>
+                                <h4 class="text-white font-bold">50% Cost Reduction</h4>
+                                <p class="text-sm text-slate-400">Skip the "planning" and "reasoning" phases. Jump
+                                    straight to execution for known objectives.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visual -->
+                <div
+                    class="glass rounded-2xl p-1 border border-orange-500/20 shadow-2xl shadow-orange-900/20 transform rotate-1 hover:rotate-0 transition-transform duration-500">
+                    <div class="bg-slate-950 rounded-xl p-6 font-mono text-xs md:text-sm overflow-hidden">
+                        <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
+                            <div class="text-slate-400">PLAN_ID: <span class="text-orange-400">#PLN-9X28</span></div>
+                            <div class="bg-orange-500/20 text-orange-400 px-2 py-1 rounded text-xs">CACHED</div>
+                        </div>
+
+                        <!-- Flow Visualization -->
+                        <div class="space-y-4 relative">
+                            <!-- Line connecting steps -->
+                            <div class="absolute left-4 top-4 bottom-4 w-0.5 bg-slate-800"></div>
+
+                            <div class="flex items-center gap-4 relative z-10">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-500">
+                                    1</div>
+                                <div class="flex-1 bg-slate-900/50 p-2 rounded border border-slate-800/50">
+                                    <div class="text-slate-500 text-[10px] uppercase">Objective</div>
+                                    <div class="text-slate-300">Analyze Competitor Pricing</div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-4 relative z-10">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-orange-500/20 border border-orange-500/50 flex items-center justify-center text-orange-500">
+                                    2</div>
+                                <div class="flex-1 bg-slate-900/50 p-2 rounded border border-orange-500/20">
+                                    <div class="flex justify-between">
+                                        <div class="text-orange-400 text-[10px] uppercase">Plan Hit</div>
+                                        <div class="text-emerald-400 text-[10px]">-1,400 tokens</div>
+                                    </div>
+                                    <div class="text-white">Applied Template: "E-comm Scraper v2"</div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-4 relative z-10">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-500">
+                                    3</div>
+                                <div class="flex-1 bg-slate-900/50 p-2 rounded border border-slate-800/50">
+                                    <div class="text-slate-500 text-[10px] uppercase">Action</div>
+                                    <div class="text-slate-300">Execute Python Scraper...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- AgentCache Edge (Data Center) -->
     <section id="edge" class="py-24 bg-slate-900/50 border-t border-slate-800">
         <div class="max-w-7xl mx-auto px-6">

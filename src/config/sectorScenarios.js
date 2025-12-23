@@ -4,7 +4,7 @@
  */
 
 export const SECTOR_SCENARIOS = {
-  
+
   // HEALTHCARE & LIFE SCIENCES
   healthcare: {
     name: 'Healthcare & Life Sciences',
@@ -16,11 +16,11 @@ export const SECTOR_SCENARIOS = {
         description: 'Medical knowledge retrieval with full audit trails for compliance',
         useCase: 'clinical_decision_support',
         nodes: [
-          { type: 'cache_l1', config: { ttl: 300, max_size: '1GB', encryption: 'AES-256' }},
-          { type: 'cache_l2', config: { ttl: 3600, storage: 'redis', audit_log: true }},
-          { type: 'compliance_layer', config: { standard: 'HIPAA', audit_retention: '7_years' }},
-          { type: 'pii_detection', config: { redaction: 'automatic', phi_alerts: true }},
-          { type: 'semantic_dedup', config: { threshold: 0.95 }}
+          { type: 'cache_l1', config: { ttl: 300, max_size: '1GB', encryption: 'AES-256' } },
+          { type: 'cache_l2', config: { ttl: 3600, storage: 'redis', audit_log: true } },
+          { type: 'compliance_layer', config: { standard: 'HIPAA', audit_retention: '7_years' } },
+          { type: 'pii_detection', config: { redaction: 'automatic', phi_alerts: true } },
+          { type: 'semantic_dedup', config: { threshold: 0.95 } }
         ],
         compliance: ['HIPAA', 'HITRUST'],
         estimatedSavings: '$3,200/mo',
@@ -33,10 +33,10 @@ export const SECTOR_SCENARIOS = {
         description: 'Cache AI-analyzed radiology reports and imaging interpretations',
         useCase: 'diagnostic_imaging',
         nodes: [
-          { type: 'cache_l1', config: { ttl: 600, max_size: '2GB' }},
-          { type: 'cache_l2', config: { ttl: 7200, storage: 'redis' }},
-          { type: 'deduplication', config: { hash_algorithm: 'perceptual', threshold: 0.92 }},
-          { type: 'compliance_layer', config: { standard: 'HIPAA' }}
+          { type: 'cache_l1', config: { ttl: 600, max_size: '2GB' } },
+          { type: 'cache_l2', config: { ttl: 7200, storage: 'redis' } },
+          { type: 'deduplication', config: { hash_algorithm: 'perceptual', threshold: 0.92 } },
+          { type: 'compliance_layer', config: { standard: 'HIPAA' } }
         ],
         compliance: ['HIPAA', 'FDA 21 CFR Part 11'],
         estimatedSavings: '$4,800/mo',
@@ -49,9 +49,9 @@ export const SECTOR_SCENARIOS = {
         description: 'Cache symptom analysis and triage recommendations',
         useCase: 'patient_triage',
         nodes: [
-          { type: 'cache_l1', config: { ttl: 180, max_size: '500MB' }},
-          { type: 'semantic_cache', config: { similarity_threshold: 0.88 }},
-          { type: 'compliance_layer', config: { standard: 'HIPAA', log_all_access: true }}
+          { type: 'cache_l1', config: { ttl: 180, max_size: '500MB' } },
+          { type: 'semantic_cache', config: { similarity_threshold: 0.88 } },
+          { type: 'compliance_layer', config: { standard: 'HIPAA', log_all_access: true } }
         ],
         compliance: ['HIPAA'],
         estimatedSavings: '$1,800/mo',
@@ -72,10 +72,10 @@ export const SECTOR_SCENARIOS = {
         description: 'Cache ML fraud scores with sub-50ms latency requirements',
         useCase: 'fraud_detection',
         nodes: [
-          { type: 'cache_l1', config: { ttl: 120, max_size: '1GB', strategy: 'LRU' }},
-          { type: 'cache_l2', config: { ttl: 600, storage: 'redis' }},
-          { type: 'anomaly_detection', config: { alert_on_cache_miss: true }},
-          { type: 'compliance_layer', config: { standard: 'PCI-DSS', immutable_logs: true }}
+          { type: 'cache_l1', config: { ttl: 120, max_size: '1GB', strategy: 'LRU' } },
+          { type: 'cache_l2', config: { ttl: 600, storage: 'redis' } },
+          { type: 'anomaly_detection', config: { alert_on_cache_miss: true } },
+          { type: 'compliance_layer', config: { standard: 'PCI-DSS', immutable_logs: true } }
         ],
         compliance: ['PCI-DSS', 'SOC 2 Type II'],
         estimatedSavings: '$5,200/mo',
@@ -88,10 +88,10 @@ export const SECTOR_SCENARIOS = {
         description: 'Cache ID verification results and risk assessments',
         useCase: 'kyc_verification',
         nodes: [
-          { type: 'cache_l1', config: { ttl: 3600, max_size: '500MB' }},
-          { type: 'cache_l2', config: { ttl: 86400, storage: 'postgresql' }},
-          { type: 'deduplication', config: { hash_fields: ['document_id', 'customer_id'] }},
-          { type: 'compliance_layer', config: { standard: 'KYC/AML', retention: '5_years' }}
+          { type: 'cache_l1', config: { ttl: 3600, max_size: '500MB' } },
+          { type: 'cache_l2', config: { ttl: 86400, storage: 'postgresql' } },
+          { type: 'deduplication', config: { hash_fields: ['document_id', 'customer_id'] } },
+          { type: 'compliance_layer', config: { standard: 'KYC/AML', retention: '5_years' } }
         ],
         compliance: ['KYC/AML', 'GDPR'],
         estimatedSavings: '$3,600/mo',
@@ -104,10 +104,10 @@ export const SECTOR_SCENARIOS = {
         description: 'Cache LLM-analyzed market sentiment from news/social',
         useCase: 'sentiment_analysis',
         nodes: [
-          { type: 'cache_l1', config: { ttl: 300, max_size: '1GB' }},
-          { type: 'cache_l2', config: { ttl: 1800, storage: 'redis' }},
-          { type: 'semantic_dedup', config: { threshold: 0.90 }},
-          { type: 'time_series_cache', config: { window: '15min', aggregate: 'avg' }}
+          { type: 'cache_l1', config: { ttl: 300, max_size: '1GB' } },
+          { type: 'cache_l2', config: { ttl: 1800, storage: 'redis' } },
+          { type: 'semantic_dedup', config: { threshold: 0.90 } },
+          { type: 'time_series_cache', config: { window: '15min', aggregate: 'avg' } }
         ],
         compliance: ['SOC 2'],
         estimatedSavings: '$2,400/mo',
@@ -128,11 +128,11 @@ export const SECTOR_SCENARIOS = {
         description: 'Cache research-backed literacy guidance with source citations',
         useCase: 'educational_rag',
         nodes: [
-          { type: 'cache_l1', config: { ttl: 600, max_size: '500MB' }},
-          { type: 'cache_l2', config: { ttl: 7200, storage: 'redis' }},
-          { type: 'semantic_cache', config: { similarity_threshold: 0.87 }},
-          { type: 'citation_tracking', config: { store_sources: true }},
-          { type: 'content_filtering', config: { age_appropriate: true }}
+          { type: 'cache_l1', config: { ttl: 600, max_size: '500MB' } },
+          { type: 'cache_l2', config: { ttl: 7200, storage: 'redis' } },
+          { type: 'semantic_cache', config: { similarity_threshold: 0.87 } },
+          { type: 'citation_tracking', config: { store_sources: true } },
+          { type: 'content_filtering', config: { age_appropriate: true } }
         ],
         compliance: ['FERPA', 'COPPA'],
         estimatedSavings: '$1,600/mo',
@@ -145,10 +145,10 @@ export const SECTOR_SCENARIOS = {
         description: 'Cache student-specific learning recommendations',
         useCase: 'adaptive_learning',
         nodes: [
-          { type: 'cache_l1', config: { ttl: 300, max_size: '1GB', partition_by: 'student_id' }},
-          { type: 'cache_l2', config: { ttl: 3600, storage: 'redis' }},
-          { type: 'user_memory', config: { remember_preferences: true, learning_style: true }},
-          { type: 'compliance_layer', config: { standard: 'FERPA', student_data_protection: true }}
+          { type: 'cache_l1', config: { ttl: 300, max_size: '1GB', partition_by: 'student_id' } },
+          { type: 'cache_l2', config: { ttl: 3600, storage: 'redis' } },
+          { type: 'user_memory', config: { remember_preferences: true, learning_style: true } },
+          { type: 'compliance_layer', config: { standard: 'FERPA', student_data_protection: true } }
         ],
         compliance: ['FERPA', 'COPPA'],
         estimatedSavings: '$2,100/mo',
@@ -161,9 +161,9 @@ export const SECTOR_SCENARIOS = {
         description: 'Cache grading rubrics and similar essay assessments',
         useCase: 'automated_grading',
         nodes: [
-          { type: 'cache_l1', config: { ttl: 3600, max_size: '500MB' }},
-          { type: 'semantic_dedup', config: { threshold: 0.93 }},
-          { type: 'compliance_layer', config: { standard: 'FERPA' }}
+          { type: 'cache_l1', config: { ttl: 3600, max_size: '500MB' } },
+          { type: 'semantic_dedup', config: { threshold: 0.93 } },
+          { type: 'compliance_layer', config: { standard: 'FERPA' } }
         ],
         compliance: ['FERPA'],
         estimatedSavings: '$1,200/mo',
@@ -184,11 +184,11 @@ export const SECTOR_SCENARIOS = {
         description: 'Cache legal clause analysis and risk assessments',
         useCase: 'contract_review',
         nodes: [
-          { type: 'cache_l1', config: { ttl: 1800, max_size: '1GB' }},
-          { type: 'cache_l2', config: { ttl: 86400, storage: 'postgresql' }},
-          { type: 'semantic_cache', config: { similarity_threshold: 0.91 }},
-          { type: 'versioning', config: { track_changes: true }},
-          { type: 'compliance_layer', config: { standard: 'SOC 2', attorney_client_privilege: true }}
+          { type: 'cache_l1', config: { ttl: 1800, max_size: '1GB' } },
+          { type: 'cache_l2', config: { ttl: 86400, storage: 'postgresql' } },
+          { type: 'semantic_cache', config: { similarity_threshold: 0.91 } },
+          { type: 'versioning', config: { track_changes: true } },
+          { type: 'compliance_layer', config: { standard: 'SOC 2', attorney_client_privilege: true } }
         ],
         compliance: ['SOC 2', 'ISO 27001'],
         estimatedSavings: '$4,200/mo',
@@ -201,9 +201,9 @@ export const SECTOR_SCENARIOS = {
         description: 'Cache regulation interpretations and compliance status',
         useCase: 'compliance_monitoring',
         nodes: [
-          { type: 'cache_l1', config: { ttl: 600, max_size: '500MB' }},
-          { type: 'cache_l2', config: { ttl: 3600, storage: 'redis' }},
-          { type: 'compliance_layer', config: { standards: ['SOC 2', 'ISO 27001', 'GDPR'], audit_trail: true }}
+          { type: 'cache_l1', config: { ttl: 600, max_size: '500MB' } },
+          { type: 'cache_l2', config: { ttl: 3600, storage: 'redis' } },
+          { type: 'compliance_layer', config: { standards: ['SOC 2', 'ISO 27001', 'GDPR'], audit_trail: true } }
         ],
         compliance: ['SOC 2', 'ISO 27001', 'GDPR'],
         estimatedSavings: '$2,800/mo',
@@ -224,10 +224,10 @@ export const SECTOR_SCENARIOS = {
         description: 'Cache personalized product suggestions and search results',
         useCase: 'product_recommendations',
         nodes: [
-          { type: 'cache_l1', config: { ttl: 300, max_size: '2GB', partition_by: 'user_segment' }},
-          { type: 'cache_l2', config: { ttl: 3600, storage: 'redis' }},
-          { type: 'semantic_cache', config: { similarity_threshold: 0.85 }},
-          { type: 'ab_testing', config: { variant_caching: true }}
+          { type: 'cache_l1', config: { ttl: 300, max_size: '2GB', partition_by: 'user_segment' } },
+          { type: 'cache_l2', config: { ttl: 3600, storage: 'redis' } },
+          { type: 'semantic_cache', config: { similarity_threshold: 0.85 } },
+          { type: 'ab_testing', config: { variant_caching: true } }
         ],
         compliance: ['GDPR', 'CCPA'],
         estimatedSavings: '$3,400/mo',
@@ -240,15 +240,31 @@ export const SECTOR_SCENARIOS = {
         description: 'Cache common support queries and product knowledge',
         useCase: 'customer_support',
         nodes: [
-          { type: 'cache_l1', config: { ttl: 600, max_size: '1GB' }},
-          { type: 'cache_l2', config: { ttl: 7200, storage: 'redis' }},
-          { type: 'semantic_cache', config: { similarity_threshold: 0.88 }},
-          { type: 'user_memory', config: { remember_orders: true, preferences: true }}
+          { type: 'cache_l1', config: { ttl: 600, max_size: '1GB' } },
+          { type: 'cache_l2', config: { ttl: 7200, storage: 'redis' } },
+          { type: 'semantic_cache', config: { similarity_threshold: 0.88 } },
+          { type: 'user_memory', config: { remember_orders: true, preferences: true } }
         ],
         compliance: ['GDPR', 'CCPA'],
         estimatedSavings: '$2,600/mo',
         complexity: 'moderate',
         reasoning: 'Support bots answer 80% of the same questions. Semantic caching handles variations ("Where\'s my order?" vs "Track my shipment"). 90% hit rate.'
+      },
+      {
+        id: 'shopper-segmentation',
+        name: 'Real-Time Shopper Segmentation',
+        description: 'Cache segmentation profiles to reduce inference on every click',
+        useCase: 'shopper_segmentation',
+        nodes: [
+          { type: 'cache_l1', config: { ttl: 1800, max_size: '1GB', strategy: 'LRU' } },
+          { type: 'classifier', config: { model: 'llama-3-8b-instruct', fast_path: true } },
+          { type: 'cache_l2', config: { ttl: 86400, storage: 'redis', partition_by: 'session_id' } },
+          { type: 'personalization_engine', config: { rules: 'dynamic', signals: ['clickstream', 'cart'] } }
+        ],
+        compliance: ['GDPR', 'CCPA'],
+        estimatedSavings: '$9,200/mo',
+        complexity: 'complex',
+        reasoning: 'Real-time segmentation requires heavy inference. Caching the "assigned segment" for the session duration prevents re-running the model on every page load, saving 95% of inference costs.'
       }
     ]
   },
@@ -264,12 +280,12 @@ export const SECTOR_SCENARIOS = {
         description: 'Cache LLM inference for lakehouse RAG pipelines with sub-50ms hits',
         useCase: 'lakehouse_rag',
         nodes: [
-          { type: 'cache_l1', config: { ttl: 300, max_size: '2GB', strategy: 'LRU' }},
-          { type: 'cache_l2', config: { ttl: 3600, storage: 'redis' }},
-          { type: 'cache_l3', config: { ttl: 86400, storage: 'delta_lake' }},
-          { type: 'semantic_dedup', config: { threshold: 0.92, use_embeddings: true }},
-          { type: 'compliance_layer', config: { standards: ['SOC 2', 'ISO 42001'], lineage_tracking: true }},
-          { type: 'cost_allocation', config: { chargeback_by_namespace: true }}
+          { type: 'cache_l1', config: { ttl: 300, max_size: '2GB', strategy: 'LRU' } },
+          { type: 'cache_l2', config: { ttl: 3600, storage: 'redis' } },
+          { type: 'cache_l3', config: { ttl: 86400, storage: 'delta_lake' } },
+          { type: 'semantic_dedup', config: { threshold: 0.92, use_embeddings: true } },
+          { type: 'compliance_layer', config: { standards: ['SOC 2', 'ISO 42001'], lineage_tracking: true } },
+          { type: 'cost_allocation', config: { chargeback_by_namespace: true } }
         ],
         compliance: ['SOC 2', 'ISO 42001', 'GDPR'],
         estimatedSavings: '$8,400/mo',
@@ -282,10 +298,10 @@ export const SECTOR_SCENARIOS = {
         description: 'Cache Snowflake Cortex LLM responses with SQL integration',
         useCase: 'snowflake_cortex',
         nodes: [
-          { type: 'cache_l1', config: { ttl: 600, max_size: '1GB' }},
-          { type: 'cache_l2', config: { ttl: 7200, storage: 'redis' }},
-          { type: 'semantic_cache', config: { threshold: 0.90 }},
-          { type: 'cost_allocation', config: { by_warehouse: true, by_schema: true }}
+          { type: 'cache_l1', config: { ttl: 600, max_size: '1GB' } },
+          { type: 'cache_l2', config: { ttl: 7200, storage: 'redis' } },
+          { type: 'semantic_cache', config: { threshold: 0.90 } },
+          { type: 'cost_allocation', config: { by_warehouse: true, by_schema: true } }
         ],
         compliance: ['SOC 2', 'GDPR'],
         estimatedSavings: '$6,200/mo',
@@ -298,10 +314,10 @@ export const SECTOR_SCENARIOS = {
         description: 'Cache vector similarity searches and embeddings',
         useCase: 'vector_search',
         nodes: [
-          { type: 'cache_l1', config: { ttl: 300, max_size: '1GB' }},
-          { type: 'embedding_cache', config: { ttl: 7200, model: 'text-embedding-3-large' }},
-          { type: 'semantic_cache', config: { threshold: 0.93, vector_similarity: 'cosine' }},
-          { type: 'deduplication', config: { hash_embeddings: true }}
+          { type: 'cache_l1', config: { ttl: 300, max_size: '1GB' } },
+          { type: 'embedding_cache', config: { ttl: 7200, model: 'text-embedding-3-large' } },
+          { type: 'semantic_cache', config: { threshold: 0.93, vector_similarity: 'cosine' } },
+          { type: 'deduplication', config: { hash_embeddings: true } }
         ],
         compliance: ['SOC 2'],
         estimatedSavings: '$4,800/mo',
@@ -322,10 +338,10 @@ export const SECTOR_SCENARIOS = {
         description: 'Cache moderation decisions for user-generated content',
         useCase: 'content_moderation',
         nodes: [
-          { type: 'cache_l1', config: { ttl: 600, max_size: '1GB' }},
-          { type: 'cache_l2', config: { ttl: 7200, storage: 'redis' }},
-          { type: 'perceptual_hash', config: { threshold: 0.95 }},
-          { type: 'semantic_dedup', config: { threshold: 0.90 }}
+          { type: 'cache_l1', config: { ttl: 600, max_size: '1GB' } },
+          { type: 'cache_l2', config: { ttl: 7200, storage: 'redis' } },
+          { type: 'perceptual_hash', config: { threshold: 0.95 } },
+          { type: 'semantic_dedup', config: { threshold: 0.90 } }
         ],
         compliance: ['COPPA', 'GDPR'],
         estimatedSavings: '$5,600/mo',
@@ -338,10 +354,10 @@ export const SECTOR_SCENARIOS = {
         description: 'Cache transcription and translation results',
         useCase: 'subtitle_generation',
         nodes: [
-          { type: 'cache_l1', config: { ttl: 3600, max_size: '2GB' }},
-          { type: 'cache_l2', config: { ttl: 86400, storage: 'postgresql' }},
-          { type: 'audio_fingerprint', config: { algorithm: 'chromaprint' }},
-          { type: 'deduplication', config: { by_audio_hash: true }}
+          { type: 'cache_l1', config: { ttl: 3600, max_size: '2GB' } },
+          { type: 'cache_l2', config: { ttl: 86400, storage: 'postgresql' } },
+          { type: 'audio_fingerprint', config: { algorithm: 'chromaprint' } },
+          { type: 'deduplication', config: { by_audio_hash: true } }
         ],
         compliance: ['GDPR'],
         estimatedSavings: '$3,200/mo',
@@ -362,10 +378,10 @@ export const SECTOR_SCENARIOS = {
         description: 'Cache equipment failure predictions and maintenance schedules',
         useCase: 'predictive_maintenance',
         nodes: [
-          { type: 'cache_l1', config: { ttl: 300, max_size: '500MB', partition_by: 'equipment_id' }},
-          { type: 'cache_l2', config: { ttl: 3600, storage: 'redis' }},
-          { type: 'time_series_cache', config: { window: '1hour', aggregate: 'latest' }},
-          { type: 'anomaly_detection', config: { alert_on_deviation: true }}
+          { type: 'cache_l1', config: { ttl: 300, max_size: '500MB', partition_by: 'equipment_id' } },
+          { type: 'cache_l2', config: { ttl: 3600, storage: 'redis' } },
+          { type: 'time_series_cache', config: { window: '1hour', aggregate: 'latest' } },
+          { type: 'anomaly_detection', config: { alert_on_deviation: true } }
         ],
         compliance: ['ISO 27001'],
         estimatedSavings: '$2,800/mo',
@@ -378,9 +394,9 @@ export const SECTOR_SCENARIOS = {
         description: 'Cache defect detection results from production line cameras',
         useCase: 'quality_control',
         nodes: [
-          { type: 'cache_l1', config: { ttl: 600, max_size: '1GB' }},
-          { type: 'perceptual_hash', config: { threshold: 0.93 }},
-          { type: 'deduplication', config: { by_image_hash: true }}
+          { type: 'cache_l1', config: { ttl: 600, max_size: '1GB' } },
+          { type: 'perceptual_hash', config: { threshold: 0.93 } },
+          { type: 'deduplication', config: { by_image_hash: true } }
         ],
         compliance: ['ISO 9001'],
         estimatedSavings: '$4,200/mo',
@@ -427,7 +443,7 @@ export function getAllSectors() {
 export function searchScenarios(query) {
   const results = [];
   const lowerQuery = query.toLowerCase();
-  
+
   for (const [sectorKey, sector] of Object.entries(SECTOR_SCENARIOS)) {
     for (const scenario of sector.scenarios) {
       if (
@@ -443,6 +459,6 @@ export function searchScenarios(query) {
       }
     }
   }
-  
+
   return results;
 }

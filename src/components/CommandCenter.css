@@ -208,11 +208,19 @@
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 2px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
   background: rgba(51, 65, 85, 0.3);
   max-width: none;
   margin: 0;
+}
+
+.surge-panel {
+  grid-column: span 1;
+}
+
+.segmentation-panel {
+  grid-column: span 2;
 }
 
 /* Control Panels - Glass Morphism */
@@ -591,7 +599,20 @@
 /* Responsive Design */
 @media (max-width: 1024px) {
   .control-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, minmax(250px, auto));
+  }
+
+  /* Make Surge Panel larger/wider or adjust as needed */
+  .surge-panel {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+
+  .segmentation-panel {
+    grid-column: span 2;
+    /* Take up more width */
+    grid-row: span 1;
   }
 
   .gauges-grid {

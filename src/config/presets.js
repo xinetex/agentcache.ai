@@ -20,31 +20,31 @@ export const PIPELINE_PRESETS = {
       },
       nodes: [
         { type: 'input', position: { x: 100, y: 200 }, config: {} },
-        { 
-          type: 'phi_filter', 
+        {
+          type: 'phi_filter',
           position: { x: 350, y: 200 },
-          config: { 
+          config: {
             detection_threshold: 0.95,
             redaction_mode: 'mask'
           }
         },
-        { 
-          type: 'cache_l1', 
+        {
+          type: 'cache_l1',
           position: { x: 600, y: 200 },
           config: { ttl: 300, max_size: '500MB' }
         },
-        { 
-          type: 'cache_l2', 
+        {
+          type: 'cache_l2',
           position: { x: 850, y: 200 },
           config: { ttl: 3600, storage: 'redis' }
         },
-        { 
-          type: 'openai', 
+        {
+          type: 'openai',
           position: { x: 1100, y: 200 },
           config: { model: 'gpt-4', temperature: 0.7 }
         },
-        { 
-          type: 'hipaa_audit', 
+        {
+          type: 'hipaa_audit',
           position: { x: 1350, y: 200 },
           config: { retention: '7 years', log_level: 'full' }
         },
@@ -77,18 +77,18 @@ export const PIPELINE_PRESETS = {
       },
       nodes: [
         { type: 'input', position: { x: 100, y: 200 }, config: {} },
-        { 
-          type: 'cache_l1', 
+        {
+          type: 'cache_l1',
           position: { x: 350, y: 200 },
           config: { ttl: 600, max_size: '1GB' }
         },
-        { 
-          type: 'cache_l2', 
+        {
+          type: 'cache_l2',
           position: { x: 600, y: 200 },
           config: { ttl: 7200, storage: 'redis' }
         },
-        { 
-          type: 'encrypted_cache', 
+        {
+          type: 'encrypted_cache',
           position: { x: 850, y: 200 },
           config: { encryption: 'AES-256' }
         },
@@ -121,23 +121,23 @@ export const PIPELINE_PRESETS = {
       },
       nodes: [
         { type: 'input', position: { x: 100, y: 200 }, config: {} },
-        { 
-          type: 'fraud_detector', 
+        {
+          type: 'fraud_detector',
           position: { x: 350, y: 200 },
           config: { threshold: 0.8, check_velocity: true }
         },
-        { 
-          type: 'cache_l1', 
+        {
+          type: 'cache_l1',
           position: { x: 600, y: 200 },
           config: { ttl: 120, max_size: '500MB' }
         },
-        { 
-          type: 'openai', 
+        {
+          type: 'openai',
           position: { x: 850, y: 200 },
           config: { model: 'gpt-4', temperature: 0.3 }
         },
-        { 
-          type: 'pci_audit', 
+        {
+          type: 'pci_audit',
           position: { x: 1100, y: 200 },
           config: { retention: '7 years' }
         },
@@ -169,18 +169,18 @@ export const PIPELINE_PRESETS = {
       },
       nodes: [
         { type: 'input', position: { x: 100, y: 200 }, config: {} },
-        { 
-          type: 'cache_l2', 
+        {
+          type: 'cache_l2',
           position: { x: 350, y: 200 },
           config: { ttl: 86400, storage: 'postgresql' }
         },
-        { 
-          type: 'anthropic', 
+        {
+          type: 'anthropic',
           position: { x: 600, y: 200 },
           config: { model: 'claude-3-opus' }
         },
-        { 
-          type: 'pci_audit', 
+        {
+          type: 'pci_audit',
           position: { x: 850, y: 200 },
           config: { retention: '7 years', log_pii: false }
         },
@@ -213,18 +213,18 @@ export const PIPELINE_PRESETS = {
       },
       nodes: [
         { type: 'input', position: { x: 100, y: 200 }, config: {} },
-        { 
-          type: 'cache_l1', 
+        {
+          type: 'cache_l1',
           position: { x: 350, y: 200 },
           config: { ttl: 900, max_size: '750MB' }
         },
-        { 
-          type: 'cache_l2', 
+        {
+          type: 'cache_l2',
           position: { x: 600, y: 200 },
           config: { ttl: 7200, storage: 'postgresql' }
         },
-        { 
-          type: 'anthropic', 
+        {
+          type: 'anthropic',
           position: { x: 850, y: 200 },
           config: { model: 'claude-3-opus', temperature: 0.2 }
         },
@@ -255,18 +255,18 @@ export const PIPELINE_PRESETS = {
       },
       nodes: [
         { type: 'input', position: { x: 100, y: 200 }, config: {} },
-        { 
-          type: 'semantic_dedup', 
+        {
+          type: 'semantic_dedup',
           position: { x: 350, y: 200 },
           config: { threshold: 0.88 }
         },
-        { 
-          type: 'cache_l2', 
+        {
+          type: 'cache_l2',
           position: { x: 600, y: 200 },
           config: { ttl: 14400, storage: 'redis' }
         },
-        { 
-          type: 'openai', 
+        {
+          type: 'openai',
           position: { x: 850, y: 200 },
           config: { model: 'gpt-4' }
         },
@@ -299,18 +299,18 @@ export const PIPELINE_PRESETS = {
       },
       nodes: [
         { type: 'input', position: { x: 100, y: 200 }, config: {} },
-        { 
-          type: 'cache_l1', 
+        {
+          type: 'cache_l1',
           position: { x: 350, y: 200 },
           config: { ttl: 180, max_size: '1GB' }
         },
-        { 
-          type: 'cache_l2', 
+        {
+          type: 'cache_l2',
           position: { x: 600, y: 200 },
           config: { ttl: 1800, storage: 'redis' }
         },
-        { 
-          type: 'openai', 
+        {
+          type: 'openai',
           position: { x: 850, y: 200 },
           config: { model: 'gpt-3.5-turbo', temperature: 0.7 }
         },
@@ -340,18 +340,18 @@ export const PIPELINE_PRESETS = {
       },
       nodes: [
         { type: 'input', position: { x: 100, y: 200 }, config: {} },
-        { 
-          type: 'cache_l1', 
+        {
+          type: 'cache_l1',
           position: { x: 350, y: 200 },
           config: { ttl: 300 }
         },
-        { 
-          type: 'semantic_dedup', 
+        {
+          type: 'semantic_dedup',
           position: { x: 600, y: 200 },
           config: { threshold: 0.90 }
         },
-        { 
-          type: 'openai', 
+        {
+          type: 'openai',
           position: { x: 850, y: 200 },
           config: { model: 'gpt-3.5-turbo' }
         },
@@ -365,6 +365,53 @@ export const PIPELINE_PRESETS = {
       ],
       tags: ['ecommerce', 'support', 'chatbot'],
       useCase: 'Customer support, order status, FAQ',
+      recommended: true
+    },
+    {
+      id: 'shopper_segmentation',
+      name: 'Real-Time Shopper Segmentation',
+      description: 'L1/L2 caching for shopper segmentation profiles',
+      icon: '🛍️',
+      tier: 'enterprise',
+      estimatedSavings: '$9,200/mo',
+      metrics: {
+        hitRate: 0.95,
+        latency: 42,
+        savingsPerRequest: 1.80
+      },
+      nodes: [
+        { type: 'input', position: { x: 100, y: 200 }, config: {} },
+        {
+          type: 'cache_l1',
+          position: { x: 350, y: 200 },
+          config: { ttl: 1800, max_size: '1GB' }
+        },
+        {
+          type: 'cache_l2',
+          position: { x: 600, y: 200 },
+          config: { ttl: 86400, storage: 'redis' }
+        },
+        {
+          type: 'classifier',
+          position: { x: 850, y: 200 },
+          config: { model: 'llama-3-8b', fast_path: true }
+        },
+        {
+          type: 'personalization',
+          position: { x: 1100, y: 200 },
+          config: { rules: 'dynamic' }
+        },
+        { type: 'output', position: { x: 1350, y: 200 }, config: {} }
+      ],
+      edges: [
+        { source: 'input-0', target: 'cache_l1-1' },
+        { source: 'cache_l1-1', target: 'cache_l2-2', label: 'MISS' },
+        { source: 'cache_l2-2', target: 'classifier-3', label: 'MISS' },
+        { source: 'classifier-3', target: 'personalization-4' },
+        { source: 'personalization-4', target: 'output-5' }
+      ],
+      tags: ['ecommerce', 'segmentation', 'personalization'],
+      useCase: 'Real-time shopper segmentation, dynamic content',
       recommended: true
     }
   ],
@@ -384,23 +431,23 @@ export const PIPELINE_PRESETS = {
       },
       nodes: [
         { type: 'input', position: { x: 100, y: 200 }, config: {} },
-        { 
-          type: 'cache_l1', 
+        {
+          type: 'cache_l1',
           position: { x: 350, y: 200 },
           config: { ttl: 300, namespace_isolation: true }
         },
-        { 
-          type: 'cache_l2', 
+        {
+          type: 'cache_l2',
           position: { x: 600, y: 200 },
           config: { ttl: 1800, storage: 'redis' }
         },
-        { 
-          type: 'semantic_dedup', 
+        {
+          type: 'semantic_dedup',
           position: { x: 850, y: 200 },
           config: { threshold: 0.92 }
         },
-        { 
-          type: 'openai', 
+        {
+          type: 'openai',
           position: { x: 1100, y: 200 },
           config: { model: 'gpt-4' }
         },
@@ -434,23 +481,23 @@ export const PIPELINE_PRESETS = {
       },
       nodes: [
         { type: 'input', position: { x: 100, y: 200 }, config: {} },
-        { 
-          type: 'ferpa_filter', 
+        {
+          type: 'ferpa_filter',
           position: { x: 350, y: 200 },
           config: { mode: 'redact', protected_fields: ['student_id', 'grades'] }
         },
-        { 
-          type: 'cache_l3', 
+        {
+          type: 'cache_l3',
           position: { x: 600, y: 200 },
           config: { ttl: 2592000, storage: 'postgresql' }
         },
-        { 
-          type: 'openai', 
+        {
+          type: 'openai',
           position: { x: 850, y: 200 },
           config: { model: 'gpt-4o', temperature: 0.7 }
         },
-        { 
-          type: 'learning_analytics', 
+        {
+          type: 'learning_analytics',
           position: { x: 1100, y: 200 },
           config: { anonymize: true, track_metrics: ['questions_asked', 'topics'] }
         },
@@ -485,23 +532,23 @@ export const PIPELINE_PRESETS = {
       },
       nodes: [
         { type: 'input', position: { x: 100, y: 200 }, config: {} },
-        { 
-          type: 'sso_connector', 
+        {
+          type: 'sso_connector',
           position: { x: 350, y: 200 },
           config: { provider: 'okta', namespace_from_group: true }
         },
-        { 
-          type: 'department_router', 
+        {
+          type: 'department_router',
           position: { x: 600, y: 200 },
           config: { departments: ['hr', 'it'], auto_detect: true }
         },
-        { 
-          type: 'cache_l2', 
+        {
+          type: 'cache_l2',
           position: { x: 850, y: 200 },
           config: { ttl: 86400, storage: 'redis' }
         },
-        { 
-          type: 'openai', 
+        {
+          type: 'openai',
           position: { x: 1100, y: 200 },
           config: { model: 'gpt-4' }
         },
@@ -536,28 +583,28 @@ export const PIPELINE_PRESETS = {
       },
       nodes: [
         { type: 'input', position: { x: 100, y: 200 }, config: {} },
-        { 
-          type: 'secret_scanner', 
+        {
+          type: 'secret_scanner',
           position: { x: 350, y: 200 },
           config: { mode: 'redact', patterns: ['aws', 'github', 'openai'] }
         },
-        { 
-          type: 'reasoning_cache', 
+        {
+          type: 'reasoning_cache',
           position: { x: 600, y: 200 },
           config: { cache_traces: true, ttl_days: 30 }
         },
-        { 
-          type: 'cache_l3', 
+        {
+          type: 'cache_l3',
           position: { x: 850, y: 200 },
           config: { ttl: 604800, storage: 'postgresql' }
         },
-        { 
-          type: 'openai', 
+        {
+          type: 'openai',
           position: { x: 1100, y: 200 },
           config: { model: 'gpt-4o' }
         },
-        { 
-          type: 'cost_tracker', 
+        {
+          type: 'cost_tracker',
           position: { x: 1350, y: 200 },
           config: { group_by: 'project', budget_alert: 50 }
         },
@@ -592,28 +639,28 @@ export const PIPELINE_PRESETS = {
       },
       nodes: [
         { type: 'input', position: { x: 100, y: 200 }, config: {} },
-        { 
-          type: 'lakehouse_source', 
+        {
+          type: 'lakehouse_source',
           position: { x: 350, y: 200 },
           config: { platform: 'databricks', catalog: 'main' }
         },
-        { 
-          type: 'embedding_cache', 
+        {
+          type: 'embedding_cache',
           position: { x: 600, y: 200 },
           config: { model: 'text-embedding-3-small', ttl_days: 30 }
         },
-        { 
-          type: 'cache_l2', 
+        {
+          type: 'cache_l2',
           position: { x: 850, y: 200 },
           config: { ttl: 86400, storage: 'redis' }
         },
-        { 
-          type: 'openai', 
+        {
+          type: 'openai',
           position: { x: 1100, y: 200 },
           config: { model: 'gpt-4o' }
         },
-        { 
-          type: 'experiment_tracker', 
+        {
+          type: 'experiment_tracker',
           position: { x: 1350, y: 200 },
           config: { platform: 'mlflow', log_metrics: true }
         },
@@ -649,28 +696,28 @@ export const PIPELINE_PRESETS = {
       },
       nodes: [
         { type: 'input', position: { x: 100, y: 200 }, config: {} },
-        { 
-          type: 'security_gate', 
+        {
+          type: 'security_gate',
           position: { x: 350, y: 200 },
           config: { impact_level: 'IL4', classification_check: true }
         },
-        { 
-          type: 'cui_filter', 
+        {
+          type: 'cui_filter',
           position: { x: 600, y: 200 },
           config: { mode: 'block', cui_detection: true }
         },
-        { 
-          type: 'cache_l2', 
+        {
+          type: 'cache_l2',
           position: { x: 850, y: 200 },
           config: { ttl: 3600, storage: 'postgresql', region: 'us-gov-west-1' }
         },
-        { 
-          type: 'openai', 
+        {
+          type: 'openai',
           position: { x: 1100, y: 200 },
           config: { model: 'gpt-4o' }
         },
-        { 
-          type: 'fedramp_audit', 
+        {
+          type: 'fedramp_audit',
           position: { x: 1350, y: 200 },
           config: { nist_controls: true, oscal_export: true }
         },
@@ -706,18 +753,18 @@ export const PIPELINE_PRESETS = {
       },
       nodes: [
         { type: 'input', position: { x: 100, y: 200 }, config: {} },
-        { 
-          type: 'cache_l1', 
+        {
+          type: 'cache_l1',
           position: { x: 350, y: 200 },
           config: { ttl: 600 }
         },
-        { 
-          type: 'cache_l2', 
+        {
+          type: 'cache_l2',
           position: { x: 600, y: 200 },
           config: { ttl: 3600 }
         },
-        { 
-          type: 'openai', 
+        {
+          type: 'openai',
           position: { x: 850, y: 200 },
           config: {}
         },

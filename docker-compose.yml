@@ -9,10 +9,13 @@ services:
       - UPSTASH_REDIS_REST_URL=http://redis:6379
       - UPSTASH_REDIS_REST_TOKEN=local_dev_token
       - NODE_ENV=production
+      - THUMBNAIL_SERVICE_URL=http://thumbnail:8080
     env_file:
       - .env
     depends_on:
       redis:
+        condition: service_healthy
+      thumbnail:
         condition: service_healthy
     restart: unless-stopped
     read_only: true
@@ -55,3 +58,36 @@ services:
         reservations:
           cpus: '0.25'
           memory: 128M
+
+  # Thumbnail generation service with ffmpeg
+  thumbnail:
+    build: ./services/thumbnail
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - THUMBNAIL_DIR=/app/thumbnails
+    env_file:
+      - .env
+    volumes:
+      - thumbnail_data:/app/thumbnails
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: [ "CMD", "node", "-e", "require('http').get('http://localhost:8080/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})" ]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+volumes:
+  thumbnail_data:
+
+

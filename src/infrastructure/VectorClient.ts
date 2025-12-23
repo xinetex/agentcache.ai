@@ -1,14 +1,30 @@
 export class VectorClient {
     private baseUrl: string;
 
+    private vectors = new Map<number, number[]>(); // Mock storage
+
     constructor(baseUrl: string = 'http://localhost:5000/Vectors') {
         this.baseUrl = baseUrl;
+        if (!process.env.VECTOR_SERVICE_URL || process.env.VECTOR_SERVICE_URL === 'mock') {
+            console.warn('⚠️ No VECTOR_SERVICE_URL. Using In-Memory Mock Vector Service.');
+            this.baseUrl = 'mock';
+        }
     }
 
     async addVectors(ids: number[], vectors: number[]): Promise<void> {
-        // Flatten vectors if they are array of arrays, but C# expects flat array
-        // Here we assume input is already flat or we handle it. 
-        // Our C# API expects a flat float array.
+        if (this.baseUrl === 'mock') {
+            // vectors is a flat array, but we need chunks
+            // wait, vectors is "number[]" in signature but comment says "flattened".
+            // Actually usually addVectors takes separate args or array of arrays. 
+            // The signature says `vectors: number[]` (flat) but implementation usually chunks it.
+            // Let's assume passed vectors matches ids length * dim ?
+            // But generateEmbedding returns number[] (one vector).
+            // vector.ts calls `addVectors([longId], embedding)`. So mock assumes 1:1.
+
+            // Just store 1:1 for now as that is how it's called
+            this.vectors.set(ids[0], vectors);
+            return;
+        }
 
         try {
             const response = await fetch(`${this.baseUrl}/add`, {
@@ -22,11 +38,29 @@ export class VectorClient {
             }
         } catch (e) {
             console.error('Vector Service Add Failed:', e);
-            // Fail open or throw depending on strategy. For now log only.
         }
     }
 
     async search(vector: number[], k: number = 5): Promise<{ id: number, distance: number }[]> {
+        if (this.baseUrl === 'mock') {
+            // Brute force cosine similarity for mock
+            const results = [];
+            for (const [id, storedVec] of this.vectors.entries()) {
+                // Cosine sim
+                let dot = 0;
+                let magA = 0;
+                let magB = 0;
+                for (let i = 0; i < vector.length; i++) {
+                    dot += vector[i] * (storedVec[i] || 0);
+                    magA += vector[i] * vector[i];
+                    magB += (storedVec[i] || 0) * (storedVec[i] || 0);
+                }
+                const score = dot / (Math.sqrt(magA) * Math.sqrt(magB) || 1);
+                results.push({ id, distance: 1 - score }); // distance = 1 - sim
+            }
+            return results.sort((a, b) => a.distance - b.distance).slice(0, k);
+        }
+
         try {
             const response = await fetch(`${this.baseUrl}/search`, {
                 method: 'POST',
@@ -42,11 +76,14 @@ export class VectorClient {
         } catch (e) {
             console.error('Vector Service Search Failed:', e);
             return [];
-            return [];
         }
     }
 
     async fetch(id: number): Promise<number[]> {
+        if (this.baseUrl === 'mock') {
+            return this.vectors.get(id) || [];
+        }
+
         try {
             const response = await fetch(`${this.baseUrl}/${id}`);
             if (!response.ok) throw new Error('Not found');

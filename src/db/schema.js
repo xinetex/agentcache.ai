@@ -150,3 +150,43 @@ export const requestPatterns = pgTable('request_patterns', {
     semanticLabel: text('semantic_label'), // e.g., 'Code', 'Creative', 'Fact'
     avgLatencyMs: real('avg_latency_ms'),
 });
+
+// --- Agentic Plan Caching ---
+export const planTemplates = pgTable('plan_templates', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: text('name').notNull(),
+    description: text('description'),
+    sector: text('sector'), // e.g., 'ecommerce', 'finance'
+    steps: jsonb('steps').notNull(), // Array of step definitions
+    avgCost: real('avg_cost'),
+    avgLatency: real('avg_latency'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const cachedPlanExecutions = pgTable('cached_plan_executions', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    templateId: uuid('template_id').references(() => planTemplates.id),
+    planHash: text('plan_hash').notNull(), // Hash of the plan intent/structure
+    inputHash: text('input_hash').notNull(), // Hash of the specific inputs
+    executionTrace: jsonb('execution_trace').notNull(), // Full trace of the execution
+    tokensSaved: integer('tokens_saved'),
+    costSaved: real('cost_saved'),
+    latencyMs: integer('latency_ms'),
+    createdAt: timestamp('created_at').defaultNow(),
+    expiresAt: timestamp('expires_at'),
+}, (table) => ({
+    lookupIdx: index('plan_lookup_idx').on(table.planHash, table.inputHash),
+}));
+
+// --- Agentic Awareness: Distress Signals ---
+export const agentAlerts = pgTable('agent_alerts', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    agentName: text('agent_name'), // Link to Pattern Name or Agent Name
+    severity: text('severity').notNull(), // 'low', 'medium', 'critical'
+    message: text('message').notNull(),
+    context: jsonb('context'), // Dump of state/memory
+    status: text('status').default('open'), // 'open', 'resolved', 'ignored'
+    createdAt: timestamp('created_at').defaultNow(),
+    resolvedAt: timestamp('resolved_at'),
+});

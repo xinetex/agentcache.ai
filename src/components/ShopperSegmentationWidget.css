@@ -1,0 +1,139 @@
+.segmentation-panel {
+    grid-column: span 1;
+    display: flex;
+    flex-direction: column;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 16px;
+    overflow: hidden;
+    height: 100%;
+}
+
+.segmentation-grid {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1rem;
+}
+
+.live-stream {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.stream-header {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 1fr 0.8fr;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stream-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    overflow: hidden;
+}
+
+.stream-row {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 1fr 0.8fr;
+    align-items: center;
+    font-size: 0.85rem;
+    padding: 0.5rem;
+    background: rgba(30, 41, 59, 0.4);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.user-id {
+    font-family: 'Courier New', monospace;
+    color: #94a3b8;
+}
+
+.segment-badge {
+    font-weight: 600;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    display: inline-block;
+    width: fit-content;
+    white-space: nowrap;
+}
+
+.source-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 4px;
+    border-radius: 3px;
+    width: fit-content;
+}
+
+.source-badge.hit {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.source-badge.miss {
+    background: rgba(99, 102, 241, 0.2);
+    color: #818cf8;
+}
+
+.latency {
+    font-family: 'Courier New', monospace;
+    text-align: right;
+    color: #e2e8f0;
+}
+
+.animate-slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mini-stats {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-box {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+.stat-val {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.stat-val.success {
+    color: #10b981;
+}

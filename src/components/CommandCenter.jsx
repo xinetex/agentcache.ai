@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSector } from '../context/SectorContext';
 import './CommandCenter.css';
+import SurgePricingWidget from './SurgePricingWidget';
+import ShopperSegmentationWidget from './ShopperSegmentationWidget';
 
 /**
  * Command Center - Futuristic Dashboard
@@ -83,7 +85,7 @@ export default function CommandCenter({ onOpenWizard, onNewPipeline, pipelines =
 
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
+
       particles.forEach(particle => {
         particle.update();
         particle.draw();
@@ -127,7 +129,7 @@ export default function CommandCenter({ onOpenWizard, onNewPipeline, pipelines =
     <div className="command-center pro">
       {/* Advanced Canvas Background */}
       <canvas ref={canvasRef} className="game-canvas" />
-      
+
       {/* Gradient Overlay */}
       <div className="canvas-overlay" />
 
@@ -139,11 +141,11 @@ export default function CommandCenter({ onOpenWizard, onNewPipeline, pipelines =
             AgentCache Control
           </h1>
           <p className="subtitle">
-            {sector ? `${sector.charAt(0).toUpperCase() + sector.slice(1)} sector` : 'Multi-sector'} • 
+            {sector ? `${sector.charAt(0).toUpperCase() + sector.slice(1)} sector` : 'Multi-sector'} •
             Intelligent inference orchestration
           </p>
         </div>
-        
+
         <div className="header-right">
           <div className="system-status">
             <div className="pulse-indicator"></div>
@@ -174,14 +176,14 @@ export default function CommandCenter({ onOpenWizard, onNewPipeline, pipelines =
 
       {/* Main Control Grid */}
       <div className="control-grid">
-        
+
         {/* Quick Launch Panel */}
         <div className="control-panel launch-panel">
           <div className="panel-header">
             <h3>Quick actions</h3>
             <div className="panel-indicator"></div>
           </div>
-          
+
           <div className="launch-controls">
             <button className="launch-btn primary-launch" onClick={onOpenWizard}>
               <div className="btn-glow"></div>
@@ -209,7 +211,7 @@ export default function CommandCenter({ onOpenWizard, onNewPipeline, pipelines =
             <h3>Overview</h3>
             <div className="panel-indicator"></div>
           </div>
-          
+
           <div className="metrics-grid">
             <div className="metric-card">
               <div className="metric-icon">🚀</div>
@@ -246,7 +248,7 @@ export default function CommandCenter({ onOpenWizard, onNewPipeline, pipelines =
             <h3>Performance</h3>
             <div className="panel-indicator"></div>
           </div>
-          
+
           <div className="gauges-grid">
             <div className="gauge">
               <div className="gauge-display">
@@ -312,13 +314,19 @@ export default function CommandCenter({ onOpenWizard, onNewPipeline, pipelines =
           </div>
         </div>
 
+        {/* Surge Pricing Monitor */}
+        <SurgePricingWidget />
+
+        {/* Shopper Segmentation */}
+        <ShopperSegmentationWidget />
+
         {/* Quick Stats */}
         <div className="control-panel quick-stats">
           <div className="panel-header">
             <h3>Operations</h3>
             <div className="panel-indicator pulsing"></div>
           </div>
-          
+
           <div className="stats-list">
             <div className="stat-item">
               <span className="stat-dot active"></span>

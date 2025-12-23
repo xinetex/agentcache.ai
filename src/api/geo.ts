@@ -18,8 +18,6 @@ geoRouter.get('/nodes', async (c) => {
     try {
         const allPatterns = await db.select().from(patterns);
 
-        const allPatterns = await db.select().from(patterns);
-
         // Fetch High Frequency Patterns (Crystals)
         const topPatterns = await db.select().from(requestPatterns)
             .orderBy(desc(requestPatterns.frequency))

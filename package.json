@@ -36,7 +36,7 @@
     "ioredis": "^5.8.2",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.555.0",
-    "node-fetch": "^3.3.2",
+    "node-fetch": "^2.7.0",
     "pg": "^8.16.3",
     "postgres": "^3.4.4",
     "react-force-graph-3d": "^1.29.0",

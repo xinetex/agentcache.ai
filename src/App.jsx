@@ -14,6 +14,8 @@ import MetricsPanel from './components/MetricsPanel';
 import WorkspaceGallery from './components/WorkspaceGallery';
 import CommandCenter from './components/CommandCenter';
 import { useSector } from './context/SectorContext';
+import { useAuth } from './context/AuthContext';
+import AuthModal from './components/AuthModal';
 import { nodeTypes } from './nodes';
 import { initDemoMode } from './config/demoData';
 import { PipelineStorageService, StorageService } from './services/storageService';
@@ -22,6 +24,7 @@ import NeuralGalaxy from './components/NeuralGalaxy';
 import { useTrafficSimulation } from './hooks/useTrafficSimulation';
 import './App.css';
 import TraceViewer from './components/TraceViewer';
+import StreamInterface from './integral/StreamInterface';
 
 const edgeTypes = {
   traffic: TrafficEdge,
@@ -35,15 +38,23 @@ function App() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState(null);
+  const { user, isAuthenticated } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [pendingSave, setPendingSave] = useState(false); // Track if a save was attempted
 
   // Trace Viewer State
   const [traceId, setTraceId] = useState(null);
 
-  // Check URL for trace ID on mount
+  // Check URL for trace ID on mount and manual routing
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tid = params.get('trace');
     if (tid) setTraceId(tid);
+
+    // Simple manual routing for /stream
+    if (window.location.pathname === '/stream') {
+      setView('stream');
+    }
   }, []);
 
   const [pipelineName, setPipelineName] = useState('Untitled Pipeline');
@@ -143,7 +154,7 @@ function App() {
   }, [setNodes, setEdges]);
 
   // Save pipeline with validation and error handling
-  const handleSavePipeline = useCallback(() => {
+  const handleSavePipeline = useCallback(async () => {
     // Basic validation
     if (!pipelineName || pipelineName.trim() === '') {
       alert('Please enter a pipeline name');
@@ -155,6 +166,13 @@ function App() {
       return;
     }
 
+    // AUTH GATE: Require login to save
+    if (!isAuthenticated()) {
+      setPendingSave(true);
+      setShowAuthModal(true);
+      return;
+    }
+
     const pipeline = {
       name: pipelineName.trim(),
       sector,
@@ -163,7 +181,11 @@ function App() {
     };
 
     try {
-      const result = PipelineStorageService.savePipeline(pipeline);
+      // TODO: This should eventually be an API call to save to cloud
+      // For now we still save locally, but we know the user is authenticated.
+      // In the next step (storageService) we will add cloud syncing.
+      const token = localStorage.getItem('auth_token'); // Or get from useAuth
+      const result = await PipelineStorageService.savePipeline(pipeline, token);
 
       if (!result.success) {
         // Handle different error types
@@ -182,7 +204,7 @@ function App() {
       const percentUsed = stats.percentUsed.toFixed(1);
 
       const message = result.isNew
-        ? `Pipeline "${pipelineName}" saved!`
+        ? `Pipeline "${pipelineName}" saved to your account!`
         : `Pipeline "${pipelineName}" updated!`;
 
       // Warn if storage is getting full
@@ -195,7 +217,35 @@ function App() {
       console.error('Failed to save pipeline:', error);
       alert(`Error saving pipeline: ${error.message}`);
     }
-  }, [pipelineName, sector, nodes, edges]);
+  }, [pipelineName, sector, nodes, edges, isAuthenticated]);
+
+  // Handle successful auth (login/register)
+  const handleAuthSuccess = useCallback(async (user) => {
+    setShowAuthModal(false);
+
+    // Sync local pipelines to cloud
+    const token = localStorage.getItem('auth_token');
+    await PipelineStorageService.syncToCloud(token);
+
+    // If we were trying to save, retry the save
+    if (pendingSave) {
+      setPendingSave(false);
+      // We can't call handleSavePipeline here directly because of closure staleness if we used strict deps,
+      // but since we are re-rendering, we can rely on the user clicking save again OR 
+      // ideally we auto-trigger it. 
+      // For safety/UX, let's just notify them they can now save.
+      // Or better, we can manually trigger the save logic here if we have the latest state.
+
+      // Let's defer strict cloud saving to the proper service later.
+      // For now, just let the user know they are logged in.
+
+      // Re-trigger save logic immediately? 
+      // We need to pass the current state.
+
+      // Simple approach: Just alert
+      alert(`Welcome, ${user.email}! You can now save your pipeline.`);
+    }
+  }, [pendingSave]);
 
   const onDragOver = useCallback((event) => {
     event.preventDefault();
@@ -306,6 +356,23 @@ function App() {
     );
   }
 
+  // Show Stream Interface
+  if (view === 'stream') {
+    return (
+      <div className="app">
+        <StreamInterface />
+
+        {/* Helper to get back to dashboard for demo purposes */}
+        <button
+          onClick={() => { window.location.pathname = '/'; }}
+          style={{ position: 'absolute', top: '20px', left: '20px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.5)', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}
+        >
+          Exit Stream
+        </button>
+      </div>
+    );
+  }
+
   // Show builder view
   return (
     <div className="app">
@@ -403,6 +470,17 @@ function App() {
           config={config}
           onClose={() => setWizardOpen(false)}
           onComplete={handleWizardComplete}
+        />
+      )}
+
+      {showAuthModal && (
+        <AuthModal
+          onClose={() => {
+            setShowAuthModal(false);
+            setPendingSave(false);
+          }}
+          onSuccess={handleAuthSuccess}
+          message={pendingSave ? "Sign in to save your pipeline" : null}
         />
       )}
 

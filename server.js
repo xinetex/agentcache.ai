@@ -152,6 +152,102 @@ import jettyThunderProvisionHandler from './api/webhooks/jettythunder-provision.
 
 app.post('/api/webhooks/jettythunder/provision', wrap(jettyThunderProvisionHandler));
 
+// CDN Routes (Audio1.TV Video Streaming)
+import cdnStreamHandler from './api/cdn/stream.js';
+import cdnMetricsHandler from './api/cdn/metrics.js';
+import cdnWarmHandler from './api/cdn/warm.js';
+import cdnInvalidateHandler from './api/cdn/invalidate.js';
+
+// Special wrapper for CDN stream that handles binary responses
+const wrapCdn = (handler) => async (req, res) => {
+    try {
+        const edgeReq = new EdgeRequest(req);
+        // Add URL property for query string parsing
+        edgeReq.url = `http://localhost${req.originalUrl}`;
+
+        const edgeRes = await handler(edgeReq);
+        const status = edgeRes.status || 200;
+
+        // Handle headers
+        if (edgeRes.headers) {
+            edgeRes.headers.forEach((value, key) => {
+                res.setHeader(key, value);
+            });
+        }
+
+        // Check content type for binary vs JSON response
+        const contentType = edgeRes.headers?.get('Content-Type') || '';
+        if (contentType.includes('video') || contentType.includes('mpegURL')) {
+            // Binary response (video segment)
+            const buffer = await edgeRes.arrayBuffer();
+            res.status(status).send(Buffer.from(buffer));
+        } else {
+            // JSON response
+            const data = await edgeRes.json();
+            res.status(status).json(data);
+        }
+    } catch (err) {
+        console.error('CDN error:', err);
+        res.status(500).json({ error: 'Internal Server Error', details: err.message });
+    }
+};
+
+// CDN endpoints
+app.get('/api/cdn/stream', wrapCdn(cdnStreamHandler));
+app.options('/api/cdn/stream', (req, res) => res.status(204).end());
+app.get('/api/cdn/metrics', wrap(cdnMetricsHandler));
+app.post('/api/cdn/warm', wrap(cdnWarmHandler));
+app.post('/api/cdn/invalidate', wrap(cdnInvalidateHandler));
+app.delete('/api/cdn/invalidate', wrap(cdnInvalidateHandler));
+
+// HLS rewrite route for player-friendly URLs
+app.get('/hls/:jobId/:quality/:segment', (req, res, next) => {
+    req.query.jobId = req.params.jobId;
+    req.query.quality = req.params.quality;
+    req.query.segment = req.params.segment;
+    wrapCdn(cdnStreamHandler)(req, res);
+});
+
+// Thumbnail Service Routes (proxy to internal microservice)
+const THUMBNAIL_SERVICE = process.env.THUMBNAIL_SERVICE_URL || 'http://thumbnail:8080';
+
+app.post('/api/thumbnail/generate', async (req, res) => {
+    try {
+        const response = await fetch(`${THUMBNAIL_SERVICE}/generate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(req.body)
+        });
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        console.error('[Thumbnail] Generate error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/thumbnail/status/:id', async (req, res) => {
+    try {
+        const response = await fetch(`${THUMBNAIL_SERVICE}/jobs/${req.params.id}`);
+        if (!response.ok) return res.status(404).json({ error: 'Job not found' });
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/thumbnail/poster/:id', async (req, res) => {
+    try {
+        const response = await fetch(`${THUMBNAIL_SERVICE}/poster/${req.params.id}`);
+        if (!response.ok) return res.status(404).json({ error: 'Job not found' });
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });

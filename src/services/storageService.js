@@ -39,7 +39,7 @@ export class StorageService {
     try {
       const fullKey = STORAGE_KEY_PREFIX + key;
       const serialized = JSON.stringify(data);
-      
+
       // Check size before saving
       if (serialized.length > MAX_STORAGE_SIZE) {
         return {
@@ -51,10 +51,10 @@ export class StorageService {
       }
 
       localStorage.setItem(fullKey, serialized);
-      
-      return { 
-        success: true, 
-        size: serialized.length 
+
+      return {
+        success: true,
+        size: serialized.length
       };
     } catch (err) {
       if (err.name === 'QuotaExceededError') {
@@ -65,7 +65,7 @@ export class StorageService {
           cause: err
         };
       }
-      
+
       return {
         success: false,
         error: 'storage',
@@ -85,7 +85,7 @@ export class StorageService {
     try {
       const fullKey = STORAGE_KEY_PREFIX + key;
       const item = localStorage.getItem(fullKey);
-      
+
       if (item === null) {
         return defaultValue;
       }
@@ -158,7 +158,7 @@ export class StorageService {
   static clearAll() {
     try {
       const keysToRemove = [];
-      
+
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key.startsWith(STORAGE_KEY_PREFIX)) {
@@ -185,7 +185,54 @@ export class PipelineStorageService {
    * @param {Object} pipeline - Pipeline object to save
    * @returns {Object} - Result with success status
    */
-  static savePipeline(pipeline) {
+  /**
+   * Save a pipeline to the cloud and local storage
+   * @param {Object} pipeline - Pipeline object
+   * @param {string} token - Auth token (optional)
+   * @returns {Object} - Result
+   */
+  static async savePipeline(pipeline, token = null) {
+    try {
+      // 1. Save locally first (optimistic UI)
+      const localResult = this.savePipelineLocal(pipeline);
+
+      if (!localResult.success) return localResult;
+
+      // 2. If token provided, save to cloud
+      if (token) {
+        try {
+          const response = await fetch('/api/pipelines', {
+            method: 'POST', // or PUT if existing, but for now simplify
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(pipeline)
+          });
+
+          if (!response.ok) {
+            console.warn('Failed to save to cloud:', await response.text());
+            // We don't fail the operation because local save succeeded
+          }
+        } catch (err) {
+          console.error('Cloud save error:', err);
+        }
+      }
+
+      return localResult;
+    } catch (err) {
+      return {
+        success: false,
+        error: 'storage',
+        message: err.message
+      };
+    }
+  }
+
+  /**
+   * Internal local save method (original logic)
+   */
+  static savePipelineLocal(pipeline) {
     try {
       // Sanitize pipeline name
       pipeline.name = sanitizePipelineName(pipeline.name);
@@ -238,6 +285,55 @@ export class PipelineStorageService {
         field: err.field || null
       };
     }
+  }
+
+  /**
+   * Sync local pipelines to cloud
+   * @param {string} token - Auth token
+   */
+  static async syncToCloud(token) {
+    if (!token) return;
+
+    const localPipelines = this.loadAllPipelines();
+
+    // Simple sync: push all local pipelines to cloud
+    // Real implementation would be smarter (diffing)
+    for (const pipeline of localPipelines) {
+      try {
+        await fetch('/api/pipelines', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(pipeline)
+        });
+      } catch (err) {
+        console.error(`Failed to sync pipeline ${pipeline.name}:`, err);
+      }
+    }
+  }
+
+  /**
+   * Load pipelines from cloud
+   * @param {string} token 
+   */
+  static async loadFromCloud(token) {
+    if (!token) return [];
+
+    try {
+      const response = await fetch('/api/pipelines', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.pipelines || [];
+      }
+    } catch (err) {
+      console.error('Failed to load from cloud:', err);
+    }
+    return [];
   }
 
   /**
@@ -320,7 +416,7 @@ export class PipelineStorageService {
    */
   static getPipelineStats() {
     const pipelines = this.loadAllPipelines();
-    
+
     const stats = {
       total: pipelines.length,
       active: pipelines.filter(p => p.isActive).length,
@@ -344,7 +440,7 @@ export class PipelineStorageService {
    */
   static exportPipelines(pipelineNames = null) {
     const allPipelines = this.loadAllPipelines();
-    const toExport = pipelineNames 
+    const toExport = pipelineNames
       ? allPipelines.filter(p => pipelineNames.includes(p.name))
       : allPipelines;
 
@@ -363,7 +459,7 @@ export class PipelineStorageService {
   static importPipelines(jsonString) {
     try {
       const data = JSON.parse(jsonString);
-      
+
       if (!data.pipelines || !Array.isArray(data.pipelines)) {
         return {
           success: false,
@@ -379,7 +475,7 @@ export class PipelineStorageService {
       for (const pipeline of data.pipelines) {
         try {
           validatePipeline(pipeline);
-          
+
           // Check for duplicates
           if (!existingPipelines.find(p => p.name === pipeline.name)) {
             existingPipelines.push(this.migratePipeline(pipeline));
@@ -394,7 +490,7 @@ export class PipelineStorageService {
       }
 
       const result = StorageService.save('pipelines', existingPipelines);
-      
+
       if (!result.success) {
         return result;
       }

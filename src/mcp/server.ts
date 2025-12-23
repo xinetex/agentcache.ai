@@ -123,6 +123,11 @@ const CompressContextSchema = z.object({
   compression_ratio: z.enum(['16x', '32x', '128x']).optional().default('16x').describe('Target compression ratio'),
 });
 
+const SimulateOutcomeSchema = z.object({
+  action: z.string().describe('The tool or action to simulate'),
+  params: z.any().describe('Parameters for the action'),
+});
+
 // API configuration
 const AGENTCACHE_API_URL = process.env.AGENTCACHE_API_URL || 'https://agentcache.ai';
 const API_KEY = process.env.AGENTCACHE_API_KEY || process.env.API_KEY || 'ac_demo_test123';
@@ -405,6 +410,18 @@ const tools: Tool[] = [
       required: ['text']
     }
   },
+  {
+    name: 'agentcache_simulate_outcome',
+    description: 'Simulate the outcome of an action without executing it. Returns predicted success, confidence, and potential risks.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        action: { type: 'string', description: 'The tool or action to simulate' },
+        params: { type: 'object', description: 'Parameters for the action' }
+      },
+      required: ['action', 'params']
+    }
+  },
 ];
 
 // Create server instance
@@ -649,11 +666,36 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case 'agentcache_ask_system2': {
         const params = System2Schema.parse(args);
-        // Use CognitiveRouter
-        const route = await router.route(params.prompt);
-        return {
-          content: [{ type: 'text', text: JSON.stringify({ route, recommended_action: route === 'system_2' ? 'bypass_cache_engage_cot' : 'use_standard_cache' }, null, 2) }]
-        };
+
+        try {
+          // Forward calculation to Python 'Atom of Thoughts' service
+          const response = await fetch('http://localhost:8085/reason', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: params.prompt })
+          });
+
+          if (!response.ok) {
+            throw new Error(`System 2 Service Error: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+
+          return {
+            content: [{ type: 'text', text: JSON.stringify(data, null, 2) }]
+          };
+        } catch (error) {
+          // Fallback if service is down
+          return {
+            content: [{
+              type: 'text', text: JSON.stringify({
+                error: "System 2 Service Unavailable",
+                details: String(error),
+                recommendation: "Ensure 'src/services/system2/server.py' is running on port 8000"
+              }, null, 2)
+            }]
+          };
+        }
       }
 
       case 'agentcache_hive_memory': {
@@ -685,6 +727,24 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         });
         return {
           content: [{ type: 'text', text: JSON.stringify(result, null, 2) }]
+        };
+      }
+
+      case 'agentcache_simulate_outcome': {
+        const params = SimulateOutcomeSchema.parse(args);
+        // In a real implementation, this would call a predictive model or sandbox
+        // For this demo, we use a simple heuristic simulation
+        const isDestructive = params.action.includes('delete') || params.action.includes('remove') || params.action.includes('invalidate');
+
+        const simulation = {
+          outcome: isDestructive ? 'Resources will be permanently removed' : 'Action will interact with external APIs',
+          confidence: isDestructive ? 0.95 : 0.8,
+          risks: isDestructive ? ['Data Loss', 'Service Interruption'] : ['API Rate Limits'],
+          predicted_duration_ms: Math.floor(Math.random() * 500) + 50
+        };
+
+        return {
+          content: [{ type: 'text', text: JSON.stringify(simulation, null, 2) }]
         };
       }
 

@@ -22,20 +22,42 @@ class MockRedis {
   }
 
   // Sorted Sets (for PredictiveSynapse)
+  async hget(key: string, field: string) {
+    if (!this.data.has(key)) return null;
+    const hash = this.data.get(key);
+    if (!(hash instanceof Map)) return null;
+    return hash.get(String(field));
+  }
+  async hset(key: string, field: string, value: any) {
+    if (!this.data.has(key)) this.data.set(key, new Map());
+    const hash = this.data.get(key);
+    if (hash instanceof Map) {
+      hash.set(String(field), value);
+    }
+  }
+  async hdel(key: string, field: string) {
+    if (!this.data.has(key)) return 0;
+    const hash = this.data.get(key);
+    if (hash instanceof Map) {
+      hash.delete(String(field));
+    }
+    return 1;
+  }
   async zadd(key: string, ...args: (string | number)[]) {
     // Mock: store as simple array, ignore score for now or implement proper zset if needed
     if (!this.data.has(key)) this.data.set(key, new Map());
     const zset = this.data.get(key);
     // args is [score, member, score, member...]
     for (let i = 0; i < args.length; i += 2) {
-      zset.set(args[i + 1], Number(args[i]));
+      zset.set(String(args[i + 1]), Number(args[i]));
     }
   }
   async zincrby(key: string, increment: number, member: string) {
     if (!this.data.has(key)) this.data.set(key, new Map());
     const zset = this.data.get(key);
-    const old = zset.get(member) || 0;
-    zset.set(member, old + increment);
+    const m = String(member);
+    const old = zset.get(m) || 0;
+    zset.set(m, old + increment);
     return old + increment;
   }
   async zrange(key: string, start: number, stop: number) {
@@ -63,6 +85,15 @@ class MockRedis {
 
   async get(key: string) { return this.data.get(key); }
   async set(key: string, val: string) { this.data.set(key, val); }
+  async del(key: string) { this.data.delete(key); }
+
+
+  async incr(key: string) {
+    const val = this.data.get(key) || 0;
+    const newVal = Number(val) + 1;
+    this.data.set(key, newVal);
+    return newVal;
+  }
 }
 
 let client: any;

@@ -7,6 +7,10 @@
     "api/**/*.{js,ts}": {
       "memory": 1024,
       "maxDuration": 10
+    },
+    "api/cdn/stream.js": {
+      "memory": 1024,
+      "maxDuration": 30
     }
   },
   "redirects": [
@@ -73,9 +77,47 @@
     {
       "source": "/terms",
       "destination": "/terms.html"
+    },
+    {
+      "source": "/hls/:jobId/:quality/:segment",
+      "destination": "/api/cdn/stream?jobId=:jobId&quality=:quality&segment=:segment"
+    },
+    {
+      "source": "/cdn/stream/:path*",
+      "destination": "/api/cdn/stream?path=:path*"
     }
   ],
   "headers": [
+    {
+      "source": "/api/cdn/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Expose-Headers",
+          "value": "Content-Length, X-VideoCache"
+        }
+      ]
+    },
+    {
+      "source": "/hls/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [

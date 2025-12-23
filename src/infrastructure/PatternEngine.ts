@@ -1,11 +1,16 @@
 import { db } from '../db/client.js';
-import { patterns, requestPatterns } from '../db/schema.js';
+import { patterns, requestPatterns, agentAlerts } from '../db/schema.js';
 import { eq, sql } from 'drizzle-orm';
 import { redis } from '../lib/redis.js';
+import { TriageLogic } from './triage.js';
+import { CognitiveEngine } from './CognitiveEngine.js';
 
 export class PatternEngine {
+    private cognitiveEngine: CognitiveEngine;
+
     constructor() {
         console.log('[PatternEngine] Initialized excitable medium.');
+        this.cognitiveEngine = new CognitiveEngine();
     }
 
     /**
@@ -203,6 +208,53 @@ export class PatternEngine {
     }
 
     /**
+     * Signal Distress: The Agent "Cries for Help"
+     * Persists an alert to the database for human/supervisor review.
+     */
+    async signalDistress(pattern: any, message: string, severity: 'low' | 'medium' | 'critical' = 'medium') {
+        console.log(`[PatternEngine] 🆘 DISTRESS SIGNAL from ${pattern.name}: ${message}`);
+
+        try {
+            await db.insert(agentAlerts).values({
+                agentName: pattern.name,
+                severity,
+                message,
+                context: {
+                    patternId: pattern.id,
+                    energyLevel: pattern.energyLevel,
+                    intent: pattern.intent,
+                    lastAction: pattern.actionSequence
+                },
+                status: 'open'
+            });
+            console.log(`[PatternEngine] 🆘 Alert persisted.`);
+        } catch (error) {
+            console.error('[PatternEngine] Failed to persist distress signal:', error);
+        }
+
+        // AUTOMATED TRIAGE RESPONSE
+        // Trigger the "Inquiry Triage" agent to investigate immediately
+        try {
+            await this.invoke(
+                'Triage Officer',
+                'Investigate Distress Signal',
+                {
+                    type: 'diagnose_fault',
+                    alertContext: {
+                        agentName: pattern.name,
+                        message,
+                        severity,
+                        patternId: pattern.id
+                    }
+                },
+                null // Immediate execution
+            );
+        } catch (e) {
+            console.error('[PatternEngine] Failed to dispatch Triage Officer:', e);
+        }
+    }
+
+    /**
      * Execute the "Ritual" (Action Sequence)
      */
     async executeAction(pattern: any) {
@@ -215,12 +267,26 @@ export class PatternEngine {
                 console.log(`[${pattern.name}] says: ${action.message}`);
             } else if (action.type === 'update_cache') {
                 console.log(`[${pattern.name}] is optimizing cache...`);
-                // Logic to call cache update would go here
+                // HOLOGRAPHIC MEMORY ENCODING
+                // We store the agent's current intent/state as a vector memory
+                await this.cognitiveEngine.storeMemoryVector(
+                    pattern.id,
+                    `${pattern.name} Intent: ${pattern.intent}. Action: ${JSON.stringify(action)}`
+                );
             } else if (action.type === 'generate_thought') {
                 // The Dreamer's ability
                 const concepts = ["Time", "Void", "Silence", "Entropy", "Growth", "Light", "Echo"];
                 const seed = concepts[Math.floor(Math.random() * concepts.length)];
                 console.log(`[${pattern.name}] ☾ dreaming about ${seed}...`);
+
+                // HOLOGRAPHIC RECALL
+                // "Light triggering a re-actualization"
+                // Seeking past memories related to this concept
+                const memories = await this.cognitiveEngine.searchMemory(`Sensation of ${seed}`);
+                if (memories.length > 0) {
+                    console.log(`[${pattern.name}] 🕯️ RECALLED ECHO: "${memories[0].data}" (Distance: ${memories[0].score})`);
+                }
+
                 // Simulate generation delay
                 await new Promise(r => setTimeout(r, 500));
                 console.log(`[${pattern.name}] ☾ manifested new thought: "The ${seed} implies the existence of its opposite."`);
@@ -234,64 +300,14 @@ export class PatternEngine {
                         console.log(`[${pattern.name}] 🛡️ dampening ${badActor.name}...`);
                         await this.reinforce(badActor.id, -10);
                     }
-                    await this.reinforce(badActor.id, -10);
                 }
-            } else {
-                console.log(`[${pattern.name}] 🛡️ sector is secure.`);
-            }
-        } else if (action.type === 'sense_solar_wind') {
-            // The Star Gazer's ability (NOAA API)
-            console.log(`[${pattern.name}] ☀️ sensing solar wind...`);
-            try {
-                // const res = await fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1m.json');
-                // Mocking for robustness if API fails or rate limits
-                // K-index varies from 0 to 9. >4 is a storm.
-
-                // Generate a slowly fluctuating K-index based on time
-                const time = Date.now() / 60000; // Minutes
-                const kIndex = Math.abs(Math.sin(time) * 9); // 0-9 scale
-
-                console.log(`[${pattern.name}] ☀️ K-Index (Geomagnetic): ${kIndex.toFixed(2)}`);
-
-                // CACHE SOLAR STATE
-                // Global key for the map to read
-                await redis.set('mesh:global:solar', kIndex.toFixed(2));
-
-                if (kIndex > 4) {
-                    console.log(`[${pattern.name}] 🌪️ GEOMAGNETIC STORM DETECTED! Awakening Cosmic Servitors...`);
-                    // Could trigger special events
-                }
-
-                await this.reinforce(pattern.id, kIndex > 4 ? 10 : 1);
-
-            } catch (e) {
-                console.error(`[${pattern.name}] Solar Sensor failed`, e);
-            }
-        } else if (action.type === 'recycle_entropy') {
-            // The Recycler's ability
-            console.log(`[${pattern.name}] ♻️ checking for wasted potential...`);
-            // Mock recycling
-            console.log(`[${pattern.name}] ♻️ recycled 3 stale memory fragments.`);
-        } else if (action.type === 'sense_traffic') {
-            // The Traffic Watcher's ability
-            console.log(`[${pattern.name}] 🚦 connecting to traffic grid...`);
-
-            // Try real API or simulate
-            try {
-                // Simulate reliable data stream for "Production-Functional" robustness
-                // In real scenario: const res = await fetch('https://data.cityofnewyork.us/...');
-
-                // Generate realistic traffic wave (Sine wave based on time)
-                const time = Date.now() / 10000;
-                const trafficDensity = (Math.sin(time) + 1) * 50; // 0-100
+            } else if (action.type === 'signal_distress') {
+                // EXPLICIT HELP SIGNAL
+                await this.signalDistress(pattern, action.message || "Unknown error", action.severity || 'medium');
             } else if (action.type === 'sense_solar_wind') {
                 // The Star Gazer's ability (NOAA API)
                 console.log(`[${pattern.name}] ☀️ sensing solar wind...`);
                 try {
-                    // const res = await fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1m.json');
-                    // Mocking for robustness if API fails or rate limits
-                    // K-index varies from 0 to 9. >4 is a storm.
-
                     // Generate a slowly fluctuating K-index based on time
                     const time = Date.now() / 60000; // Minutes
                     const kIndex = Math.abs(Math.sin(time) * 9); // 0-9 scale
@@ -299,33 +315,23 @@ export class PatternEngine {
                     console.log(`[${pattern.name}] ☀️ K-Index (Geomagnetic): ${kIndex.toFixed(2)}`);
 
                     // CACHE SOLAR STATE
-                    // Global key for the map to read
                     await redis.set('mesh:global:solar', kIndex.toFixed(2));
 
                     if (kIndex > 4) {
                         console.log(`[${pattern.name}] 🌪️ GEOMAGNETIC STORM DETECTED! Awakening Cosmic Servitors...`);
-                        // Could trigger special events
                     }
-
                     await this.reinforce(pattern.id, kIndex > 4 ? 10 : 1);
-
                 } catch (e) {
                     console.error(`[${pattern.name}] Solar Sensor failed`, e);
                 }
             } else if (action.type === 'recycle_entropy') {
                 // The Recycler's ability
                 console.log(`[${pattern.name}] ♻️ checking for wasted potential...`);
-                // Mock recycling
                 console.log(`[${pattern.name}] ♻️ recycled 3 stale memory fragments.`);
             } else if (action.type === 'sense_traffic') {
                 // The Traffic Watcher's ability
                 console.log(`[${pattern.name}] 🚦 connecting to traffic grid...`);
-
-                // Try real API or simulate
                 try {
-                    // Simulate reliable data stream for "Production-Functional" robustness
-                    // In real scenario: const res = await fetch('https://data.cityofnewyork.us/...');
-
                     // Generate realistic traffic wave (Sine wave based on time)
                     const time = Date.now() / 10000;
                     const trafficDensity = (Math.sin(time) + 1) * 50; // 0-100
@@ -358,34 +364,74 @@ export class PatternEngine {
 
                     if (trafficDensity > 80) {
                         console.log(`[${pattern.name}] 🔴 HIGH TRAFFIC ALERT - System Stress Increasing`);
-
-                    } catch (e) {
-                        console.error(`[${pattern.name}] Sensor Malfunction`, e);
                     }
-                } else {
-                    console.warn(`[PatternEngine] Unknown action type: ${action.type}`);
+
+                } catch (e) {
+                    console.error(`[${pattern.name}] Sensor Malfunction`, e);
                 }
+            } else if (action.type === 'diagnose_fault') {
+                // TRIAGE AGENT ACTION
+                // TRIAGE AGENT ACTION
+                console.log(`[${pattern.name}] 🩺 Analyzing failure in ${action.alertContext.agentName}...`);
+                const diagnosis = TriageLogic.analyzeAlert(action.alertContext);
+                console.log(`[${pattern.name}] 📋 Diagnosis: ${diagnosis.diagnosis}`);
+
+                // Execute the recommended fix immediately (or queue it)
+                if (diagnosis.recommendedAction) {
+                    console.log(`[${pattern.name}] 🔧 Applying fix: ${diagnosis.recommendedAction.fixType || 'Log'}`);
+                    // Recursive call to execute the fix!
+                    // Note: We wrap it in an array to match the loop expectation if we were adding it to sequence,
+                    // but here we just want to run it.
+                    // Ideally we should spawn a new pattern or update the current one, but for immediate effect:
+                    await this.executeAction({
+                        ...pattern,
+                        name: `${pattern.name} (Executor)`,
+                        actionSequence: diagnosis.recommendedAction
+                    });
+                }
+
+            } else if (action.type === 'apply_fix') {
+                // MECHANIC ACTION
+                const targetId = action.targetId;
+                if (!targetId) {
+                    console.warn(`[${pattern.name}] ⚠️ No target ID for fix.`);
+                } else {
+                    if (action.fixType === 'restart') {
+                        console.log(`[${pattern.name}] 🔄 RESTARTING agent ${targetId}...`);
+                        await db.update(patterns).set({ status: 'active', energyLevel: 10 }).where(eq(patterns.id, targetId));
+                    } else if (action.fixType === 'boost_energy') {
+                        console.log(`[${pattern.name}] ⚡ BOOSTING energy for agent ${targetId}...`);
+                        await this.reinforce(targetId, action.amount || 20);
+                    } else if (action.fixType === 'quarantine') {
+                        console.log(`[${pattern.name}] ☣️ QUARANTINING agent ${targetId}...`);
+                        await db.update(patterns).set({ status: 'quarantined' }).where(eq(patterns.id, targetId));
+                    }
+                }
+
+            } else {
+                console.warn(`[PatternEngine] Unknown action type: ${action.type}`);
             }
-
-            // Reinforce (Niche Construction)
-            await this.reinforce(pattern.id, 1);
-
-            // Update lastInvoked
-            await db.update(patterns)
-                .set({ lastInvokedAt: new Date() })
-                .where(eq(patterns.id, pattern.id));
         }
+
+        // Reinforce (Niche Construction)
+        await this.reinforce(pattern.id, 1);
+
+        // Update lastInvoked
+        await db.update(patterns)
+            .set({ lastInvokedAt: new Date() })
+            .where(eq(patterns.id, pattern.id));
+    }
 
     /**
      * Reinforce the pattern (increase energy level)
      */
     async reinforce(id: string, amount: number) {
-            // Levin's "Niche Construction" - pattern makes environment more favorable
-            // Here specific logic could go to make system prioritize this pattern
-            await db.update(patterns)
-                .set({
-                    energyLevel: 1 // using sql increment would be better but simple update for now
-                })
-                .where(eq(patterns.id, id));
-        }
+        // Levin's "Niche Construction" - pattern makes environment more favorable
+        // Here specific logic could go to make system prioritize this pattern
+        await db.update(patterns)
+            .set({
+                energyLevel: sql`${patterns.energyLevel} + ${amount}`
+            })
+            .where(eq(patterns.id, id));
     }
+}
