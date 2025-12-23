@@ -27,10 +27,11 @@ class VideoCache {
             l2TTL: config.l2TTL || 3600,                      // 1 hour
 
             // L3: S3/JettyThunder origin
-            s3Endpoint: config.s3Endpoint || process.env.S3_ENDPOINT,
+            s3Endpoint: config.s3Endpoint || process.env.S3_ENDPOINT || 'https://s3.us-west-1.lyvecloud.seagate.com',
             s3AccessKey: config.s3AccessKey || process.env.S3_ACCESS_KEY,
             s3SecretKey: config.s3SecretKey || process.env.S3_SECRET_KEY,
-            s3Bucket: config.s3Bucket || process.env.S3_BUCKET || 'audio1-videos',
+            s3Bucket: config.s3Bucket || process.env.S3_BUCKET || 'jettydata-prod',
+            s3Region: config.s3Region || process.env.S3_REGION || 'us-west-1',
 
             // Metrics
             enableMetrics: config.enableMetrics !== false
@@ -56,7 +57,8 @@ class VideoCache {
                 accessKeyId: this.config.s3AccessKey,
                 secretAccessKey: this.config.s3SecretKey,
                 s3ForcePathStyle: true,
-                signatureVersion: 'v4'
+                signatureVersion: 'v4',
+                region: this.config.s3Region
             });
         }
 
