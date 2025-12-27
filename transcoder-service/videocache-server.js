@@ -166,6 +166,110 @@ app.get('/audio1/:partner/:userId/:fileId/:filename', async (req, res) => {
     }
 });
 
+/**
+ * Roku-Compatible HTTP/1.1 Streaming Endpoint
+ * 
+ * This endpoint serves content via HTTP/1.1 for Roku compatibility.
+ * Roku has issues with HTTP/2 responses (Error -5 "malformed data").
+ * 
+ * Route: /roku-stream/:key
+ * Example: /roku-stream/audio1/videos/2816/filename.mp4
+ * 
+ * Features:
+ * - Range request support for seeking
+ * - Proper content-type headers
+ * - L1 caching for repeated requests
+ */
+app.get('/roku-stream/*', async (req, res) => {
+    const key = req.params[0]; // Everything after /roku-stream/
+    const cacheKey = `roku:${key}`;
+    const rangeHeader = req.headers.range;
+
+    console.log(`[Roku Proxy] Request: ${key} (Range: ${rangeHeader || 'none'})`);
+
+    // For range requests, bypass cache and stream directly
+    if (rangeHeader) {
+        const originUrl = `${JETTYTHUNDER_BASE}/api/partner-stream/${key}`;
+        console.log(`[Roku Proxy] Range request - streaming from origin`);
+
+        try {
+            const originResponse = await fetch(originUrl, {
+                headers: { 'Range': rangeHeader }
+            });
+
+            if (!originResponse.ok && originResponse.status !== 206) {
+                console.error(`[Roku Proxy] Origin error: ${originResponse.status}`);
+                return res.status(originResponse.status).json({ error: 'Origin fetch failed' });
+            }
+
+            // Forward headers
+            res.status(originResponse.status);
+            res.set('Content-Type', originResponse.headers.get('content-type') || 'video/mp4');
+            res.set('Accept-Ranges', 'bytes');
+            res.set('Cache-Control', 'public, max-age=3600');
+
+            const contentRange = originResponse.headers.get('content-range');
+            if (contentRange) res.set('Content-Range', contentRange);
+
+            const contentLength = originResponse.headers.get('content-length');
+            if (contentLength) res.set('Content-Length', contentLength);
+
+            // Stream the response
+            const buffer = Buffer.from(await originResponse.arrayBuffer());
+            res.send(buffer);
+        } catch (error) {
+            console.error(`[Roku Proxy] Range error: ${error.message}`);
+            res.status(500).json({ error: error.message });
+        }
+        return;
+    }
+
+    // Check L1 cache for full requests
+    const cached = getFromAudio1Cache(cacheKey);
+    if (cached) {
+        console.log(`[Roku Proxy] L1 HIT`);
+        res.set('Content-Type', cached.contentType || 'video/mp4');
+        res.set('Accept-Ranges', 'bytes');
+        res.set('Cache-Control', 'public, max-age=3600');
+        res.set('X-Roku-Cache', 'HIT');
+        return res.send(cached.data);
+    }
+
+    // Fetch from JettyThunder
+    const originUrl = `${JETTYTHUNDER_BASE}/api/partner-stream/${key}`;
+    console.log(`[Roku Proxy] L1 MISS - Fetching from: ${originUrl}`);
+
+    try {
+        const originResponse = await fetch(originUrl);
+
+        if (!originResponse.ok) {
+            console.error(`[Roku Proxy] Origin error: ${originResponse.status}`);
+            return res.status(originResponse.status).json({ error: 'Origin fetch failed' });
+        }
+
+        const contentType = originResponse.headers.get('content-type') || 'video/mp4';
+        const buffer = Buffer.from(await originResponse.arrayBuffer());
+
+        // Only cache small files (< 10MB) to avoid memory issues
+        if (buffer.length < 10 * 1024 * 1024) {
+            setToAudio1Cache(cacheKey, buffer, contentType);
+            console.log(`[Roku Proxy] Cached ${buffer.length} bytes`);
+        } else {
+            console.log(`[Roku Proxy] Skipping cache for large file (${buffer.length} bytes)`);
+        }
+
+        // Respond with content
+        res.set('Content-Type', contentType);
+        res.set('Accept-Ranges', 'bytes');
+        res.set('Cache-Control', 'public, max-age=3600');
+        res.set('X-Roku-Cache', 'MISS');
+        res.send(buffer);
+    } catch (error) {
+        console.error(`[Roku Proxy] Error: ${error.message}`);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // API: Audio1 cache stats
 app.get('/audio1/stats', (req, res) => {
     res.json({
