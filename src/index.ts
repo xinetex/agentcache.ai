@@ -57,6 +57,7 @@ import adminStatsRouter from './api/admin-stats.js';
 import eventsRouter from './api/events.js';
 import { patternsRouter } from './api/patterns.js';
 import { geoRouter } from './api/geo.js';
+import cdnRouter from './api/cdn.js';
 import { PatternEngine } from './infrastructure/PatternEngine.js';
 
 app.post('/api/provision', provisionClient);
@@ -77,6 +78,7 @@ app.route('/api/admin-stats', adminStatsRouter);
 app.route('/api/events', eventsRouter);
 app.route('/api/patterns', patternsRouter);
 app.route('/api/geo', geoRouter);
+app.route('/api/cdn', cdnRouter);
 
 // Serve static files (landing page - defaults to community.html)
 app.get('/', (c) => {

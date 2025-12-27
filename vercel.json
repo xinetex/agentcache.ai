@@ -6,11 +6,7 @@
   "functions": {
     "api/**/*.{js,ts}": {
       "memory": 1024,
-      "maxDuration": 10
-    },
-    "api/cdn/stream.js": {
-      "memory": 1024,
-      "maxDuration": 30
+      "maxDuration": 25
     }
   },
   "redirects": [
