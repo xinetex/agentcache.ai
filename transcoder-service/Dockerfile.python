@@ -1,0 +1,19 @@
+# Lyve Transcoder - Lightweight Python Worker
+FROM python:3.11-slim
+
+# Install FFmpeg
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy worker script
+COPY lyve_transcoder.py .
+
+# Run worker
+CMD ["python", "lyve_transcoder.py"]

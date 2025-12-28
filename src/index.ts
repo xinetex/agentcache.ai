@@ -58,6 +58,7 @@ import eventsRouter from './api/events.js';
 import { patternsRouter } from './api/patterns.js';
 import { geoRouter } from './api/geo.js';
 import cdnRouter from './api/cdn.js';
+import transcodeRouter from './api/transcode.js';
 import { PatternEngine } from './infrastructure/PatternEngine.js';
 
 app.post('/api/provision', provisionClient);
@@ -79,6 +80,7 @@ app.route('/api/events', eventsRouter);
 app.route('/api/patterns', patternsRouter);
 app.route('/api/geo', geoRouter);
 app.route('/api/cdn', cdnRouter);
+app.route('/api/transcode', transcodeRouter);
 
 // Serve static files (landing page - defaults to community.html)
 app.get('/', (c) => {
