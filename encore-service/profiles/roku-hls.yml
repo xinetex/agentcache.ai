@@ -1,0 +1,102 @@
+# Roku HLS Encoding Profile
+# Optimized for Roku playback with multi-bitrate adaptive streaming
+
+name: roku-hls
+description: Multi-bitrate HLS for Roku devices
+scaling: bicubic
+
+encodes:
+  # 1080p High Quality
+  - type: X264Encode
+    suffix: _1080p
+    twoPass: true
+    height: 1080
+    params:
+      b:v: 8000k
+      maxrate: 10000k
+      bufsize: 16000k
+      r: 30
+      g: 60
+      keyint_min: 30
+      pix_fmt: yuv420p
+      profile:v: high
+      level: 4.1
+    audioEncode:
+      type: AudioEncode
+      codec: aac
+      bitrate: 192k
+      suffix: stereo
+
+  # 720p Standard
+  - type: X264Encode
+    suffix: _720p
+    twoPass: true
+    height: 720
+    params:
+      b:v: 4000k
+      maxrate: 5000k
+      bufsize: 8000k
+      r: 30
+      g: 60
+      keyint_min: 30
+      pix_fmt: yuv420p
+      profile:v: main
+      level: 3.1
+    audioEncode:
+      type: AudioEncode
+      codec: aac
+      bitrate: 128k
+      suffix: stereo
+
+  # 480p Low Bandwidth
+  - type: X264Encode
+    suffix: _480p
+    twoPass: true
+    height: 480
+    params:
+      b:v: 2000k
+      maxrate: 2500k
+      bufsize: 4000k
+      r: 30
+      g: 60
+      keyint_min: 30
+      pix_fmt: yuv420p
+      profile:v: main
+      level: 3.0
+    audioEncode:
+      type: AudioEncode
+      codec: aac
+      bitrate: 96k
+      suffix: stereo
+
+  # 360p Mobile/Fallback
+  - type: X264Encode
+    suffix: _360p
+    twoPass: false
+    height: 360
+    params:
+      b:v: 800k
+      maxrate: 1000k
+      bufsize: 1600k
+      r: 30
+      g: 60
+      pix_fmt: yuv420p
+      profile:v: baseline
+      level: 3.0
+    audioEncode:
+      type: AudioEncode
+      codec: aac
+      bitrate: 64k
+      suffix: stereo
+
+  # Thumbnail generation
+  - type: ThumbnailEncode
+    interval: 10
+    width: 320
+    height: 180
+
+  # Thumbnail map for scrubbing
+  - type: ThumbnailMapEncode
+    cols: 5
+    rows: 5
+    interval: 2
