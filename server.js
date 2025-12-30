@@ -200,6 +200,34 @@ app.post('/api/cdn/warm', wrap(cdnWarmHandler));
 app.post('/api/cdn/invalidate', wrap(cdnInvalidateHandler));
 app.delete('/api/cdn/invalidate', wrap(cdnInvalidateHandler));
 
+// ==================================================
+// QChannel Routes (Crypto Market Intelligence)
+// See: docs/QCHANNEL_EXTENSION.md
+// ==================================================
+import qchannelZonesHandler from './api/qchannel/zones.js';
+import qchannelFeedHandler from './api/qchannel/feed.js';
+import qchannelAdsHandler from './api/qchannel/ads.js';
+import qchannelAnalyticsHandler from './api/qchannel/analytics.js';
+
+// Zone CRUD
+app.get('/api/qchannel/zones', wrap(qchannelZonesHandler));
+app.get('/api/qchannel/zones/:id', wrap(qchannelZonesHandler));
+app.post('/api/qchannel/zones', wrap(qchannelZonesHandler));
+app.patch('/api/qchannel/zones/:id', wrap(qchannelZonesHandler));
+app.delete('/api/qchannel/zones/:id', wrap(qchannelZonesHandler));
+
+// Roku MRSS Feed
+app.get('/api/qchannel/feed/roku', wrap(qchannelFeedHandler));
+app.get('/api/qchannel/feed/zones/:id', wrap(qchannelFeedHandler));
+
+// Ad Network (Google Ad Manager / VAST)
+app.get('/api/qchannel/ads/vast/:type', wrap(qchannelAdsHandler));
+app.post('/api/qchannel/ads/event', wrap(qchannelAdsHandler));
+
+// Analytics
+app.post('/api/qchannel/analytics/view', wrap(qchannelAnalyticsHandler));
+app.get('/api/qchannel/analytics/summary', wrap(qchannelAnalyticsHandler));
+
 // HLS rewrite route for player-friendly URLs
 app.get('/hls/:jobId/:quality/:segment', (req, res, next) => {
     req.query.jobId = req.params.jobId;
