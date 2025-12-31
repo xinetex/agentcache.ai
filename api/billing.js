@@ -4,15 +4,18 @@
  */
 
 import { neon } from '@neondatabase/serverless';
+import Stripe from 'stripe';
 
 export const config = {
   runtime: 'nodejs'
 };
 import { getUserFromRequest } from './auth.js';
 import { calculateMonthlyBill, COMPLEXITY_TIERS, calculateComplexity } from '../lib/complexity-calculator.js';
-import { PLAN_PRICES, QUOTAS, FEATURES } from '../src/config/pricing.js';
+import { PLAN_PRICES, QUOTAS, FEATURES, STRIPE_PRICE_IDS } from '../src/config/pricing.js';
 
 const sql = neon(process.env.DATABASE_URL);
+// Initialize Stripe lazily or check for key to avoid crashes in dev
+const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 
 /**
  * Main API handler
@@ -245,21 +248,60 @@ export default async function handler(req, res) {
       }
 
       // In production, this would create a Stripe checkout session
-      // For now, simulate upgrade
+      try {
+        if (!process.env.STRIPE_SECRET_KEY) {
+          throw new Error("Stripe is not configured (missing STRIPE_SECRET_KEY)");
+        }
 
-      // TODO: Implement Stripe integration
-      // const stripeSession = await stripe.checkout.sessions.create({...});
+        // 1. Get Price ID
+        const priceId = STRIPE_PRICE_IDS[plan];
+        if (!priceId) {
+          return res.status(400).json({ error: 'Config error', message: `No price ID for plan ${plan}` });
+        }
 
-      return res.status(200).json({
-        message: 'Upgrade initiated',
-        upgrade: {
-          from: currentPlan,
-          to: plan,
-          price_change: PLAN_PRICES[plan] - PLAN_PRICES[currentPlan]
-        },
-        // In production: checkout_url: stripeSession.url
-        note: 'Stripe integration pending - upgrade would be processed here'
-      });
+        // 2. Create Checkout Session
+        const session = await stripe.checkout.sessions.create({
+          mode: 'subscription',
+          payment_method_types: ['card'],
+          line_items: [
+            {
+              price: priceId,
+              quantity: 1,
+            },
+          ],
+          customer_email: user.email, // Pre-fill email
+          success_url: `${req.headers.origin}/dashboard?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${req.headers.origin}/pricing?checkout=cancel`,
+          metadata: {
+            userId: user.id,
+            targetPlan: plan,
+            orgId: 'TODO_ORG_ID' // Ideally pass this if available
+          }
+        });
+
+        return res.status(200).json({
+          message: 'Upgrade initiated',
+          checkout_url: session.url,
+          upgrade: {
+            from: currentPlan,
+            to: plan,
+            price_change: PLAN_PRICES[plan] - PLAN_PRICES[currentPlan]
+          }
+        });
+
+      } catch (err) {
+        console.error('[Stripe Error]', err);
+        // Fallback for simulation/dev if no key
+        if (err.message.includes('missing STRIPE_SECRET_KEY')) {
+          return res.status(200).json({
+            message: 'SIMULATION: Upgrade initiated (Stripe not configured)',
+            checkout_url: '#simulation-success',
+            note: 'Add STRIPE_SECRET_KEY to .env to enable real payments'
+          });
+        }
+
+        return res.status(500).json({ error: 'Payment initialization failed', details: err.message });
+      }
     }
 
     // POST /api/billing/track - Track usage event (internal use)
