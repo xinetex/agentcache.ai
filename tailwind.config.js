@@ -1,8 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+    darkMode: 'class', // Lock to dark mode
     content: [
         "./index.html",
         "./public/**/*.html",
+        "./*.html", // Include root HTML files
         "./src/**/*.{js,ts,jsx,tsx}",
     ],
     theme: {
