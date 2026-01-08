@@ -94,7 +94,10 @@ class LyveTranscoder:
         input_key = job.get('input_key')
         output_bucket = job.get('output_bucket', LYVE_BUCKET)
         output_prefix = job.get('output_prefix', f"transcoded/{job_id}")
+        output_bucket = job.get('output_bucket', LYVE_BUCKET)
+        output_prefix = job.get('output_prefix', f"transcoded/{job_id}")
         ladder = job.get('ladder', DEFAULT_LADDER)
+        watermark = job.get('watermark')  # Optional: "A1::UID::SID"
         
         if not input_key:
             self.notify_status(job_id, 'failed', error='Missing input_key')
@@ -109,31 +112,44 @@ class LyveTranscoder:
                 logger.info(f"⬇️  Downloading: s3://{input_bucket}/{input_key}")
                 self.s3.download_file(input_bucket, input_key, input_path)
                 
-                # 2. Transcode each profile
+                # 2. Transcode each profile to HLS
                 for profile in ladder:
-                    output_name = f"{profile['name']}.mp4"
-                    output_path = os.path.join(tmpdir, output_name)
+                    profile_name = profile['name']
+                    variant_dir = os.path.join(tmpdir, profile_name)
+                    os.makedirs(variant_dir, exist_ok=True)
                     
-                    logger.info(f"🎬 Encoding {profile['name']}...")
-                    self.encode(input_path, output_path, profile)
+                    output_playlist = os.path.join(variant_dir, "playlist.m3u8")
                     
-                    # 3. Upload to Lyve
-                    output_key = f"{output_prefix}/{output_name}"
-                    logger.info(f"⬆️  Uploading: s3://{output_bucket}/{output_key}")
-                    self.s3.upload_file(
-                        output_path,
-                        output_bucket,
-                        output_key,
-                        ExtraArgs={'ContentType': 'video/mp4'}
-                    )
+                    logger.info(f"🎬 Encoding {profile_name} (HLS)...")
+                    self.encode(input_path, output_playlist, profile, watermark, variant_dir)
+                    
+                    # 3. Upload segments and playlist to Lyve
+                    # Structure: transcoded/job_id/1080p/playlist.m3u8
+                    #            transcoded/job_id/1080p/segment_000.ts
+                    
+                    base_prefix = f"{output_prefix}/{profile_name}"
+                    
+                    for filename in os.listdir(variant_dir):
+                        file_path = os.path.join(variant_dir, filename)
+                        file_key = f"{base_prefix}/{filename}"
+                        
+                        content_type = 'application/x-mpegURL' if filename.endswith('.m3u8') else 'video/MP2T'
+                        
+                        logger.info(f"⬆️  Uploading: s3://{output_bucket}/{file_key}")
+                        self.s3.upload_file(
+                            file_path,
+                            output_bucket,
+                            file_key,
+                            ExtraArgs={'ContentType': content_type}
+                        )
                     
                     outputs.append({
-                        'profile': profile['name'],
-                        'key': output_key,
-                        'url': f"{LYVE_ENDPOINT}/{output_bucket}/{output_key}"
+                        'profile': profile_name,
+                        'key': f"{base_prefix}/playlist.m3u8",
+                        'url': f"{LYVE_ENDPOINT}/{output_bucket}/{base_prefix}/playlist.m3u8"
                     })
                 
-                # 4. Generate HLS manifest (optional)
+                # 4. Generate HLS Master Manifest
                 manifest_key = f"{output_prefix}/master.m3u8"
                 manifest_content = self.generate_hls_manifest(outputs, output_prefix)
                 self.s3.put_object(
@@ -142,7 +158,7 @@ class LyveTranscoder:
                     Body=manifest_content,
                     ContentType='application/x-mpegURL'
                 )
-                outputs.append({'profile': 'hls', 'key': manifest_key})
+                outputs.append({'profile': 'master', 'key': manifest_key})
                 
             # Success
             logger.info(f"✅ Job {job_id} complete: {len(outputs)} outputs")
@@ -152,23 +168,40 @@ class LyveTranscoder:
             logger.error(f"❌ Job {job_id} failed: {e}")
             self.notify_status(job_id, 'failed', error=str(e))
 
-    def encode(self, input_path: str, output_path: str, profile: Dict):
-        """Run FFmpeg encoding for a single profile"""
+    def encode(self, input_path: str, output_path: str, profile: Dict, watermark: Optional[str] = None, variant_dir: str = None):
+        """Run FFmpeg encoding for a single profile (HLS)"""
+        
+        # Build filter chain
+        filters = [f"scale=-2:{profile['height']}"]
+        
+        if watermark:
+            safe_text = watermark.replace(':', '\\:').replace("'", "")
+            filters.append(f"drawtext=text='{safe_text}':fontsize=24:fontcolor=white@0.01:x=10:y=10")
+            
+        filter_str = ','.join(filters)
+
+        # Output segment pattern
+        segment_filename = os.path.join(variant_dir, "segment_%03d.ts") if variant_dir else "segment_%03d.ts"
+
         cmd = [
             'ffmpeg', '-y', '-i', input_path,
             '-c:v', 'libx264',
             '-preset', 'medium',
             '-profile:v', 'high' if profile['height'] >= 720 else 'main',
             '-level', '4.1' if profile['height'] >= 1080 else '3.1',
-            '-vf', f"scale=-2:{profile['height']}",
+            '-vf', filter_str,
             '-b:v', profile['bitrate'],
             '-maxrate', profile['bitrate'],
             '-bufsize', str(int(profile['bitrate'].rstrip('Mk')) * 2) + 'M',
-            '-g', '60',  # Keyframe interval
-            '-keyint_min', '30',
+            '-g', '60',  # Keyframe interval (2s at 30fps)
+            '-keyint_min', '60', # Enforce consistent GOP for HLS
+            '-sc_threshold', '0', # Disable scene cut detection for consistent segments
             '-c:a', 'aac',
             '-b:a', profile['audio_bitrate'],
-            '-movflags', '+faststart',
+            '-f', 'hls',
+            '-hls_time', '6',
+            '-hls_playlist_type', 'vod',
+            '-hls_segment_filename', segment_filename,
             output_path
         ]
         
@@ -191,8 +224,16 @@ class LyveTranscoder:
             if output['profile'] in bandwidth_map:
                 bw = bandwidth_map[output['profile']]
                 res = {'1080p': '1920x1080', '720p': '1280x720', '480p': '854x480', '360p': '640x360'}
+                # Roku requires RESOLUTION and BANDWIDTH.
+                # Path should be relative to the master playlist (e.g., "1080p/playlist.m3u8")
+                # output['key'] is full path like "prefix/1080p/playlist.m3u8"
+                # We need just "1080p/playlist.m3u8" if master is at "prefix/master.m3u8"
+                
+                # Assuming output['key'] starts with prefix/
+                relative_path = output['key'].split('/')[-2] + '/' + output['key'].split('/')[-1]
+                
                 lines.append(f'#EXT-X-STREAM-INF:BANDWIDTH={bw},RESOLUTION={res.get(output["profile"], "1280x720")}')
-                lines.append(output['key'].split('/')[-1])
+                lines.append(relative_path)
         
         return '\n'.join(lines)
 
