@@ -128,6 +128,26 @@ const SimulateOutcomeSchema = z.object({
   params: z.any().describe('Parameters for the action'),
 });
 
+// AutoMem Memory Schemas
+const MemoryStoreSchema = z.object({
+  content: z.string().describe('The memory content to store'),
+  type: z.enum(['Decision', 'Pattern', 'Preference', 'Style', 'Habit', 'Insight', 'Context']).optional().describe('Type of memory'),
+  tags: z.array(z.string()).optional().describe('Tags for categorization'),
+  importance: z.number().min(0).max(1).optional().describe('Importance score 0-1'),
+});
+
+const MemoryRecallSchema = z.object({
+  query: z.string().optional().describe('Semantic search query'),
+  tags: z.array(z.string()).optional().describe('Filter by tags'),
+  timeQuery: z.string().optional().describe('Natural language time query (e.g., "last week")'),
+  limit: z.number().optional().default(5).describe('Max results'),
+});
+
+const MemoryGraphSchema = z.object({
+  memoryId: z.string().describe('UUID of the center memory'),
+  depth: z.number().min(1).max(3).optional().default(1).describe('Traversal depth'),
+});
+
 // API configuration
 const AGENTCACHE_API_URL = process.env.AGENTCACHE_API_URL || 'https://agentcache.ai';
 const API_KEY = process.env.AGENTCACHE_API_KEY || process.env.API_KEY || 'ac_demo_test123';
@@ -420,6 +440,45 @@ const tools: Tool[] = [
         params: { type: 'object', description: 'Parameters for the action' }
       },
       required: ['action', 'params']
+    }
+  },
+  {
+    name: 'agentcache_memory_store',
+    description: 'Store a persistent memory in the AI Brain (AutoMem). Use this to remember user patterns, preferences, decisions, or important context for future sessions.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        content: { type: 'string', description: 'The memory content' },
+        type: { type: 'string', enum: ['Decision', 'Pattern', 'Preference', 'Style', 'Habit', 'Insight', 'Context'] },
+        tags: { type: 'array', items: { type: 'string' } },
+        importance: { type: 'number', minimum: 0, maximum: 1 }
+      },
+      required: ['content']
+    }
+  },
+  {
+    name: 'agentcache_memory_recall',
+    description: 'Recall memories from the AI Brain using semantic search, tags, or time. Use this to retrieve past context or learn from previous decisions.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string' },
+        tags: { type: 'array', items: { type: 'string' } },
+        timeQuery: { type: 'string' },
+        limit: { type: 'number' }
+      }
+    }
+  },
+  {
+    name: 'agentcache_memory_graph',
+    description: 'Explore the knowledge graph around a specific memory. shows relationships (CAUSED, PREFERS, etc) to deep-dive into a topic.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        memoryId: { type: 'string' },
+        depth: { type: 'number', minimum: 1, maximum: 3 }
+      },
+      required: ['memoryId']
     }
   },
 ];
@@ -745,6 +804,30 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         return {
           content: [{ type: 'text', text: JSON.stringify(simulation, null, 2) }]
+        };
+      }
+
+      case 'agentcache_memory_store': {
+        const params = MemoryStoreSchema.parse(args);
+        const result = await callAgentCacheAPI('/api/brain/memory/store', 'POST', params);
+        return {
+          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }]
+        };
+      }
+
+      case 'agentcache_memory_recall': {
+        const params = MemoryRecallSchema.parse(args);
+        const result = await callAgentCacheAPI('/api/brain/memory/recall', 'POST', params);
+        return {
+          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }]
+        };
+      }
+
+      case 'agentcache_memory_graph': {
+        const params = MemoryGraphSchema.parse(args);
+        const result = await callAgentCacheAPI(`/api/brain/memory/${params.memoryId}/graph?depth=${params.depth}`, 'GET');
+        return {
+          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }]
         };
       }
 

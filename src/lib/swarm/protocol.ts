@@ -1,5 +1,7 @@
 import { redis } from '../redis.js';
 import { v4 as uuidv4 } from 'uuid';
+import { EventEmitter } from 'events';
+import * as crypto from 'crypto';
 
 export interface AgentTask {
     id: string;
@@ -8,12 +10,13 @@ export interface AgentTask {
     priority: number;
     requester: string;
     timestamp: number;
+    signature?: string;
 }
 
 export interface AgentBid {
     taskId: string;
     agentId: string;
-    bidScore: number; // 0-1, how well suited the agent is
+    bidScore: number;
     timestamp: number;
 }
 
@@ -25,30 +28,85 @@ export interface AgentResult {
     timestamp: number;
 }
 
-export class SwarmNode {
-    public agentId: string;
+export class SwarmNode extends EventEmitter {
+    private agentId: string;
     private capabilities: string[];
+    private subscriber: any; // Redis client for subscription
+    private secretKey: string;
 
-    constructor(agentId: string = uuidv4(), capabilities: string[] = []) {
+    constructor(agentId: string, capabilities: string[] = []) {
+        super();
         this.agentId = agentId;
         this.capabilities = capabilities;
+        this.secretKey = process.env.SWARM_SECRET_KEY || 'default-insecure-dev-key';
+
+        if (this.secretKey === 'default-insecure-dev-key') {
+            console.warn('⚠️  [SwarmNode] Using default SWARM_SECRET_KEY!');
+        }
     }
 
-    /**
-     * Join the swarm: Subscribe to task broadcasts
-     */
+    private signTask(task: Partial<AgentTask>): string {
+        const payloadStr = JSON.stringify(task.payload || {});
+        const data = `${task.id}:${task.type}:${payloadStr}:${task.timestamp}:${task.requester}`;
+        return crypto.createHmac('sha256', this.secretKey).update(data).digest('hex');
+    }
+
+    private verifyTask(task: AgentTask): boolean {
+        if (!task.signature) {
+            console.warn(`[Swarm] 🛑 Dropped unsigned task: ${task.id}`);
+            return false;
+        }
+        const expected = this.signTask(task);
+        if (expected !== task.signature) {
+            console.warn(`[Swarm] 🛑 Dropped invalid signature: ${task.id}`);
+            return false;
+        }
+        const now = Date.now();
+        if (now - task.timestamp > 300000) { // 5 mins
+            console.warn(`[Swarm] 🛑 Dropped expired task: ${task.id}`);
+            return false;
+        }
+        return true;
+    }
+
     async join() {
-        // In a real implementation, we would use a separate Redis connection for subscriptions
-        // For now, we assume the shared redis client can handle it or we'd create a duplicate
-        // But ioredis requires a dedicated connection for subscribers.
-        // So we will rely on the caller to provide a subscriber client or handle it externally for this MVP.
-        // Actually, let's just publish for now.
-        console.log(`[Swarm] Agent ${this.agentId} joined with capabilities: ${this.capabilities.join(', ')}`);
+        // Create duplicate connection for subscription (required by Redis)
+        this.subscriber = redis.duplicate();
+
+        // Subscribe to global task channel
+        await this.subscriber.subscribe('swarm:tasks');
+
+        // Subscribe to results channel (to see when things finish)
+        await this.subscriber.subscribe('swarm:results');
+
+        // Handle incoming messages
+        this.subscriber.on('message', (channel: string, message: string) => {
+            try {
+                const data = JSON.parse(message);
+
+                if (channel === 'swarm:tasks') {
+                    if (this.verifyTask(data)) {
+                        this.emit('task', data);
+                    }
+                } else if (channel === 'swarm:results') {
+                    this.emit('result', data);
+                } else if (channel.includes(':bids')) {
+                    this.emit('bid', data);
+                }
+            } catch (err) {
+                console.error('[Swarm] Failed to parse message:', err);
+            }
+        });
+
+        console.log(`[Swarm] Agent ${this.agentId} joined and listening.`);
     }
 
-    /**
-     * Broadcast a task to the swarm
-     */
+    async listenForBids(taskId: string) {
+        if (this.subscriber) {
+            await this.subscriber.subscribe(`swarm:task:${taskId}:bids`);
+        }
+    }
+
     async broadcastTask(type: string, payload: any, priority: number = 1): Promise<string> {
         const task: AgentTask = {
             id: uuidv4(),
@@ -59,6 +117,13 @@ export class SwarmNode {
             timestamp: Date.now()
         };
 
+        task.signature = this.signTask(task);
+
+        // Subscribe to bids BEFORE publishing the task to avoid race conditions
+        if (this.subscriber) {
+            await this.subscriber.subscribe(`swarm:task:${task.id}:bids`);
+        }
+
         await redis.publish('swarm:tasks', JSON.stringify(task));
         // Also store in a persistent list/stream for reliability
         await redis.lpush('swarm:queue:pending', JSON.stringify(task));
@@ -66,9 +131,6 @@ export class SwarmNode {
         return task.id;
     }
 
-    /**
-     * Submit a bid for a task
-     */
     async bidForTask(taskId: string, score: number) {
         const bid: AgentBid = {
             taskId,
@@ -76,12 +138,10 @@ export class SwarmNode {
             bidScore: score,
             timestamp: Date.now()
         };
+
         await redis.publish(`swarm:task:${taskId}:bids`, JSON.stringify(bid));
     }
 
-    /**
-     * Submit a result for a completed task
-     */
     async submitResult(taskId: string, result: any, status: 'success' | 'failure' = 'success') {
         const res: AgentResult = {
             taskId,
@@ -91,10 +151,10 @@ export class SwarmNode {
             timestamp: Date.now()
         };
 
-        // Publish to results channel
         await redis.publish('swarm:results', JSON.stringify(res));
-
-        // Store result
-        await redis.setex(`swarm:task:${taskId}:result`, 3600, JSON.stringify(res));
+        // Store result persistently (TTL 1 hour)
+        await redis.set(`swarm:task:${taskId}:result`, JSON.stringify(res), 'EX', 3600);
     }
 }
+
+

@@ -147,6 +147,19 @@ app.post('/api/jetty/cache-chunk', wrap(cacheChunkHandler));
 app.get('/api/jetty/cache-chunk', wrap(cacheChunkHandler));
 app.post('/api/jetty/track-upload', wrap(trackUploadHandler));
 
+// Brain Memory Routes (AutoMem Integration)
+import brainMemoryHandler from './api/brain/memory.js';
+
+app.post('/api/brain/memory/store', wrap(brainMemoryHandler));
+app.post('/api/brain/memory/recall', wrap(brainMemoryHandler));
+app.post('/api/brain/memory/associate', wrap(brainMemoryHandler));
+app.get('/api/brain/memory/health', wrap(brainMemoryHandler));
+app.get('/api/brain/memory/enrichment/status', wrap(brainMemoryHandler));
+app.get('/api/brain/memory/:id', wrap(brainMemoryHandler));
+app.patch('/api/brain/memory/:id', wrap(brainMemoryHandler));
+app.delete('/api/brain/memory/:id', wrap(brainMemoryHandler));
+app.get('/api/brain/memory/:id/graph', wrap(brainMemoryHandler));
+
 // JettyThunder Provisioning Webhook
 import jettyThunderProvisionHandler from './api/webhooks/jettythunder-provision.js';
 

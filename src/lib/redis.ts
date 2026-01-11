@@ -1,15 +1,57 @@
 import Redis from 'ioredis';
+import { EventEmitter } from 'events';
 
 const REDIS_URL = process.env.REDIS_URL || process.env.UPSTASH_REDIS_URL;
 
-class MockRedis {
+class MockRedis extends EventEmitter {
   private data = new Map<string, any>();
 
   constructor() {
+    super();
     console.log('⚠️ Using In-Memory Mock Redis');
   }
 
-  on(event: string, cb: any) { return this; }
+  // EventEmitter 'on' is inherited, but we can override if needed, or just let it be.
+  // ioredis connects automatically, so we simulate that
+  connect() {
+    this.emit('connect');
+  }
+
+  duplicate() {
+    // Return a new instance, sharing the same data map for "remote" simulation
+    // In a real mock, we'd want them to share the 'data' store but be separate objects
+    // for events.
+    const other = new MockRedis();
+    other.data = this.data; // Share data
+    // For Pub/Sub to work between instances in memory, we need a shared event bus
+    // or they need to share the same EventEmitter mechanism.
+    // However, simplest way for single-process mock:
+    // When one publishes, we emit on ALL instances?
+    // Or we use a global event bus for the mock.
+    return other;
+  }
+
+  // Shared bus for Pub/Sub across instances
+  static _bus = new EventEmitter();
+
+  async publish(channel: string, message: string) {
+    // console.log(`[MockRedis] Publish to ${channel}: ${message}`);
+    // Emit to global bus
+    MockRedis._bus.emit(channel, message);
+    return 1; // 1 subscriber received it (fake)
+  }
+
+  async subscribe(channel: string, cb?: any) {
+    // console.log(`[MockRedis] Subscribing to ${channel}`);
+    // Listen on global bus
+    MockRedis._bus.on(channel, (message) => {
+      // console.log(`[MockRedis] Received on ${channel}: ${message}`);
+      this.emit('message', channel, message);
+    });
+    if (cb) cb();
+    return 1;
+  }
+
 
   async rpush(key: string, val: string) {
     if (!this.data.has(key)) this.data.set(key, []);
