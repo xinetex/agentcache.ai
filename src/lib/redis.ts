@@ -1,17 +1,33 @@
 import Redis from 'ioredis';
-import { EventEmitter } from 'events';
+
+// import { EventEmitter } from 'events'; // Causing build issues in browser/edge envs
 
 const REDIS_URL = process.env.REDIS_URL || process.env.UPSTASH_REDIS_URL;
 
-class MockRedis extends EventEmitter {
+class MockRedis {
   private data = new Map<string, any>();
+  private listeners = new Map<string, Function[]>();
 
   constructor() {
-    super();
-    console.log('⚠️ Using In-Memory Mock Redis');
+    console.log('⚠️ Using In-Memory Mock Redis (Isomorphic)');
   }
 
-  // EventEmitter 'on' is inherited, but we can override if needed, or just let it be.
+  on(event: string, callback: (...args: any[]) => void) {
+    if (!this.listeners.has(event)) {
+      this.listeners.set(event, []);
+    }
+    this.listeners.get(event)?.push(callback);
+    return this;
+  }
+
+  emit(event: string, ...args: any[]) {
+    const callbacks = this.listeners.get(event);
+    if (callbacks) {
+      callbacks.forEach(cb => cb(...args));
+    }
+    return true;
+  }
+
   // ioredis connects automatically, so we simulate that
   connect() {
     this.emit('connect');
@@ -22,17 +38,24 @@ class MockRedis extends EventEmitter {
     // In a real mock, we'd want them to share the 'data' store but be separate objects
     // for events.
     const other = new MockRedis();
-    other.data = this.data; // Share data
+    other['data'] = this.data; // Share data (hacky private access)
     // For Pub/Sub to work between instances in memory, we need a shared event bus
     // or they need to share the same EventEmitter mechanism.
-    // However, simplest way for single-process mock:
-    // When one publishes, we emit on ALL instances?
-    // Or we use a global event bus for the mock.
     return other;
   }
 
   // Shared bus for Pub/Sub across instances
-  static _bus = new EventEmitter();
+  static _bus = {
+    listeners: new Map<string, Function[]>(),
+    emit(channel: string, message: string) {
+      const cbs = this.listeners.get(channel);
+      if (cbs) cbs.forEach(cb => cb(message));
+    },
+    on(channel: string, cb: Function) {
+      if (!this.listeners.has(channel)) this.listeners.set(channel, []);
+      this.listeners.get(channel)?.push(cb);
+    }
+  };
 
   async publish(channel: string, message: string) {
     // console.log(`[MockRedis] Publish to ${channel}: ${message}`);
@@ -44,7 +67,7 @@ class MockRedis extends EventEmitter {
   async subscribe(channel: string, cb?: any) {
     // console.log(`[MockRedis] Subscribing to ${channel}`);
     // Listen on global bus
-    MockRedis._bus.on(channel, (message) => {
+    MockRedis._bus.on(channel, (message: string) => {
       // console.log(`[MockRedis] Received on ${channel}: ${message}`);
       this.emit('message', channel, message);
     });
@@ -62,6 +85,7 @@ class MockRedis extends EventEmitter {
   async lrange(key: string, start: number, end: number) {
     return this.data.get(key) || [];
   }
+
 
   // Sorted Sets (for PredictiveSynapse)
   async hget(key: string, field: string) {
