@@ -59,6 +59,8 @@ import { patternsRouter } from './api/patterns.js';
 import { geoRouter } from './api/geo.js';
 import cdnRouter from './api/cdn.js';
 import transcodeRouter from './api/transcode.js';
+import brainRouter from './api/brain.js';
+import muscleRouter from './api/muscle.js';
 import { PatternEngine } from './infrastructure/PatternEngine.js';
 
 app.post('/api/provision', provisionClient);
@@ -68,7 +70,14 @@ app.post('/api/provision/jettythunder', provisionJettyThunder);
 // Mount Auth API
 app.route('/api/auth', authRouter);
 
+// Mount Muscle API (JettyThunder)
+app.route('/api/muscle', muscleRouter);
+
+// Mount Brain API (AutoMem)
+app.route('/api/brain', brainRouter);
+
 // Mount Decisions & Galaxy API
+
 // Mount Decisions & Galaxy API
 app.route('/api/decisions', decisionsRouter);
 app.route('/api/galaxy', galaxyRouter);

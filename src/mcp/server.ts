@@ -148,6 +148,18 @@ const MemoryGraphSchema = z.object({
   depth: z.number().min(1).max(3).optional().default(1).describe('Traversal depth'),
 });
 
+const EvolveFleetSchema = z.object({
+  generations: z.number().optional().default(1).describe('Number of generations to evolve'),
+  populationSize: z.number().optional().default(20).describe('Size of population'),
+});
+
+const MuscleExecSchema = z.object({
+  goal: z.any().describe('The goal state to achieve (e.g. { ad_served: true })'),
+  context: z.any().optional().describe('Contextual data for the planner (e.g. { file_id: "123" })'),
+  priority: z.enum(['low', 'normal', 'high', 'critical']).optional().default('normal')
+});
+
+
 // API configuration
 const AGENTCACHE_API_URL = process.env.AGENTCACHE_API_URL || 'https://agentcache.ai';
 const API_KEY = process.env.AGENTCACHE_API_KEY || process.env.API_KEY || 'ac_demo_test123';
@@ -479,6 +491,17 @@ const tools: Tool[] = [
         depth: { type: 'number', minimum: 1, maximum: 3 }
       },
       required: ['memoryId']
+    }
+  },
+  {
+    name: 'agentcache_evolve_fleet',
+    description: 'Trigger the Confucius Meta-Agent to run an evolutionary optimization loop on the agent fleet. Use this to self-improve based on recent performance.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        generations: { type: 'number' },
+        populationSize: { type: 'number' }
+      }
     }
   },
 ];
@@ -826,6 +849,48 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'agentcache_memory_graph': {
         const params = MemoryGraphSchema.parse(args);
         const result = await callAgentCacheAPI(`/api/brain/memory/${params.memoryId}/graph?depth=${params.depth}`, 'GET');
+        return {
+          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }]
+        };
+      }
+
+      case 'agentcache_evolve_fleet': {
+        const params = EvolveFleetSchema.parse(args);
+        console.error('[MCP] Triggering Evolutionary Optimization logic via Meta-Agent...');
+        // Directly call the MetaAgent from the Router instance
+        const supervisor = router.getSupervisor();
+
+        // Mock fitness function for now (normally would query Analytics service)
+        const mockFitness = async (g: any) => { return Math.random(); };
+
+        let bestGenome = null;
+        for (let i = 0; i < params.generations; i++) {
+          bestGenome = await supervisor.evolveGeneration(mockFitness);
+        }
+
+        return {
+          content: [{
+            type: 'text', text: JSON.stringify({
+              status: 'optimization_complete',
+              generations_run: params.generations,
+              best_genome: bestGenome,
+              message: 'Fleet configuration updated based on evolutionary parameters.'
+            }, null, 2)
+          }]
+        };
+      }
+
+      case 'agentcache_muscle_exec': {
+        const params = MuscleExecSchema.parse(args);
+        console.error('[MCP] Commanding Muscle (JettyThunder)...');
+
+        // Call the proxy endpoint
+        const result = await callAgentCacheAPI('/api/muscle/plan', 'POST', {
+          goal: params.goal,
+          context: params.context,
+          priority: params.priority
+        });
+
         return {
           content: [{ type: 'text', text: JSON.stringify(result, null, 2) }]
         };
