@@ -241,6 +241,11 @@ app.post('/api/qchannel/ads/event', wrap(qchannelAdsHandler));
 app.post('/api/qchannel/analytics/view', wrap(qchannelAnalyticsHandler));
 app.get('/api/qchannel/analytics/summary', wrap(qchannelAnalyticsHandler));
 
+// Visuals / Artwork
+import qchannelVisualsHandler from './api/qchannel/visuals.js';
+app.get('/api/qchannel/visuals', wrap(qchannelVisualsHandler));
+app.post('/api/qchannel/visuals', wrap(qchannelVisualsHandler));
+
 // HLS rewrite route for player-friendly URLs
 app.get('/hls/:jobId/:quality/:segment', (req, res, next) => {
     req.query.jobId = req.params.jobId;
