@@ -11,12 +11,10 @@
  */
 
 import React, { useState, useCallback, useMemo, memo } from 'react';
-import { 
-  validateSchema, 
-  sanitizeComponent, 
+import {
+  validateSchema,
+  sanitizeComponent,
   SAFETY_LIMITS,
-  type DynamicViewSchema,
-  type DynamicViewComponent 
 } from '../dynamicview/schema';
 
 // ============================================================================
@@ -148,7 +146,7 @@ const ComponentRenderer = memo(function ComponentRenderer({ component, depth }) 
 
 function ContainerRenderer({ component, depth }) {
   return (
-    <div 
+    <div
       className={`flex ${component.layout === 'horizontal' ? 'flex-row' : 'flex-col'} ${component.style?.className || ''}`}
       style={component.style}
     >
@@ -162,7 +160,7 @@ function ContainerRenderer({ component, depth }) {
 function RowRenderer({ component, depth }) {
   const gap = component.gap ? `gap-${component.gap}` : 'gap-4';
   const align = component.align ? `items-${component.align}` : 'items-start';
-  
+
   return (
     <div className={`flex flex-row ${gap} ${align} ${component.style?.className || ''}`}>
       {component.children?.map((child, i) => (
@@ -175,7 +173,7 @@ function RowRenderer({ component, depth }) {
 function ColumnRenderer({ component, depth }) {
   const gap = component.gap ? `gap-${component.gap}` : 'gap-4';
   const align = component.align ? `items-${component.align}` : 'items-start';
-  
+
   return (
     <div className={`flex flex-col ${gap} ${align} ${component.style?.className || ''}`}>
       {component.children?.map((child, i) => (
@@ -188,7 +186,7 @@ function ColumnRenderer({ component, depth }) {
 function GridRenderer({ component, depth }) {
   const cols = component.columns || 2;
   const gap = component.gap ? `gap-${component.gap}` : 'gap-4';
-  
+
   return (
     <div className={`grid grid-cols-${cols} ${gap} ${component.style?.className || ''}`}>
       {component.children?.map((child, i) => (
@@ -204,7 +202,7 @@ function CardRenderer({ component, depth }) {
     outlined: 'border-2 border-slate-700',
     elevated: 'shadow-lg bg-slate-900'
   };
-  
+
   return (
     <div className={`rounded-lg p-5 ${variantClasses[component.variant || 'default']} ${component.style?.className || ''}`}>
       {component.title && (
@@ -227,7 +225,7 @@ function ButtonRenderer({ component }) {
     secondary: 'bg-slate-700 hover:bg-slate-600 text-slate-100',
     danger: 'bg-rose-600 hover:bg-rose-500 text-white'
   };
-  
+
   return (
     <button
       className={`px-4 py-2 rounded-md font-medium ${variantClasses[component.variant || 'primary']} ${component.style?.className || ''}`}
@@ -244,7 +242,7 @@ function ButtonRenderer({ component }) {
 
 function InputRenderer({ component }) {
   const [value, setValue] = useState(component.value || '');
-  
+
   return (
     <div className="flex flex-col gap-2">
       {component.label && (
@@ -263,7 +261,7 @@ function InputRenderer({ component }) {
 
 function SliderRenderer({ component }) {
   const [value, setValue] = useState(component.value);
-  
+
   return (
     <div className="flex flex-col gap-2">
       {component.label && (
@@ -286,7 +284,7 @@ function SliderRenderer({ component }) {
 
 function ToggleRenderer({ component }) {
   const [checked, setChecked] = useState(component.checked);
-  
+
   return (
     <label className="flex items-center gap-3 cursor-pointer">
       <input
@@ -304,7 +302,7 @@ function ToggleRenderer({ component }) {
 
 function SelectRenderer({ component }) {
   const [value, setValue] = useState(component.value || '');
-  
+
   return (
     <div className="flex flex-col gap-2">
       {component.label && (
@@ -333,14 +331,14 @@ function TextRenderer({ component }) {
     md: 'text-base',
     lg: 'text-lg'
   };
-  
+
   const weightClasses = {
     normal: 'font-normal',
     medium: 'font-medium',
     semibold: 'font-semibold',
     bold: 'font-bold'
   };
-  
+
   return (
     <p className={`text-slate-300 ${sizeClasses[component.size || 'md']} ${weightClasses[component.weight || 'normal']} ${component.style?.className || ''}`}>
       {component.content}
@@ -358,7 +356,7 @@ function HeadingRenderer({ component }) {
     5: 'text-base',
     6: 'text-sm'
   };
-  
+
   return React.createElement(
     Tag,
     { className: `font-bold text-slate-100 ${sizeClasses[component.level]} ${component.style?.className || ''}` },
@@ -374,7 +372,7 @@ function BadgeRenderer({ component }) {
     info: 'bg-sky-500/20 text-sky-300 border-sky-500/40',
     neutral: 'bg-slate-500/20 text-slate-300 border-slate-500/40'
   };
-  
+
   return (
     <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs font-medium ${variantClasses[component.variant || 'neutral']}`}>
       {component.icon && <span>{component.icon}</span>}
@@ -389,13 +387,13 @@ function MetricRenderer({ component }) {
     down: '↘',
     neutral: '→'
   };
-  
+
   const trendColors = {
     up: 'text-emerald-400',
     down: 'text-rose-400',
     neutral: 'text-slate-400'
   };
-  
+
   return (
     <div className={`flex flex-col gap-1 ${component.style?.className || ''}`}>
       <span className="text-xs uppercase tracking-wide text-slate-500">{component.label}</span>
@@ -438,14 +436,14 @@ function ProgressRenderer({ component }) {
     warning: 'bg-amber-500',
     error: 'bg-rose-500'
   };
-  
+
   return (
     <div className="flex flex-col gap-2">
       {component.label && (
         <span className="text-sm text-slate-300">{component.label}</span>
       )}
       <div className="h-2 w-full rounded-full bg-slate-800 overflow-hidden">
-        <div 
+        <div
           className={`h-full ${variantColors[component.variant || 'default']}`}
           style={{ width: `${percentage}%` }}
         />
@@ -458,7 +456,7 @@ function SparklineRenderer({ component }) {
   // Simplified sparkline - connect with real charting library
   const max = Math.max(...component.data);
   const min = Math.min(...component.data);
-  
+
   return (
     <div className="flex items-end gap-0.5 h-8">
       {component.data.map((val, i) => {
@@ -485,7 +483,7 @@ function NodeCardRenderer({ component }) {
     inactive: 'border-slate-700 bg-slate-900',
     error: 'border-rose-500 bg-rose-500/10'
   };
-  
+
   return (
     <div className={`rounded-lg border-2 p-4 ${statusColors[component.status || 'inactive']}`}>
       <div className="flex items-center gap-3 mb-2">

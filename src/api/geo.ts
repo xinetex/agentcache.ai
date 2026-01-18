@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
 import { db } from '../db/client.js';
-import { db } from '../db/client.js';
 import { patterns, requestPatterns } from '../db/schema.js';
 import { desc, like } from 'drizzle-orm';
 import { redis } from '../lib/redis.js';
@@ -9,6 +8,11 @@ const geoRouter = new Hono();
 
 // NYC Center
 const CENTER = { lat: 40.7128, lon: -74.0060 };
+
+interface CachedMeshState {
+    density: number;
+    camera: string;
+}
 
 /**
  * GET /nodes
@@ -26,11 +30,12 @@ geoRouter.get('/nodes', async (c) => {
         // Fetch Global Solar State
         const solarState = await redis.get('mesh:global:solar') || '1.0';
 
-        const nodes = allPatterns.map((p, index) => {
+        const nodes = await Promise.all(allPatterns.map(async (p, index) => {
             // Deterministic pseudo-random location based on ID
             const hash = p.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
 
             let lat, lon, type;
+            let cachedState: CachedMeshState | null = null;
 
             if (p.name.includes('Traffic')) {
                 // Grid layout for traffic sensors
@@ -42,7 +47,6 @@ geoRouter.get('/nodes', async (c) => {
                 // MESH CACHE LOOKUP
                 // Try to get real-time state from Redis Mesh
                 // Note: In a high-perf scenario we would use MGET for all IDs at start, but loop is fine for MVP.
-                let cachedState = null;
                 try {
                     const rawMesh = await redis.get(`mesh:node:${p.id}`);
                     if (rawMesh) cachedState = JSON.parse(rawMesh);
@@ -70,7 +74,7 @@ geoRouter.get('/nodes', async (c) => {
                 intent: p.intent,
                 camera: resolvedCamera
             };
-        });
+        }));
 
         return c.json({
             nodes,

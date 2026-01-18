@@ -4,7 +4,7 @@ import { organizations, users, members, apiKeys } from '../db/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { authMiddleware, requireRole } from './auth.js';
 
-const app = new Hono();
+const app = new Hono<{ Variables: { user: any } }>();
 
 // Apply Auth Middleware to all routes
 app.use('*', authMiddleware);

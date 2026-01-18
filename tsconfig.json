@@ -12,6 +12,8 @@
     "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "allowJs": true,
+    "jsx": "react-jsx",
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "declaration": true,

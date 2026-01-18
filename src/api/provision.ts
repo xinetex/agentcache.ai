@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { generateApiKey, createNamespace, recordInstallation } from '../services/provisioning';
+import { generateApiKey, createNamespace, recordInstallation } from '../services/provisioning.js';
 
 /**
  * POST /api/provision
@@ -99,7 +99,7 @@ export async function getApiKeyInfo(req: Request, res: Response) {
     const { api_key } = req.params;
 
     // Import validateApiKey
-    const { validateApiKey } = await import('../services/provisioning');
+    const { validateApiKey } = await import('../services/provisioning.js');
     const keyInfo = await validateApiKey(api_key);
 
     if (!keyInfo) {

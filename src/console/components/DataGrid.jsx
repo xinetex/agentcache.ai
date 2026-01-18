@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DataGrid = ({ columns, data, onRowClick }) => {
+const DataGrid = ({ columns, data, onRowClick = undefined }) => {
     return (
         <div className="w-full overflow-x-auto">
             <table className="w-full text-left border-collapse">

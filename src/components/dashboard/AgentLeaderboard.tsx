@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Trophy, Activity, Zap, Server } from 'lucide-react';
-import CyberCard from '../../console/components/CyberCard';
-import DataGrid from '../../console/components/DataGrid';
+import CyberCard from '../../console/components/CyberCard.jsx';
+import DataGrid from '../../console/components/DataGrid.jsx';
 import { motion } from 'framer-motion';
 
 export default function AgentLeaderboard() {

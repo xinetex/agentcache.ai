@@ -14,12 +14,24 @@ import { canUseNamespace, isTTLAllowed, getFeatureLimit } from './lib/tierChecke
 import { stableStringify, stableHash } from './lib/stable-json.js';
 import { generateEmbedding } from './lib/llm/embeddings.js';
 import { upsertMemory, queryMemory } from './lib/vector.js';
-import bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcryptjs';
 import { neon } from '@neondatabase/serverless';
 
 const sql = neon(process.env.DATABASE_URL || '');
 
-export const app = new Hono();
+type Variables = {
+  apiKey: string;
+  tier: string;
+  tierFeatures: any;
+  usage: {
+    exceeded: boolean;
+    used: number;
+    quota: number;
+    remaining: number;
+  };
+};
+
+export const app = new Hono<{ Variables: Variables }>();
 const contextManager = new ContextManager();
 
 // Initialize Anti-Cache components
@@ -609,7 +621,7 @@ app.post('/api/listeners/register', async (c) => {
     }
 
     // Register listener
-    const listenerId = urlMonitor.registerListener({
+    const listenerId = await urlMonitor.registerListener({
       url,
       checkInterval,
       namespace,
@@ -618,7 +630,7 @@ app.post('/api/listeners/register', async (c) => {
       enabled: true
     });
 
-    const listener = urlMonitor.getListener(listenerId);
+    const listener = await urlMonitor.getListener(listenerId);
 
     return c.json({
       success: true,
@@ -643,7 +655,7 @@ app.get('/api/listeners', async (c) => {
   if (authError) return authError;
 
   try {
-    const listeners = urlMonitor.getAllListeners();
+    const listeners = await urlMonitor.getAllListeners();
 
     return c.json({
       listeners: listeners.map(l => ({

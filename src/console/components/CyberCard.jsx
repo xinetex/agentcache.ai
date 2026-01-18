@@ -1,6 +1,6 @@
 import React from 'react';
 
-const CyberCard = ({ title, children, className = '', icon: Icon, action }) => {
+const CyberCard = ({ title, children, className = '', icon: Icon, action = null }) => {
     return (
         <div className={`relative group bg-[var(--hud-panel-bg)] border border-[var(--hud-border)] rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,243,255,0.1)] hover:border-[var(--hud-accent)] ${className}`}>
 
