@@ -98,6 +98,14 @@ export class ContextManager {
     }
 
     /**
+     * Security: Validate input before processing.
+     * Prevents "Reprompt" and Injection attacks by checking content before execution.
+     */
+    async validateInput(content: string): Promise<{ valid: boolean; reason?: string }> {
+        return this.cognitiveEngine.detectInjection(content);
+    }
+
+    /**
      * assemblePrompt
      * Enforces strict ordering for Prefix Caching:
      * [System Prompt] + [Tools] + [L3 Memories] + [L2 History]

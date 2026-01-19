@@ -476,6 +476,17 @@ app.post('/api/agent/chat', async (c) => {
       return c.json({ error: 'Missing sessionId or message' }, 400);
     }
 
+    // 0. Security: Pre-execution Input Validation (Reprompt Protection)
+    // We check this BEFORE fetching context or calling the LLM to prevent extraction attacks.
+    const securityCheck = await contextManager.validateInput(message);
+    if (!securityCheck.valid) {
+      console.warn(`[Security] Blocked Reprompt/Injection attempt: ${securityCheck.reason}`);
+      return c.json({
+        error: 'Input rejected by security guardrails',
+        reason: securityCheck.reason
+      }, 403);
+    }
+
     // 1. Get Context (with optional Freshness Bypass)
     const context = await contextManager.getContext(sessionId, message, { freshness });
 
