@@ -12,6 +12,7 @@ import { Redis } from '@upstash/redis';
 export interface MoonshotMessage {
     role: 'system' | 'user' | 'assistant';
     content: string;
+    reasoning_content?: string; // Support for Kimi's reasoning output
 }
 
 export interface MoonshotResponse {
@@ -53,7 +54,7 @@ export class MoonshotClient {
     async chat(
         messages: MoonshotMessage[],
         model: string = 'moonshot-v1-8k',
-        temperature: number = 0.3
+        temperature?: number
     ): Promise<MoonshotResponse> {
         if (!this.apiKey) {
             throw new Error('Moonshot API key is missing');

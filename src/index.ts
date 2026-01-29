@@ -103,10 +103,14 @@ app.route('/api/geo', geoRouter);
 app.route('/api/cdn', cdnRouter);
 app.route('/api/transcode', transcodeRouter);
 
+import pipelineRouter from './api/pipeline.js';
+app.route('/api/pipeline', pipelineRouter);
+
 // Serve static files (landing page - defaults to community.html)
 app.get('/', (c) => {
   return c.redirect('/community.html');
 });
+
 app.use('/*', serveStatic({ root: './public' }));
 
 // Types
@@ -502,31 +506,29 @@ app.post('/api/agent/chat', async (c) => {
       }
     ];
 
-    // 3. Call Moonshot AI (with reasoning token caching)
-    // If MOONSHOT_API_KEY is not set, we'll fall back to local simulation
+    // 3. Call AI Provider (via Factory)
     let aiResponse: string;
-    let reasoningMetadata = {};
+    let reasoningMetadata: any = {};
+    const { provider = 'moonshot', model } = await c.req.json(); // Default to moonshot for back-compat
 
-    if (process.env.MOONSHOT_API_KEY) {
-      try {
-        const { MoonshotClient } = await import('./lib/moonshot.js');
-        const client = new MoonshotClient(process.env.MOONSHOT_API_KEY);
+    try {
+      // Dynamic Import of Factory to avoid circular deps if any
+      const { LLMFactory } = await import('./lib/llm/factory.js');
+      const llm = LLMFactory.createProvider(provider as any);
 
-        const moonshotResponse = await client.chat(llmMessages as any, 'moonshot-v1-128k', 0.7);
+      const response = await llm.chat(llmMessages, { model });
 
-        aiResponse = moonshotResponse.choices[0].message.content;
-        reasoningMetadata = {
-          reasoningTokens: moonshotResponse.usage.reasoning_tokens || 0,
-          cacheHit: false, // Client doesn't expose this yet, would need header inspection
-          model: moonshotResponse.model
-        };
-      } catch (error: any) {
-        console.error('[Moonshot] API call failed, falling back to simulation:', error.message);
-        aiResponse = `[Simulated AI Response to: "${message}"]`;
-      }
-    } else {
-      // Fallback: Simulated response if Moonshot key not configured
-      aiResponse = `[Simulated AI Response to: "${message}"]`;
+      aiResponse = response.content;
+      reasoningMetadata = {
+        ...response.usage,
+        model: response.model,
+        provider: response.provider,
+        citations: response.metadata?.citations // Capture Perplexity citations
+      };
+
+    } catch (error: any) {
+      console.error(`[${provider}] API call failed:`, error.message);
+      aiResponse = `[Error from ${provider}: ${error.message}]`;
     }
 
     // 4. Save Interaction (Write-Through with reasoning metadata)

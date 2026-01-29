@@ -14,6 +14,8 @@ function WizardModalNew({ sector, config, onClose, onComplete }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [datasetStats, setDatasetStats] = useState(null);
+  const [reasoning, setReasoning] = useState(''); // New state for Thinking Process
+  const [generatedPipeline, setGeneratedPipeline] = useState(null); // Store temporarily
 
   // Example suggestions based on AgentCache use cases
   const exampleSuggestions = [
@@ -144,7 +146,10 @@ function WizardModalNew({ sector, config, onClose, onComplete }) {
       const data = await response.json();
 
       if (data.success && data.pipeline) {
-        onComplete(data.pipeline);
+        setGeneratedPipeline(data.pipeline);
+        setReasoning(data.reasoning || ''); // Capture reasoning
+        setLoading(false);
+        setStep(5); // Go to review step instead of completing immediately
       } else {
         throw new Error(data.error || 'Failed to generate pipeline');
       }
@@ -176,9 +181,9 @@ function WizardModalNew({ sector, config, onClose, onComplete }) {
             <div className="step-indicator">
               <span className="step-number">{step}</span>
               <span className="step-label">
-                {step === 1 ? 'Use case' : step === 2 ? 'Analyze' : step === 3 ? 'Optimize' : 'Generate'}
+                {step === 1 ? 'Use case' : step === 2 ? 'Analyze' : step === 3 ? 'Optimize' : step === 5 ? 'Review' : 'Generate'}
               </span>
-              <span className="step-total">/ 4</span>
+              <span className="step-total">/ 5</span>
             </div>
             <button className="close-btn-new" onClick={onClose}>
               ✕
@@ -428,6 +433,63 @@ function WizardModalNew({ sector, config, onClose, onComplete }) {
               ) : null}
             </div>
           )}
+
+          {step === 5 && (
+            <div className="wizard-step-new">
+              <div className="step-header">
+                <h3>Pipeline Generated</h3>
+                <p>Review the AI's design and reasoning before applying.</p>
+              </div>
+
+              {reasoning && (
+                <div className="reasoning-block" style={{
+                  background: 'rgba(0,0,0,0.3)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '8px',
+                  padding: '15px',
+                  marginTop: '15px',
+                  fontFamily: 'monospace'
+                }}>
+                  <details open>
+                    <summary style={{
+                      cursor: 'pointer',
+                      color: '#a855f7',
+                      fontWeight: 'bold',
+                      fontSize: '0.9rem',
+                      marginBottom: '10px'
+                    }}>
+                      🧠 Thinking Process (Kimi K2.5)
+                    </summary>
+                    <div style={{
+                      whiteSpace: 'pre-wrap',
+                      color: '#ccc',
+                      fontSize: '0.85rem',
+                      lineHeight: '1.5',
+                      paddingTop: '10px',
+                      borderTop: '1px solid rgba(255,255,255,0.05)'
+                    }}>
+                      {reasoning}
+                    </div>
+                  </details>
+                </div>
+              )}
+
+              <div className="pipeline-preview" style={{ marginTop: '20px' }}>
+                <h4 style={{ color: '#fff', fontSize: '0.9rem', marginBottom: '10px' }}>Configuration Preview:</h4>
+                <div style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  padding: '10px',
+                  borderRadius: '4px',
+                  fontSize: '0.8rem',
+                  color: '#aaa'
+                }}>
+                  <p><strong>Name:</strong> {generatedPipeline?.name}</p>
+                  <p><strong>Nodes:</strong> {generatedPipeline?.nodes?.length}</p>
+                  <p><strong>Est. Savings:</strong> {generatedPipeline?.estimatedSavings}</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -441,14 +503,14 @@ function WizardModalNew({ sector, config, onClose, onComplete }) {
             <span>You can modify data sources, models, and latency targets in later steps.</span>
           </div>
           <div className="footer-actions">
-            {step > 1 && step < 4 && (
+            {step > 1 && step !== 4 && (
               <button className="btn-new btn-secondary-new" onClick={() => setStep(step - 1)}>
                 Back
               </button>
             )}
-            {step < 4 && (
-              <button className="btn-new btn-primary-new" onClick={handleNext}>
-                <span>{step === 3 ? 'Generate Pipeline' : 'Next'}</span>
+            {step !== 4 && (
+              <button className="btn-new btn-primary-new" onClick={step === 5 ? () => onComplete(generatedPipeline) : handleNext}>
+                <span>{step === 3 ? 'Generate Pipeline' : step === 5 ? 'Apply to Studio' : 'Next'}</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="5" y1="12" x2="19" y2="12" />
                   <polyline points="12 5 19 12 12 19" />
@@ -458,7 +520,7 @@ function WizardModalNew({ sector, config, onClose, onComplete }) {
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 }
 

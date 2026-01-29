@@ -405,6 +405,7 @@ export default async function handler(req) {
       traceId,
       response,
       reasoning: reasoning.tokens > 0 ? reasoning : null,
+      reasoning_content: moonshotData.choices[0].message.reasoning_content || null, // Pass reasoning text to client
       latency_ms: latency,
       cached: true
     });

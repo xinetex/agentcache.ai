@@ -32,7 +32,10 @@ export class MoonshotProvider implements LLMProvider {
                 totalTokens: response.usage.total_tokens
             },
             model: response.model,
-            provider: 'moonshot'
+            provider: 'moonshot',
+            metadata: {
+                reasoning_content: choice.message.reasoning_content
+            }
         };
     }
 }

@@ -13,6 +13,7 @@ export interface CompletionResponse {
     };
     model: string;
     provider: string;
+    metadata?: Record<string, any>;
 }
 
 export interface LLMProvider {
