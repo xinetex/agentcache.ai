@@ -44,6 +44,20 @@ const freshnessRules = new antiCache.FreshnessRuleEngine();
 const patternEngine = new PatternEngine();
 patternEngine.listen();
 
+// CRITICAL DEBUG ENDPOINT (Zero Deps)
+app.get('/api/debug-env', (c) => {
+  return c.json({
+    status: 'alive',
+    env: {
+      node_env: process.env.NODE_ENV,
+      has_db_url: !!process.env.DATABASE_URL,
+      has_redis: !!process.env.REDIS_URL || !!process.env.UPSTASH_REDIS_URL,
+      has_jwt: !!process.env.JWT_SECRET,
+      has_admin: !!process.env.ADMIN_TOKEN
+    }
+  });
+});
+
 // Global Error Handler
 app.onError((err, c) => {
   console.error('[Global Error]', err);
