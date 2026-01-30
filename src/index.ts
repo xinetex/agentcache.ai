@@ -44,6 +44,16 @@ const freshnessRules = new antiCache.FreshnessRuleEngine();
 const patternEngine = new PatternEngine();
 patternEngine.listen();
 
+// Global Error Handler
+app.onError((err, c) => {
+  console.error('[Global Error]', err);
+  return c.json({
+    error: 'Internal Server Error',
+    message: err.message,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  }, 500);
+});
+
 // Environment
 const PORT = process.env.PORT || 3001;
 
@@ -76,8 +86,12 @@ import brainRouter from './api/brain.js';
 import muscleRouter from './api/muscle.js';
 import { PatternEngine } from './infrastructure/PatternEngine.js';
 import { authenticateApiKey } from './middleware/auth.js';
+import contentRouter from './api/content.js';
 
 app.post('/api/provision', provisionClient);
+// ...
+// Mount Content API for Bento Grid
+app.route('/api/content', contentRouter);
 app.get('/api/provision/:api_key', getApiKeyInfo);
 app.post('/api/provision/jettythunder', provisionJettyThunder);
 
