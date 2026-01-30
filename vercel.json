@@ -93,6 +93,18 @@
     {
       "source": "/cdn/stream/:path*",
       "destination": "/api/cdn/stream?path=:path*"
+    },
+    {
+      "source": "/admin",
+      "destination": "/admin.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/login.html"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index"
     }
   ],
   "headers": [
