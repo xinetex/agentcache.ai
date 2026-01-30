@@ -127,7 +127,8 @@ export async function authenticateApiKey(c: any) {
         return null; // Next
     } catch (error: any) {
         console.error('[Auth] Error:', error);
-        // Allow request on error (fail open) with free tier defaults
+        // On critical DB failure, we can either fail open (free tier) or closed.
+        // Failing open allows site to work even if DB is down.
         c.set('apiKey', apiKey);
         c.set('tier', 'free');
         c.set('tierFeatures', getTierFeatures('free'));

@@ -27,7 +27,8 @@ app.get('/users', async (c) => {
 
         return c.json({ users: allUsers });
     } catch (e: any) {
-        return c.json({ error: e.message }, 500);
+        console.error('[AdminStats:Users] Error:', e);
+        return c.json({ error: 'Database Error', details: e.message }, 500);
     }
 });
 
