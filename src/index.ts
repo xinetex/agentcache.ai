@@ -65,6 +65,7 @@ import explorerRouter from './api/explorer.js';
 import governanceRouter from './api/governance.js';
 import labRouter from './api/lab.js';
 import authRouter from './api/auth.js';
+import billingRouter from './api/billing.js';
 import adminStatsRouter from './api/admin-stats.js';
 import eventsRouter from './api/events.js';
 import { patternsRouter } from './api/patterns.js';
@@ -81,6 +82,7 @@ app.post('/api/provision/jettythunder', provisionJettyThunder);
 
 // Mount Auth API
 app.route('/api/auth', authRouter);
+app.route('/api/billing', billingRouter);
 
 // Mount Muscle API (JettyThunder)
 app.route('/api/muscle', muscleRouter);
@@ -121,7 +123,7 @@ app.get('/', (c) => {
 });
 
 // Clean URL Redirects
-app.get('/admin', (c) => c.redirect('/admin.html'));
+app.get('/admin', (c) => c.redirect('/mission-control.html'));
 app.get('/login', (c) => c.redirect('/login.html'));
 app.get('/dashboard', (c) => c.redirect('/dashboard.html'));
 app.get('/reset-password', (c) => c.redirect('/reset-password.html'));
@@ -776,25 +778,7 @@ app.get('/api/pricing', (c) => {
   return c.json({ tiers });
 });
 
-/**
- * POST /api/auth/signup - Coming soon
- */
-app.post('/api/auth/signup', async (c) => {
-  const body = await c.req.json();
-  const { email } = body;
 
-  // Store in Redis for waitlist
-  if (email) {
-    await redis.sadd('waitlist', email);
-  }
-
-  return c.json({
-    success: true,
-    message: 'Thanks for your interest! We\'ll email you when auth is ready.',
-    demoKey: 'ac_demo_test123',
-    note: 'Use this demo key to test the API now',
-  });
-});
 
 /**
  * POST /api/edges/optimal - Get optimal edge locations for file upload

@@ -1,23 +1,20 @@
 import { Hono } from 'hono';
-import { neon } from '@neondatabase/serverless';
+import { db } from '../db/client.js';
+import { lanes, cards } from '../db/schema.js';
+import { asc } from 'drizzle-orm';
 
-const contentRouter = new Hono();
+const contentRouter = new Hono<{ Variables: { user: any } }>();
 
 contentRouter.get('/', async (c) => {
     try {
-        if (!process.env.DATABASE_URL) {
-            throw new Error('DATABASE_URL is not configured');
-        }
-        const sql = neon(process.env.DATABASE_URL);
-
-        const [lanes, cards] = await Promise.all([
-            sql`SELECT id, title, size, speed FROM lanes ORDER BY id`,
-            sql`SELECT id, lane_id as "laneId", template, data FROM cards`
+        const [lanesData, cardsData] = await Promise.all([
+            db.select().from(lanes).orderBy(asc(lanes.id)),
+            db.select().from(cards)
         ]);
 
         return c.json({
-            lanes,
-            cards
+            lanes: lanesData,
+            cards: cardsData
         });
     } catch (error: any) {
         console.error('Failed to fetch Bento content:', error);
@@ -45,17 +42,24 @@ contentRouter.post('/card', async (c) => {
     }
 
     try {
-        if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL missing');
-        const sql = neon(process.env.DATABASE_URL);
+        await db.insert(cards).values({
+            id,
+            laneId,
+            template: template || 'standard',
+            data: data
+        })
+            .onConflictDoUpdate({
+                target: cards.id,
+                set: {
+                    laneId,
+                    template,
+                    data
+                }
+            });
 
-        await sql`
-            INSERT INTO cards (id, lane_id, template, data)
-            VALUES (${id}, ${laneId}, ${template || 'standard'}, ${JSON.stringify(data)})
-            ON CONFLICT (id) DO UPDATE
-            SET lane_id = EXCLUDED.lane_id, template = EXCLUDED.template, data = EXCLUDED.data
-        `;
         return c.json({ success: true, id });
     } catch (error: any) {
+        console.error('Failed to specific card:', error);
         return c.json({ error: error.message }, 500);
     }
 });

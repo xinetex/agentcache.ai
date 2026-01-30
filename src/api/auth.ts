@@ -5,7 +5,11 @@ import { users, members, organizations } from '../db/schema.js';
 import { eq, and } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 
-const app = new Hono();
+type Variables = {
+    user: any;
+};
+
+const app = new Hono<{ Variables: Variables }>();
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_do_not_use_in_prod';
 
 // --- Middleware: Protect Routes ---
@@ -155,6 +159,113 @@ app.post('/dev-login', async (c) => {
 
     const token = await sign(payload, JWT_SECRET);
     return c.json({ token, user: payload });
+});
+
+// --- Endpoint: Signup ---
+app.post('/signup', async (c) => {
+    try {
+        const { email, password, name } = await c.req.json();
+
+        if (!email || !password) {
+            return c.json({ error: 'Email and password required' }, 400);
+        }
+
+        if (password.length < 8) {
+            return c.json({ error: 'Password must be at least 8 characters' }, 400);
+        }
+
+        // Check existing
+        const existing = await db.select().from(users).where(eq(users.email, email.toLowerCase())).limit(1);
+        if (existing.length > 0) {
+            return c.json({ error: 'User already exists' }, 409);
+        }
+
+        // Hash password
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        // 1. Create User
+        const [newUser] = await db.insert(users).values({
+            email: email.toLowerCase(),
+            passwordHash,
+            name: name || email.split('@')[0],
+            role: 'user',
+            plan: 'free'
+        }).returning();
+
+        // 2. Create Default Organization
+        const [newOrg] = await db.insert(organizations).values({
+            name: `${newUser.name}'s Org`,
+            plan: 'free'
+        }).returning();
+
+        // 3. Add Member
+        await db.insert(members).values({
+            userId: newUser.id,
+            orgId: newOrg.id,
+            role: 'owner'
+        });
+
+        // 4. Generate Token
+        const payload = {
+            id: newUser.id,
+            email: newUser.email,
+            role: newUser.role,
+            orgId: newOrg.id,
+            plan: newUser.plan,
+            exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 // 24h
+        };
+
+        const token = await sign(payload, JWT_SECRET);
+
+        return c.json({
+            token,
+            user: {
+                id: newUser.id,
+                email: newUser.email,
+                name: newUser.name,
+                role: newUser.role,
+                plan: newUser.plan
+            }
+        }, 201);
+
+    } catch (error: any) {
+        console.error('[Auth] Signup error:', error);
+        return c.json({ error: 'Internal Server Error', details: error.message }, 500);
+    }
+});
+
+// --- Endpoint: Get Current User ---
+app.get('/me', authMiddleware, async (c) => {
+    const user = c.get('user'); // From JWT
+
+    // Refresh data from DB
+    const usersFound = await db.select().from(users).where(eq(users.id, user.id)).limit(1);
+    const dbUser = usersFound[0];
+
+    if (!dbUser) return c.json({ error: 'User not found' }, 404);
+
+    // Get Org Info
+    const member = await db.select({
+        role: members.role,
+        orgId: members.orgId,
+        orgName: organizations.name
+    })
+        .from(members)
+        .innerJoin(organizations, eq(members.orgId, organizations.id))
+        .where(eq(members.userId, user.id))
+        .limit(1);
+
+    return c.json({
+        user: {
+            id: dbUser.id,
+            email: dbUser.email,
+            name: dbUser.name,
+            role: dbUser.role,
+            plan: dbUser.plan,
+            avatarUrl: dbUser.avatarUrl
+        },
+        organization: member[0] || null
+    });
 });
 
 export default app;

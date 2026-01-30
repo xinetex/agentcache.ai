@@ -10,6 +10,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&family=JetBrains+Mono:wght@400;600&display=swap"
         rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -60,7 +61,7 @@
     <div id="dashboard" class="hidden p-8 max-w-7xl mx-auto">
 
         <!-- Header -->
-        <header class="flex justify-between items-center mb-12">
+        <header class="flex justify-between items-center mb-8">
             <div>
                 <h1 class="text-3xl font-black tracking-tighter uppercase">Mission Control</h1>
                 <div class="flex items-center gap-2 mt-2">
@@ -80,15 +81,75 @@
             </div>
         </header>
 
-        <!-- Content Editor -->
-        <main id="editor-grid" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <!-- Navigation Tabs -->
+        <div class="flex border-b border-slate-700 mb-8 gap-8">
+            <button onclick="switchTab('content')" id="tab-content"
+                class="pb-4 border-b-2 border-cyan-500 text-cyan-500 font-bold uppercase tracking-widest text-sm transition">
+                Content Grid
+            </button>
+            <button onclick="switchTab('users')" id="tab-users"
+                class="pb-4 border-b-2 border-transparent text-slate-400 hover:text-white font-bold uppercase tracking-widest text-sm transition">
+                User Management
+            </button>
+            <button onclick="switchTab('analytics')" id="tab-analytics"
+                class="pb-4 border-b-2 border-transparent text-slate-400 hover:text-white font-bold uppercase tracking-widest text-sm transition">
+                Analytics
+            </button>
+        </div>
+
+        <!-- VIEW: Content Grid -->
+        <main id="view-content" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             <!-- Cards Injected Here -->
             <div class="col-span-full py-12 text-center text-slate-500 animate-pulse">Loading Neural Network...</div>
         </main>
 
+        <!-- VIEW: User Management -->
+        <main id="view-users" class="hidden">
+            <div class="card rounded-xl overflow-hidden">
+                <table class="w-full text-left text-sm text-slate-400">
+                    <thead class="bg-slate-800/50 text-xs uppercase font-mono text-slate-200">
+                        <tr>
+                            <th class="p-4">User</th>
+                            <th class="p-4">Role</th>
+                            <th class="p-4">Plan</th>
+                            <th class="p-4">Joined</th>
+                            <th class="p-4 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body" class="divide-y divide-slate-800">
+                        <tr>
+                            <td colspan="5" class="p-8 text-center">Loading Users...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+
+        <!-- VIEW: Analytics -->
+        <main id="view-analytics" class="hidden space-y-8">
+            <!-- Stats Row -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6" id="stats-row">
+                <!-- Injected via JS -->
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="card p-6 rounded-xl">
+                    <h3 class="text-sm font-mono text-slate-400 uppercase mb-4">Traffic Growth (7 Days)</h3>
+                    <canvas id="growthChart"></canvas>
+                </div>
+                <div class="card p-6 rounded-xl">
+                    <h3 class="text-sm font-mono text-slate-400 uppercase mb-4">Top Users (Score)</h3>
+                    <div id="top-users-list" class="space-y-4">
+                        <!-- Injected -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
     </div>
 
-    <!-- Edit Modal -->
+    <!-- Edit Modal (Content) -->
     <div id="edit-modal"
         class="hidden fixed inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-sm">
         <div class="card p-8 rounded-xl max-w-lg w-full shadow-2xl relative">
@@ -135,16 +196,13 @@
     <script>
         // Icons
         lucide.createIcons();
-
-        // State
         let contentData = null;
+        let chartInstance = null;
 
-        // Auth Logic
+        // --- AUTH ---
         function authenticate() {
             const token = document.getElementById('admin-token').value;
             if (token) {
-                // In a real app we'd verify the token with an API call here
-                // For this prototype we assume client-side checking or let the API reject invalid tokens on save
                 localStorage.setItem('admin_token', token);
                 document.getElementById('auth-modal').classList.add('hidden');
                 document.getElementById('dashboard').classList.remove('hidden');
@@ -157,38 +215,54 @@
             location.reload();
         }
 
-        // Check Access
         if (localStorage.getItem('admin_token')) {
             document.getElementById('auth-modal').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
             loadContent();
         }
 
-        // Load Content
+        // --- TABS ---
+        function switchTab(tabId) {
+            // Update Buttons
+            document.querySelectorAll('button[id^="tab-"]').forEach(el => {
+                el.classList.remove('border-cyan-500', 'text-cyan-500');
+                el.classList.add('border-transparent', 'text-slate-400');
+            });
+            const btn = document.getElementById(`tab-${tabId}`);
+            btn.classList.remove('border-transparent', 'text-slate-400');
+            btn.classList.add('border-cyan-500', 'text-cyan-500');
+
+            // Update Views
+            document.querySelectorAll('main[id^="view-"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+
+            // Lazy Load
+            if (tabId === 'users') loadUsers();
+            if (tabId === 'analytics') loadAnalytics();
+        }
+
+
+        // --- CONTENT GRID ---
         async function loadContent() {
             try {
+                // Public endpoint, but update requires token
                 const res = await fetch('/api/content');
                 contentData = await res.json();
                 renderEditor();
             } catch (err) {
-                console.error("Fetch Error:", err);
-                alert("Failed to load content channels.");
+                console.error(err);
             }
         }
 
-        // Render Grid
         function renderEditor() {
-            const grid = document.getElementById('editor-grid');
+            const grid = document.getElementById('view-content');
             grid.innerHTML = '';
-
-            // Group by Lane
             const lanes = ['mission', 'usecases', 'pricing', 'stats'];
 
             lanes.forEach(laneId => {
                 const laneCards = contentData.cards.filter(c => c.laneId === laneId);
                 const laneTitle = contentData.lanes.find(l => l.id === laneId)?.title || laneId.toUpperCase();
 
-                // Lane Header
                 const laneHeader = document.createElement('div');
                 laneHeader.className = "col-span-full mt-8 mb-4 border-b border-slate-800 pb-2 flex items-baseline justify-between";
                 laneHeader.innerHTML = `
@@ -197,14 +271,12 @@
                 `;
                 grid.appendChild(laneHeader);
 
-                // Cards
                 laneCards.forEach(card => {
                     const cardEl = document.createElement('div');
                     cardEl.className = "card p-6 rounded-xl group hover:border-cyan-500/50 transition cursor-pointer relative overflow-hidden";
                     cardEl.onclick = () => openEdit(card.id);
-
-                    // Preview Logic
-                    let preview = '';
+                    
+                     let preview = '';
                     if (card.template === 'hero') {
                         preview = `
                             <div class="text-[10px] text-cyan-500 font-mono mb-2">${card.data.subtitle}</div>
@@ -236,23 +308,19 @@
                     grid.appendChild(cardEl);
                 });
             });
-
             lucide.createIcons();
         }
 
-        // Edit Content
+        // --- EDIT LOGIC ---
         function openEdit(cardId) {
             const card = contentData.cards.find(c => c.id === cardId);
             if (!card) return;
-
             document.getElementById('edit-id').value = card.id;
             document.getElementById('edit-lane').value = card.laneId;
             document.getElementById('edit-template').value = card.template;
-
             document.getElementById('edit-subtitle').value = card.data.subtitle || '';
             document.getElementById('edit-title').value = card.data.title || '';
             document.getElementById('edit-content').value = card.data.content || '';
-
             document.getElementById('edit-modal').classList.remove('hidden');
         }
 
@@ -273,10 +341,7 @@
                 subtitle: document.getElementById('edit-subtitle').value,
                 title: document.getElementById('edit-title').value,
                 content: document.getElementById('edit-content').value,
-                // Preserve image if exists but not editable in this v1
-                image: contentData.cards.find(c => c.id === id)?.data.image
             };
-
             const payload = { id, laneId, template, data };
 
             try {
@@ -288,16 +353,13 @@
                     },
                     body: JSON.stringify(payload)
                 });
-
                 if (res.ok) {
-                    // Update local state optimistic
                     const idx = contentData.cards.findIndex(c => c.id === id);
                     if (idx !== -1) contentData.cards[idx] = payload;
-
                     renderEditor();
                     closeEdit();
                 } else {
-                    alert('Transmission Failed. Check console.');
+                    alert('Save Failed');
                 }
             } catch (e) {
                 console.error(e);
@@ -305,6 +367,112 @@
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
+            }
+        }
+
+
+        // --- USERS LOAD ---
+        async function loadUsers() {
+            const token = localStorage.getItem('admin_token');
+            try {
+                const res = await fetch('/api/admin-stats/users', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error("Auth Failed");
+                const data = await res.json();
+                
+                const tbody = document.getElementById('users-table-body');
+                tbody.innerHTML = data.users.map(u => `
+                    <tr class="hover:bg-slate-800/50 transition">
+                        <td class="p-4 flex items-center gap-3">
+                            <div class="h-8 w-8 rounded-full bg-slate-700 flex items-center justify-center font-bold text-xs">
+                                ${u.name.charAt(0)}
+                            </div>
+                            <div>
+                                <div class="font-medium text-white">${u.name}</div>
+                                <div class="text-xs text-slate-500">${u.email}</div>
+                            </div>
+                        </td>
+                        <td class="p-4"><span class="bg-slate-800 px-2 py-1 rounded text-xs font-mono uppercase">${u.role}</span></td>
+                        <td class="p-4"><span class="text-cyan-400 font-bold text-xs uppercase">${u.plan || 'Free'}</span></td>
+                        <td class="p-4">${new Date(u.created_at).toLocaleDateString()}</td>
+                        <td class="p-4 text-right">
+                             <button class="text-slate-500 hover:text-white transition"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+                lucide.createIcons();
+            } catch (e) {
+                console.error(e);
+                document.getElementById('users-table-body').innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-400">Failed to load users. Resticted Access.</td></tr>`;
+            }
+        }
+
+        // --- ANALYTICS LOAD ---
+        async function loadAnalytics() {
+            const token = localStorage.getItem('admin_token');
+            try {
+                const res = await fetch('/api/admin-stats', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error("Auth Failed");
+                const stats = await res.json();
+
+                // 1. Render Stats Cards
+                const card = (label, value, color) => `
+                    <div class="card p-6 rounded-xl">
+                        <div class="text-xs font-mono text-slate-500 uppercase mb-2">${label}</div>
+                        <div class="text-3xl font-black ${color}">${value}</div>
+                    </div>
+                `;
+                
+                document.getElementById('stats-row').innerHTML = `
+                    ${card('Total Users', stats.total_users, 'text-white')}
+                    ${card('Hits Today', stats.cache_hits_today, 'text-cyan-400')}
+                    ${card('Hit Rate', stats.hit_rate + '%', 'text-green-400')}
+                    ${card('Cost Saved', stats.cost_saved_today, 'text-purple-400')}
+                `;
+
+                // 2. Render Top Users
+                document.getElementById('top-users-list').innerHTML = stats.top_users.map(u => `
+                    <div class="flex justify-between items-center text-sm border-b border-slate-800 pb-2">
+                        <div class="flex items-center gap-3">
+                             <span class="text-slate-600 font-mono">#${u.rank}</span>
+                             <span class="text-white">${u.name}</span>
+                        </div>
+                        <div class="font-mono text-cyan-500">${u.score.toLocaleString()}</div>
+                    </div>
+                `).join('');
+
+                // 3. Render Chart
+                const ctx = document.getElementById('growthChart').getContext('2d');
+                if (chartInstance) chartInstance.destroy();
+                
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: stats.growth_data.map(d => d.day),
+                        datasets: [{
+                            label: 'Users',
+                            data: stats.growth_data.map(d => d.users),
+                            borderColor: '#06b6d4',
+                            backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { display: false } },
+                            y: { grid: { color: 'rgba(255,255,255,0.05)' } }
+                        }
+                    }
+                });
+
+            } catch (e) {
+                console.error(e);
             }
         }
 

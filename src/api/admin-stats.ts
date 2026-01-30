@@ -3,7 +3,33 @@ import { redis } from '../lib/redis.js';
 import { db } from '../db/client.js'; // If needed for complex queries
 import { streamSSE } from 'hono/streaming';
 
-const app = new Hono();
+import { authMiddleware, requireRole } from './auth.js';
+import { users } from '../db/schema.js';
+import { desc } from 'drizzle-orm';
+
+const app = new Hono<{ Variables: { user: any } }>();
+
+app.use('/*', authMiddleware, requireRole('owner'));
+
+app.get('/users', async (c) => {
+    try {
+        const allUsers = await db.select({
+            id: users.id,
+            email: users.email,
+            name: users.name,
+            role: users.role,
+            plan: users.plan,
+            created_at: users.createdAt
+        })
+            .from(users)
+            .orderBy(desc(users.createdAt))
+            .limit(100);
+
+        return c.json({ users: allUsers });
+    } catch (e: any) {
+        return c.json({ error: e.message }, 500);
+    }
+});
 
 app.get('/', async (c) => {
     try {
