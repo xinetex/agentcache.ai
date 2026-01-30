@@ -1,8 +1,7 @@
-
+import 'dotenv/config';
 import bcryptjs from 'bcryptjs';
 import { db } from '../src/db/client';
 import { sql } from 'drizzle-orm';
-import 'dotenv/config';
 
 async function createAdmin() {
     console.log("DB URL:", process.env.DATABASE_URL ? process.env.DATABASE_URL.split('@')[1] : 'UNDEFINED');
@@ -73,8 +72,8 @@ async function createAdmin() {
             const keyPrefix = 'ac_live_admin_';
             const keySecret = 'secret_key';
             await db.execute(sql`
-                INSERT INTO api_keys (organization_id, key_prefix, key_hash, scopes)
-                VALUES (${org.id}, ${keyPrefix}, ${await bcryptjs.hash(keySecret, 10)}, ${JSON.stringify(['*'])})
+                INSERT INTO api_keys (org_id, prefix, hash, scopes)
+                VALUES (${org.id}, ${keyPrefix}, ${await bcryptjs.hash(keySecret, 10)}, '{*}')
                  ON CONFLICT DO NOTHING
             `);
 
@@ -119,8 +118,8 @@ async function createAdmin() {
         const keyPrefix = 'ac_live_admin_';
         const keySecret = 'secret_key';
         await db.execute(sql`
-            INSERT INTO api_keys (organization_id, key_prefix, key_hash, scopes)
-            VALUES (${finalOrg.id}, ${keyPrefix}, ${await bcryptjs.hash(keySecret, 10)}, ${JSON.stringify(['*'])})
+            INSERT INTO api_keys (org_id, prefix, hash, scopes)
+            VALUES (${finalOrg.id}, ${keyPrefix}, ${await bcryptjs.hash(keySecret, 10)}, '{*}')
              ON CONFLICT DO NOTHING
         `);
 

@@ -120,6 +120,12 @@ app.get('/', (c) => {
   return c.redirect('/index.html');
 });
 
+// Clean URL Redirects
+app.get('/admin', (c) => c.redirect('/admin.html'));
+app.get('/login', (c) => c.redirect('/login.html'));
+app.get('/dashboard', (c) => c.redirect('/dashboard.html'));
+app.get('/reset-password', (c) => c.redirect('/reset-password.html'));
+
 app.use('/*', serveStatic({ root: './public' }));
 
 // Types

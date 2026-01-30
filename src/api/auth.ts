@@ -3,6 +3,7 @@ import { sign, verify } from 'hono/jwt';
 import { db } from '../db/client.js';
 import { users, members, organizations } from '../db/schema.js';
 import { eq, and } from 'drizzle-orm';
+import bcrypt from 'bcryptjs';
 
 const app = new Hono();
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_do_not_use_in_prod';
@@ -43,6 +44,71 @@ export const requireRole = (requiredRole) => async (c, next) => {
 
     await next();
 };
+
+// --- Endpoint: Standard Login ---
+app.post('/login', async (c) => {
+    try {
+        const { email, password } = await c.req.json();
+
+        if (!email || !password) {
+            return c.json({ error: 'Email and password required' }, 400);
+        }
+
+        // Find user
+        const usersFound = await db.select({
+            id: users.id,
+            email: users.email,
+            passwordHash: users.passwordHash,
+            name: users.name,
+            role: users.role,
+            plan: users.plan
+        }).from(users).where(eq(users.email, email.toLowerCase())).limit(1);
+        const user = usersFound[0];
+
+        if (!user || !user.passwordHash) {
+            return c.json({ error: 'Invalid credentials' }, 401);
+        }
+
+
+        // Verify password (if using bcrypt)
+        const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+
+        if (!passwordMatch) {
+            return c.json({ error: 'Invalid credentials' }, 401);
+        }
+
+        // Get Member Role from Org
+        const member = await db.select()
+            .from(members)
+            .where(eq(members.userId, user.id))
+            .limit(1);
+
+        const payload = {
+            id: user.id,
+            email: user.email,
+            role: user.role, // Default to user role if member role missing
+            orgId: member[0]?.orgId,
+            plan: user.plan,
+            exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 // 24h
+        };
+
+        const token = await sign(payload, JWT_SECRET);
+        return c.json({
+            token,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.role,
+                plan: user.plan
+            }
+        });
+
+    } catch (error: any) {
+        console.error('[Auth] Login error:', error);
+        return c.json({ error: 'Internal Server Error', details: error.message }, 500);
+    }
+});
 
 // --- Endpoint: Dev Login (Testing Only) ---
 app.post('/dev-login', async (c) => {
