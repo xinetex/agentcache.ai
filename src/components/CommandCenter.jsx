@@ -8,7 +8,7 @@ import ShopperSegmentationWidget from './ShopperSegmentationWidget';
  * Command Center - Futuristic Dashboard
  * Star Trek-inspired control panel with visual controls
  */
-export default function CommandCenter({ onOpenWizard, onNewPipeline, pipelines = [] }) {
+export default function CommandCenter({ onOpenWizard, onNewPipeline, onOpenIntelligence, pipelines = [] }) {
   const { sector } = useSector();
   const canvasRef = useRef(null);
   const [stats, setStats] = useState({
@@ -200,6 +200,14 @@ export default function CommandCenter({ onOpenWizard, onNewPipeline, pipelines =
                 <span className="btn-icon">⚙️</span>
                 <span className="btn-label">CUSTOM BUILDER</span>
                 <span className="btn-sublabel">Build from scratch</span>
+              </div>
+            </button>
+
+            <button className="launch-btn secondary-launch" onClick={onOpenIntelligence} style={{ marginTop: '10px', borderColor: 'cyan', color: 'cyan' }}>
+              <div className="btn-content">
+                <span className="btn-icon">🧠</span>
+                <span className="btn-label">SEMANTIC SHADOW</span>
+                <span className="btn-sublabel">Visualize Threat Intelligence</span>
               </div>
             </button>
           </div>

@@ -53,16 +53,25 @@ export class ShodanClient {
     /**
      * Search Shodan for a query
      */
-    async search(query: string): Promise<{ matches: ShodanHost[], total: number }> {
+    async search(query: string, options: { facets?: string, page?: number, minify?: boolean } = {}): Promise<{ matches: ShodanHost[], total: number, facets?: any }> {
         if (!this.apiKey) return { matches: [], total: 0 };
 
         try {
-            const encodedQuery = encodeURIComponent(query);
-            const url = `${this.baseUrl}/shodan/host/search?key=${this.apiKey}&query=${encodedQuery}`;
+            const params = new URLSearchParams({
+                key: this.apiKey,
+                query: query,
+            });
+
+            if (options.facets) params.append('facets', options.facets);
+            if (options.page) params.append('page', options.page.toString());
+            if (options.minify) params.append('minify', 'true');
+
+            const url = `${this.baseUrl}/shodan/host/search?${params.toString()}`;
             const response = await fetch(url);
 
             if (!response.ok) {
-                throw new Error(`Shodan API error: ${response.statusText}`);
+                const errText = await response.text();
+                throw new Error(`Shodan API error: ${response.status} ${response.statusText} - ${errText}`);
             }
 
             return await response.json();

@@ -58,8 +58,12 @@ export default async function handler(req, res) {
       allow_promotion_codes: true,
       billing_address_collection: 'auto',
       metadata: {
-        source: 'agentcache_website'
-      }
+        source: 'agentcache_website',
+        userId: email ? undefined : 'TODO_USER_ID_FROM_AUTH', // We need to fix this to actually get user context if possible, or rely on email match
+        // Ideally checkout.js should be an authenticated endpoint like billing.js
+        // For now, we will rely on email matching in the webhook if userId is missing
+      },
+      client_reference_id: email // helping us match just in case
     });
 
     // Redirect to Stripe Checkout

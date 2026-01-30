@@ -75,6 +75,18 @@
       "destination": "/terms.html"
     },
     {
+      "source": "/pricing",
+      "destination": "/pricing.html"
+    },
+    {
+      "source": "/wizard",
+      "destination": "/dashboard.html?wizard=true"
+    },
+    {
+      "source": "/demo",
+      "destination": "/demo-live.html"
+    },
+    {
       "source": "/hls/:jobId/:quality/:segment",
       "destination": "/api/cdn/stream?jobId=:jobId&quality=:quality&segment=:segment"
     },

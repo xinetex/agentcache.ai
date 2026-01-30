@@ -20,3 +20,5 @@ docs/deployment-checklist.md
 docs/JETTYTHUNDER_ONBOARDING.md
 docs/VERCEL_ENV_SETUP.md
 .env.lyve
+.env.backup
+.env.bak

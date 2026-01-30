@@ -558,7 +558,7 @@ if (!response.hit) {
 
             // Call provision API
             try {
-                const response = await fetch('https://agentcache.ai/api/provision', {
+                const response = await fetch('/api/provision', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

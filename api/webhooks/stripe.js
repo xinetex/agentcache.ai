@@ -44,15 +44,40 @@ export default async function handler(req, res) {
 
         if (customerEmail) {
             // Upgrade Org to Pro
-            // 1. Find user's org (simplified assumption: upgrading first org found for user)
-            // In prod, pass client_reference_id with orgID
-            const member = await db.query.members.findFirst({
-                where: (members, { eq }) => eq(members.userId, /* we need lookup logic here usually */ "TODO_FIX_LOOKUP"),
-                with: { organization: true }
+            // 1. Find user by email (webhook carries customer_email)
+            const users = await db.query.users.findMany({
+                where: (users, { eq }) => eq(users.email, customerEmail),
+                limit: 1
             });
 
-            // Simpler: Just log success for now since lookup is complex without user_id in session metadata
-            console.log(`💰 Payment success for ${customerEmail}. Plan Upgrade pending.`);
+            if (users.length > 0) {
+                const user = users[0];
+
+                // 2. Find their organization (assuming primary/first org for now)
+                const membersList = await db.query.members.findMany({
+                    where: (members, { eq }) => eq(members.userId, user.id),
+                    with: { organization: true },
+                    limit: 1
+                });
+
+                if (membersList.length > 0) {
+                    const org = membersList[0].organization;
+
+                    // 3. Update Organization Tier
+                    await db.update(organizations)
+                        .set({
+                            tier: 'pro',
+                            planPeriodEnd: new Date(session.expires_at * 1000 || Date.now() + 30 * 24 * 60 * 60 * 1000) // Default 30 days if not sub
+                        })
+                        .where(eq(organizations.id, org.id));
+
+                    console.log(`✅ Organization ${org.id} upgraded to PRO for user ${customerEmail}`);
+                } else {
+                    console.error(`❌ User ${customerEmail} found but has no organization.`);
+                }
+            } else {
+                console.error(`❌ Payment received for ${customerEmail} but user not found in DB.`);
+            }
         }
     }
 

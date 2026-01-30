@@ -24,7 +24,9 @@ import NeuralGalaxy from './components/NeuralGalaxy';
 import { useTrafficSimulation } from './hooks/useTrafficSimulation';
 import './App.css';
 import TraceViewer from './components/TraceViewer';
+import TraceViewer from './components/TraceViewer';
 import StreamInterface from './integral/StreamInterface';
+import IntelligenceDashboard from './components/IntelligenceDashboard';
 
 const edgeTypes = {
   traffic: TrafficEdge,
@@ -309,6 +311,7 @@ function App() {
         <CommandCenter
           onOpenWizard={() => setWizardOpen(true)}
           onNewPipeline={handleNewPipeline}
+          onOpenIntelligence={() => setView('intelligence')}
           pipelines={savedPipelines}
         />
 
@@ -369,6 +372,15 @@ function App() {
         >
           Exit Stream
         </button>
+      </div>
+    );
+  }
+
+  // Show Intelligence Dashboard
+  if (view === 'intelligence') {
+    return (
+      <div className="app">
+        <IntelligenceDashboard onBack={() => setView('dashboard')} />
       </div>
     );
   }

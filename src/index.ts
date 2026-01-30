@@ -109,9 +109,12 @@ app.route('/api/pipeline', pipelineRouter);
 import sentryRouter from './api/sentry.js';
 app.route('/api/sentry', sentryRouter);
 
+import intelligenceRouter from './api/intelligence.js';
+app.route('/api/intelligence', intelligenceRouter);
+
 // Serve static files (landing page - defaults to community.html)
 app.get('/', (c) => {
-  return c.redirect('/community.html');
+  return c.redirect('/index.html');
 });
 
 app.use('/*', serveStatic({ root: './public' }));

@@ -1,0 +1,81 @@
+/** Updated Vercel routing configuration for preview generation and smart CDN */{
+  "runtime": "edge",
+  "regions": ["iad1", "sfo1"],
+  "functions": {
+    "api/**/*.{js,ts}": {
+      "memory": 1024,
+      "maxDuration": 30
+    },
+    "src/api/**/*.{js,ts}": {
+      "memory": 1024,
+      "maxDuration": 30
+    }
+  },
+  "redirects": [
+    {"source": "/monitor.html", "destination": "/cognitive-universe.html", "permanent": true},
+    {"source": "/monitor", "destination": "/cognitive-universe.html", "permanent": true}
+  ],
+  "rewrites": [
+    {"source": "/studio", "destination": "/dashboard.html?demo=true"},
+    {"source": "/studio/:path*", "destination": "/dashboard.html?demo=true"},
+    {"source": "/daily", "destination": "/daily.html"},
+    {"source": "/visualizations", "destination": "/visualizations.html"},
+    {"source": "/docs", "destination": "/docs.html"},
+    {"source": "/docs/:doc.md", "destination": "/md.html?doc=:doc"},
+    {"source": "/blog", "destination": "/blog.html"},
+    {"source": "/login", "destination": "/login.html"},
+    {"source": "/console", "destination": "/dashboard.html"},
+    {"source": "/console/:path*", "destination": "/dashboard.html"},
+    {"source": "/dashboard", "destination": "/dashboard.html"},
+    {"source": "/privacy", "destination": "/privacy.html"},
+    {"source": "/terms", "destination": "/terms.html"},
+    {"source": "/pricing", "destination": "/pricing.html"},
+    {"source": "/wizard", "destination": "/dashboard.html?wizard=true"},
+    {"source": "/demo", "destination": "/demo-live.html"},
+    {"source": "/hls/:jobId/:quality/:segment", "destination": "/api/cdn/stream?jobId=:jobId&quality=:quality&segment=:segment"},
+    {"source": "/cdn/stream/:path*", "destination": "/api/cdn/stream?path=:path*"}
+  ],
+  "routes": [
+    {
+      "src": "/api/cdn/stream",
+      "dest": "/api/cdn/stream",
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Expose-Headers": "Content-Length, X-VideoCache"
+      }
+    },
+    {
+      "src": "/api/bridge/moonshot-ai",
+      "dest": "/api/bridge/moonshot-ai",
+      "methods": ["POST"],
+      "headers": {
+        "Content-Type": "application/json",
+        "Vercel-AiGateway-Provider": "moonshotai"
+      }
+    },
+    {
+      "src": "/api/upload", 
+      "dest": "/api/upload",
+      "methods": ["POST"]
+    },
+    {
+      "src": "/api/preview-generator",
+      "dest": "/api/preview-generator", 
+      "methods": ["POST"]
+    }
+  ],
+  "crons": [
+    {"path": "/api/cron/check-listeners", "schedule": "*/15 * * * *"}
+  ],
+  "headers": [
+    {
+      "source": "/api/cdn/(.*)",
+      "headers": [
+        {"key": "Access-Control-Allow-Origin", "value": "*"},
+        {"key": "Access-Control-Allow-Methods", "value": "GET, OPTIONS"},
+        {"key": "Access-Control-Expose-Headers", "value": "Content-Length, X-VideoCache, X-Generated"}
+      ]
+    }
+  ]
+}

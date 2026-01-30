@@ -190,3 +190,98 @@ export const agentAlerts = pgTable('agent_alerts', {
     createdAt: timestamp('created_at').defaultNow(),
     resolvedAt: timestamp('resolved_at'),
 });
+
+// --- Credits Top-Off Billing System ---
+
+// Auto top-off settings per user
+export const autoTopoffSettings = pgTable('auto_topoff_settings', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id').references(() => users.id).notNull().unique(),
+    enabled: boolean('enabled').default(false),
+    thresholdCredits: real('threshold_credits').default(100),
+    topoffPackage: text('topoff_package').default('pack_2500'),
+    stripePaymentMethodId: text('stripe_payment_method_id'),
+    lastTopoffAt: timestamp('last_topoff_at'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// Credit transactions (all credit movements)
+export const creditTransactions = pgTable('credit_transactions', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id').references(() => users.id).notNull(),
+    type: text('type').notNull(), // 'purchase', 'usage', 'refund', 'bonus', 'auto_topoff'
+    amount: real('amount').notNull(), // Positive = credits in, Negative = credits out
+    balanceAfter: real('balance_after').notNull(),
+    description: text('description'),
+
+    // For purchases
+    packageId: text('package_id'),
+    stripePaymentIntentId: text('stripe_payment_intent_id'),
+    stripeCheckoutSessionId: text('stripe_checkout_session_id'),
+
+    // For usage
+    service: text('service'), // 'cache_read', 'ai_embedding', etc.
+    resourceId: text('resource_id'),
+    quantity: real('quantity'),
+
+    metadata: jsonb('metadata'),
+    createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+    userIdx: index('credit_tx_user_idx').on(table.userId),
+    createdIdx: index('credit_tx_created_idx').on(table.createdAt),
+    typeIdx: index('credit_tx_type_idx').on(table.type),
+}));
+
+// Daily usage aggregation for analytics
+export const creditUsageDaily = pgTable('credit_usage_daily', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id').references(() => users.id).notNull(),
+    date: timestamp('date').notNull(),
+
+    // Usage counts by service
+    cacheReads: integer('cache_reads').default(0),
+    cacheWrites: integer('cache_writes').default(0),
+    cacheSemantic: integer('cache_semantic').default(0),
+    aiEmbeddings: integer('ai_embeddings').default(0),
+    aiCompletionsTokens: integer('ai_completions_tokens').default(0),
+    transcodeMinutes: real('transcode_minutes').default(0),
+    storageGb: real('storage_gb').default(0),
+    egressGb: real('egress_gb').default(0),
+    edgeInvocations: integer('edge_invocations').default(0),
+
+    totalCreditsUsed: real('total_credits_used').default(0),
+    createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+    userDateIdx: index('credit_usage_daily_user_date_idx').on(table.userId, table.date),
+}));
+
+// --- Semantic Shadow (AgentCache x Shodan) ---
+
+// 1. Bancache: The "Dictionary" of unique banners
+// Key strategy: Hash the banner to de-duplicate. Analyze once, serve everywhere.
+export const bancache = pgTable('bancache', {
+    hash: text('hash').primaryKey(), // SHA256(banner_text)
+    bannerText: text('banner_text').notNull(),
+    firstSeenAt: timestamp('first_seen_at').defaultNow(),
+    lastSeenAt: timestamp('last_seen_at').defaultNow(),
+    seenCount: integer('seen_count').default(1),
+});
+
+// 2. Banner Analysis: The "Intelligence" attached to a banner
+export const bannerAnalysis = pgTable('banner_analysis', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    bannerHash: text('banner_hash').references(() => bancache.hash),
+    agentModel: text('agent_model').notNull(), // e.g. 'kimi-k2.5'
+
+    // Structured Intelligence
+    riskScore: real('risk_score'), // 0.0 - 10.0
+    classification: text('classification'), // 'Database', 'IoT', 'Web Server'
+    vulnerabilities: jsonb('vulnerabilities'), // List of CVEs
+    compliance: jsonb('compliance'), // { pci: false, hipaa: true }
+
+    // Unstructured Reasoning (The "Why")
+    reasoning: text('reasoning'),
+
+    analyzedAt: timestamp('analyzed_at').defaultNow(),
+});
