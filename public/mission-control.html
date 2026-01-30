@@ -22,9 +22,60 @@
     </style>
 </head>
 
-<!-- ... (Auth Modal remains same) ... -->
+<!-- Auth Modal -->
+<div id="auth-modal" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md hidden">
+    <div class="card p-8 rounded-xl max-w-sm w-full text-center shadow-2xl border border-cyan-500/20">
+        <h2 class="text-2xl font-black mb-2 tracking-tighter">IDENTIFY YOURSELF</h2>
+        <p class="text-slate-400 text-sm mb-6">Restricted Access. Level 5 Clearance Required.</p>
+        <input type="password" id="admin-token" placeholder="ENTER ADMIN TOKEN"
+            class="w-full bg-slate-900 border border-slate-700 p-3 rounded mb-4 text-center text-cyan-500 font-mono focus:border-cyan-500 outline-none transition uppercase">
+        <button onclick="authenticate()"
+            class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded transition shadow-[0_0_20px_rgba(6,182,212,0.3)]">
+            ACCESS TERMINAL
+        </button>
+        <p id="auth-error" class="hidden text-red-400 text-xs mt-4 animate-pulse">ACCESS DENIED</p>
+    </div>
+</div>
 
-<!-- ... (Dashboard Header remains same) ... -->
+<!-- Dashboard Header -->
+<header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <h1 class="text-xl font-black tracking-tighter text-white">MISSION CONTROL</h1>
+            <span class="flex h-2 w-2 relative">
+                <span
+                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            </span>
+            <span class="text-[10px] font-mono text-green-500 tracking-wider">SYSTEM ONLINE</span>
+        </div>
+
+        <nav class="flex gap-1">
+            <button onclick="switchTab('content')" id="tab-content"
+                class="px-4 py-2 text-xs font-bold uppercase tracking-widest text-white border-b-2 border-cyan-500 transition">
+                Content Grid
+            </button>
+            <button onclick="switchTab('users')" id="tab-users"
+                class="px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300 border-b-2 border-transparent transition">
+                User Management
+            </button>
+            <button onclick="switchTab('analytics')" id="tab-analytics"
+                class="px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300 border-b-2 border-transparent transition">
+                Analytics
+            </button>
+        </nav>
+
+        <div class="flex items-center gap-4">
+            <a href="/" target="_blank"
+                class="text-xs font-mono text-slate-400 hover:text-white border border-slate-700 hover:border-slate-500 px-3 py-1.5 rounded transition flex items-center gap-2">
+                <i data-lucide="external-link" class="w-3 h-3"></i> View Live Site
+            </a>
+            <button onclick="logout()" class="text-xs text-red-400 hover:text-red-300 font-mono hover:underline">
+                LOGOUT
+            </button>
+        </div>
+    </div>
+</header>
 
 <!-- VIEW: Content Grid -->
 <main id="view-content" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -119,9 +170,43 @@
     let contentData = null;
     let chartInstance = null;
 
-    // ... (Auth/Logout remains same) ...
+    // Auth Functions
+    function authenticate() {
+        const token = document.getElementById('admin-token').value;
+        if (token.length > 5) {
+            localStorage.setItem('admin_token', token);
+            document.getElementById('auth-modal').classList.add('hidden');
+            loadContent();
+            loadUsers();
+            loadAnalytics();
+        } else {
+            document.getElementById('auth-error').classList.remove('hidden');
+        }
+    }
 
-    // ... (Switch Tab remains same) ...
+    function logout() {
+        localStorage.removeItem('admin_token');
+        location.reload();
+    }
+
+    // Tab Switching
+    function switchTab(tabId) {
+        // Hide all views
+        document.getElementById('view-content').classList.add('hidden');
+        document.getElementById('view-users').classList.add('hidden');
+        document.getElementById('view-analytics').classList.add('hidden');
+
+        // Reset tabs
+        document.getElementById('tab-content').className = "px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300 border-b-2 border-transparent transition";
+        document.getElementById('tab-users').className = "px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300 border-b-2 border-transparent transition";
+        document.getElementById('tab-analytics').className = "px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300 border-b-2 border-transparent transition";
+
+        // Activate view
+        document.getElementById(`view-${tabId}`).classList.remove('hidden');
+
+        // Activate tab
+        document.getElementById(`tab-${tabId}`).className = "px-4 py-2 text-xs font-bold uppercase tracking-widest text-white border-b-2 border-cyan-500 transition";
+    }
 
     // --- CONTENT GRID ---
     async function loadContent() {
@@ -470,6 +555,18 @@
         }
     }
 
+    // --- INITIALIZATION ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = localStorage.getItem('admin_token');
+        if (!token) {
+            document.getElementById('auth-modal').classList.remove('hidden');
+        } else {
+            loadContent();
+            loadUsers();
+            loadAnalytics();
+        }
+        lucide.createIcons();
+    });
 </script>
 </body>
 
