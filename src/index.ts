@@ -106,6 +106,9 @@ app.route('/api/transcode', transcodeRouter);
 import pipelineRouter from './api/pipeline.js';
 app.route('/api/pipeline', pipelineRouter);
 
+import sentryRouter from './api/sentry.js';
+app.route('/api/sentry', sentryRouter);
+
 // Serve static files (landing page - defaults to community.html)
 app.get('/', (c) => {
   return c.redirect('/community.html');

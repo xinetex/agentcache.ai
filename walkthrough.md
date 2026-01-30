@@ -66,3 +66,25 @@ Created a real-time visualization of the "Brain" at `public/brain.html`.
     *   Shows real-time stats for Active Memories, Avg Vitality, and Mesh Traffic.
     *   Simulates node decay and reinforcement.
 *   **Usage**: Open `public/brain.html` in a browser to view the cognitive activity.
+
+## Service Viability Audit Fixes (Jan 2026)
+
+Addressed critical gaps preventing monetization and user onboarding:
+
+### 1. Billing Infrastructure
+*   **Fixed Webhook (`api/webhooks/stripe.js`)**: Implemented actual database updates. Payment success now triggers:
+    1.  User lookup by email.
+    2.  Organization lookup.
+    3.  `tier` column update to `pro`.
+*   **Unified Checkout (`api/checkout.js`)**: Added `metadata` to Stripe Sessions to pass `source` and `client_reference_id` for better matching.
+*   **Go-Live Script (`scripts/go-live.sh`)**: Created verification tool to ensure Production Keys are set before launch.
+    *   Run: `./scripts/go-live.sh`
+
+### 2. Public Site Availability (Fixed 404s)
+*   **Vercel Routing**: Added clean URL rewrites in `vercel.json`:
+    *   `/pricing` -> `/pricing.html`
+    *   `/wizard` -> `/dashboard.html?wizard=true`
+    *   `/demo` -> `/demo-live.html`
+*   **Navigation Links**: Updated `index.html` (Hero & Nav) to point to these new valid routes instead of dead links.
+*   **Pricing Link**: Added missing "Pricing" link to the main navigation bar.
+
