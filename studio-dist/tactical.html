@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>AgentCache // Tactical Map</title>
+    <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
+    <script src="https://unpkg.com/@loaders.gl/core@latest/dist/dist.min.js"></script>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            padding: 0;
+            background: #000;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            /* AURORA BASE */
+            transition: background 2s ease;
+        }
+
+        /* AURORA OVERLAY */
+        #aurora-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            mix-blend-mode: screen;
+            opacity: 0.3;
+            background: radial-gradient(circle at 50% -20%, #00ff88, transparent 40%),
+                radial-gradient(circle at 80% 20%, #00ccff, transparent 40%);
+            filter: blur(50px);
+            transition: opacity 2s ease;
+        }
+
+        #control-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 300px;
+            z-index: 100;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        .stat span {
+            color: #fff;
+        }
+
+        .legend {
+            margin-top: 20px;
+            display: grid;
+            gap: 5px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="aurora-layer"></div>
+    <div id="control-panel">
+        <h1>Pattern Agency // Tactical</h1>
+        <div class="stat">Active Nodes: <span id="node-count">0</span></div>
+        <div class="stat">Pipeline Flows: <span id="arc-count">0</span></div>
+        <div class="stat">Traffic Signals: <span id="traffic-count">0</span></div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="dot" style="background: #ff0055"></div> Traffic Sensing (High Reward)
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background: #00bcd4"></div> Dreaming (Exploration)
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background: #4caf50"></div> Recycling (Maintenance)
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background: #ffffff"></div> Imitating Node
+            </div>
+        </div>
+
+        <button onclick="startHiveMindTour()" style="
+        margin-top: 20px;
+        width: 100%;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid #fff;
+        color: #fff;
+        padding: 5px;
+        cursor: pointer;
+        font-family: monospace;
+      ">▶ RUN HIVE MIND DEMO</button>
+    </div>
+
+    <script src="tour.js"></script>
+    <script type="text/javascript">
+        const { DeckGL, HexagonLayer, ArcLayer, ScatterplotLayer } = deck;
+
+        // Initial View: NYC
+        const INITIAL_VIEW_STATE = {
+            longitude: -74.0060,
+            latitude: 40.7128,
+            zoom: 12,
+            pitch: 45,
+            bearing: 0
+        };
+
+        const deckgl = new DeckGL({
+            initialViewState: INITIAL_VIEW_STATE,
+            controller: true,
+            // Mapbox Dark Style (Using a public token or Carto for basemap)
+            // mapStyle: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+            mapStyle: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+            layers: [],
+            getTooltip: ({ object }) => {
+                if (!object) return null;
+                if (object.type === 'sensor' && object.camera) {
+                    return {
+                        html: `
+                            <div style="width: 200px;">
+                                <h3 style="margin:0 0 5px; color:#ff0055">🚦 LIVE FEED</h3>
+                                <div style="font-size:0.8em; color:#888; margin-bottom:5px">${object.camera.location}</div>
+                                <img src="${object.camera.url}" style="width:100%; border-radius:4px; border:1px solid #ff0055"/>
+                                <div style="margin-top:5px; font-size:0.8em">Density: ${object.value}%</div>
+                            </div>
+                        `,
+                        style: {
+                            backgroundColor: '#000',
+                            color: '#fff',
+                            border: '1px solid #333',
+                            borderRadius: '8px'
+                        }
+                    };
+                }
+                    return {
+                        text: `Density Cluster: ${object.points.length} nodes`
+                    };
+                }
+                if (object.frequency) { // Crystal
+                    return {
+                         html: `<div style="color:cyan">💎 CRYSTAL FORMING</div><div>${object.label}</div><div>Freq: ${object.frequency}</div>`
+                    };
+                }
+                return {
+                    text: `${object.name}\n${object.intent}`
+                };
+            }
+        });
+
+        async function fetchData() {
+            try {
+                const [nodesRes, arcsRes] = await Promise.all([
+                    fetch('/api/geo/nodes'),
+                    fetch('/api/geo/arcs')
+                ]);
+
+
+                const nodesData = await nodesRes.json();
+                // Handle different response shapes (array vs {nodes, meta})
+                const nodes = Array.isArray(nodesData) ? nodesData : nodesData.nodes;
+                const meta = Array.isArray(nodesData) ? {} : nodesData.meta;
+                const crystals = nodesData.crystals || [];
+
+                // SOLAR AURORA EFFECT
+                if (meta.solar) {
+                    const solarIntensity = Math.min(meta.solar / 5, 1); // 0 to 1 based on K-index
+                    const aurora = document.getElementById('aurora-layer');
+                    aurora.style.opacity = 0.2 + (solarIntensity * 0.6); // Base 0.2, max 0.8
+                    // Shift hue based on storm intensity?
+                    if (meta.solar > 4) {
+                        aurora.style.background = `radial-gradient(circle at 50% -20%, #ff0055, transparent 50%)`; // Red Storm
+                        document.getElementById('node-count').innerText = "⚠️ GEOMAGNETIC STORM";
+                        document.getElementById('node-count').style.color = "#ff0055";
+                    } else {
+                         document.getElementById('node-count').style.color = "#fff";
+                    }
+                }
+
+                const arcs = await arcsRes.json();
+                
+                // Fetch LIVE PACKETS
+                let packets = [];
+                try {
+                    const flowRes = await fetch('/api/geo/flow');
+                    packets = await flowRes.json();
+                    document.getElementById('arc-count').innerText = packets.length;
+                } catch(e) {}
+
+                // Update UI Stats
+                document.getElementById('node-count').innerText = nodes.length;
+                document.getElementById('arc-count').innerText = arcs.length;
+                document.getElementById('traffic-count').innerText = nodes.filter(n => n.type === 'sensor').length;
+
+                renderLayers(nodes, arcs, packets, crystals);
+            } catch (e) { console.error(e); }
+        }
+
+        function renderLayers(nodes, arcs, packets, crystals) {
+            const trafficNodes = nodes.filter(n => n.type === 'sensor');
+            const agentNodes = nodes.filter(n => n.type === 'agent');
+
+            const layers = [
+                // 1. Traffic Heatmap (Hexagons)
+                new HexagonLayer({
+                    id: 'traffic-heat',
+                    data: trafficNodes,
+                    getPosition: d => d.coordinates,
+                    radius: 100,
+                    elevationScale: 50,
+                    extruded: true,
+                    pickable: true,
+                    getFillColor: d => [255, 0, 85, 200], // Red for traffic
+                    opacity: 0.6,
+                    // Highlight on hover
+                    autoHighlight: true,
+                    highlightColor: [255, 0, 85, 255]
+                }),
+
+                // 2. Agents (Scatterplot)
+                new ScatterplotLayer({
+                    id: 'agents',
+                    data: agentNodes,
+                    getPosition: d => d.coordinates,
+                    getRadius: 50,
+                    // COLOR STRATEGY: Visualizing Maynard-Cross Learning
+                    getFillColor: d => {
+                        const intent = d.intent ? d.intent.toLowerCase() : '';
+                        if (intent.includes('traffic') || intent.includes('monitor')) return [255, 0, 85]; // Red (Traffic)
+                        if (intent.includes('dream')) return [0, 188, 212]; // Cyan (Dreaming)
+                        if (intent.includes('recycle') || intent.includes('waste')) return [76, 175, 80]; // Green (Recycling)
+                        if (intent.includes('imitating')) return [255, 255, 255]; // White (Active Learning)
+                        return [100, 100, 100]; // Grey (Idle)
+                    },
+                    getLineColor: [0, 0, 0],
+                    stroked: true,
+                    pickable: true,
+                    autoHighlight: true
+                }),
+
+                // 3. Neural Pipelines (Kinetic Arcs)
+                // We use a TripLayer logic or just animate the ArcLayer source/target colors over time
+                new ArcLayer({
+                    id: 'pipelines',
+                    data: arcs,
+                    getSourcePosition: d => d.source,
+                    getTargetPosition: d => d.target,
+                    getSourceColor: [0, 255, 200],
+                    getTargetColor: [0, 100, 255],
+                    getWidth: 3,
+                    // KINETIC UPGRADE: Pulse width based on time
+                    widthScale: Math.sin(Date.now() / 500) + 2
+                }),
+                
+                // 4. PACKET GAME LAYER (Data Flow)
+                // Visualizing the "Learning Packets" from Redis
+                // We use simple Scatterplot for packets, or we could use IconLayer
+                new ScatterplotLayer({
+                    id: 'packets',
+                    data: packets || [], // Passed from valid scope or global
+                    getPosition: d => {
+                        // Interpolate position based on time?
+                        // For MVP, just show them at TARGET (Absorption)
+                        // To show movement we need the source/target coords and a time uniform.
+                        // Simplified: Show them as bright pulses at the global coordinates resolved by ID.
+                        // Since we don't have easy coord resolution here without passing nodes map,
+                        // we can rely on the API to return coords (which I mocked in /flow endpoint).
+                        // Wait, /api/geo/flow returns { source: ID, target: ID, ... } logic in Step 3 mocked coords.
+                        // Let's check `api/geo.ts` Step 3 output...
+                        // It returns { ...packet } but I didn't actually add the `resolveCoords` result to the object in Step 3!
+                        // I just defined the function but didn't map it.
+                        // Bug in previous step. Fix: I will rely on finding the node in `nodes` array by ID here.
+                        
+                        const targetNode = nodes.find(n => n.id === d.target);
+                        return targetNode ? targetNode.coordinates : [0,0];
+                    },
+                    getRadius: 200, // Big pulse
+                    getFillColor: [255, 255, 255],
+                    stroked: true,
+                    getLineColor: [255, 255, 0],
+                    getLineWidth: 20,
+                    opacity: 0.8,
+                    // Animate opacity/radius?
+                }),
+                
+                // 5. SEMANTIC CRYSTALS (High Frequency Demand)
+                new ScatterplotLayer({
+                    id: 'crystals',
+                    data: crystals || [],
+                    getPosition: d => d.coordinates,
+                    getRadius: d => 100 + (d.frequency * 10), // Size grows with demand
+                    getFillColor: [0, 255, 255, 200], // Cyan/Diamond
+                    stroked: true,
+                    getLineColor: [255, 255, 255],
+                    getLineWidth: 5,
+                    pickable: true,
+                    // Add text label? Could use TextLayer but tooltip works for now
+                })
+            ];
+
+            deckgl.setProps({ layers });
+
+            // Kinetic Loop
+            requestAnimationFrame(() => renderLayers(nodes, arcs));
+        }
+
+        // Initial Fetch
+        fetchData();
+
+        // Data Refresh Loop (separate from animation loop)
+        setInterval(fetchData, 2000);
+
+    </script>
+</body>
+
+</html>

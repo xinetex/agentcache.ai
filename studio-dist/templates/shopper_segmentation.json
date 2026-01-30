@@ -1,0 +1,140 @@
+{
+    "name": "Real-Time Shopper Segmentation",
+    "description": "High-performance caching pipeline for real-time shopper segmentation and personalization.",
+    "sector": "ecommerce",
+    "version": "1.0",
+    "nodes": [
+        {
+            "id": "input-0",
+            "type": "input",
+            "position": {
+                "x": 100,
+                "y": 200
+            },
+            "data": {
+                "label": "Clickstream Input"
+            }
+        },
+        {
+            "id": "cache_l1-1",
+            "type": "cache_l1",
+            "position": {
+                "x": 350,
+                "y": 200
+            },
+            "data": {
+                "label": "Session Cache (L1)",
+                "config": {
+                    "ttl": 1800,
+                    "max_size": "1GB",
+                    "strategy": "LRU"
+                }
+            }
+        },
+        {
+            "id": "cache_l2-2",
+            "type": "cache_l2",
+            "position": {
+                "x": 600,
+                "y": 200
+            },
+            "data": {
+                "label": "Persistent Profile Store (L2)",
+                "config": {
+                    "ttl": 86400,
+                    "storage": "redis"
+                }
+            }
+        },
+        {
+            "id": "classifier-3",
+            "type": "classifier",
+            "position": {
+                "x": 850,
+                "y": 200
+            },
+            "data": {
+                "label": "Segment Classifier (AI)",
+                "config": {
+                    "model": "llama-3-8b-instruct",
+                    "fast_path": true
+                }
+            }
+        },
+        {
+            "id": "personalization-4",
+            "type": "personalization",
+            "position": {
+                "x": 1100,
+                "y": 200
+            },
+            "data": {
+                "label": "Content Personalization",
+                "config": {
+                    "rules": "dynamic",
+                    "signals": [
+                        "clickstream",
+                        "cart"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "output-5",
+            "type": "output",
+            "position": {
+                "x": 1350,
+                "y": 200
+            },
+            "data": {
+                "label": "Personalized Response"
+            }
+        }
+    ],
+    "edges": [
+        {
+            "id": "e1",
+            "source": "input-0",
+            "target": "cache_l1-1",
+            "animated": true
+        },
+        {
+            "id": "e2",
+            "source": "cache_l1-1",
+            "target": "cache_l2-2",
+            "label": "MISS",
+            "animated": true
+        },
+        {
+            "id": "e3",
+            "source": "cache_l2-2",
+            "target": "classifier-3",
+            "label": "MISS",
+            "animated": true
+        },
+        {
+            "id": "e4",
+            "source": "classifier-3",
+            "target": "personalization-4",
+            "animated": true
+        },
+        {
+            "id": "e5",
+            "source": "personalization-4",
+            "target": "output-5",
+            "animated": true
+        }
+    ],
+    "metadata": {
+        "estimatedSavings": "$9,200/mo",
+        "compliance": [
+            "GDPR",
+            "CCPA"
+        ],
+        "tags": [
+            "retail",
+            "segmentation",
+            "ai"
+        ]
+    }
+}

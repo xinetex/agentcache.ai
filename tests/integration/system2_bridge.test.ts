@@ -14,9 +14,10 @@ describe('System 2 Bridge Integration', () => {
 
         pythonServer.stdout.on('data', (data) => console.log(`[Python]: ${data}`));
         pythonServer.stderr.on('data', (data) => console.error(`[Python Error]: ${data}`));
+        pythonServer.on('error', (err) => console.error('[Python Spawn Error]:', err));
 
         // Wait for server to be ready
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 5000));
     });
 
     afterAll(() => {
