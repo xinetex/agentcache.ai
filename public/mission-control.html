@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission Control - AgentCache</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&family=JetBrains+Mono:wght@400;600&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .input-dark {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .input-dark:focus {
+            border-color: #0ea5e9;
+            outline: none;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 bg-opacity-95">
+        <div class="card p-8 rounded-xl max-w-sm w-full shadow-2xl">
+            <h2 class="text-2xl font-bold mb-4 tracking-tight">Mission Control</h2>
+            <p class="text-xs text-slate-400 mb-6 uppercase tracking-widest mono">Restricted Access</p>
+            <input type="password" id="admin-token" placeholder="Enter Admin Token"
+                class="w-full p-3 rounded-lg input-dark mb-4 text-sm mono">
+            <button onclick="authenticate()"
+                class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded-lg transition">
+                Authenticate
+            </button>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="hidden p-8 max-w-7xl mx-auto">
+
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-12">
+            <div>
+                <h1 class="text-3xl font-black tracking-tighter uppercase">Mission Control</h1>
+                <div class="flex items-center gap-2 mt-2">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    <span class="text-xs font-mono text-cyan-500 tracking-widest uppercase">System Online</span>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <a href="/index.html" target="_blank"
+                    class="px-4 py-2 rounded-lg border border-slate-700 hover:bg-slate-800 text-sm font-bold transition flex items-center gap-2">
+                    <i data-lucide="external-link" class="w-4 h-4"></i> View Live Site
+                </a>
+                <button onclick="logout()"
+                    class="px-4 py-2 rounded-lg bg-red-900/20 hover:bg-red-900/40 text-red-400 text-sm font-bold transition">
+                    Logout
+                </button>
+            </div>
+        </header>
+
+        <!-- Content Editor -->
+        <main id="editor-grid" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            <!-- Cards Injected Here -->
+            <div class="col-span-full py-12 text-center text-slate-500 animate-pulse">Loading Neural Network...</div>
+        </main>
+
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal"
+        class="hidden fixed inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="card p-8 rounded-xl max-w-lg w-full shadow-2xl relative">
+            <button onclick="closeEdit()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i
+                    data-lucide="x"></i></button>
+
+            <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                <i data-lucide="edit-3" class="w-5 h-5 text-cyan-400"></i> Edit Transmission
+            </h3>
+
+            <input type="hidden" id="edit-id">
+            <input type="hidden" id="edit-lane">
+            <input type="hidden" id="edit-template">
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-mono text-slate-500 uppercase mb-1">Subtitle / Label</label>
+                    <input type="text" id="edit-subtitle"
+                        class="w-full p-2 rounded bg-slate-900 border border-slate-700 focus:border-cyan-500 outline-none text-cyan-400 font-mono text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-mono text-slate-500 uppercase mb-1">Title / Hero Text</label>
+                    <input type="text" id="edit-title"
+                        class="w-full p-2 rounded bg-slate-900 border border-slate-700 focus:border-cyan-500 outline-none font-bold text-lg">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-mono text-slate-500 uppercase mb-1">Content / Description</label>
+                    <textarea id="edit-content" rows="4"
+                        class="w-full p-2 rounded bg-slate-900 border border-slate-700 focus:border-cyan-500 outline-none text-slate-300 text-sm loading-relaxed"></textarea>
+                </div>
+            </div>
+
+            <div class="mt-8 flex gap-3">
+                <button onclick="saveCard()"
+                    class="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded-lg transition flex justify-center items-center gap-2">
+                    <i data-lucide="save" class="w-4 h-4"></i> Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Icons
+        lucide.createIcons();
+
+        // State
+        let contentData = null;
+
+        // Auth Logic
+        function authenticate() {
+            const token = document.getElementById('admin-token').value;
+            if (token) {
+                // In a real app we'd verify the token with an API call here
+                // For this prototype we assume client-side checking or let the API reject invalid tokens on save
+                localStorage.setItem('admin_token', token);
+                document.getElementById('auth-modal').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+                loadContent();
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('admin_token');
+            location.reload();
+        }
+
+        // Check Access
+        if (localStorage.getItem('admin_token')) {
+            document.getElementById('auth-modal').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            loadContent();
+        }
+
+        // Load Content
+        async function loadContent() {
+            try {
+                const res = await fetch('/api/content');
+                contentData = await res.json();
+                renderEditor();
+            } catch (err) {
+                console.error("Fetch Error:", err);
+                alert("Failed to load content channels.");
+            }
+        }
+
+        // Render Grid
+        function renderEditor() {
+            const grid = document.getElementById('editor-grid');
+            grid.innerHTML = '';
+
+            // Group by Lane
+            const lanes = ['mission', 'usecases', 'pricing', 'stats'];
+
+            lanes.forEach(laneId => {
+                const laneCards = contentData.cards.filter(c => c.laneId === laneId);
+                const laneTitle = contentData.lanes.find(l => l.id === laneId)?.title || laneId.toUpperCase();
+
+                // Lane Header
+                const laneHeader = document.createElement('div');
+                laneHeader.className = "col-span-full mt-8 mb-4 border-b border-slate-800 pb-2 flex items-baseline justify-between";
+                laneHeader.innerHTML = `
+                    <h2 class="text-xl font-mono text-slate-400 uppercase tracking-widest">>> ${laneTitle} CHANNEL</h2>
+                    <span class="text-xs text-slate-600 font-mono">${laneCards.length} UNITS</span>
+                `;
+                grid.appendChild(laneHeader);
+
+                // Cards
+                laneCards.forEach(card => {
+                    const cardEl = document.createElement('div');
+                    cardEl.className = "card p-6 rounded-xl group hover:border-cyan-500/50 transition cursor-pointer relative overflow-hidden";
+                    cardEl.onclick = () => openEdit(card.id);
+
+                    // Preview Logic
+                    let preview = '';
+                    if (card.template === 'hero') {
+                        preview = `
+                            <div class="text-[10px] text-cyan-500 font-mono mb-2">${card.data.subtitle}</div>
+                            <div class="text-2xl font-black leading-none mb-2">${card.data.title}</div>
+                            <div class="text-xs text-slate-400 line-clamp-2">${card.data.content}</div>
+                         `;
+                    } else if (card.template === 'stat') {
+                        preview = `
+                            <div class="flex justify-between items-center">
+                                <div class="text-xs text-slate-500 font-mono">${card.data.subtitle}</div>
+                                <div class="text-xl font-bold text-cyan-400">${card.data.title}</div>
+                            </div>
+                            <div class="text-xs text-slate-400 mt-2">${card.data.content}</div>
+                        `;
+                    } else {
+                        preview = `
+                            <div class="text-[10px] text-indigo-400 font-mono mb-1">${card.data.subtitle}</div>
+                             <div class="font-bold text-lg mb-2">${card.data.title}</div>
+                             <div class="text-xs text-slate-500 line-clamp-3">${card.data.content}</div>
+                        `;
+                    }
+
+                    cardEl.innerHTML = `
+                        ${preview}
+                        <div class="absolute inset-0 bg-cyan-500/10 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                            <span class="bg-black/50 backdrop-blur px-3 py-1 rounded-full text-xs font-mono border border-cyan-500/50">EDIT TRANSMISSION</span>
+                        </div>
+                    `;
+                    grid.appendChild(cardEl);
+                });
+            });
+
+            lucide.createIcons();
+        }
+
+        // Edit Content
+        function openEdit(cardId) {
+            const card = contentData.cards.find(c => c.id === cardId);
+            if (!card) return;
+
+            document.getElementById('edit-id').value = card.id;
+            document.getElementById('edit-lane').value = card.laneId;
+            document.getElementById('edit-template').value = card.template;
+
+            document.getElementById('edit-subtitle').value = card.data.subtitle || '';
+            document.getElementById('edit-title').value = card.data.title || '';
+            document.getElementById('edit-content').value = card.data.content || '';
+
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+
+        function closeEdit() {
+            document.getElementById('edit-modal').classList.add('hidden');
+        }
+
+        async function saveCard() {
+            const btn = document.querySelector('#edit-modal button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="animate-spin">⏳</span> Transmitting...';
+            btn.disabled = true;
+
+            const id = document.getElementById('edit-id').value;
+            const laneId = document.getElementById('edit-lane').value;
+            const template = document.getElementById('edit-template').value;
+            const data = {
+                subtitle: document.getElementById('edit-subtitle').value,
+                title: document.getElementById('edit-title').value,
+                content: document.getElementById('edit-content').value,
+                // Preserve image if exists but not editable in this v1
+                image: contentData.cards.find(c => c.id === id)?.data.image
+            };
+
+            const payload = { id, laneId, template, data };
+
+            try {
+                const res = await fetch('/api/content/card', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('admin_token')
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    // Update local state optimistic
+                    const idx = contentData.cards.findIndex(c => c.id === id);
+                    if (idx !== -1) contentData.cards[idx] = payload;
+
+                    renderEditor();
+                    closeEdit();
+                } else {
+                    alert('Transmission Failed. Check console.');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Connection Error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+    </script>
+</body>
+
+</html>

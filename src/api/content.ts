@@ -21,8 +21,15 @@ contentRouter.get('/', async (c) => {
     }
 });
 
-// Endpoint to add/update a card (Prototype Admin API)
+// Endpoint to add/update a card (Protected Admin API)
 contentRouter.post('/card', async (c) => {
+    const authHeader = c.req.header('Authorization');
+    const token = authHeader?.split(' ')[1];
+
+    if (token !== process.env.ADMIN_TOKEN) {
+        return c.json({ error: 'Unauthorized' }, 401);
+    }
+
     const body = await c.req.json();
     const { id, laneId, template, data } = body;
 

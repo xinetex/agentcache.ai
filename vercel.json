@@ -103,6 +103,10 @@
       "destination": "/login.html"
     },
     {
+      "source": "/mission-control",
+      "destination": "/mission-control.html"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/index"
     }

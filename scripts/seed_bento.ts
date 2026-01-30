@@ -19,19 +19,19 @@ const CARDS = [
     // --- MISSION LANE (Hero + Problem/Solution) ---
     {
         id: 'mission-1', laneId: 'mission', template: 'hero',
-        data: { title: 'AI FOR EVERYONE', subtitle: 'ZERO LATENCY', content: 'AgentCache stores the first response. The next 999 are instant. Cut costs by 95% and eliminate wait times.' }
+        data: { title: 'CACHE YOUR THOUGHTS', subtitle: 'ZERO LATENCY', content: 'Don\'t pay for the same thought twice. Cache reasoning, save 90%, and deploy instant AI.' }
     },
     {
         id: 'mission-problem-1', laneId: 'mission', template: 'hero',
-        data: { title: 'SLOW AGENTS?', subtitle: 'THE PROBLEM', content: 'Your AI calls GPT-4 for "What is 2+2?" 1,000 times a day. Same question. Same slow 5-second wait.' }
+        data: { title: 'SLOW REASONING?', subtitle: 'THE PROBLEM', content: 'Your AI spends 5 seconds "thinking" about the same question 1,000 times. That\'s wasted time and money.' }
     },
     {
         id: 'mission-2', laneId: 'mission', template: 'hero',
-        data: { title: '100x FASTER', subtitle: 'THE SOLUTION', content: 'Responses in <50ms from 200+ edge locations. Your users wait less, your agents do more.' }
+        data: { title: 'ZERO LATENCY', subtitle: 'THE SOLUTION', content: 'Store the "thought process". The next user gets the answer instantly (4ms). No re-computation needed.' }
     },
     {
         id: 'mission-problem-2', laneId: 'mission', template: 'hero',
-        data: { title: '$10k BILL?', subtitle: 'COST SPIRAL', content: 'Every token costs money. 90% of your requests are redundant. Stop paying for the same answer twice.' }
+        data: { title: 'STOP BURNING $$', subtitle: 'COST SPIRAL', content: 'Chain-of-Thought is expensive. Cache the reasoning path once, serve it forever.' }
     },
     {
         id: 'mission-3', laneId: 'mission', template: 'hero',
