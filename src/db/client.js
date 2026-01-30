@@ -9,7 +9,7 @@ const isProd = process.env.NODE_ENV === 'production';
 const isLocal = connectionString.includes('localhost') || connectionString.includes('127.0.0.1');
 export const client = postgres(connectionString, {
     prepare: false,
-    ssl: isLocal ? false : 'require', // Neon requires SSL
+    ssl: 'require', // Neon requires SSL always
     connect_timeout: 5 // Fail fast after 5s
 });
 export const db = drizzle(client, { schema });

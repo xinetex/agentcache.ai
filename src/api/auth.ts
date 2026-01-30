@@ -20,10 +20,24 @@ export const authMiddleware = async (c, next) => {
     }
 
     const token = authHeader.split(' ')[1];
+
+    // 1. Check Admin Token (Environment Variable)
+    // Allows "Simple Admin" access without full JWT login
+    if (process.env.ADMIN_TOKEN && token === process.env.ADMIN_TOKEN) {
+        c.set('user', {
+            id: 'admin_superuser',
+            email: 'admin@localhost',
+            role: 'owner',
+            plan: 'enterprise'
+        });
+        await next();
+        return;
+    }
+
+    // 2. Check JWT (Standard Auth)
     try {
         const payload = await verify(token, JWT_SECRET);
         c.set('user', payload);
-
         // Optional: Fetch fresh role from DB if needed, but payload is faster
         // const member = await db.query.members.findFirst(...)
 

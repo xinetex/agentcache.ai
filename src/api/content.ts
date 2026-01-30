@@ -1,7 +1,11 @@
 import { Hono } from 'hono';
 import { db } from '../db/client.js';
 import { lanes, cards } from '../db/schema.js';
-import { asc } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
+import { authenticateApiKey } from '../middleware/auth.js';
+import { verify } from 'hono/jwt';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_do_not_use_in_prod';
 
 const contentRouter = new Hono<{ Variables: { user: any } }>();
 
@@ -25,13 +29,34 @@ contentRouter.get('/', async (c) => {
     }
 });
 
-// Endpoint to add/update a card (Protected Admin API)
+// Endpoint to add/update a card (Dual Auth: Admin Token OR API Key)
 contentRouter.post('/card', async (c) => {
     const authHeader = c.req.header('Authorization');
     const token = authHeader?.split(' ')[1];
+    const apiKey = c.req.header('X-API-Key');
 
-    if (token !== process.env.ADMIN_TOKEN) {
-        return c.json({ error: 'Unauthorized' }, 401);
+    let isAdmin = false;
+
+    // 1. Check Admin Token (Simplex)
+    if (token === process.env.ADMIN_TOKEN) {
+        isAdmin = true;
+    } else if (token) {
+        // 1.5 Check JWT (Admin/Owner)
+        try {
+            const payload = await verify(token, JWT_SECRET);
+            if (payload.role === 'admin' || payload.role === 'owner') {
+                isAdmin = true;
+            }
+        } catch (e) {
+            // Invalid JWT, fall through to API Key check
+        }
+    }
+
+    if (!isAdmin) {
+        // 2. Check API Key (if not Admin)
+        const authError = await authenticateApiKey(c);
+        if (authError) return authError;
+        // If we get here, API Key is valid and c.get('tier') is set
     }
 
     const body = await c.req.json();
@@ -60,6 +85,42 @@ contentRouter.post('/card', async (c) => {
         return c.json({ success: true, id });
     } catch (error: any) {
         console.error('Failed to specific card:', error);
+        return c.json({ error: error.message }, 500);
+    }
+});
+
+// Endpoint to delete a card
+contentRouter.delete('/card/:id', async (c) => {
+    const authHeader = c.req.header('Authorization');
+    const token = authHeader?.split(' ')[1];
+    const apiKey = c.req.header('X-API-Key');
+    const cardId = c.req.param('id');
+
+    // Auth Check
+    let authorized = false;
+    if (token === process.env.ADMIN_TOKEN) {
+        authorized = true;
+    } else if (token) {
+        try {
+            const payload = await verify(token, JWT_SECRET);
+            if (payload.role === 'admin' || payload.role === 'owner') {
+                authorized = true;
+            }
+        } catch (e) { /* Ignore */ }
+    }
+
+    if (!authorized) {
+        const authError = await authenticateApiKey(c);
+        if (!authError) authorized = true;
+    }
+
+    if (!authorized) return c.json({ error: 'Unauthorized' }, 401);
+
+    try {
+        await db.delete(cards).where(eq(cards.id, cardId));
+        return c.json({ success: true, id: cardId });
+    } catch (error: any) {
+        console.error('Failed to delete card:', error);
         return c.json({ error: error.message }, 500);
     }
 });

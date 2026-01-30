@@ -89,11 +89,17 @@ export const members = pgTable('members', {
 
 export const apiKeys = pgTable('api_keys', {
     id: uuid('id').defaultRandom().primaryKey(),
-    orgId: uuid('org_id').references(() => organizations.id),
-    prefix: text('prefix').notNull(), // e.g., 'ac_live_'
-    hash: text('hash').notNull(), // Hashed secret
-    scopes: text('scopes').array(), // ['cache:read', 'cache:write']
+    orgId: uuid('organization_id').references(() => organizations.id),
+    userId: uuid('user_id').references(() => users.id),
+    prefix: text('key_prefix').notNull(),
+    hash: text('key_hash').notNull(),
+    name: text('name'),
+    scopes: text('scopes').array(),
+    allowedNamespaces: text('allowed_namespaces').array(),
+    requestCount: integer('request_count').default(0),
+    isActive: boolean('is_active').default(true),
     lastUsedAt: timestamp('last_used_at'),
+    revokedAt: timestamp('revoked_at'),
     createdAt: timestamp('created_at').defaultNow(),
     expiresAt: timestamp('expires_at'),
 });
