@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentCache | The World's First Cognitive Memory OS with Reasoning Token Caching</title>
+    <meta name="description"
+        content="Give your AI agents infinite memory that never hallucinates and cache the thinking process for 98% cost savings. Moonshot AI integration + 3-tier memory architecture.">
+    <link rel="stylesheet" href="/src/index.css">
+    <style>
+        html,
+        body {
+            overflow-x: hidden;
+            overflow-y: auto;
+            height: auto;
+            min-height: 100vh;
+        }
+
+        body {
+            background-color: var(--hud-bg);
+            background-image:
+                linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            color: var(--hud-text);
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        .glass {
+            background: var(--hud-panel-bg);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--hud-border);
+        }
+
+        .glass-dark {
+            background: rgba(5, 10, 20, 0.95);
+            border: 1px solid var(--hud-border);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero-glow {
+            background: radial-gradient(circle at 50% 50%, rgba(0, 243, 255, 0.1), transparent 70%);
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, #00f3ff, #7000ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+        }
+    </style>
+</head>
+
+<body class="antialiased selection:bg-cyan-500 selection:text-white">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div
+                    class="w-6 h-6 border border-[var(--hud-accent)] bg-[var(--hud-accent)]/20 flex items-center justify-center">
+                    <div class="w-3 h-3 bg-[var(--hud-accent)]"></div>
+                </div>
+                <span class="font-bold text-xl tracking-widest uppercase text-[var(--hud-accent)]">AgentCache</span>
+            </div>
+
+            <div class="hidden md:flex gap-6 relative">
+                <!-- Platform Dropdown -->
+                <div class="relative group">
+                    <button
+                        class="text-sm font-bold tracking-wider text-[var(--hud-text-dim)] hover:text-[var(--hud-accent)] transition flex items-center gap-1 uppercase">
+                        Platform
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+                    <div
+                        class="absolute top-full left-0 mt-2 w-64 glass-dark p-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all border border-[var(--hud-accent)]/30">
+                        <a href="#cognitive" class="block px-4 py-3 hover:bg-[var(--hud-accent)]/10 group/item">
+                            <div
+                                class="font-bold text-[var(--hud-text)] group-hover/item:text-[var(--hud-accent)] tracking-wide">
+                                COGNITIVE MEMORY OS</div>
+                            <div class="text-xs text-[var(--hud-text-dim)] font-mono">3-TIER ARCHITECTURE</div>
+                        </a>
+                        <a href="#oracle"
+                            class="block px-4 py-3 hover:bg-[var(--hud-accent)]/10 group/item border-t border-[var(--hud-border)]/30">
+                            <div
+                                class="font-bold text-[var(--hud-text)] group-hover/item:text-purple-400 tracking-wide">
+                                🔮 ORACLE AS A SERVICE</div>
+                            <div class="text-xs text-[var(--hud-text-dim)] font-mono">Q-ORACLE FOR MARKETS</div>
+                        </a>
+                        <a href="#transcoding"
+                            class="block px-4 py-3 hover:bg-[var(--hud-accent)]/10 group/item border-t border-[var(--hud-border)]/30">
+                            <div class="font-bold text-[var(--hud-text)] group-hover/item:text-rose-400 tracking-wide">
+                                🎬 MEDIA TRANSCODING</div>
+                            <div class="text-xs text-[var(--hud-text-dim)] font-mono">JETTYTHUNDER &amp; AUDIO1</div>
+                        </a>
+                        <a href="#moonshot"
+                            class="block px-4 py-3 hover:bg-[var(--hud-accent)]/10 group/item border-t border-[var(--hud-border)]/30">
+                            <div
+                                class="font-bold text-[var(--hud-text)] group-hover/item:text-[var(--hud-accent)] tracking-wide">
+                                REASONING CACHE</div>
+                            <div class="text-xs text-[var(--hud-text-dim)] font-mono">98% COST SAVINGS</div>
+                        </a>
+                        <a href="/monitor.html"
+                            class="block px-4 py-3 hover:bg-[var(--hud-accent)]/10 group/item border-t border-[var(--hud-border)]/30">
+                            <div
+                                class="font-bold text-[var(--hud-text)] group-hover/item:text-[var(--hud-accent)] tracking-wide">
+                                MEMORY MONITOR</div>
+                            <div class="text-xs text-[var(--hud-text-dim)] font-mono">LIVE DEMO</div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Developers Dropdown -->
+                <div class="relative group">
+                    <button
+                        class="text-sm font-bold tracking-wider text-[var(--hud-text-dim)] hover:text-[var(--hud-accent)] transition flex items-center gap-1 uppercase">
+                        Developers
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+                    <div
+                        class="absolute top-full left-0 mt-2 w-56 glass-dark p-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all border border-[var(--hud-accent)]/30">
+                        <a href="/docs.html" class="block px-4 py-3 hover:bg-[var(--hud-accent)]/10 group/item">
+                            <div
+                                class="font-bold text-[var(--hud-text)] group-hover/item:text-[var(--hud-accent)] tracking-wide">
+                                DOCUMENTATION</div>
+                            <div class="text-xs text-[var(--hud-text-dim)] font-mono">API REFERENCE</div>
+                        </a>
+                        <a href="/docs.html#quickstart"
+                            class="block px-4 py-3 hover:bg-[var(--hud-accent)]/10 group/item border-t border-[var(--hud-border)]/30">
+                            <div
+                                class="font-bold text-[var(--hud-text)] group-hover/item:text-[var(--hud-accent)] tracking-wide">
+                                QUICK START</div>
+                            <div class="text-xs text-[var(--hud-text-dim)] font-mono">30 SECOND SETUP</div>
+                        </a>
+                        <a href="/changelog.html"
+                            class="block px-4 py-3 hover:bg-[var(--hud-accent)]/10 group/item border-t border-[var(--hud-border)]/30">
+                            <div
+                                class="font-bold text-[var(--hud-text)] group-hover/item:text-[var(--hud-accent)] tracking-wide">
+                                CHANGELOG</div>
+                            <div class="text-xs text-[var(--hud-text-dim)] font-mono">WHAT'S NEW</div>
+                        </a>
+                    </div>
+                </div>
+
+                <a href="/pricing" class="text-sm font-medium text-slate-400 hover:text-white transition">Pricing</a>
+                <a href="/blog.html" class="text-sm font-medium text-slate-400 hover:text-white transition">Blog</a>
+            </div>
+
+            <a href="/wizard"
+                class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full text-sm font-medium transition-all border border-white/10">
+                Launch Wizard
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-20 hero-glow min-h-screen flex items-center">
+        <div class="max-w-7xl mx-auto px-6 text-center relative z-10">
+            <div
+                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-mono mb-8">
+                <span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+                World's First Cognitive Memory OS
+            </div>
+
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
+                Stop Giving Your Agents <br>
+                <span class="text-gradient">Amnesia.</span>
+            </h1>
+
+            <p class="text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
+                The only AI memory system that <strong>caches the thinking process</strong>, not just the answer. <br>
+                Infinite context + 98% cost savings + zero hallucinations.
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+                <a href="/signup.html"
+                    class="px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold text-lg shadow-lg shadow-cyan-500/20 transition-all transform hover:scale-105">
+                    Build Pipeline (Free)
+                </a>
+                <a href="/demo"
+                    class="px-8 py-4 glass hover:bg-slate-800 text-cyan-400 border border-cyan-500/30 rounded-xl font-medium transition-all flex items-center gap-2">
+                    <span class="relative flex h-3 w-3">
+                        <span
+                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-cyan-500"></span>
+                    </span>
+                    Live Demo
+                </a>
+            </div>
+
+            <div class="flex items-center justify-center gap-6 text-sm text-slate-500">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    No credit card required
+                </div>
+                <div>•</div>
+                <div>Start free, upgrade anytime</div>
+            </div>
+
+            <!-- 3-Tier Architecture Visual -->
+            <div class="mt-20 relative max-w-5xl mx-auto">
+                <div class="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent z-10"></div>
+                <div class="glass rounded-2xl p-1 border border-slate-700/50">
+                    <div class="bg-slate-900/80 rounded-xl p-8 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+                        <!-- L1 -->
+                        <div class="space-y-3">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-500 mb-3">
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 10V3L4 14h7v7l9-11h-7z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-white">L1: Hot Context</h3>
+                            <p class="text-sm text-slate-400">Active conversation window. Immediate awareness.
+                                <strong>Zero latency</strong>.
+                            </p>
+                            <div class="text-xs text-slate-600">In-Memory</div>
+                        </div>
+                        <!-- L2 -->
+                        <div class="space-y-3">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-500 mb-3">
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-white">L2: Warm History</h3>
+                            <p class="text-sm text-slate-400">Recent sessions cached in Redis. Fast recall of
+                                <strong>last 7 days</strong>.
+                            </p>
+                            <div class="text-xs text-slate-600">Upstash Redis</div>
+                        </div>
+                        <!-- L3 -->
+                        <div class="space-y-3">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-500 mb-3">
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-white">L3: Cold Knowledge</h3>
+                            <p class="text-sm text-slate-400"><strong>Infinite</strong> vector storage. Semantic search
+                                retrieves memories from <strong>years ago</strong>.</p>
+                            <div class="text-xs text-slate-600">Upstash Vector</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Three Pillars -->
+    <section id="cognitive" class="py-24 bg-slate-900/50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">
+                    Not Just Storage. <span class="text-cyan-400">Intelligence.</span>
+                </h2>
+                <p class="text-xl text-slate-400 max-w-3xl mx-auto">
+                    Most vector databases are <strong>dumb storage</strong>. AgentCache includes a <strong>Cognitive
+                        Engine</strong> that validates memories, resolves conflicts, and prevents hallucinations before
+                    they stick.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 mb-16">
+                <!-- Pillar 1: Infinite Memory -->
+                <div class="glass p-8 rounded-2xl hover:bg-slate-800/50 transition-colors">
+                    <div class="text-4xl mb-4">🧠</div>
+                    <h3 class="text-2xl font-bold mb-4 text-white">Infinite Memory</h3>
+                    <p class="text-slate-400 mb-4">
+                        Never lose context. Our 3-tier architecture (L1/L2/L3) gives your agents <strong>infinite
+                            memory</strong> that persists across sessions, months, even years.
+                    </p>
+                    <ul class="space-y-2 text-sm text-slate-500">
+                        <li class="flex items-center gap-2">
+                            <span class="text-cyan-400">✓</span> Cross-session memory
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-cyan-400">✓</span> Semantic retrieval
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-cyan-400">✓</span> Episodic decay algorithm
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Pillar 2: Hallucination Prevention -->
+                <div
+                    class="glass p-8 rounded-2xl hover:bg-slate-800/50 transition-colors border-2 border-emerald-500/30">
+                    <div class="text-4xl mb-4">🛡️</div>
+                    <h3 class="text-2xl font-bold mb-4 text-white">Hallucination Prevention</h3>
+                    <p class="text-slate-400 mb-4">
+                        Our <strong>Cognitive Validator</strong> analyzes every memory before saving. Low-confidence
+                        responses like "I think maybe..." are <strong>rejected</strong>. Only verified facts make it to
+                        long-term storage.
+                    </p>
+                    <div class="bg-black/50 p-4 rounded-lg font-mono text-xs text-slate-300">
+                        <span class="text-rose-400">- </span>"I think the sky is green" <span class="text-slate-600">//
+                            REJECTED</span><br>
+                        <span class="text-emerald-400">+ </span>"The sky is blue" <span class="text-slate-600">//
+                            VERIFIED</span>
+                    </div>
+                </div>
+
+                <!-- Pillar 3: 98% Cost Savings -->
+                <div class="glass p-8 rounded-2xl hover:bg-slate-800/50 transition-colors">
+                    <div class="text-4xl mb-4">💰</div>
+                    <h3 class="text-2xl font-bold mb-4 text-white">98% Cost Savings</h3>
+                    <p class="text-slate-400 mb-4">
+                        <strong>Cache the thinking</strong>, not just the answer. Moonshot AI integration caches
+                        <strong>reasoning tokens</strong> — the expensive "thinking" process — and reuses them for
+                        similar queries.
+                    </p>
+                    <ul class="space-y-2 text-sm text-slate-500">
+                        <li class="flex items-center gap-2">
+                            <span class="text-cyan-400">✓</span> Reasoning token cache
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-cyan-400">✓</span> Semantic deduplication
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-cyan-400">✓</span> $3,650/mo avg savings
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Moonshot Spotlight -->
+    <section id="moonshot" class="py-24 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold mb-6">
+                    🚀 Moonshot AI (Kimi K2) Integration
+                </div>
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">
+                    Cache the <span class="text-gradient">Thinking</span>, Not Just the Answer
+                </h2>
+                <p class="text-xl text-slate-400 max-w-3xl mx-auto mb-12">
+                    World's <strong>first platform</strong> to combine Long-Term Memory with Reasoning Token Caching.
+                    When Kimi K2 "thinks" about a problem, we cache that expensive reasoning process. Reuse it for
+                    similar queries and save <strong>98%</strong> on reasoning costs.
+                </p>
+
+                <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-12">
+                    <!-- Stat 1 -->
+                    <div class="glass p-6 rounded-xl text-left">
+                        <div class="text-5xl font-bold text-purple-400 mb-2">98%</div>
+                        <div class="text-sm text-slate-400">Cost savings on reasoning tokens when cached</div>
+                    </div>
+                    <!-- Stat 2 -->
+                    <div class="glass p-6 rounded-xl text-left">
+                        <div class="text-5xl font-bold text-cyan-400 mb-2">∞</div>
+                        <div class="text-sm text-slate-400">Infinite memory across all sessions with L3 storage</div>
+                    </div>
+                    <!-- Stat 3 -->
+                    <div class="glass p-6 rounded-xl text-left">
+                        <div class="text-5xl font-bold text-emerald-400 mb-2">0</div>
+                        <div class="text-sm text-slate-400">Hallucinations in long-term memory (validated)</div>
+                    </div>
+                </div>
+
+                <!-- How It Works Diagram -->
+                <div class="glass rounded-2xl p-8 text-left max-w-3xl mx-auto mb-12">
+                    <h3 class="text-xl font-bold mb-6 text-center">How the Hybrid System Works</h3>
+                    <div class="space-y-4 font-mono text-sm">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold">
+                                1</div>
+                            <div>
+                                <div class="text-white font-semibold">User Query</div>
+                                <div class="text-slate-500 text-xs">"What's our refund policy?"</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold">
+                                2</div>
+                            <div>
+                                <div class="text-white font-semibold">L3 Vector Retrieval</div>
+                                <div class="text-slate-500 text-xs">Fetch "Refund Policy v2.0" from long-term memory
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-400 font-bold">
+                                3</div>
+                            <div>
+                                <div class="text-white font-semibold">L2 Recent History</div>
+                                <div class="text-slate-500 text-xs">Add context from last 7 days</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold">
+                                4</div>
+                            <div>
+                                <div class="text-white font-semibold">Moonshot API Call</div>
+                                <div class="text-slate-500 text-xs">Cached reasoning tokens reused (98% savings)</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold">
+                                5</div>
+                            <div>
+                                <div class="text-white font-semibold">Cognitive Validation</div>
+                                <div class="text-slate-500 text-xs">Response validated (no hallucinations)</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-8 h-8 rounded-lg bg-rose-500/20 flex items-center justify-center text-rose-400 font-bold">
+                                6</div>
+                            <div>
+                                <div class="text-white font-semibold">L2/L3 Storage</div>
+                                <div class="text-slate-500 text-xs">Save interaction + reasoning metadata</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <a href="/docs.html#moonshot"
+                        class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-semibold transition-all shadow-lg shadow-purple-500/20">
+                        Read API Docs
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                            </path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AgentCache Edge (Data Center) -->
+    <section id="edge" class="py-24 bg-slate-900/50 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <div>
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-6">
+                        🏢 AgentCache Edge
+                    </div>
+                    <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                        Your Data Center's <br>
+                        <span class="text-gradient">Virtual GPU.</span>
+                    </h2>
+                    <p class="text-xl text-slate-400 mb-8 leading-relaxed">
+                        Turn every rack into a supercomputer. AgentCache Edge is a containerized, air-gapped solution
+                        designed for on-premise deployment.
+                    </p>
+
+                    <div class="space-y-6 mb-8">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-2xl">🐳
+                            </div>
+                            <div>
+                                <h4 class="text-white font-bold">Docker Containerized</h4>
+                                <p class="text-sm text-slate-400">Deploy instantly with standard Docker and Kubernetes
+                                    artifacts. Zero external dependencies.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-2xl">🔒
+                            </div>
+                            <div>
+                                <h4 class="text-white font-bold">Air-Gapped Security</h4>
+                                <p class="text-sm text-slate-400">Runs entirely within your VPC or physical hardware. No
+                                    data leaves your perimeter.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-2xl">⚡
+                            </div>
+                            <div>
+                                <h4 class="text-white font-bold">Low Latency</h4>
+                                <p class="text-sm text-slate-400">Sub-millisecond response times for cached agentic
+                                    plans. Faster than light.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="/docs/deployment.html"
+                        class="text-blue-400 hover:text-blue-300 font-medium flex items-center gap-2">
+                        View Deployment Guide <span aria-hidden="true">→</span>
+                    </a>
+                </div>
+
+                <!-- Terminal Visual -->
+                <div class="glass rounded-2xl p-1 border border-slate-700/50 shadow-2xl shadow-blue-900/20">
+                    <div class="bg-slate-950 rounded-xl p-6 font-mono text-xs md:text-sm overflow-hidden">
+                        <div class="flex gap-2 mb-4">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <div class="text-slate-400 space-y-2">
+                            <p><span class="text-green-400">➜</span> <span class="text-blue-400">~</span> docker-compose
+                                up -d</p>
+                            <p class="text-slate-500">[+] Running 2/2</p>
+                            <p class="text-slate-300"> ✔ Container agentcache-redis <span
+                                    class="text-green-400">Started</span></p>
+                            <p class="text-slate-300"> ✔ Container agentcache-edge <span
+                                    class="text-green-400">Started</span></p>
+                            <p class="mt-4"><span class="text-green-400">➜</span> <span class="text-blue-400">~</span>
+                                curl localhost:3000/health</p>
+                            <p class="text-cyan-300">{ "status": "online", "mode": "air-gapped" }</p>
+                            <p class="mt-4"><span class="text-green-400">➜</span> <span class="text-blue-400">~</span>
+                                ./benchmark_cluster.js</p>
+                            <p class="text-slate-300">🚀 Starting Cluster Benchmark...</p>
+                            <p class="text-slate-300">Throughput: <span class="text-emerald-400 font-bold">1,765
+                                    req/s</span></p>
+                            <p class="text-slate-300">Virtual GPUs: <span
+                                    class="text-emerald-400 font-bold">42.5x</span></p>
+                            <p class="animate-pulse">_</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Robotics & Fleet Learning -->
+    <section id="robotics" class="py-24 bg-slate-950 border-t border-slate-800 relative overflow-hidden">
+        <div
+            class="absolute inset-0 bg-[url('/assets/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-5 pointer-events-none">
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <!-- Content -->
+                <div>
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold mb-6">
+                        🤖 Hive Mind for Robotics
+                    </div>
+                    <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                        One Robot Learns. <br>
+                        <span class="text-gradient">The Fleet Knows.</span>
+                    </h2>
+                    <p class="text-xl text-slate-400 mb-8 leading-relaxed">
+                        Instant knowledge propagation for autonomous fleets. When one agent solves a navigation problem,
+                        the entire fleet gets the cached solution instantly.
+                    </p>
+
+                    <div class="space-y-6 mb-8">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-2xl">📡
+                            </div>
+                            <div>
+                                <h4 class="text-white font-bold">Dynamic Invalidation</h4>
+                                <p class="text-sm text-slate-400">Environment changed? Invalidate "navigation/*" caches
+                                    instantly across the entire fleet.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-2xl">👀
+                            </div>
+                            <div>
+                                <h4 class="text-white font-bold">URL Monitoring</h4>
+                                <p class="text-sm text-slate-400">Auto-invalidate caches when external data sources
+                                    (weather, traffic, pricing) change.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="/md.html?doc=robotics-api-reference"
+                        class="text-amber-400 hover:text-amber-300 font-medium flex items-center gap-2">
+                        View Robotics API <span aria-hidden="true">→</span>
+                    </a>
+                </div>
+
+                <!-- Visual -->
+                <div class="glass rounded-2xl p-1 border border-amber-500/20 shadow-2xl shadow-amber-900/20">
+                    <div class="bg-slate-950 rounded-xl p-6 font-mono text-xs md:text-sm">
+                        <p class="text-slate-300">{ "url": "https://sensors.io/traffic" }</p>
+                        <p class="text-emerald-400">✔ Monitoring active. Auto-sync enabled.</p>
+                        <p class="animate-pulse">_</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Green AI (Sustainability) -->
+    <section class="py-24 border-t border-slate-800 relative overflow-hidden">
+        <!-- Background Glow -->
+        <div
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-3xl -z-10">
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <div
+                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold mb-6">
+                🌱 Green AI Initiative
+            </div>
+            <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                Download Free <span class="text-emerald-400">Electricity.</span>
+            </h2>
+            <p class="text-xl text-slate-400 max-w-3xl mx-auto mb-16">
+                Every cached token is energy saved. AgentCache quantifies your environmental impact in real-time.
+            </p>
+
+            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <div class="glass p-8 rounded-2xl border-t-4 border-emerald-500">
+                    <div class="text-sm text-slate-400 uppercase tracking-wider mb-2">Energy Saved</div>
+                    <div class="text-5xl font-mono font-bold text-white mb-2">4.2<span
+                            class="text-2xl text-slate-500">MWh</span></div>
+                    <p class="text-xs text-emerald-400">Equivalent to planting 150 trees</p>
+                </div>
+                <div class="glass p-8 rounded-2xl border-t-4 border-emerald-500">
+                    <div class="text-sm text-slate-400 uppercase tracking-wider mb-2">Virtual GPUs</div>
+                    <div class="text-5xl font-mono font-bold text-white mb-2">40<span
+                            class="text-2xl text-slate-500">x</span></div>
+                    <p class="text-xs text-emerald-400">Throughput multiplier vs Direct LLM</p>
+                </div>
+                <div class="glass p-8 rounded-2xl border-t-4 border-emerald-500">
+                    <div class="text-sm text-slate-400 uppercase tracking-wider mb-2">Carbon Offset</div>
+                    <div class="text-5xl font-mono font-bold text-white mb-2">12<span
+                            class="text-2xl text-slate-500">t</span></div>
+                    <p class="text-xs text-emerald-400">CO2 emissions prevented</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Medical / PII Mode -->
+    <section class="py-24 bg-slate-900/50 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <!-- Visual -->
+                <div class="glass rounded-2xl p-8 border border-rose-500/20 relative order-2 md:order-1">
+                    <div
+                        class="absolute -top-4 -right-4 bg-rose-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-bounce">
+                        HIPAA READY
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex gap-3">
+                            <div class="w-8 h-8 rounded-full bg-slate-800 flex-shrink-0"></div>
+                            <div class="bg-slate-800 rounded-r-xl rounded-bl-xl p-3 text-sm text-slate-300 w-3/4">
+                                Patient John Doe (SSN: 123-45-6789) diagnosed with...
+                            </div>
+                        </div>
+                        <div class="flex gap-3 justify-end">
+                            <div
+                                class="bg-cyan-900/30 border border-cyan-500/30 rounded-l-xl rounded-br-xl p-3 text-sm text-cyan-100 w-3/4">
+                                <div class="flex items-center gap-2 text-xs text-cyan-400 mb-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    PII REDACTED
+                                </div>
+                                Patient [REDACTED: NAME] (SSN: [REDACTED: SSN]) diagnosed with...
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-cyan-500/20 flex-shrink-0"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="order-1 md:order-2">
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold mb-6">
+                        🏥 Medical Mode
+                    </div>
+                    <h2 class="text-4xl font-bold mb-6">
+                        Compliance is <br>
+                        <span class="text-white">Not Optional.</span>
+                    </h2>
+                    <p class="text-xl text-slate-400 mb-8">
+                        Built for high-stakes environments. Our <strong>Medical Mode</strong> automatically detects and
+                        redact PII (Personally Identifiable Information) before it ever hits the cache.
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex items-center gap-3 text-slate-300">
+                            <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Auto-redaction of SSN, Email, Phone, Names
+                        </li>
+                        <li class="flex items-center gap-3 text-slate-300">
+                            <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            HIPAA & GDPR Compliant Workflows
+                        </li>
+                        <li class="flex items-center gap-3 text-slate-300">
+                            <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Audit Logs with Redacted Entries
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AgentCache Studio -->
+    <section class="py-24 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <h2 class="text-4xl md:text-6xl font-bold mb-8">
+                <span class="text-gradient">Pipeline Wizard</span> & Workspace
+            </h2>
+            <p class="text-xl text-slate-400 max-w-3xl mx-auto mb-12">
+                Visually orchestrate your cognitive architecture. Use our <strong>AI Wizard</strong> to generate
+                optimized caching pipelines for Healthcare, Finance, or Legal use cases in seconds.
+            </p>
+
+            <!-- Hero Image/Graphic -->
+            <div class="relative group max-w-5xl mx-auto">
+                <div
+                    class="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
+                </div>
+                <div class="relative rounded-lg overflow-hidden border border-slate-800 bg-slate-900 shadow-2xl">
+                    <img src="assets/studio-real.png" alt="AgentCache Console Interface"
+                        class="w-full h-auto transform transition duration-500 hover:scale-[1.01]">
+
+                    <!-- Overlay UI Elements (Optional, can be removed if image is sufficient) -->
+                    <div
+                        class="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-slate-900 to-transparent pointer-events-none">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12">
+                <a href="/signup.html"
+                    class="inline-flex items-center gap-2 px-8 py-4 bg-white text-slate-950 font-bold rounded-xl hover:bg-slate-200 transition-colors">
+                    Start Building
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases -->
+    <section class="py-24 bg-slate-900/50 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4">Built for the Agentic Future</h2>
+                <p class="text-xl text-slate-400">Real-world use cases that combine infinite memory + cost savings</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="glass p-6 rounded-xl hover:bg-slate-800/50 transition-colors">
+                    <div class="text-3xl mb-3">🤖</div>
+                    <h3 class="font-bold text-white mb-2">AI Agents</h3>
+                    <p class="text-sm text-slate-400">Memory persists across sessions. No more "who am I talking to?"
+                    </p>
+                </div>
+                <div class="glass p-6 rounded-xl hover:bg-slate-800/50 transition-colors">
+                    <div class="text-3xl mb-3">💬</div>
+                    <h3 class="font-bold text-white mb-2">Conversational Apps</h3>
+                    <p class="text-sm text-slate-400">Context never expires. Pick up conversations from months ago.</p>
+                </div>
+                <div class="glass p-6 rounded-xl hover:bg-slate-800/50 transition-colors">
+                    <div class="text-3xl mb-3">🔍</div>
+                    <h3 class="font-bold text-white mb-2">Code Review Bots</h3>
+                    <p class="text-sm text-slate-400">Cache reasoning patterns. 98% savings on similar PR reviews.</p>
+                </div>
+                <div class="glass p-6 rounded-xl hover:bg-slate-800/50 transition-colors">
+                    <div class="text-3xl mb-3">🏢</div>
+                    <h3 class="font-bold text-white mb-2">Enterprise RAG</h3>
+                    <p class="text-sm text-slate-400">Validated knowledge graphs. No hallucinated docs.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Oracle as a Service -->
+    <section id="oracle" class="py-24 border-t border-slate-800 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-purple-900/20 via-transparent to-cyan-900/20"></div>
+
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <div>
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold mb-6">
+                        🔮 Oracle as a Service
+                    </div>
+                    <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                        AI-Powered Market <br>
+                        <span class="text-gradient">Resolution.</span>
+                    </h2>
+                    <p class="text-xl text-slate-400 mb-8 leading-relaxed">
+                        Power prediction markets with verifiable, transparent AI consensus. Our
+                        <strong>Q-Oracle</strong> system combines multi-agent intelligence with external oracle
+                        cross-validation.
+                    </p>
+
+                    <div class="space-y-6 mb-8">
+                        <div class="flex items-start gap-4">
+                            <div
+                                class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center text-2xl">
+                                🌌</div>
+                            <div>
+                                <h4 class="text-white font-bold">Multi-Agent Consensus</h4>
+                                <p class="text-sm text-slate-400">News, price, and on-chain agents vote on outcomes with
+                                    weighted confidence.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div
+                                class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center text-2xl">
+                                🔗</div>
+                            <div>
+                                <h4 class="text-white font-bold">External Oracle Comparison</h4>
+                                <p class="text-sm text-slate-400">Cross-validate with Chainlink, Pyth, UMA, and
+                                    Polymarket data.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div
+                                class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center text-2xl">
+                                ⚡</div>
+                            <div>
+                                <h4 class="text-white font-bold">LLM Interpretation</h4>
+                                <p class="text-sm text-slate-400">GPT-4o analyzes evidence with reasoning chains saved
+                                    to memory.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="https://qpp.bet/oracle" target="_blank"
+                        class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-semibold transition-all shadow-lg shadow-purple-500/20">
+                        Try Q-Oracle Live
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                        </svg>
+                    </a>
+                </div>
+
+                <!-- Visual -->
+                <div class="glass rounded-2xl p-1 border border-purple-500/30 shadow-2xl shadow-purple-900/20">
+                    <div class="bg-slate-950 rounded-xl p-6 font-mono text-xs md:text-sm">
+                        <div class="flex gap-2 mb-4">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <div class="text-slate-400 space-y-2">
+                            <p class="text-purple-400">// Consensus calculation</p>
+                            <p class="text-slate-300">NewsAgent: <span class="text-emerald-400">YES 85%</span></p>
+                            <p class="text-slate-300">PriceAgent: <span class="text-emerald-400">YES 92%</span></p>
+                            <p class="text-slate-300">ChainlinkOracle: <span class="text-emerald-400">$98,432</span></p>
+                            <p class="text-slate-300">PolymarketData: <span class="text-emerald-400">YES 78%</span></p>
+                            <p class="mt-4 text-cyan-300">→ Weighted Consensus: <span
+                                    class="text-emerald-400 font-bold">87.3% YES</span></p>
+                            <p class="text-slate-500">// Challenge period: 23h 45m remaining</p>
+                            <p class="animate-pulse">_</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Media Transcoding -->
+    <section id="transcoding" class="py-24 bg-slate-900/50 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <!-- Visual -->
+                <div
+                    class="glass rounded-2xl p-1 border border-rose-500/30 shadow-2xl shadow-rose-900/20 order-2 md:order-1">
+                    <div class="bg-slate-950 rounded-xl p-6">
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-12 h-12 rounded-lg bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center text-white font-bold">
+                                    JT</div>
+                                <div>
+                                    <div class="text-white font-bold">JettyThunder.app</div>
+                                    <div class="text-xs text-slate-500">Roku Channel Streaming</div>
+                                </div>
+                                <span
+                                    class="ml-auto text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded">LIVE</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold">
+                                    A1</div>
+                                <div>
+                                    <div class="text-white font-bold">Audio1.tv</div>
+                                    <div class="text-xs text-slate-500">Artist Video Platform</div>
+                                </div>
+                                <span
+                                    class="ml-auto text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded">LIVE</span>
+                            </div>
+                            <div class="border-t border-slate-800 pt-4 mt-4 text-xs text-slate-500 font-mono">
+                                <p>Transcoding: 4K → HLS Adaptive</p>
+                                <p>Encoding: H.264/HEVC</p>
+                                <p>Output: <span class="text-cyan-400">Roku-optimized streams</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-1 md:order-2">
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold mb-6">
+                        🎬 Media Transcoding
+                    </div>
+                    <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                        Video Pipeline <br>
+                        <span class="text-gradient">Infrastructure.</span>
+                    </h2>
+                    <p class="text-xl text-slate-400 mb-8 leading-relaxed">
+                        Powering streaming for <strong>JettyThunder.app</strong> and <strong>Audio1.tv</strong>.
+                        Automatic transcoding to Roku-optimized HLS with adaptive bitrate delivery.
+                    </p>
+
+                    <div class="space-y-6 mb-8">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-rose-500/20 flex items-center justify-center text-2xl">
+                                📺</div>
+                            <div>
+                                <h4 class="text-white font-bold">Roku-Optimized</h4>
+                                <p class="text-sm text-slate-400">HTTP/1.1 compatible streams with automatic poster
+                                    generation.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-rose-500/20 flex items-center justify-center text-2xl">
+                                ☁️</div>
+                            <div>
+                                <h4 class="text-white font-bold">Lyve Cloud Storage</h4>
+                                <p class="text-sm text-slate-400">Seagate S3-compatible storage with global CDN
+                                    delivery.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-rose-500/20 flex items-center justify-center text-2xl">
+                                ⚙️</div>
+                            <div>
+                                <h4 class="text-white font-bold">Encore Integration</h4>
+                                <p class="text-sm text-slate-400">SVT Encore transcoder with Redis job queue.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <a href="https://jettythunder.app" target="_blank"
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-medium transition-all border border-slate-700">
+                            JettyThunder
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14">
+                                </path>
+                            </svg>
+                        </a>
+                        <a href="https://audio1.tv" target="_blank"
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-medium transition-all border border-slate-700">
+                            Audio1.tv
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14">
+                                </path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Proof / Stats -->
+    <section class="py-24 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid md:grid-cols-3 gap-12 text-center">
+                <div>
+                    <div class="text-5xl font-bold text-cyan-400 mb-2">$3,650</div>
+                    <div class="text-slate-400">Average monthly savings per customer</div>
+                </div>
+                <div>
+                    <div class="text-5xl font-bold text-purple-400 mb-2">98%</div>
+                    <div class="text-slate-400">Cost reduction on reasoning tokens</div>
+                </div>
+                <div>
+                    <div class="text-5xl font-bold text-emerald-400 mb-2">∞</div>
+                    <div class="text-slate-400">Context window (never expires)</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-24 bg-slate-900/50 border-t border-slate-800">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h1 class="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6">
+                Deterministic AI <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">Compliance
+                    Layer</span>
+            </h1>
+            <p class="text-xl text-slate-400 mb-8 max-w-2xl mx-auto">
+                Don't just cache data. Cache verified outcomes. The professional orchestration layer for high-stakes
+                agentic workflows.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/signup.html"
+                    class="px-8 py-4 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-lg transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)]">
+                    Launch Studio
+                </a>
+            </div>
+            <p class="text-sm text-slate-500">Join Y Combinator companies saving thousands on LLM costs</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 border-t border-slate-800 text-center text-slate-500 text-sm">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="mb-6 flex justify-center gap-8">
+                <a href="/blog.html" class="hover:text-white transition">Blog</a>
+                <a href="/docs.html" class="hover:text-white transition">Docs</a>
+                <a href="/contact.html" class="hover:text-white transition">Contact</a>
+                <a href="https://github.com/xinetex/agentcache.ai" class="hover:text-white transition">GitHub</a>
+            </div>
+            <p>&copy; 2025 AgentCache.ai by Drgnflai, Inc. The Memory Layer for the Agentic Web.</p>
+        </div>
+    </footer>
+
+</body>
+
+</html>

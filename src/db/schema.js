@@ -285,3 +285,23 @@ export const bannerAnalysis = pgTable('banner_analysis', {
 
     analyzedAt: timestamp('analyzed_at').defaultNow(),
 });
+
+// --- Bento Grid Content System ---
+
+export const lanes = pgTable('lanes', {
+    id: text('id').primaryKey(), // e.g., 'mission', 'usecases'
+    title: text('title').notNull(),
+    size: text('size').notNull(), // 'large', 'medium', 'small'
+    speed: integer('speed').default(4000),
+});
+
+export const cards = pgTable('cards', {
+    id: text('id').primaryKey(), // e.g., 'mission-1'
+    laneId: text('lane_id').references(() => lanes.id),
+    template: text('template').notNull(), // 'hero', 'standard', 'profile'
+    data: jsonb('data').notNull(), // { title, subtitle, content, image... }
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+    laneIdx: index('cards_lane_idx').on(table.laneId),
+}));

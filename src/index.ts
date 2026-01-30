@@ -112,6 +112,9 @@ app.route('/api/sentry', sentryRouter);
 import intelligenceRouter from './api/intelligence.js';
 app.route('/api/intelligence', intelligenceRouter);
 
+import contentRouter from './api/content.js';
+app.route('/api/content', contentRouter);
+
 // Serve static files (landing page - defaults to community.html)
 app.get('/', (c) => {
   return c.redirect('/index.html');
