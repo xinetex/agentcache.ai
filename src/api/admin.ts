@@ -1,23 +1,38 @@
 import { Hono } from 'hono';
 import { statsService } from '../services/StatsService.js';
 import { userService } from '../services/UserService.js';
-// Using specific auth middleware - ensuring generic apiKey auth or similar
 import { authenticateApiKey } from '../middleware/auth.js';
+import { redis } from '../lib/redis.js';
 
 const app = new Hono();
 
-// Auth Middleware: Require Valid API Key or Session
-// For Admin/Mission Control, we might want stronger auth (e.g. Session/Role)
-// But for now matching legacy behavior or existing patterns.
-// Legacy 'admin-stats.js' didn't have explicit middleware in the file, 
-// likely handled by server.js or open.
-// src/api/admin-stats.ts used `authMiddleware, requireRole('owner')`.
-// We will apply basic authentication.
-
-// Check if we need to apply auth to all routes or specific ones
+// Auth Middleware (Optional for now as discussed)
 // app.use('*', authMiddleware); 
 
+app.get('/settings', async (c) => {
+    try {
+        const settings = await redis.get('adminConfig:settings');
+        return c.json(settings ? JSON.parse(settings as string) : {});
+    } catch (e: any) {
+        console.warn('Failed to fetch settings:', e);
+        return c.json({});
+    }
+});
+
+app.post('/settings', async (c) => {
+    try {
+        const body = await c.req.json();
+        // Basic validation could go here
+        await redis.set('adminConfig:settings', JSON.stringify(body));
+        return c.json({ success: true });
+    } catch (e: any) {
+        console.error('Failed to save settings:', e);
+        return c.json({ error: 'Failed to save settings' }, 500);
+    }
+});
+
 app.get('/stats', async (c) => {
+    // ... (existing code)
     try {
         const stats = await statsService.getGlobalStats();
         return c.json(stats);

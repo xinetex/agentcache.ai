@@ -96,6 +96,10 @@
                     class="px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300 border-b-2 border-transparent transition">
                     Analytics
                 </button>
+                <button onclick="switchTab('settings')" id="tab-settings"
+                    class="px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300 border-b-2 border-transparent transition">
+                    Settings
+                </button>
             </nav>
 
             <div class="flex items-center gap-4">
@@ -150,6 +154,45 @@
                 <div class="card p-6 rounded-xl">
                     <h3 class="text-sm font-mono text-slate-400 uppercase mb-4">Top Users (Score)</h3>
                     <div id="top-users-list" class="space-y-4"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: Settings -->
+        <div id="view-settings" class="hidden">
+            <div class="card p-8 rounded-xl max-w-2xl mx-auto">
+                <h2 class="text-xl font-black mb-6 tracking-tighter text-white">SYSTEM CONFIGURATION</h2>
+
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-xs font-mono text-slate-500 uppercase mb-2">Organization Name</label>
+                        <input type="text" id="setting-orgName" placeholder="MISSION CONTROL"
+                            class="w-full bg-slate-900 border border-slate-700 p-3 rounded text-white focus:border-cyan-500 outline-none transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-mono text-slate-500 uppercase mb-2">Logo URL</label>
+                        <input type="text" id="setting-logoUrl" placeholder="https://..."
+                            class="w-full bg-slate-900 border border-slate-700 p-3 rounded text-white focus:border-cyan-500 outline-none transition">
+                        <p class="text-[10px] text-slate-500 mt-1">Leave empty to use text logo.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-mono text-slate-500 uppercase mb-2">Accent Color</label>
+                        <div class="flex items-center gap-4">
+                            <input type="color" id="setting-accentColor" value="#06b6d4"
+                                class="bg-transparent h-10 w-10 cursor-pointer">
+                            <input type="text" id="setting-accentColorText" value="#06b6d4"
+                                class="bg-slate-900 h-10 border border-slate-700 p-2 rounded text-white font-mono text-sm uppercase focus:border-cyan-500 outline-none w-32">
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-slate-800 flex justify-end">
+                        <button onclick="saveSettings()"
+                            class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-8 rounded transition shadow-[0_0_20px_rgba(6,182,212,0.3)]">
+                            <i data-lucide="save" class="w-4 h-4 inline mr-2"></i> SAVE CONFIG
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -211,6 +254,8 @@
             if (token.length > 5) {
                 localStorage.setItem('admin_token', token);
                 document.getElementById('auth-modal').classList.add('hidden');
+                document.getElementById('auth-modal').classList.add('hidden');
+                loadSettings(); // Load settings first
                 loadContent();
                 loadUsers();
                 loadAnalytics();
@@ -230,11 +275,13 @@
             document.getElementById('view-content').classList.add('hidden');
             document.getElementById('view-users').classList.add('hidden');
             document.getElementById('view-analytics').classList.add('hidden');
+            document.getElementById('view-settings').classList.add('hidden');
 
             // Reset tabs
             document.getElementById('tab-content').className = "px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300 border-b-2 border-transparent transition";
             document.getElementById('tab-users').className = "px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300 border-b-2 border-transparent transition";
             document.getElementById('tab-analytics').className = "px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300 border-b-2 border-transparent transition";
+            document.getElementById('tab-settings').className = "px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300 border-b-2 border-transparent transition";
 
             // Activate view
             document.getElementById(`view-${tabId}`).classList.remove('hidden');
@@ -611,12 +658,127 @@
             }
         }
 
+        // --- SETTINGS & THEME ---
+        let currentSettings = {
+            orgName: 'MISSION CONTROL',
+            logoUrl: '',
+            accentColor: '#06b6d4'
+        };
+
+        async function loadSettings() {
+            try {
+                const token = localStorage.getItem('admin_token');
+                const res = await fetch('/api/admin/settings', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (Object.keys(data).length > 0) {
+                        currentSettings = { ...currentSettings, ...data };
+                    }
+                    applyTheme(currentSettings);
+
+                    // Populate Form
+                    document.getElementById('setting-orgName').value = currentSettings.orgName;
+                    document.getElementById('setting-logoUrl').value = currentSettings.logoUrl;
+                    document.getElementById('setting-accentColor').value = currentSettings.accentColor;
+                    document.getElementById('setting-accentColorText').value = currentSettings.accentColor;
+                }
+            } catch (e) {
+                console.error("Failed to load settings", e);
+            }
+        }
+
+        async function saveSettings() {
+            const newSettings = {
+                orgName: document.getElementById('setting-orgName').value || 'MISSION CONTROL',
+                logoUrl: document.getElementById('setting-logoUrl').value,
+                accentColor: document.getElementById('setting-accentColor').value
+            };
+
+            const btn = document.querySelector('#view-settings button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'SAVING...';
+            btn.disabled = true;
+
+            try {
+                const token = localStorage.getItem('admin_token');
+                const res = await fetch('/api/admin/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(newSettings)
+                });
+
+                if (res.ok) {
+                    currentSettings = newSettings;
+                    applyTheme(currentSettings);
+                    alert('Configuration Saved');
+                } else {
+                    alert('Failed to save');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Connection Error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function applyTheme(settings) {
+            // 1. Update Header
+            const headerTitle = document.querySelector('header h1');
+            if (settings.logoUrl) {
+                headerTitle.innerHTML = `<img src="${settings.logoUrl}" alt="${settings.orgName}" class="h-8 object-contain">`;
+            } else {
+                headerTitle.innerText = settings.orgName;
+            }
+
+            // 2. Inject Dynamic CSS for Color Overrides
+            let style = document.getElementById('theme-overrides');
+            if (!style) {
+                style = document.createElement('style');
+                style.id = 'theme-overrides';
+                document.head.appendChild(style);
+            }
+
+            const c = settings.accentColor;
+            // Generate a primitive hover variant (darken slightly) - simple approx
+            // For now, reuse same color or use CSS filter
+
+            style.innerHTML = `
+                .text-cyan-500, .text-cyan-400 { color: ${c} !important; }
+                .bg-cyan-600 { background-color: ${c} !important; }
+                .bg-cyan-500 { background-color: ${c} !important; }
+                .border-cyan-500, .border-cyan-500\\/20 { border-color: ${c} !important; }
+                .focus\\:border-cyan-500:focus { border-color: ${c} !important; }
+                .hover\\:text-cyan-400:hover { color: ${c} !important; }
+                .hover\\:bg-cyan-900:hover { background-color: ${c}20 !important; } /* 20 = approx 12% opacity hex */
+                .shadow-\\[0_0_20px_rgba\\(6\\,182\\,212\\,0\\.3\\)\\] { box-shadow: 0 0 20px ${c}4D !important; } 
+            `;
+
+            // Update Title
+            document.title = `${settings.orgName} - System`;
+        }
+
+        // Sync color inputs
+        document.getElementById('setting-accentColor').addEventListener('input', (e) => {
+            document.getElementById('setting-accentColorText').value = e.target.value;
+        });
+        document.getElementById('setting-accentColorText').addEventListener('input', (e) => {
+            document.getElementById('setting-accentColor').value = e.target.value;
+        });
+
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('admin_token');
             if (!token) {
                 document.getElementById('auth-modal').classList.remove('hidden');
             } else {
+                loadSettings();
                 loadContent();
                 loadUsers();
                 loadAnalytics();
