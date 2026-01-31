@@ -1,4 +1,4 @@
-import { redactPII } from '../src/lib/pii/redactor';
+import { redactPII } from '../src/lib/pii/redactor.js';
 
 export const config = {
     runtime: 'nodejs',
