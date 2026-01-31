@@ -65,17 +65,21 @@ const freshnessRules = new antiCache.FreshnessRuleEngine();
 
 // Initialize Autonomic Pattern Engine (The "Will")
 // Wrapped to prevent server crash if DB/Redis is down
-try {
-  if (process.env.DATABASE_URL && (process.env.REDIS_URL || process.env.UPSTASH_REDIS_URL) && !process.env.VERCEL) {
-    const patternEngine = new PatternEngine();
-    // Only listen if not in serverless ephemeral mode (optional, but safe for now)
-    patternEngine.listen();
-  } else {
-    console.warn('[Startup] Skipping PatternEngine (Missing DB/Redis)');
+(async () => {
+  try {
+    if (process.env.DATABASE_URL && (process.env.REDIS_URL || process.env.UPSTASH_REDIS_URL) && !process.env.VERCEL) {
+      // Dynamic import to prevent heavy load on Vercel startup
+      const { PatternEngine } = await import('./infrastructure/PatternEngine.js');
+      const patternEngine = new PatternEngine();
+      // Only listen if not in serverless ephemeral mode
+      patternEngine.listen();
+    } else {
+      console.warn('[Startup] Skipping PatternEngine (Missing DB/Redis or Vercel)');
+    }
+  } catch (e) {
+    console.error('[Startup] PatternEngine failed to start:', e);
   }
-} catch (e) {
-  console.error('[Startup] PatternEngine failed to start:', e);
-}
+})();
 
 // CRITICAL DEBUG ENDPOINT (Zero Deps)
 app.get('/api/debug-env', (c) => {
@@ -131,7 +135,7 @@ import cdnRouter from './api/cdn.js';
 import transcodeRouter from './api/transcode.js';
 import brainRouter from './api/brain.js';
 import muscleRouter from './api/muscle.js';
-import { PatternEngine } from './infrastructure/PatternEngine.js';
+
 import { authenticateApiKey } from './middleware/auth.js';
 import contentRouter from './api/content.js';
 

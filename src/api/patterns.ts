@@ -1,16 +1,12 @@
 import { Hono } from 'hono';
-import { PatternEngine } from '../infrastructure/PatternEngine.js'; // Importing TS source as JS because of how Vite/TS might handle it or just ..ts if using bundler?
-// Wait, api/patterns.js is JS. importing .ts file from JS requires build step or runtime support (tsx).
-// Since the project uses mixed JS/TS, I'll assume standard interop.
-// But importing '../src/infrastructure/PatternEngine.js' implies it's compiled.
-// If I use `api/patterns.js` (JS), I cannot easily import TS source unless using `tsx` or similar.
-// Maybe I should make `api/patterns.ts` (TS) so it can import other TS files.
-// Let's TRY making `api/patterns.ts`. It's safer for importing `PatternEngine.ts`.
-
 const patternsRouter = new Hono();
-let engine: PatternEngine | null = null;
+let engine: any = null; // Use any to avoid type issues with lazy load
 function getEngine() {
-    if (!engine) engine = new PatternEngine();
+    if (!engine) {
+        // Lazy load to prevent startup crash on Vercel
+        const { PatternEngine } = require('../infrastructure/PatternEngine.js');
+        engine = new PatternEngine();
+    }
     return engine;
 }
 
