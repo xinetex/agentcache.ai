@@ -1,12 +1,42 @@
 import { sql } from 'drizzle-orm';
 import { db } from '../db/client.js';
 
+const DB_TIMEOUT_MS = Number(process.env.DB_QUERY_TIMEOUT_MS || 5000);
+
+function withTimeout(promise, ms, label = 'DB_TIMEOUT') {
+    return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error(label)), ms))
+    ]);
+}
+
+async function safeExecute(dbClient, query, timeoutMs = DB_TIMEOUT_MS) {
+    if (!dbClient || typeof dbClient.execute !== 'function') {
+        throw new Error('DB_EXECUTE_UNAVAILABLE');
+    }
+    return await withTimeout(dbClient.execute(query), timeoutMs);
+}
+
 export class StatsService {
     constructor(dbClient) {
         this.db = dbClient;
     }
 
     async getGlobalStats() {
+        const fallback = {
+            total_users: 0,
+            active_sessions: 0,
+            system_health: 'DEGRADED',
+            db_latency: '0ms',
+            cache_hits_today: 0,
+            cache_misses_today: 0,
+            hit_rate: 0,
+            cost_saved_today: `$0.00`,
+            top_users: [],
+            growth_data: [],
+            timestamp: new Date().toISOString()
+        };
+
         try {
             // Aggregate Global Stats from Postgres (pipeline_metrics)
             // We use raw SQL because pipeline_metrics might not be in the loaded schema object
@@ -20,21 +50,14 @@ export class StatsService {
                 WHERE timestamp >= NOW() - INTERVAL '24 HOURS'
             `;
 
-            // Execute raw query (Drizzle dependent on driver, postgres-js returns array)
-            // db.execute is available in recent Drizzle versions, or we can use the client directly if exposed.
-            // But db is `drizzle(client)`.
-            // Workaround: We can't easily do raw SQL select without the table defined in schema for `db.select`.
-            // We will trust that if it fails, we return 0. 
-            // Better approach: Use the `users` table count as a proxy for "Total Operators" at least.
-            // And use `api_keys` for "Active Sessions".
+            // 1 + 2. Query counts in parallel with timeout protection (prevents Vercel 25s maxDuration timeouts)
+            const [userCountRes, activeKeysRes] = await Promise.all([
+                safeExecute(this.db, sql`SELECT COUNT(*) as count FROM users`, DB_TIMEOUT_MS),
+                safeExecute(this.db, sql`SELECT COUNT(*) as count FROM api_keys WHERE is_active = TRUE`, DB_TIMEOUT_MS)
+            ]);
 
-            // 1. Total Users
-            const userCountRes = await this.db.execute(sql`SELECT COUNT(*) as count FROM users`);
-            const totalUsers = parseInt(userCountRes[0]?.count || 0);
-
-            // 2. Active Sessions (Active API Keys)
-            const activeKeysRes = await this.db.execute(sql`SELECT COUNT(*) as count FROM api_keys WHERE is_active = TRUE`);
-            const activeSessions = parseInt(activeKeysRes[0]?.count || 0);
+            const totalUsers = parseInt(userCountRes?.[0]?.count || 0);
+            const activeSessions = parseInt(activeKeysRes?.[0]?.count || 0);
 
             // 3. Global Traffic (Try pipeline_metrics, fallback to 0)
             let hits = 0;
@@ -43,15 +66,15 @@ export class StatsService {
             let hitRate = 0;
 
             try {
-                const metricsRes = await this.db.execute(statsQuery);
-                const m = metricsRes[0];
+                const metricsRes = await safeExecute(this.db, statsQuery, Math.min(DB_TIMEOUT_MS, 4000));
+                const m = metricsRes?.[0] || {};
                 hits = parseInt(m.total_hits || 0);
                 misses = parseInt(m.total_misses || 0);
                 const totalReq = hits + misses;
                 hitRate = totalReq > 0 ? ((hits / totalReq) * 100).toFixed(1) : 0;
                 costSaved = (parseInt(m.tokens_saved || 0) * 0.01 / 1000).toFixed(2);
             } catch (err) {
-                console.warn('[StatsService] Failed to query pipeline_metrics (Table might be missing):', err.message);
+                console.warn('[StatsService] pipeline_metrics query failed (timeout/table missing):', err?.message || err);
             }
 
             // 4. Top Users (Mock or specific query)
@@ -89,21 +112,8 @@ export class StatsService {
             };
 
         } catch (error) {
-            console.error('[StatsService] Critical DB Error:', error);
-            // Return safe fallback
-            return {
-                total_users: 0,
-                active_sessions: 0,
-                system_health: 'DEGRADED',
-                db_latency: '0ms',
-                cache_hits_today: 0,
-                cache_misses_today: 0,
-                hit_rate: 0,
-                cost_saved_today: `$0.00`,
-                top_users: [],
-                growth_data: [],
-                timestamp: new Date().toISOString()
-            };
+            console.error('[StatsService] DB Error (fallback):', error?.message || error);
+            return fallback;
         }
     }
 }
