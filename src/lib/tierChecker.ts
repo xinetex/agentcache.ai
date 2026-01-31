@@ -4,7 +4,7 @@
  * Utilities to check if a user's tier allows specific features.
  */
 
-import { getTier, type Tier, type TierFeatures } from '../config/tiers';
+import { getTier, type Tier, type TierFeatures } from '../config/tiers.js';
 
 /**
  * Check if a feature is enabled for a given tier
