@@ -32,6 +32,13 @@ try {
   console.warn('[Startup] Neon init failed:', e);
 }
 
+// Type definitions for Hono variables
+type Variables = {
+  tier: string;
+  usage: any;
+  tierFeatures: any;
+};
+
 export const app = new Hono<{ Variables: Variables }>();
 const contextManager = new ContextManager(); // This might need wrapping too if it connects instantly
 
