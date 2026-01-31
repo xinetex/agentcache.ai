@@ -194,5 +194,120 @@ GOOGLE_CLIENT_SECRET=<google-oauth-secret>
 - **Platform Memory**: Use own cognitive caching for pattern learning
 - **Sector-first design**: Everything scoped by sector (healthcare, finance, etc.)
 
+## Session: January 31, 2026
+
+### What We Did: Platform Re-architecture & Monetization Strategy
+
+**Context:** Re-evaluating platform architecture and defining monetizable services while ensuring existing customers (audio1.tv, jettythunder.app) remain operational.
+
+#### 1. Platform Assessment ✅
+- Identified dual admin interfaces (mission-control.html + React console)
+- Audited all API endpoints and customer dependencies
+- Mapped service architecture (3 core revenue streams)
+
+#### 2. Customer Dependency Audit ✅
+**audio1.tv (Music Television):**
+- Critical endpoints: `/api/cdn/stream`, `/api/transcode/*`
+- Infrastructure: 3-tier CDN cache (L1: memory, L2: Redis, L3: S3)
+- Usage: ~5-10TB/month bandwidth
+- Revenue: $300/month (CDN + transcoding)
+
+**jettythunder.app (Enterprise File Management):**
+- Critical endpoints: `/api/provision/jettythunder`, `/api/jetty/optimal-edges`, `/api/jetty/track-upload`
+- Infrastructure: Multi-region edge network, chunk caching, session tracking
+- Usage: 10-50 users, enterprise tier
+- Revenue: $1,200/month (file acceleration + analytics)
+
+#### 3. Service Catalog Created ✅
+Created comprehensive documentation:
+- **docs/SERVICE_CATALOG.md** - Complete service breakdown
+- 3 core services: AI Caching, CDN/Streaming, File Management
+- Pricing tiers defined (Free → Starter → Pro → Enterprise)
+- Revenue projections: $1.5K MRR → $8.3K MRR (6mo) → $33K MRR (12mo target)
+
+#### 4. Architecture Decisions
+**Consolidation Plan:**
+- Deprecate static mission-control.html in favor of React console
+- Migrate content management features to React Admin view
+- Update `/mission-control` route to redirect to React dashboard
+- Phase implementation to avoid breaking changes
+
+**Service Organization:**
+- Core AI Caching: Public self-service ($49-$999/mo tiers)
+- CDN/Streaming: audio1.tv use case ($0.03-0.08/GB)
+- File Management: jettythunder.app use case ($29-19/user/mo)
+- Premium add-ons: Brain API, Analytics suite, Cognitive services
+
+#### 5. Documentation Updates ✅
+- Updated **docs/strategy/WARP.md** with customer dependencies
+- Added "Customer Dependencies" section with critical endpoints
+- Documented testing procedures for customer-critical paths
+- Linked service catalog for monetization strategy
+
+### Files Created/Modified
+- **docs/SERVICE_CATALOG.md** - Complete service catalog & monetization strategy
+- **docs/strategy/WARP.md** - Added customer dependencies section
+- **PLAN: Platform Re-architecture** - 4-phase migration plan
+
+### Key Insights
+1. **Revenue Opportunity:** Current $18K ARR → $100K ARR (6mo) → $600K ARR (12mo target)
+2. **Critical Constraint:** MUST NOT break audio1.tv or jettythunder.app
+3. **Admin Consolidation:** React console is superior, should deprecate static mission-control.html
+4. **Monetization Path:** Self-service tiers + enterprise contracts + premium add-ons
+
+### Next Steps (Prioritized)
+1. **Phase 1 - Stabilize (This Week)**
+   - [ ] Add endpoint monitoring (Vercel Analytics)
+   - [ ] Implement customer usage tracking  
+   - [ ] Create integration tests for critical customer endpoints
+   - [ ] Set up alerting for customer-critical services
+
+2. **Phase 2 - Monetize (Next 30 Days)**
+   - [ ] Create Stripe price IDs for all tiers
+   - [ ] Build public pricing page
+   - [ ] Enable self-service signup (Starter/Pro)
+   - [ ] Enhance customer portal with usage dashboards
+
+3. **Phase 3 - Consolidate (Next 60 Days)**  
+   - [ ] Migrate mission-control.html features to React console
+   - [ ] Add content management to React Admin view
+   - [ ] Update `/mission-control` redirect
+   - [ ] Add deprecation notice to old mission-control.html
+
+4. **Phase 4 - Scale (Next 90 Days)**
+   - [ ] Target 3 new enterprise customers
+   - [ ] Launch referral program (20% commission)
+   - [ ] Create marketplace listings (Vercel, AWS)
+   - [ ] Build Python/Go SDKs
+
+### Architecture Principles Established
+- **Customer First:** Never break existing customer integrations
+- **Test on Vercel:** No local testing, always deploy to preview first
+- **Phased Migration:** Incremental changes, no "big bang" rewrites
+- **Monetization Focus:** All features should have clear revenue path
+- **Documentation:** Keep WARP.md, SERVICE_CATALOG.md, and memory.md in sync
+
+### Revenue Streams Identified
+1. **Core AI Caching** (Self-service SaaS)
+   - Free: 10K req/mo
+   - Starter: 100K req/mo @ $49/mo
+   - Pro: 1M req/mo @ $199/mo
+   - Enterprise: 10M+ req/mo @ $999+/mo
+
+2. **CDN/Streaming** (Usage-based)
+   - Bandwidth: $0.03-0.08/GB
+   - Transcoding: $0.015/min
+   - Current customer: audio1.tv ($300/mo)
+
+3. **File Management** (Per-user SaaS)
+   - 1-10 users: $29/user/mo
+   - 11-100 users: $19/user/mo
+   - Current customer: jettythunder.app ($1,200/mo)
+
+4. **Premium Add-ons**
+   - Brain API: $0.10/1K tokens
+   - Analytics suite: $299/mo
+   - Cognitive features: $99/mo each
+
 ## Contact
 - User: Platform team @ jettythunder.app

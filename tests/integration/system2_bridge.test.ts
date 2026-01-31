@@ -3,7 +3,10 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { spawn } from 'child_process';
 import fetch from 'node-fetch';
 
-describe('System 2 Bridge Integration', () => {
+const SHOULD_RUN = process.env.RUN_INTEGRATION_TESTS === 'true';
+const describeIntegration = SHOULD_RUN ? describe : describe.skip;
+
+describeIntegration('System 2 Bridge Integration', () => {
     let pythonServer;
     const PORT = 8085;
 

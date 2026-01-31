@@ -337,6 +337,80 @@ Per `LAUNCH_PLAN.md`:
 - Follow existing authentication patterns
 - Document breaking changes to the caching API
 
+## Customer Dependencies
+
+### Active Customers
+
+AgentCache.ai currently supports two production customers. **All changes must preserve functionality for these customers.**
+
+#### audio1.tv (Music Television Platform)
+
+**Critical Endpoints (MUST NOT BREAK):**
+- `GET /api/cdn/stream` - Video/audio streaming (99.9% uptime required)
+- `POST /api/transcode/submit` - New content ingestion
+- `GET /api/transcode/status/:jobId` - Transcoding status polling
+
+**Supporting Endpoints:**
+- `POST /api/cdn/warm` - Cache warming for live events
+- `GET /api/cdn/status` - Health monitoring
+- `POST /api/brain/*` - Content analysis (optional)
+
+**Infrastructure:**
+- L1 Cache: 100MB in-memory (5 min TTL)
+- L2 Cache: Redis (1 hour TTL)  
+- L3 Storage: S3-compatible (Seagate Lyve)
+- Transcoder: Custom HLS service (240p-1080p)
+
+**Usage:** ~5-10TB/month bandwidth
+
+#### jettythunder.app (Enterprise File Management)
+
+**Critical Endpoints (MUST NOT BREAK):**
+- `POST /api/provision/jettythunder` - Master key provisioning (99.9% uptime)
+- `GET /api/jetty/optimal-edges` - Edge routing (<100ms response required)
+- `POST /api/jetty/track-upload` - Upload session tracking (99.5% uptime)
+- `POST /api/jetty/cache-chunk` - File chunk caching
+
+**Supporting Endpoints:**
+- `GET /api/jetty/user-stats` - Performance analytics
+- `POST /api/jetty/check-duplicate` - Deduplication
+- `POST /api/muscle/plan` - GOAP planning (experimental)
+- `POST /api/muscle/reflex` - Swarm coordination (experimental)
+- `GET /api/s3/presigned` - Presigned URL generation
+
+**Infrastructure:**
+- Multi-region edge network
+- Redis chunk caching
+- PostgreSQL session tracking
+- S3-compatible storage (Seagate Lyve)
+
+**Usage:** 10-50 users, enterprise tier
+
+### Testing Customer Endpoints
+
+Before deploying changes that affect customer endpoints:
+
+1. **Verify on Vercel Preview:** All customer-critical endpoints must work on preview deployments
+2. **Check logs:** Monitor error rates for 24h post-deployment
+3. **Communicate:** Notify customers of any planned maintenance
+
+```bash
+# Test audio1.tv streaming
+curl -I https://agentcache.ai/api/cdn/stream?path=test.mp4
+
+# Test jettythunder.app provisioning  
+curl -X POST https://agentcache.ai/api/provision/jettythunder \
+  -H "Content-Type: application/json" \
+  -d '{"environment":"staging"}'
+```
+
+### Service Catalog
+
+For complete service documentation, pricing, and monetization strategy, see:
+- **[docs/SERVICE_CATALOG.md](../SERVICE_CATALOG.md)** - Comprehensive service breakdown
+- Revenue projections: $1,500 MRR → $8,340 MRR (6mo target)
+- 3 core revenue streams: AI Caching, CDN/Streaming, File Management
+
 ## Domain
 
 Primary domain: **agentcache.ai**
