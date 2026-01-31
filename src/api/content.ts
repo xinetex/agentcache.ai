@@ -4,6 +4,7 @@ import { lanes, cards } from '../db/schema.js';
 import { asc, eq } from 'drizzle-orm';
 import { authenticateApiKey } from '../middleware/auth.js';
 import { verify } from 'hono/jwt';
+import { DEFAULT_LANES, DEFAULT_CARDS } from '../config/bentoDefaults.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_do_not_use_in_prod';
 
@@ -24,6 +25,23 @@ contentRouter.get('/', async (c) => {
 
         const [lanesData, cardsData] = await Promise.race([dbPromise, timeoutPromise]) as any;
         console.log('[ContentAPI] Content fetched successfully');
+
+        // AUTO-SEED: If empty, hydrate the DB with defaults
+        if (lanesData.length === 0) {
+            console.log('[ContentAPI] Database empty. Auto-seeding defaults...');
+            await Promise.all([
+                ...DEFAULT_LANES.map(l => db.insert(lanes).values(l as any).onConflictDoNothing()),
+                ...DEFAULT_CARDS.map(c => db.insert(cards).values(c as any).onConflictDoNothing())
+            ]);
+
+            // Re-fetch
+            const [newLanes, newCards] = await Promise.all([
+                db.select().from(lanes).orderBy(asc(lanes.id)),
+                db.select().from(cards)
+            ]);
+
+            return c.json({ lanes: newLanes, cards: newCards });
+        }
 
         return c.json({
             lanes: lanesData,
