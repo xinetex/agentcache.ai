@@ -8,7 +8,11 @@ import { PatternEngine } from '../infrastructure/PatternEngine.js'; // Importing
 // Let's TRY making `api/patterns.ts`. It's safer for importing `PatternEngine.ts`.
 
 const patternsRouter = new Hono();
-const engine = new PatternEngine();
+let engine: PatternEngine | null = null;
+function getEngine() {
+    if (!engine) engine = new PatternEngine();
+    return engine;
+}
 
 import { db } from '../db/client.js';
 import { patterns } from '../db/schema.js';
@@ -32,7 +36,7 @@ patternsRouter.post('/invoke', async (c) => {
             return c.json({ error: 'Name and Intent are required.' }, 400);
         }
 
-        const pattern = await engine.invoke(name, intent, actionSequence, triggerCondition);
+        const pattern = await getEngine().invoke(name, intent, actionSequence, triggerCondition);
         return c.json({ success: true, pattern });
     } catch (error: any) {
         return c.json({ error: error.message }, 500);
@@ -46,7 +50,7 @@ patternsRouter.post('/banish', async (c) => {
 
         if (!identifier) return c.json({ error: 'Identifier required' }, 400);
 
-        const result = await engine.banish(identifier);
+        const result = await getEngine().banish(identifier);
 
         if (!result) return c.json({ error: 'Pattern not found' }, 404);
 

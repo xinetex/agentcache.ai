@@ -7,7 +7,11 @@ import { AnalystAgent } from '../agents/analyst.js';
 
 const intelligenceRouter = new Hono();
 const bancache = new BancacheService();
-const analyst = new AnalystAgent();
+let analyst: AnalystAgent | null = null;
+function getAnalyst() {
+    if (!analyst) analyst = new AnalystAgent();
+    return analyst;
+}
 
 /**
  * GET /api/intelligence/banner/:hash
@@ -38,7 +42,7 @@ intelligenceRouter.post('/ingest', async (c) => {
     const existing = await bancache.getAnalysis(hash);
     if (!existing?.analysis) {
         // Trigger async analysis (fire and forget)
-        analyst.analyzeBanner(hash, banner).catch(console.error);
+        getAnalyst().analyzeBanner(hash, banner).catch(console.error);
     }
 
     return c.json({
@@ -53,7 +57,7 @@ intelligenceRouter.post('/ingest', async (c) => {
  * Trigger the backlog processor (for cron/manual use)
  */
 intelligenceRouter.post('/process', async (c) => {
-    const count = await analyst.processBacklog(5);
+    const count = await getAnalyst().processBacklog(5);
     return c.json({ processed: count });
 });
 
