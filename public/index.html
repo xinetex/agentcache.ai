@@ -396,8 +396,10 @@
             }
 
             // 2. Dynamic Colors
-            if (settings.accentColor) {
-                const c = settings.accentColor;
+            if (settings.accentColor || settings.darkModeBg) {
+                const c = settings.accentColor || '#0ea5e9'; // Default blue
+                const bg = settings.darkModeBg || '#0f172a'; // Default slate-900
+
                 document.documentElement.style.setProperty('--theme-color', c);
 
                 let style = document.getElementById('theme-overrides');
@@ -410,6 +412,9 @@
                 // Override Tailwind Classes
                 // We target the specific cyan/blue classes used in the bento grid
                 style.innerHTML = `
+                    .dark-mode { background-color: ${bg} !important; }
+                    .dark-mode .slide-panel { background-color: ${bg}FA !important; } /* High opacity bg */
+                    
                     .text-cyan-400, .text-cyan-500, .text-blue-400 { color: ${c} !important; }
                     .bg-cyan-500, .bg-cyan-400, .bg-blue-500 { background-color: ${c} !important; }
                     .from-cyan-400, .from-blue-400 { --tw-gradient-from: ${c} !important; }

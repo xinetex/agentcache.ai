@@ -178,6 +178,17 @@
                     </div>
 
                     <div>
+                        <label class="block text-xs font-mono text-slate-500 uppercase mb-2">Dark Mode
+                            Background</label>
+                        <div class="flex items-center gap-4">
+                            <input type="color" id="setting-darkModeBg" value="#0f172a"
+                                class="bg-transparent h-10 w-10 cursor-pointer">
+                            <input type="text" id="setting-darkModeBgText" value="#0f172a"
+                                class="bg-slate-900 h-10 border border-slate-700 p-2 rounded text-white font-mono text-sm uppercase focus:border-cyan-500 outline-none w-32">
+                        </div>
+                    </div>
+
+                    <div>
                         <label class="block text-xs font-mono text-slate-500 uppercase mb-2">Accent Color</label>
                         <div class="flex items-center gap-4">
                             <input type="color" id="setting-accentColor" value="#06b6d4"
@@ -662,7 +673,8 @@
         let currentSettings = {
             orgName: 'MISSION CONTROL',
             logoUrl: '',
-            accentColor: '#06b6d4'
+            accentColor: '#06b6d4',
+            darkModeBg: '#0f172a'
         };
 
         async function loadSettings() {
@@ -683,6 +695,8 @@
                     document.getElementById('setting-logoUrl').value = currentSettings.logoUrl;
                     document.getElementById('setting-accentColor').value = currentSettings.accentColor;
                     document.getElementById('setting-accentColorText').value = currentSettings.accentColor;
+                    document.getElementById('setting-darkModeBg').value = currentSettings.darkModeBg || '#0f172a';
+                    document.getElementById('setting-darkModeBgText').value = currentSettings.darkModeBg || '#0f172a';
                 }
             } catch (e) {
                 console.error("Failed to load settings", e);
@@ -693,7 +707,8 @@
             const newSettings = {
                 orgName: document.getElementById('setting-orgName').value || 'MISSION CONTROL',
                 logoUrl: document.getElementById('setting-logoUrl').value,
-                accentColor: document.getElementById('setting-accentColor').value
+                accentColor: document.getElementById('setting-accentColor').value,
+                darkModeBg: document.getElementById('setting-darkModeBg').value
             };
 
             const btn = document.querySelector('#view-settings button');
@@ -746,10 +761,12 @@
             }
 
             const c = settings.accentColor;
+            const bg = settings.darkModeBg || '#0f172a';
             // Generate a primitive hover variant (darken slightly) - simple approx
             // For now, reuse same color or use CSS filter
 
             style.innerHTML = `
+                body { background-color: ${bg} !important; }
                 .text-cyan-500, .text-cyan-400 { color: ${c} !important; }
                 .bg-cyan-600 { background-color: ${c} !important; }
                 .bg-cyan-500 { background-color: ${c} !important; }
@@ -765,12 +782,16 @@
         }
 
         // Sync color inputs
-        document.getElementById('setting-accentColor').addEventListener('input', (e) => {
-            document.getElementById('setting-accentColorText').value = e.target.value;
-        });
-        document.getElementById('setting-accentColorText').addEventListener('input', (e) => {
-            document.getElementById('setting-accentColor').value = e.target.value;
-        });
+        const syncColor = (pickerId, textId) => {
+            document.getElementById(pickerId).addEventListener('input', (e) => {
+                document.getElementById(textId).value = e.target.value;
+            });
+            document.getElementById(textId).addEventListener('input', (e) => {
+                document.getElementById(pickerId).value = e.target.value;
+            });
+        };
+        syncColor('setting-accentColor', 'setting-accentColorText');
+        syncColor('setting-darkModeBg', 'setting-darkModeBgText');
 
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
