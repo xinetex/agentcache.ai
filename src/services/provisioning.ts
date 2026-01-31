@@ -3,7 +3,17 @@ import { neon } from '@neondatabase/serverless';
 import * as bcrypt from 'bcryptjs';
 import { redis } from '../lib/redis.js';
 
-const sql = neon(process.env.DATABASE_URL || '');
+// Initialize Neon (Fail gracefully)
+let sql: any;
+try {
+  if (process.env.DATABASE_URL) {
+    sql = neon(process.env.DATABASE_URL);
+  } else {
+    console.warn('[Provisioning] DATABASE_URL missing - Neon client disabled');
+  }
+} catch (e) {
+  console.warn('[Provisioning] Neon init failed:', e);
+}
 
 // Note: Migrating from in-memory to Postgres persistence
 
