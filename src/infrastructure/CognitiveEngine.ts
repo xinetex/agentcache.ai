@@ -3,6 +3,7 @@ import { MoonshotClient } from '../lib/moonshot.js';
 import { redis } from '../lib/redis.js';
 import { upsertMemory, queryMemory } from '../lib/vector.js';
 import { VectorClient } from './VectorClient.js';
+import { HopfieldNetwork } from './HopfieldMemory.js';
 
 export interface ValidationResult {
     valid: boolean;
@@ -13,10 +14,12 @@ export interface ValidationResult {
 export class CognitiveEngine {
     private moonshot: MoonshotClient;
     private vectorClient: VectorClient;
+    private holographicMemory: HopfieldNetwork;
 
     constructor() {
         this.moonshot = new MoonshotClient(process.env.MOONSHOT_API_KEY, redis);
         this.vectorClient = new VectorClient(process.env.VECTOR_SERVICE_URL); // Env var or default
+        this.holographicMemory = new HopfieldNetwork(64); // Fast, small working memory
     }
 
     /**
@@ -331,5 +334,33 @@ Respond with JSON: {"safe": boolean, "reason": "short explanation"}.`
             console.error("Cognitive Topic Check Error:", error);
             return { safe: true, reason: 'Error fail open' };
         }
+    }
+
+    /**
+     * HOLOGRAPHIC MEMORY (Hopfield Dynamics)
+     * Stores a concept in the energy landscape.
+     */
+    async internalizeConcept(vector: number[]) {
+        // Project/Slice to 64 dims for Hopfield
+        const subVector = vector.slice(0, 64);
+        // Pad if necessary
+        while (subVector.length < 64) subVector.push(0);
+
+        this.holographicMemory.learn(subVector);
+        console.log(`[CognitiveEngine] 🕸️ Concept woven into Holographic Matrix.`);
+    }
+
+    /**
+     * HOLOGRAPHIC RECALL (Attractor Dynamics)
+     * Attempts to reconstruct a stable thought from a noisy input.
+     */
+    async reconstructThought(noisyVector: number[]): Promise<number[]> {
+        const subVector = noisyVector.slice(0, 64);
+        while (subVector.length < 64) subVector.push(0);
+
+        const { state, energyTrace } = await this.holographicMemory.recall(subVector, 10);
+        console.log(`[CognitiveEngine] 🧘 Thought Reconstruction Energy: ${energyTrace[0].toFixed(2)} -> ${energyTrace[energyTrace.length - 1].toFixed(2)}`);
+
+        return state;
     }
 }
