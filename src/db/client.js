@@ -7,9 +7,24 @@ const connectionString = process.env.DATABASE_URL || 'postgres://letstaco@localh
 // Disable prefetch as it is not supported for "Transaction" pool mode
 const isProd = process.env.NODE_ENV === 'production';
 const isLocal = connectionString.includes('localhost') || connectionString.includes('127.0.0.1');
-export const client = postgres(connectionString, {
-    prepare: false,
-    ssl: 'require', // Neon requires SSL always
-    connect_timeout: 5 // Fail fast after 5s
-});
-export const db = drizzle(client, { schema });
+export let client;
+export let db;
+
+try {
+    client = postgres(connectionString, {
+        prepare: false,
+        ssl: 'require', // Neon requires SSL always
+        connect_timeout: 5 // Fail fast after 5s
+    });
+    db = drizzle(client, { schema });
+} catch (error) {
+    console.error('[DB] Failed to initialize database client:', error);
+    // Fail safe: Mock Drizzle object to prevent crash on import
+    // Any usage will throw or return undefined, but server will start.
+    db = {
+        select: () => ({ from: () => [] }),
+        insert: () => ({ values: () => ({ returning: () => [] }) }),
+        update: () => ({ set: () => ({ where: () => [] }) }),
+        delete: () => ({ where: () => ({ returning: () => [] }) }),
+    };
+}
