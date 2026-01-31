@@ -107,6 +107,10 @@
       "destination": "/mission-control.html"
     },
     {
+      "source": "/api/debug-isolated",
+      "destination": "/api/debug-isolated"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/index"
     }
