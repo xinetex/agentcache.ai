@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { serve } from '@hono/node-server';
+// import { serve } from '@hono/node-server'; // Moved to src/server.ts
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
@@ -1214,17 +1214,5 @@ app.get('/api', (c) => {
   });
 });
 
-// Start server
-// Start server if not running in Vercel/Serverless environment
-if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
-  console.log(`🚀 AgentCache.ai MVP starting on port ${PORT}`);
-  console.log(`🎯 Demo API Key: ac_demo_test123`);
-  serve({
-    fetch: app.fetch,
-    port: Number(PORT),
-  });
-}
-
-// Vercel Serverless Handler
-import { handle } from 'hono/vercel';
-export default handle(app);
+// Export the app for Vercel/Serverless usage (imported by api/index.ts)
+export { app };
