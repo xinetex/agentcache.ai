@@ -236,7 +236,10 @@
         <div class="tile-bottom px-8 flex justify-between items-center group">
             <!-- Left: Services -->
             <div class="flex items-center gap-6">
-                <div class="group/icon relative cursor-pointer" onmouseenter="pulseIcon(this)" onclick="window.location.href='/services#cache'">
+                <!-- Cache Icon -->
+                <div class="group/icon relative cursor-pointer"
+                    onmouseenter="pulseIcon(this); showServicePreview('CACHE', 'Instant cognitive retrieval. Serve millions of users with zero latency by caching thought processes.')"
+                    onmouseleave="hideServicePreview()" onclick="openServicePanel('cache')">
                     <div
                         class="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center text-3xl group-hover/icon:scale-105 transition">
                         ⚡️</div>
@@ -244,7 +247,11 @@
                         class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-bold tracking-widest uppercase opacity-0 group-hover/icon:opacity-100 transition">
                         Cache</div>
                 </div>
-                <div class="group/icon relative cursor-pointer" onmouseenter="pulseIcon(this)" onclick="window.location.href='/services#memory'">
+
+                <!-- Memory Icon -->
+                <div class="group/icon relative cursor-pointer"
+                    onmouseenter="pulseIcon(this); showServicePreview('MEMORY', 'Hopfield Network state management. Give your agents infinite context window without the token cost.')"
+                    onmouseleave="hideServicePreview()" onclick="openServicePanel('memory')">
                     <div
                         class="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center text-3xl group-hover/icon:scale-105 transition">
                         🧠</div>
@@ -252,7 +259,11 @@
                         class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-bold tracking-widest uppercase opacity-0 group-hover/icon:opacity-100 transition">
                         Memory</div>
                 </div>
-                <div class="group/icon relative cursor-pointer" onmouseenter="pulseIcon(this)" onclick="window.location.href='/services#security'">
+
+                <!-- Security Icon -->
+                <div class="group/icon relative cursor-pointer"
+                    onmouseenter="pulseIcon(this); showServicePreview('SECURITY', 'Real-time PII redaction and injection firewall. Protect your LLMs from malicious prompts and data leaks.')"
+                    onmouseleave="hideServicePreview()" onclick="openServicePanel('security')">
                     <div
                         class="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center text-3xl group-hover/icon:scale-105 transition">
                         🛡️</div>
@@ -262,7 +273,8 @@
                 </div>
 
                 <div class="h-12 w-px bg-slate-300 dark:bg-slate-700 mx-4"></div>
-                <div class="text-xl font-black uppercase tracking-tight text-slate-300 dark:text-slate-700 select-none cursor-pointer" onclick="window.location.href='/services'">
+                <div class="text-xl font-black uppercase tracking-tight text-slate-300 dark:text-slate-700 select-none cursor-pointer"
+                    onclick="window.location.href='/services'">
                     SERVICES</div>
             </div>
 
@@ -294,10 +306,13 @@
         // State
         let contentData = null;
         let cycles = {}; // Store intervals
+        let isHoveringService = false; // Add state for service hover
+        let activeCycleInterval = null; // Track specific interval for pause/resume
 
         // DOM Elements
         const els = {
             mission: document.getElementById('mission-text'),
+            missionDesc: document.querySelector('.tile-mission p'), // Grab description too
             usecases: document.getElementById('usecases-cycle'),
             pricing: document.getElementById('pricing-cycle'),
             stats: document.getElementById('stats-cycle'),
@@ -339,7 +354,7 @@
         function setupCycles() {
             const missionCards = contentData.cards.filter(c => c.laneId === 'mission');
             const usecaseCards = contentData.cards.filter(c => c.laneId === 'usecases');
-            // Support both pricing and monitor lanes for backward compat, or just pricing
+            // Support both pricing and monitor lanes for backward compat
             const pricingCards = contentData.cards.filter(c => c.laneId === 'pricing').length ?
                 contentData.cards.filter(c => c.laneId === 'pricing') :
                 contentData.cards.filter(c => c.laneId === 'monitor');
@@ -351,30 +366,40 @@
             startCycle(els.stats, statsCards, 3000);
         }
 
+        // RSVP "Flying" Animation
         function startCycle(element, cards, speed) {
             if (!cards || !cards.length || !element) return;
+
+            // Store original data on element for restoring after hover
+            element.dataset.originalCards = JSON.stringify(cards);
+            element.dataset.currentIndex = 0;
+            element.dataset.speed = speed;
 
             let i = 0;
             // Initial render
             renderCard(element, cards[0]);
 
             const interval = setInterval(() => {
-                i = (i + 1) % cards.length;
+                // Skip update if hovering logic is overriding (specifically for mission card)
+                if (element.id === 'mission-text' && isHoveringService) return;
 
-                // Anime.js transition
+                i = (i + 1) % cards.length;
+                element.dataset.currentIndex = i;
+
+                // Anime.js RSVP Transition: Fly OUT (towards user) then Fly IN (from background)
                 anime({
                     targets: element,
                     opacity: [1, 0],
-                    translateY: [0, -10],
-                    easing: 'easeInQuad',
+                    scale: [1, 1.5], // Fly towards user
+                    easing: 'easeInExpo',
                     duration: 300,
                     complete: () => {
                         renderCard(element, cards[i]);
                         anime({
                             targets: element,
                             opacity: [0, 1],
-                            translateY: [10, 0],
-                            easing: 'easeOutQuad',
+                            scale: [0.8, 1], // Fly in from back
+                            easing: 'easeOutExpo',
                             duration: 400
                         });
                     }
@@ -386,8 +411,21 @@
 
         function renderCard(element, card) {
             // Check if it's the Mission Hero text or standard card
+            if (!card) return;
+
             if (card.template === 'hero') {
                 element.innerHTML = card.data.title.replace(' ', '<br>');
+                // Also update description if available and we are rendering main mission
+                if (els.missionDesc && card.data.content) {
+                    els.missionDesc.innerText = card.data.content;
+                    // Simple fade for description to match
+                    anime({
+                        targets: els.missionDesc,
+                        opacity: [0.5, 1],
+                        easing: 'linear',
+                        duration: 300
+                    });
+                }
             } else if (card.template === 'stat') {
                 element.innerHTML = `
                     <div class="flex items-center gap-8 w-full justify-end pr-8">
@@ -436,34 +474,66 @@
             });
         }
 
-        // Panel Logic
-        window.openPanel = (laneId) => {
-            // Find content from API data
-            const cards = contentData.cards.filter(c => c.laneId === laneId);
-            if (!cards.length) return;
+        // Service Hover Effects
+        window.showServicePreview = (title, description) => {
+            isHoveringService = true;
 
-            // Simple render of all cards in that lane for "Deep Dive"
-            // In a real app we'd click a specific card, but here we show the lane category
-            let html = `<h2 class="text-6xl font-black mb-12 uppercase tracking-tighter text-slate-900 dark:text-white">${contentData.lanes.find(l => l.id === laneId).title}</h2>`;
+            // Immediate update for "RSVP" feel - snap to new content
+            els.mission.innerHTML = title.replace(' ', '<br>');
+            els.missionDesc.innerText = description;
 
-            html += '<div class="grid grid-cols-1 md:grid-cols-2 gap-8">';
-            cards.forEach(card => {
-                html += `
-                    <div class="p-8 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                        <div class="text-indigo-500 font-bold tracking-widest text-xs uppercase mb-4">${card.data.subtitle}</div>
-                        <h3 class="font-bold text-3xl mb-4 text-slate-800 dark:text-white">${card.data.title}</h3>
-                        <p class="text-slate-500 text-lg leading-relaxed">${card.data.content}</p>
-                    </div>
-                `;
+            // Visual pop to indicate change
+            anime({
+                targets: els.mission,
+                scale: [0.9, 1],
+                opacity: [0, 1],
+                duration: 200,
+                easing: 'easeOutExpo'
             });
-            html += '</div>';
+        };
 
+        window.hideServicePreview = () => {
+            isHoveringService = false;
+            // Cycle will resume naturally on next interval, but let's restore current card immediately
+            const cards = JSON.parse(els.mission.dataset.originalCards || '[]');
+            const idx = parseInt(els.mission.dataset.currentIndex || '0');
+            if (cards.length) {
+                renderCard(els.mission, cards[idx]);
+            }
+        };
+
+        // Panel Logic
+        window.openPanel = (topic) => {
+            let html = '';
+
+            if (topic === 'cache' || topic === 'memory' || topic === 'security') {
+                html = getServicePanelContent(topic);
+            } else {
+                // Legacy / Lane generic handling
+                const laneId = topic;
+                const cards = contentData?.cards?.filter(c => c.laneId === laneId) || [];
+                const laneTitle = contentData?.lanes?.find(l => l.id === laneId)?.title || topic;
+
+                html = `<h2 class="text-6xl font-black mb-12 uppercase tracking-tighter text-slate-900 dark:text-white">${laneTitle}</h2>`;
+                html += '<div class="grid grid-cols-1 md:grid-cols-2 gap-8">';
+                cards.forEach(card => {
+                    html += `
+                        <div class="p-8 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                            <div class="text-indigo-500 font-bold tracking-widest text-xs uppercase mb-4">${card.data.subtitle}</div>
+                            <h3 class="font-bold text-3xl mb-4 text-slate-800 dark:text-white">${card.data.title}</h3>
+                            <p class="text-slate-500 text-lg leading-relaxed">${card.data.content}</p>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            // Close button helper
             html += `
-                <div class="mt-16 flex justify-center">
-                    <a href="/index.html" class="inline-flex items-center gap-2 px-8 py-4 bg-cyan-600 text-white font-bold rounded-full hover:bg-cyan-500 transition shadow-lg hover:shadow-cyan-500/25">
-                        <span>EXPLORE FULL SITE</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                    </a>
+                <div class="mt-16 flex justify-center pb-24">
+                    <button onclick="closePanel()" class="inline-flex items-center gap-2 px-8 py-4 bg-cyan-600 text-white font-bold rounded-full hover:bg-cyan-500 transition shadow-lg hover:shadow-cyan-500/25">
+                        <span>CLOSE PANEL</span>
+                    </button>
                 </div>
             `;
 
@@ -487,6 +557,81 @@
                 duration: 800
             });
         };
+
+        window.openServicePanel = (service) => {
+            window.openPanel(service);
+        };
+
+        function getServicePanelContent(type) {
+            const styles = {
+                title: "text-7xl font-black uppercase tracking-tighter mb-4 text-slate-900 dark:text-white",
+                subtitle: "text-xl font-mono text-cyan-500 tracking-widest uppercase mb-12",
+                section: "grid grid-cols-1 lg:grid-cols-2 gap-16 items-center",
+                p: "text-xl text-slate-500 leading-relaxed font-light mb-8",
+                featureList: "space-y-4 font-mono text-sm text-slate-400"
+            };
+
+            const data = {
+                cache: {
+                    title: "Semantic Cache",
+                    subtitle: "Zero Latency Intelligence",
+                    desc: "Stop paying for the same thought twice. Our semantic cache fingerprints every request, storing the cognitive output for instant retrieval.",
+                    features: [
+                        "⚡️ 4ms Latency (Edge Cached)",
+                        "💰 95% Cost Reduction",
+                        "🌍 Global Distribution",
+                        "🔌 Plug-and-Play Middleware"
+                    ],
+                    visual: "⚡️" // Placeholder for visual asset
+                },
+                memory: {
+                    title: "Neural Memory",
+                    subtitle: "Infinite Context Window",
+                    desc: "Hopfield Network architecture allows agents to recall information from millions of past interactions without exploding your token budget.",
+                    features: [
+                        "🧠 Associative Recall",
+                        "📚 Long-term Persistence",
+                        "🔗 Cross-Session Context",
+                        "🔒 Private Namespaces"
+                    ],
+                    visual: "🧠"
+                },
+                security: {
+                    title: "Aegis Security",
+                    subtitle: "Enterprise Grade Protection",
+                    desc: "Real-time PII redaction, prompt injection defense, and hallucinations checks before the LLM even sees the request.",
+                    features: [
+                        "🛡️ PII/PHI Redaction",
+                        "🚫 Injection Firewall",
+                        "⚖️ Compliance Logging",
+                        "👁️ Drift Detection"
+                    ],
+                    visual: "🛡️"
+                }
+            }[type];
+
+            return `
+                <div class="${styles.section}">
+                    <div>
+                        <h2 class="${styles.title}">${data.title}</h2>
+                        <div class="${styles.subtitle}">${data.subtitle}</div>
+                        <p class="${styles.p}">${data.desc}</p>
+                        <ul class="${styles.featureList}">
+                            ${data.features.map(f => `
+                                <li class="flex items-center gap-4">
+                                    <span class="w-2 h-2 bg-cyan-500 rounded-full"></span>
+                                    ${f}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                    <div class="h-96 bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl flex items-center justify-center relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-[url('/assets/grid.svg')] opacity-20"></div>
+                        <div class="text-9xl group-hover:scale-110 transition duration-700 ease-in-out cursor-default select-none animate-pulse">${data.visual}</div>
+                    </div>
+                </div>
+            `;
+        }
 
         window.closePanel = () => {
             anime({
