@@ -68,7 +68,7 @@ cdn.get('/stream', async (c) => {
                 if (generated) {
                     return c.body(generated.content as any, 200, {
                         'Content-Type': generated.contentType,
-                        'Content-Length': generated.contentLength,
+                        'Content-Length': generated.contentLength.toString(),
                         'Cache-Control': 'public, max-age=3600',
                         'X-VideoCache': 'MISS',
                         'X-Generated': 'TRUE'
