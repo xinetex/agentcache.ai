@@ -247,12 +247,23 @@
         async function loadContent() {
             try {
                 const res = await fetch('/api/content');
+                if (res.status === 401 || res.status === 403) {
+                    handleAuthError();
+                    return;
+                }
                 contentData = await res.json();
                 renderEditor();
             } catch (err) {
                 console.error("Fetch Error:", err);
                 // ... error handling ...
             }
+        }
+
+        function handleAuthError() {
+            localStorage.removeItem('admin_token');
+            document.getElementById('auth-modal').classList.remove('hidden');
+            document.getElementById('auth-error').innerText = "SESSION EXPIRED / INVALID TOKEN";
+            document.getElementById('auth-error').classList.remove('hidden');
         }
 
         function renderEditor() {
@@ -493,6 +504,10 @@
                 const res = await fetch('/api/admin-stats/users', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+                if (res.status === 401 || res.status === 403) {
+                    handleAuthError();
+                    return;
+                }
                 if (!res.ok) throw new Error("Auth Failed");
                 const data = await res.json();
 
@@ -529,6 +544,10 @@
                 const res = await fetch('/api/admin-stats', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+                if (res.status === 401 || res.status === 403) {
+                    handleAuthError();
+                    return;
+                }
                 if (!res.ok) throw new Error("Auth Failed");
                 const stats = await res.json();
 
