@@ -79,6 +79,14 @@
       "destination": "/pricing.html"
     },
     {
+      "source": "/services",
+      "destination": "/services.html"
+    },
+    {
+      "source": "/topoff",
+      "destination": "/topoff.html"
+    },
+    {
       "source": "/wizard",
       "destination": "/dashboard.html?wizard=true"
     },
@@ -125,6 +133,26 @@
     {
       "source": "/api/content/card/:path*",
       "destination": "/api/content/card/:path*"
+    },
+    {
+      "source": "/api/billing/create-checkout",
+      "destination": "/api/billing/create-checkout"
+    },
+    {
+      "source": "/api/billing/webhook",
+      "destination": "/api/billing/webhook"
+    },
+    {
+      "source": "/api/credits/packages",
+      "destination": "/api/credits/packages"
+    },
+    {
+      "source": "/api/credits/balance",
+      "destination": "/api/credits/balance"
+    },
+    {
+      "source": "/api/credits/create-checkout",
+      "destination": "/api/credits/create-checkout"
     },
     {
       "source": "/api/(.*)",

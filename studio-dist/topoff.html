@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Top‑off Credits — AgentCache</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/premium.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          colors: {
+            brand: { 50: '#f0f9ff', 500: '#0ea5e9', 900: '#0c4a6e' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-slate-950 text-white font-sans antialiased selection:bg-cyan-500 selection:text-white">
+  <!-- Header -->
+  <div class="sticky top-0 z-50 border-b border-white/10 bg-slate-950/80 backdrop-blur">
+    <div class="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2">
+        <div class="w-6 h-6 border border-cyan-400 bg-cyan-400/20 flex items-center justify-center">
+          <div class="w-3 h-3 bg-cyan-400"></div>
+        </div>
+        <span class="font-black tracking-widest uppercase">AgentCache</span>
+      </a>
+      <div class="flex items-center gap-3">
+        <a href="/services" class="text-sm font-bold tracking-wider text-slate-300 hover:text-white transition uppercase">Services</a>
+        <a href="/pricing" class="text-sm font-bold tracking-wider text-slate-300 hover:text-white transition uppercase">Pricing</a>
+      </div>
+    </div>
+  </div>
+
+  <main class="max-w-3xl mx-auto px-6 py-12">
+    <h1 class="text-4xl font-black tracking-tight">Top‑off credits</h1>
+    <p class="mt-3 text-slate-300">
+      Credits keep your services running past plan limits. Enter an API key and choose a top‑off package.
+    </p>
+
+    <div id="banner" class="mt-6 hidden rounded-xl border border-cyan-400/30 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-100"></div>
+
+    <div class="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+      <label class="block text-xs font-mono tracking-widest uppercase text-slate-400">API Key</label>
+      <input id="apiKey" type="password" autocomplete="off" spellcheck="false"
+        class="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+        placeholder="ac_live_..." />
+
+      <div class="mt-4 flex flex-col sm:flex-row gap-3">
+        <button id="btnLoad" onclick="loadPackages()"
+          class="inline-flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 px-4 py-2 text-sm font-semibold">
+          Load packages
+        </button>
+        <button id="btnBalance" onclick="loadBalance()"
+          class="inline-flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 px-4 py-2 text-sm font-semibold">
+          Check balance
+        </button>
+      </div>
+
+      <div class="mt-4 text-sm text-slate-400">
+        Balance: <span id="balance" class="text-slate-200 font-semibold">—</span>
+      </div>
+    </div>
+
+    <div class="mt-8">
+      <h2 class="text-xl font-bold">Packages</h2>
+      <p class="mt-1 text-sm text-slate-400">Small top‑offs are supported (starting at $5).</p>
+
+      <div id="packages" class="mt-4 grid gap-3"></div>
+    </div>
+
+    <div class="mt-10 pt-8 border-t border-white/10 text-xs text-slate-500">
+      <div class="font-mono tracking-widest uppercase">Note</div>
+      <p class="mt-2">After payment, credits are applied automatically via Stripe webhook. If you don’t see your updated balance within a minute, refresh and click “Check balance”.</p>
+    </div>
+  </main>
+
+  <script>
+    function setBanner(msg) {
+      const el = document.getElementById('banner');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    function getApiKey() {
+      const el = document.getElementById('apiKey');
+      return (el.value || '').trim();
+    }
+
+    async function loadBalance() {
+      const apiKey = getApiKey();
+      if (!apiKey) {
+        setBanner('Enter an API key first.');
+        return;
+      }
+
+      const res = await fetch('/api/credits/balance', {
+        headers: { 'X-API-Key': apiKey }
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setBanner(data.error || 'Failed to fetch balance');
+        return;
+      }
+
+      document.getElementById('balance').textContent = `${data.credits} credits ($${data.usd})`;
+    }
+
+    async function loadPackages() {
+      const apiKey = getApiKey();
+      if (!apiKey) {
+        setBanner('Enter an API key first.');
+        return;
+      }
+
+      // Preload balance too
+      loadBalance().catch(() => {});
+
+      const res = await fetch('/api/credits/packages');
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setBanner(data.error || 'Failed to load packages');
+        return;
+      }
+
+      const container = document.getElementById('packages');
+      container.innerHTML = '';
+
+      (data.packages || []).forEach(pkg => {
+        const card = document.createElement('div');
+        card.className = 'rounded-2xl border border-white/10 bg-white/[0.03] p-5 flex items-center justify-between gap-4';
+
+        const left = document.createElement('div');
+        left.innerHTML = `
+          <div class="text-sm font-bold">${pkg.credits} credits</div>
+          <div class="text-xs text-slate-400">${pkg.priceDisplay} • ${pkg.creditsPerDollar} credits / $1</div>
+        `;
+
+        const btn = document.createElement('button');
+        btn.className = 'shrink-0 inline-flex items-center justify-center rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-4 py-2 text-sm font-black';
+        btn.textContent = `Buy ${pkg.priceDisplay}`;
+        btn.onclick = async () => {
+          btn.disabled = true;
+          btn.textContent = 'Redirecting…';
+
+          const resp = await fetch('/api/credits/create-checkout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-API-Key': apiKey
+            },
+            body: JSON.stringify({ package_id: pkg.id })
+          });
+
+          const out = await resp.json().catch(() => ({}));
+          if (!resp.ok || !out.checkoutUrl) {
+            btn.disabled = false;
+            btn.textContent = `Buy ${pkg.priceDisplay}`;
+            setBanner(out.error || 'Failed to create checkout session');
+            return;
+          }
+
+          window.location.href = out.checkoutUrl;
+        };
+
+        card.appendChild(left);
+        card.appendChild(btn);
+        container.appendChild(card);
+      });
+    }
+
+    // Prefill from ?key=...
+    (function init() {
+      const params = new URLSearchParams(window.location.search);
+      const key = params.get('key');
+      if (key) {
+        document.getElementById('apiKey').value = key;
+      }
+
+      if (params.get('success') === '1') {
+        setBanner('Payment successful. Applying credits…');
+        // Poll balance a couple times
+        setTimeout(() => loadBalance().catch(() => {}), 1500);
+        setTimeout(() => loadBalance().catch(() => {}), 6000);
+      }
+
+      if (params.get('canceled') === '1') {
+        setBanner('Checkout canceled.');
+      }
+    })();
+  </script>
+</body>
+
+</html>

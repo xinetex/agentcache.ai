@@ -3,79 +3,135 @@ import Stripe from 'stripe';
 export const config = {
   runtime: 'nodejs',
   api: {
-    bodyParser: false, // Disable body parsing to get raw body for signature verification
+    bodyParser: false,
   },
 };
 
-// Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+function getHeader(req, name) {
+  const v = req.headers?.[name.toLowerCase()] ?? req.headers?.[name];
+  return Array.isArray(v) ? v[0] : v;
+}
 
-// Helper for JSON responses
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      'cache-control': 'no-store',
-    },
+function json(res, data, status = 200) {
+  return res.status(status).json(data);
+}
+
+async function readRawBody(req) {
+  return await new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('error', reject);
   });
 }
 
-// Helper to read raw body
-async function getRawBody(req) {
-  const reader = req.body.getReader();
-  const chunks = [];
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    chunks.push(value);
+async function upstashSet(key, value) {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) throw new Error('Upstash not configured');
+
+  const res = await fetch(`${url}/set/${encodeURIComponent(key)}/${encodeURIComponent(String(value))}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  if (!res.ok) {
+    throw new Error(`Upstash SET failed: ${res.status}`);
   }
-  return Buffer.concat(chunks);
 }
 
-export default async function handler(req) {
+async function upstashIncrBy(key, amount) {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) throw new Error('Upstash not configured');
+
+  const res = await fetch(`${url}/incrby/${encodeURIComponent(key)}/${encodeURIComponent(String(amount))}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  if (!res.ok) {
+    throw new Error(`Upstash INCRBY failed: ${res.status}`);
+  }
+
+  const data = await res.json().catch(() => ({}));
+  return data.result;
+}
+
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return json({ error: 'Method not allowed' }, 405);
+    return json(res, { error: 'Method not allowed' }, 405);
   }
 
   try {
-    const signature = req.headers.get('stripe-signature');
+    const signature = getHeader(req, 'stripe-signature');
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-    if (!signature || !webhookSecret) {
-      return json({ error: 'Missing signature or webhook secret' }, 400);
+    if (!signature || !webhookSecret || !process.env.STRIPE_SECRET_KEY) {
+      return json(res, { error: 'Missing Stripe configuration' }, 400);
     }
 
-    // Get raw body for signature verification
-    const rawBody = await getRawBody(req);
-    let event;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+    const rawBody = await readRawBody(req);
+
+    let event;
     try {
       event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
     } catch (err) {
       console.error(`[Stripe Webhook] Signature verification failed: ${err.message}`);
-      return json({ error: `Webhook Error: ${err.message}` }, 400);
+      return json(res, { error: `Webhook Error: ${err.message}` }, 400);
     }
 
     console.log('[Stripe Webhook] Verified event:', event.type);
 
-    // Handle different event types
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object;
+        const kind = session.metadata?.type;
+
+        // --- Credits top-off ---
+        if (kind === 'credit_purchase') {
+          const keyHash = session.metadata?.api_key_hash;
+          const credits = parseInt(session.metadata?.credits || '0', 10);
+
+          if (!keyHash || !Number.isFinite(credits) || credits <= 0) {
+            console.error('[Credits Webhook] Missing api_key_hash or credits in metadata');
+            break;
+          }
+
+          try {
+            const newBalance = await upstashIncrBy(`credits:${keyHash}`, credits);
+            console.log(`[Credits Webhook] Added ${credits} credits to ${keyHash.slice(0, 8)}… (new balance: ${newBalance})`);
+          } catch (e) {
+            console.error('[Credits Webhook] Failed to apply credits:', e);
+          }
+
+          break;
+        }
+
+        // --- Subscription upgrade ---
         const keyHash = session.metadata?.api_key_hash;
         const tier = session.metadata?.tier || 'pro';
 
         if (!keyHash) {
-          console.error('[Webhook] No api_key_hash in metadata');
+          console.error('[Billing Webhook] No api_key_hash in metadata');
           break;
         }
 
-        // Update tier in Postgres via Neon API
+        try {
+          // Persist tier + quota in Redis (source of truth for fast enforcement)
+          await upstashSet(`tier:${keyHash}`, tier);
+          const quota = tier === 'pro' ? 1000000 : 10000;
+          await upstashSet(`usage:${keyHash}:quota`, quota);
+          console.log(`[Billing Webhook] Upgraded ${keyHash.slice(0, 8)}… to ${tier} (quota ${quota})`);
+        } catch (e) {
+          console.error('[Billing Webhook] Failed to update tier/quota in Redis:', e);
+        }
+
+        // Optional: update Postgres if configured (best-effort)
         const dbUrl = process.env.DATABASE_URL;
         if (dbUrl) {
           try {
-            const updateResponse = await fetch(`https://api.neon.tech/v2/sql`, {
+            await fetch(`https://api.neon.tech/v2/sql`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -91,43 +147,23 @@ export default async function handler(req) {
                 params: [tier, session.customer, session.subscription, keyHash]
               })
             });
-
-            // Update tier in Redis cache (Upstash)
-            const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
-            const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
-
-            if (UPSTASH_URL && UPSTASH_TOKEN) {
-              // Update tier in Redis cache
-              await fetch(`${UPSTASH_URL}/set/tier:${keyHash}/${tier}`, {
-                headers: { 'Authorization': `Bearer ${UPSTASH_TOKEN}` }
-              });
-
-              // Update quota in Redis based on tier
-              const quota = tier === 'pro' ? 1000000 : 10000;
-              await fetch(`${UPSTASH_URL}/set/usage:${keyHash}:quota/${quota}`, {
-                headers: { 'Authorization': `Bearer ${UPSTASH_TOKEN}` }
-              });
-
-              console.log(`[Webhook] Upgraded ${keyHash.substring(0, 8)} to ${tier}`);
-            }
           } catch (error) {
-            console.error('[Webhook] Database update error:', error);
+            console.error('[Billing Webhook] Database update error:', error);
           }
         }
+
         break;
       }
 
       case 'customer.subscription.updated': {
         const subscription = event.data.object;
-        const status = subscription.status;
-        console.log(`[Webhook] Subscription ${subscription.id} status: ${status}`);
+        console.log(`[Webhook] Subscription ${subscription.id} status: ${subscription.status}`);
         break;
       }
 
       case 'customer.subscription.deleted': {
         const subscription = event.data.object;
         console.log(`[Webhook] Subscription ${subscription.id} canceled`);
-        // Logic to downgrade user would go here
         break;
       }
 
@@ -141,13 +177,10 @@ export default async function handler(req) {
         console.log(`[Webhook] Unhandled event type: ${event.type}`);
     }
 
-    return json({ received: true });
+    return json(res, { received: true }, 200);
 
   } catch (error) {
     console.error('[Webhook] Error:', error);
-    return json({
-      error: 'Webhook processing failed',
-      message: error.message
-    }, 500);
+    return json(res, { error: 'Webhook processing failed', message: error.message }, 500);
   }
 }

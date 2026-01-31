@@ -232,11 +232,11 @@
             </div>
         </div>
 
-        <!-- Bottom Row: Incubator + Stats -->
+        <!-- Bottom Row: Services + Stats -->
         <div class="tile-bottom px-8 flex justify-between items-center group">
-            <!-- Left: Incubator Services -->
+            <!-- Left: Services -->
             <div class="flex items-center gap-6">
-                <div class="group/icon relative cursor-pointer" onmouseenter="pulseIcon(this)">
+                <div class="group/icon relative cursor-pointer" onmouseenter="pulseIcon(this)" onclick="window.location.href='/services#cache'">
                     <div
                         class="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center text-3xl group-hover/icon:scale-105 transition">
                         ⚡️</div>
@@ -244,7 +244,7 @@
                         class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-bold tracking-widest uppercase opacity-0 group-hover/icon:opacity-100 transition">
                         Cache</div>
                 </div>
-                <div class="group/icon relative cursor-pointer" onmouseenter="pulseIcon(this)">
+                <div class="group/icon relative cursor-pointer" onmouseenter="pulseIcon(this)" onclick="window.location.href='/services#memory'">
                     <div
                         class="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center text-3xl group-hover/icon:scale-105 transition">
                         🧠</div>
@@ -252,7 +252,7 @@
                         class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-bold tracking-widest uppercase opacity-0 group-hover/icon:opacity-100 transition">
                         Memory</div>
                 </div>
-                <div class="group/icon relative cursor-pointer" onmouseenter="pulseIcon(this)">
+                <div class="group/icon relative cursor-pointer" onmouseenter="pulseIcon(this)" onclick="window.location.href='/services#security'">
                     <div
                         class="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center text-3xl group-hover/icon:scale-105 transition">
                         🛡️</div>
@@ -262,8 +262,8 @@
                 </div>
 
                 <div class="h-12 w-px bg-slate-300 dark:bg-slate-700 mx-4"></div>
-                <div class="text-xl font-black uppercase tracking-tight text-slate-300 dark:text-slate-700 select-none">
-                    INCUBATOR</div>
+                <div class="text-xl font-black uppercase tracking-tight text-slate-300 dark:text-slate-700 select-none cursor-pointer" onclick="window.location.href='/services'">
+                    SERVICES</div>
             </div>
 
             <!-- Right: Live Stats Cycle -->
