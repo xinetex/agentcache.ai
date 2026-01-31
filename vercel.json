@@ -115,6 +115,18 @@
       "destination": "/api/debug-edge"
     },
     {
+      "source": "/api/content",
+      "destination": "/api/content"
+    },
+    {
+      "source": "/api/content/card",
+      "destination": "/api/content/card"
+    },
+    {
+      "source": "/api/content/card/:path*",
+      "destination": "/api/content/card/:path*"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/index"
     }
