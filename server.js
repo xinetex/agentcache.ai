@@ -121,6 +121,11 @@ app.post('/api/agent/chat', wrap(agentChatHandler));
 app.get('/api/admin/stats', wrap(adminStatsHandler));
 app.get('/api/admin/users', wrap(adminUsersHandler));
 
+import adminContentHandler from './api/admin-content.js';
+app.get('/api/content', wrap(adminContentHandler));
+app.post('/api/content/card', wrap(adminContentHandler));
+app.delete('/api/content/card/:id', wrap(adminContentHandler));
+
 // Cache Routes (mapped from vercel.json rewrites)
 import cacheHandler from './api/cache.js';
 import cacheInvalidateHandler from './api/cache/invalidate.js';

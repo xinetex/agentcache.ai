@@ -1,8 +1,8 @@
 #!/bin/bash
 # automated Vercel log fetcher
 
-echo "🔍 Finding latest production deployment..."
-DEPLOYMENT_URL=$(npx vercel ls --prod | grep "https://" | head -n 1 | awk '{print $2}')
+echo "🔍 Finding latest READY production deployment..."
+DEPLOYMENT_URL=$(npx vercel ls --prod | grep "Ready" | head -n 1 | awk '{print $2}')
 
 if [ -z "$DEPLOYMENT_URL" ]; then
   echo "❌ Could not find a production deployment."
