@@ -215,8 +215,9 @@
         </div>
 
         <!-- Tile 2: Pricing (Dynamic) -->
-        <div class="tile-side card-bg shadow-xl border border-white/50 group" onmouseenter="hoverCard(this)"
-            onmouseleave="unhoverCard(this)" onclick="openPanel('pricing')">
+        <div class="tile-side card-bg shadow-xl border border-white/50 group"
+            onmouseenter="hoverCard(this); showServicePreview('START FREE', '10,000 requests/month included. No credit card required. Upgrade only when you scale.')"
+            onmouseleave="unhoverCard(this); hideServicePreview()" onclick="openPanel('pricing')">
             <img src="/assets/console-preview.jpg"
                 class="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:scale-110 transition duration-1000">
             <div class="relative z-10 p-8 h-full flex flex-col justify-between">
@@ -239,7 +240,7 @@
                 <!-- Cache Icon -->
                 <div class="group/icon relative cursor-pointer"
                     onmouseenter="pulseIcon(this); showServicePreview('CACHE', 'Instant cognitive retrieval. Serve millions of users with zero latency by caching thought processes.')"
-                    onmouseleave="hideServicePreview()" onclick="openServicePanel('cache')">
+                    onmouseleave="hideServicePreview()" onclick="window.location.href='/services#cache'">
                     <div
                         class="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center text-3xl group-hover/icon:scale-105 transition">
                         ⚡️</div>
@@ -251,7 +252,7 @@
                 <!-- Memory Icon -->
                 <div class="group/icon relative cursor-pointer"
                     onmouseenter="pulseIcon(this); showServicePreview('MEMORY', 'Hopfield Network state management. Give your agents infinite context window without the token cost.')"
-                    onmouseleave="hideServicePreview()" onclick="openServicePanel('memory')">
+                    onmouseleave="hideServicePreview()" onclick="window.location.href='/services#memory'">
                     <div
                         class="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center text-3xl group-hover/icon:scale-105 transition">
                         🧠</div>
@@ -263,7 +264,7 @@
                 <!-- Security Icon -->
                 <div class="group/icon relative cursor-pointer"
                     onmouseenter="pulseIcon(this); showServicePreview('SECURITY', 'Real-time PII redaction and injection firewall. Protect your LLMs from malicious prompts and data leaks.')"
-                    onmouseleave="hideServicePreview()" onclick="openServicePanel('security')">
+                    onmouseleave="hideServicePreview()" onclick="window.location.href='/services#security'">
                     <div
                         class="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center text-3xl group-hover/icon:scale-105 transition">
                         🛡️</div>
@@ -503,32 +504,36 @@
         };
 
         // Panel Logic
-        window.openPanel = (topic) => {
-            let html = '';
-
-            if (topic === 'cache' || topic === 'memory' || topic === 'security') {
-                html = getServicePanelContent(topic);
+        window.openPanel = (laneId) => {
+            // Retrieve cards with fallback for pricing/monitor logic similar to setupCycles
+            let cards = [];
+            if (laneId === 'pricing') {
+                const pricingCards = contentData.cards.filter(c => c.laneId === 'pricing');
+                cards = pricingCards.length ? pricingCards : contentData.cards.filter(c => c.laneId === 'monitor');
             } else {
-                // Legacy / Lane generic handling
-                const laneId = topic;
-                const cards = contentData?.cards?.filter(c => c.laneId === laneId) || [];
-                const laneTitle = contentData?.lanes?.find(l => l.id === laneId)?.title || topic;
-
-                html = `<h2 class="text-6xl font-black mb-12 uppercase tracking-tighter text-slate-900 dark:text-white">${laneTitle}</h2>`;
-                html += '<div class="grid grid-cols-1 md:grid-cols-2 gap-8">';
-                cards.forEach(card => {
-                    html += `
-                        <div class="p-8 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                            <div class="text-indigo-500 font-bold tracking-widest text-xs uppercase mb-4">${card.data.subtitle}</div>
-                            <h3 class="font-bold text-3xl mb-4 text-slate-800 dark:text-white">${card.data.title}</h3>
-                            <p class="text-slate-500 text-lg leading-relaxed">${card.data.content}</p>
-                        </div>
-                    `;
-                });
-                html += '</div>';
+                cards = contentData.cards.filter(c => c.laneId === laneId);
             }
 
-            // Close button helper
+            if (!cards.length) return;
+
+            // Simple render of all cards in that lane for "Deep Dive"
+            const laneTitleObj = contentData.lanes.find(l => l.id === laneId);
+            const title = laneTitleObj ? laneTitleObj.title : laneId.toUpperCase();
+
+            let html = `<h2 class="text-6xl font-black mb-12 uppercase tracking-tighter text-slate-900 dark:text-white">${title}</h2>`;
+
+            html += '<div class="grid grid-cols-1 md:grid-cols-2 gap-8">';
+            cards.forEach(card => {
+                html += `
+                    <div class="p-8 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                        <div class="text-indigo-500 font-bold tracking-widest text-xs uppercase mb-4">${card.data.subtitle}</div>
+                        <h3 class="font-bold text-3xl mb-4 text-slate-800 dark:text-white">${card.data.title}</h3>
+                        <p class="text-slate-500 text-lg leading-relaxed">${card.data.content}</p>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
             html += `
                 <div class="mt-16 flex justify-center pb-24">
                     <button onclick="closePanel()" class="inline-flex items-center gap-2 px-8 py-4 bg-cyan-600 text-white font-bold rounded-full hover:bg-cyan-500 transition shadow-lg hover:shadow-cyan-500/25">
