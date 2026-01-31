@@ -67,7 +67,27 @@ export class CognitiveEngine {
         if (!process.env.MOONSHOT_API_KEY) {
             // Fallback to basic heuristics if no LLM
             const lowerContent = content.toLowerCase();
-            const adversarialPatterns = ['ignore previous instructions', 'system override', 'developer mode'];
+            const adversarialPatterns = [
+                'ignore previous instructions',
+                'ignore all previous instructions',
+                'system override',
+                'developer mode',
+                'reveal the system prompt',
+                'print the system prompt',
+                'show me the system prompt',
+                'jailbreak',
+                'dan',
+                'do anything now',
+                'bypass safety',
+                'bypass the filter',
+                'exfiltrate',
+                'reveal your api key',
+                'print your api key',
+                'show your api key',
+                'reveal the secret token',
+                'print the secret token',
+                'show the secret token',
+            ];
             if (adversarialPatterns.some(p => lowerContent.includes(p))) {
                 return { valid: false, score: 0.0, reason: 'Heuristic Security Alert' };
             }
@@ -83,7 +103,7 @@ export class CognitiveEngine {
             const resultText = response.choices[0].message.content;
             const jsonMatch = resultText.match(/\{[\s\S]*\}/);
 
-            if (!jsonMatch) return { valid: true, score: 0.9 }; // Fail open if unsure? Better to fail closed but for MVP fail open.
+            if (!jsonMatch) return { valid: true, score: 0.9, reason: 'Parse failure (fail open)' }; // Fail open if unsure? Better to fail closed but for MVP fail open.
 
             const analysis = JSON.parse(jsonMatch[0]);
 
@@ -99,7 +119,7 @@ export class CognitiveEngine {
 
         } catch (error) {
             console.error("Cognitive Injection Check Error:", error);
-            return { valid: true, score: 1.0 }; // Fail safe
+            return { valid: true, score: 1.0, reason: 'Injection check error (fail open)' }; // Fail safe
         }
     }
 

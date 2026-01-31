@@ -135,6 +135,8 @@ import cdnRouter from './api/cdn.js';
 import transcodeRouter from './api/transcode.js';
 import brainRouter from './api/brain.js';
 import muscleRouter from './api/muscle.js';
+import memoryRouter from './api/memory.js';
+import securityRouter from './api/security.js';
 
 import { authenticateApiKey } from './middleware/auth.js';
 import contentRouter from './api/content.js';
@@ -155,6 +157,10 @@ app.route('/api/muscle', muscleRouter);
 
 // Mount Brain API (AutoMem)
 app.route('/api/brain', brainRouter);
+
+// Mount Services
+app.route('/api/memory', memoryRouter);
+app.route('/api/security', securityRouter);
 
 // Mount Decisions & Galaxy API
 
@@ -1224,6 +1230,10 @@ app.get('/api', (c) => {
       '/api/listeners/register': 'Register URL monitoring (Anti-Cache)',
       '/api/overflow': 'Elastic overflow for partners',
       '/api/stats': 'Usage statistics',
+      '/api/memory/store': 'Store a memory item (vector + metadata)',
+      '/api/memory/recall': 'Recall similar memories (vector search)',
+      '/api/memory/:id': 'Fetch a stored memory by id',
+      '/api/security/check': 'Prompt injection / jailbreak detection',
       '/api/edges/optimal': 'Get optimal edge locations (JettySpeed)',
       '/api/jetty-speed/chunk': 'Upload chunk via edge (JettySpeed)',
       '/api/jetty-speed/chunk/:fileId/:chunkIndex': 'Download cached chunk (JettySpeed)',
