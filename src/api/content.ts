@@ -11,10 +11,19 @@ const contentRouter = new Hono<{ Variables: { user: any } }>();
 
 contentRouter.get('/', async (c) => {
     try {
-        const [lanesData, cardsData] = await Promise.all([
+        console.log('[ContentAPI] Fetching content...');
+        // Timeout wrapper for DB
+        const dbPromise = Promise.all([
             db.select().from(lanes).orderBy(asc(lanes.id)),
             db.select().from(cards)
         ]);
+
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('DB_TIMEOUT')), 5000)
+        );
+
+        const [lanesData, cardsData] = await Promise.race([dbPromise, timeoutPromise]) as any;
+        console.log('[ContentAPI] Content fetched successfully');
 
         return c.json({
             lanes: lanesData,

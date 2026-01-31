@@ -38,15 +38,10 @@ app.get('/', async (c) => {
         const today = now.toISOString().slice(0, 10);
 
         // Parallel Fetch for Performance
-        const [
-            subscribers,
-            pending,
-            waitlist,
-            activeKeys,
-            hitsToday,
-            missesToday,
-            tokensToday
-        ] = await Promise.all([
+        console.log('[AdminStats] Fetching stats...');
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('REDIS_TIMEOUT')), 5000));
+
+        const redisPromise = Promise.all([
             redis.scard('subscribers'),
             redis.scard('subscribers:pending'),
             redis.scard('waitlist'),
@@ -55,6 +50,18 @@ app.get('/', async (c) => {
             redis.get(`stats:global:misses:d:${today}`),
             redis.get(`stats:global:tokens:d:${today}`)
         ]);
+
+        const [
+            subscribers,
+            pending,
+            waitlist,
+            activeKeys,
+            hitsToday,
+            missesToday,
+            tokensToday
+        ] = await Promise.race([redisPromise, timeoutPromise]) as any;
+
+        console.log('[AdminStats] Stats fetched successfully');
 
         const totalUsers = (subscribers || 0) + (pending || 0) + (waitlist || 0);
         const hits = Number(hitsToday || 0);
