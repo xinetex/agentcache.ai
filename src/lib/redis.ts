@@ -179,9 +179,11 @@ if (REDIS_URL === 'mock' || REDIS_URL === 'redis://mock:6379' || (REDIS_URL && R
         return Math.min(times * 50, 2000);
       }
     });
-    client.on('connect', () => console.log('✅ Redis connected'));
-    // Suppress hard crash on error
-    client.on('error', (err: Error) => console.warn('Redis Connection Warning:', err.message));
+    // Only attach listeners in non-serverless envs to prevent event loop hanging
+    if (!process.env.VERCEL) {
+      client.on('connect', () => console.log('✅ Redis connected'));
+      client.on('error', (err: Error) => console.warn('Redis Connection Warning:', err.message));
+    }
   } catch (e) {
     console.warn('Failed to init Redis, falling back to mock', e);
     client = new MockRedis();
