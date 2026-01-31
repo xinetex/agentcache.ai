@@ -46,6 +46,17 @@ app.use((req, res, next) => {
     next();
 });
 
+// Force Timeout Middleware (Prevention of 504)
+app.use((req, res, next) => {
+    res.setTimeout(8000, () => {
+        console.error(`[Server] Request Timeout: ${req.method} ${req.url}`);
+        if (!res.headersSent) {
+            res.status(504).json({ error: 'Gateway Timeout (Server Enforced)', details: 'The request took too long to process.' });
+        }
+    });
+    next();
+});
+
 app.use(express.json({ limit: '1mb' })); // Limit payload size
 app.use(express.static('public'));
 

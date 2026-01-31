@@ -48,12 +48,12 @@ contentRouter.get('/', async (c) => {
             cards: cardsData
         });
     } catch (error: any) {
-        console.error('Failed to fetch Bento content:', error);
+        console.warn('Failed to fetch content from DB (returning defaults):', error);
+        // Fallback to in-memory defaults on ANY fail (Timeout, Auth, Connection)
         return c.json({
-            error: 'Database Fetch Error',
-            details: error.message,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-        }, 500);
+            lanes: DEFAULT_LANES,
+            cards: DEFAULT_CARDS
+        });
     }
 });
 
