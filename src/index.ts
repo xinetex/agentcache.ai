@@ -44,7 +44,7 @@ const freshnessRules = new antiCache.FreshnessRuleEngine();
 // Initialize Autonomic Pattern Engine (The "Will")
 // Wrapped to prevent server crash if DB/Redis is down
 try {
-  if (process.env.DATABASE_URL && (process.env.REDIS_URL || process.env.UPSTASH_REDIS_URL)) {
+  if (process.env.DATABASE_URL && (process.env.REDIS_URL || process.env.UPSTASH_REDIS_URL) && !process.env.VERCEL) {
     const patternEngine = new PatternEngine();
     // Only listen if not in serverless ephemeral mode (optional, but safe for now)
     patternEngine.listen();
