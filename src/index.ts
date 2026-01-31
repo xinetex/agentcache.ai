@@ -17,22 +17,23 @@ import { upsertMemory, queryMemory } from './lib/vector.js';
 import * as bcrypt from 'bcryptjs';
 import { neon } from '@neondatabase/serverless';
 
-const sql = neon(process.env.DATABASE_URL || '');
+// Environment & Safety Checks
+const safeEnv = (key: string) => process.env[key] || '';
 
-type Variables = {
-  apiKey: string;
-  tier: string;
-  tierFeatures: any;
-  usage: {
-    exceeded: boolean;
-    used: number;
-    quota: number;
-    remaining: number;
-  };
-};
+// Initialize Neon (Fail gracefully)
+let sql: any;
+try {
+  if (process.env.DATABASE_URL) {
+    sql = neon(process.env.DATABASE_URL);
+  } else {
+    console.warn('[Startup] DATABASE_URL missing - Neon client disabled');
+  }
+} catch (e) {
+  console.warn('[Startup] Neon init failed:', e);
+}
 
 export const app = new Hono<{ Variables: Variables }>();
-const contextManager = new ContextManager();
+const contextManager = new ContextManager(); // This might need wrapping too if it connects instantly
 
 // Initialize Anti-Cache components
 const cacheInvalidator = new antiCache.CacheInvalidator();
@@ -41,8 +42,18 @@ const freshnessCalculator = antiCache.FreshnessCalculator;
 const freshnessRules = new antiCache.FreshnessRuleEngine();
 
 // Initialize Autonomic Pattern Engine (The "Will")
-const patternEngine = new PatternEngine();
-patternEngine.listen();
+// Wrapped to prevent server crash if DB/Redis is down
+try {
+  if (process.env.DATABASE_URL && (process.env.REDIS_URL || process.env.UPSTASH_REDIS_URL)) {
+    const patternEngine = new PatternEngine();
+    // Only listen if not in serverless ephemeral mode (optional, but safe for now)
+    patternEngine.listen();
+  } else {
+    console.warn('[Startup] Skipping PatternEngine (Missing DB/Redis)');
+  }
+} catch (e) {
+  console.error('[Startup] PatternEngine failed to start:', e);
+}
 
 // CRITICAL DEBUG ENDPOINT (Zero Deps)
 app.get('/api/debug-env', (c) => {
