@@ -72,7 +72,19 @@ export default async function handler(req) {
     }
 
     // If Upstash returns an object (unlikely for GET), pass through.
-    return json(stored);
+    let responseData = typeof stored === 'string' ? JSON.parse(stored) : stored;
+
+    // Inject Settings
+    try {
+      const settings = await db.get('adminConfig:settings');
+      if (settings) {
+        responseData.settings = typeof settings === 'string' ? JSON.parse(settings) : settings;
+      }
+    } catch (e) {
+      // ignore settings load failure
+    }
+
+    return json(responseData);
   } catch (e) {
     return json(getDefaultContent());
   }

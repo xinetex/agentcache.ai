@@ -153,7 +153,7 @@
     <!-- Header -->
     <div class="fixed top-0 left-0 w-full p-6 flex justify-between items-center z-50 pointer-events-none">
         <div>
-            <h1
+            <h1 id="header-logo-text"
                 class="font-black text-2xl tracking-tighter uppercase text-slate-800 dark:text-white pointer-events-auto">
                 AgentCache</h1>
             <p class="text-[10px] font-mono tracking-[0.2em] text-slate-500 uppercase">Intelligence Module // v2.1</p>
@@ -268,7 +268,8 @@
         <div class="tile-bottom px-8 flex justify-between items-center group">
             <!-- Left: Services -->
             <div class="flex items-center gap-6">
-                <div class="group/icon relative cursor-pointer" onmouseenter="pulseIcon(this)" onclick="window.location.href='/services#cache'">
+                <div class="group/icon relative cursor-pointer" onmouseenter="pulseIcon(this)"
+                    onclick="window.location.href='/services#cache'">
                     <div
                         class="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center text-3xl group-hover/icon:scale-105 transition">
                         ⚡️</div>
@@ -276,7 +277,8 @@
                         class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-bold tracking-widest uppercase opacity-0 group-hover/icon:opacity-100 transition">
                         Cache</div>
                 </div>
-                <div class="group/icon relative cursor-pointer" onmouseenter="pulseIcon(this)" onclick="window.location.href='/services#memory'">
+                <div class="group/icon relative cursor-pointer" onmouseenter="pulseIcon(this)"
+                    onclick="window.location.href='/services#memory'">
                     <div
                         class="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center text-3xl group-hover/icon:scale-105 transition">
                         🧠</div>
@@ -284,7 +286,8 @@
                         class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-bold tracking-widest uppercase opacity-0 group-hover/icon:opacity-100 transition">
                         Memory</div>
                 </div>
-                <div class="group/icon relative cursor-pointer" onmouseenter="pulseIcon(this)" onclick="window.location.href='/services#security'">
+                <div class="group/icon relative cursor-pointer" onmouseenter="pulseIcon(this)"
+                    onclick="window.location.href='/services#security'">
                     <div
                         class="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center text-3xl group-hover/icon:scale-105 transition">
                         🛡️</div>
@@ -294,7 +297,8 @@
                 </div>
 
                 <div class="h-12 w-px bg-slate-300 dark:bg-slate-700 mx-4"></div>
-                <div class="text-xl font-black uppercase tracking-tight text-slate-300 dark:text-slate-700 select-none cursor-pointer" onclick="window.location.href='/services'">
+                <div class="text-xl font-black uppercase tracking-tight text-slate-300 dark:text-slate-700 select-none cursor-pointer"
+                    onclick="window.location.href='/services'">
                     SERVICES</div>
             </div>
 
@@ -349,6 +353,11 @@
                 const res = await fetch('/api/content');
                 contentData = await res.json();
 
+                // Apply Theme Settings
+                if (contentData.settings) {
+                    applyTheme(contentData.settings);
+                }
+
                 // Start Cycles
                 setupCycles();
                 startVisualizer(); // Start Reasoning Visualizer
@@ -366,6 +375,54 @@
                 console.error("Failed to load content:", err);
                 // Even on error, start visualizer if elements exist
                 if (document.getElementById('latency-counter')) startVisualizer();
+            }
+        }
+
+        function applyTheme(settings) {
+            if (!settings) return;
+
+            // 1. Logo / Org Name
+            const headerTitle = document.getElementById('header-logo-text');
+            if (headerTitle) {
+                if (settings.logoUrl) {
+                    headerTitle.innerHTML = `<img src="${settings.logoUrl}" alt="${settings.orgName}" class="h-10 object-contain">`;
+                } else if (settings.orgName) {
+                    headerTitle.innerText = settings.orgName;
+                }
+            }
+
+            if (settings.orgName) {
+                document.title = `${settings.orgName} | Intelligence Module`;
+            }
+
+            // 2. Dynamic Colors
+            if (settings.accentColor) {
+                const c = settings.accentColor;
+                document.documentElement.style.setProperty('--theme-color', c);
+
+                let style = document.getElementById('theme-overrides');
+                if (!style) {
+                    style = document.createElement('style');
+                    style.id = 'theme-overrides';
+                    document.head.appendChild(style);
+                }
+
+                // Override Tailwind Classes
+                // We target the specific cyan/blue classes used in the bento grid
+                style.innerHTML = `
+                    .text-cyan-400, .text-cyan-500, .text-blue-400 { color: ${c} !important; }
+                    .bg-cyan-500, .bg-cyan-400, .bg-blue-500 { background-color: ${c} !important; }
+                    .from-cyan-400, .from-blue-400 { --tw-gradient-from: ${c} !important; }
+                    .to-cyan-400, .to-cyan-500, .to-blue-600 { --tw-gradient-to: ${c} !important; }
+                    .border-cyan-500 { border-color: ${c} !important; }
+                    .shadow-\\[0_0_10px_rgba\\(34\\,211\\,238\\,0\\.8\\)\\] { box-shadow: 0 0 10px ${c}CC !important; }
+                    .selection\\:bg-cyan-500 *::selection { background-color: ${c} !important; }
+                    
+                    /* Radial Gradient Hack for Mission Tile */
+                    .tile-mission .absolute.inset-0 {
+                        background-image: radial-gradient(${c} 1px, transparent 1px) !important;
+                    }
+                `;
             }
         }
 
