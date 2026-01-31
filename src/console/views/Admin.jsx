@@ -18,30 +18,39 @@ export default function Admin() {
         dbLatency: '12ms'
     });
 
-    // Mock Data Loader (Replace with API call later)
-    useEffect(() => {
-        const loadData = async () => {
-            setLoading(true);
-            // Simulate API latency
-            await new Promise(r => setTimeout(r, 800));
+    // Real Data Loader
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            // Fetch Stats
+            const statsRes = await fetch('/api/admin/stats');
+            const statsData = statsRes.ok ? await statsRes.json() : null;
 
-            // Mock Users
-            setUsers([
-                { id: 'usr_1', name: 'Alice W.', email: 'alice@agentcache.ai', role: 'admin', status: 'active', lastActive: 'Now' },
-                { id: 'usr_2', name: 'Bob Corp', email: 'bob@acme.com', role: 'user', status: 'active', lastActive: '2m ago' },
-                { id: 'usr_3', name: 'Charlie D', email: 'charlie@dev.io', role: 'user', status: 'idle', lastActive: '1d ago' },
-                { id: 'usr_4', name: 'Dave E.', email: 'dave@evil.com', role: 'user', status: 'suspended', lastActive: '5d ago' },
-            ]);
+            // Fetch Users
+            const usersRes = await fetch('/api/admin/users');
+            const usersData = usersRes.ok ? await usersRes.json() : null;
 
-            setStats({
-                totalUsers: 42,
-                activeSessions: 12,
-                systemHealth: 'OPTIMAL',
-                dbLatency: '14ms'
-            });
+            if (statsData) {
+                setStats({
+                    totalUsers: statsData.total_users || 0,
+                    activeSessions: statsData.active_sessions || 0,
+                    systemHealth: statsData.system_health || 'OPTIMAL',
+                    dbLatency: statsData.db_latency || '14ms'
+                });
+            }
+
+            if (usersData && usersData.users) {
+                setUsers(usersData.users);
+            }
+        } catch (error) {
+            console.error("Failed to fetch admin data:", error);
+        } finally {
             setLoading(false);
-        };
-        loadData();
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
     }, []);
 
     const filteredUsers = users.filter(u =>
@@ -113,7 +122,7 @@ export default function Admin() {
                         <button className="p-2 border border-[var(--hud-border)] rounded hover:bg-[var(--hud-accent)] hover:text-black transition-colors">
                             <Filter size={16} />
                         </button>
-                        <button onClick={() => window.location.reload()} className="p-2 border border-[var(--hud-border)] rounded hover:bg-[var(--hud-accent)] hover:text-black transition-colors">
+                        <button onClick={fetchData} className="p-2 border border-[var(--hud-border)] rounded hover:bg-[var(--hud-accent)] hover:text-black transition-colors">
                             <RefreshCw size={16} />
                         </button>
                     </div>
@@ -146,8 +155,8 @@ export default function Admin() {
                                     </td>
                                     <td className="p-3">
                                         <span className={`px-2 py-0.5 rounded text-[10px] uppercase border ${user.role === 'admin'
-                                                ? 'border-purple-500 text-purple-400 bg-purple-500/10'
-                                                : 'border-[var(--hud-border)] text-[var(--hud-text-dim)]'
+                                            ? 'border-purple-500 text-purple-400 bg-purple-500/10'
+                                            : 'border-[var(--hud-border)] text-[var(--hud-text-dim)]'
                                             }`}>
                                             {user.role}
                                         </span>

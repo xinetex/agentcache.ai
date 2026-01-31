@@ -103,6 +103,8 @@ import integrationsHandler from './api/integrations.js';
 import historyHandler from './api/history.js';
 import authVerifyHandler from './api/auth/verify.js';
 import agentChatHandler from './api/agent/chat.js';
+import adminStatsHandler from './api/admin-stats.js';
+import adminUsersHandler from './api/admin-users.js';
 
 // API Routes
 app.post('/api/spelling/fix', wrap(spellingHandler));
@@ -113,7 +115,11 @@ app.post('/api/settings', wrap(settingsHandler));
 app.post('/api/integrations', wrap(integrationsHandler));
 app.post('/api/history', wrap(historyHandler));
 app.post('/api/auth/verify', wrap(authVerifyHandler));
+
 app.post('/api/agent/chat', wrap(agentChatHandler));
+
+app.get('/api/admin/stats', wrap(adminStatsHandler));
+app.get('/api/admin/users', wrap(adminUsersHandler));
 
 // Cache Routes (mapped from vercel.json rewrites)
 import cacheHandler from './api/cache.js';
