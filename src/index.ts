@@ -1224,3 +1224,7 @@ if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
     port: Number(PORT),
   });
 }
+
+// Vercel Serverless Handler
+import { handle } from 'hono/vercel';
+export default handle(app);
