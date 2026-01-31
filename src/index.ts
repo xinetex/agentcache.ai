@@ -40,11 +40,26 @@ type Variables = {
 };
 
 export const app = new Hono<{ Variables: Variables }>();
-const contextManager = new ContextManager(); // This might need wrapping too if it connects instantly
+// Lazy load ContextManager
+let contextManager: ContextManager | null = null;
+function getContextManager() {
+  if (!contextManager) contextManager = new ContextManager();
+  return contextManager;
+}
 
-// Initialize Anti-Cache components
-const cacheInvalidator = new antiCache.CacheInvalidator();
-const urlMonitor = new antiCache.UrlMonitor();
+// Initialize Anti-Cache components (Lazy)
+let cacheInvalidator: antiCache.CacheInvalidator | null = null;
+function getCacheInvalidator() {
+  if (!cacheInvalidator) cacheInvalidator = new antiCache.CacheInvalidator();
+  return cacheInvalidator;
+}
+
+let urlMonitor: antiCache.UrlMonitor | null = null;
+function getUrlMonitor() {
+  if (!urlMonitor) urlMonitor = new antiCache.UrlMonitor();
+  return urlMonitor;
+}
+
 const freshnessCalculator = antiCache.FreshnessCalculator;
 const freshnessRules = new antiCache.FreshnessRuleEngine();
 
@@ -166,7 +181,7 @@ app.get('/login', (c) => c.redirect('/login.html'));
 app.get('/dashboard', (c) => c.redirect('/dashboard.html'));
 app.get('/reset-password', (c) => c.redirect('/reset-password.html'));
 
-app.use('/*', serveStatic({ root: './public' }));
+// app.use('/*', serveStatic({ root: './public' }));
 
 // Types
 const CacheRequestSchema = z.object({
@@ -292,7 +307,7 @@ app.post('/api/cache/get', async (c) => {
     if (metaData) {
       try {
         const metadata = JSON.parse(metaData);
-        cacheInvalidator.recordAccess(key);
+        getCacheInvalidator().recordAccess(key);
         const freshnessStatus = freshnessCalculator.calculateFreshness(metadata);
         freshness = {
           status: freshnessStatus.status,
@@ -377,7 +392,7 @@ app.post('/api/cache/set', async (c) => {
     await redis.setex(metaKey, req.ttl, JSON.stringify(metadata));
 
     // Register with invalidator
-    cacheInvalidator.registerCache(key, metadata);
+    getCacheInvalidator().registerCache(key, metadata);
 
     // Populate Semantic Cache (Async)
     const lastMsg = req.messages[req.messages.length - 1]?.content;
@@ -418,7 +433,7 @@ app.post('/api/agent/chat', async (c) => {
 
     // 0. Security: Pre-execution Input Validation (Reprompt Protection)
     // We check this BEFORE fetching context or calling the LLM to prevent extraction attacks.
-    const securityCheck = await contextManager.validateInput(message);
+    const securityCheck = await getContextManager().validateInput(message);
     if (!securityCheck.valid) {
       console.warn(`[Security] Blocked Reprompt/Injection attempt: ${securityCheck.reason}`);
       return c.json({
@@ -428,7 +443,7 @@ app.post('/api/agent/chat', async (c) => {
     }
 
     // 1. Get Context (with optional Freshness Bypass)
-    const context = await contextManager.getContext(sessionId, message, { freshness });
+    const context = await getContextManager().getContext(sessionId, message, { freshness });
 
     // 2. Build messages for LLM
     const llmMessages = [
@@ -468,7 +483,7 @@ app.post('/api/agent/chat', async (c) => {
     }
 
     // 4. Save Interaction (Write-Through with reasoning metadata)
-    await contextManager.saveInteraction(sessionId, message, aiResponse, reasoningMetadata);
+    await getContextManager().saveInteraction(sessionId, message, aiResponse, reasoningMetadata);
 
     return c.json({
       sessionId,
@@ -491,7 +506,7 @@ app.delete('/api/agent/memory', async (c) => {
     const id = c.req.query('id');
     if (!id) return c.json({ error: 'Missing memory ID' }, 400);
 
-    await contextManager.deleteMemory(id);
+    await getContextManager().deleteMemory(id);
 
     return c.json({ success: true, message: `Memory ${id} pruned.` });
   } catch (error: any) {
@@ -520,7 +535,7 @@ app.post('/api/cache/invalidate', async (c) => {
     }
 
     // Perform invalidation
-    const result = await cacheInvalidator.invalidate({
+    const result = await getCacheInvalidator().invalidate({
       pattern,
       namespace,
       olderThan,
@@ -570,7 +585,7 @@ app.post('/api/listeners/register', async (c) => {
     }
 
     // Register listener
-    const listenerId = await urlMonitor.registerListener({
+    const listenerId = await getUrlMonitor().registerListener({
       url,
       checkInterval,
       namespace,
@@ -579,7 +594,7 @@ app.post('/api/listeners/register', async (c) => {
       enabled: true
     });
 
-    const listener = await urlMonitor.getListener(listenerId);
+    const listener = await getUrlMonitor().getListener(listenerId);
 
     return c.json({
       success: true,
@@ -604,7 +619,7 @@ app.get('/api/listeners', async (c) => {
   if (authError) return authError;
 
   try {
-    const listeners = await urlMonitor.getAllListeners();
+    const listeners = await getUrlMonitor().getAllListeners();
 
     return c.json({
       listeners: listeners.map(l => ({
@@ -638,7 +653,7 @@ app.delete('/api/listeners', async (c) => {
       return c.json({ error: 'Listener ID is required' }, 400);
     }
 
-    const success = urlMonitor.unregisterListener(id);
+    const success = getUrlMonitor().unregisterListener(id);
 
     if (!success) {
       return c.json({ error: 'Listener not found' }, 404);
