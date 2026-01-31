@@ -9,9 +9,9 @@
  * Install: npm install ioredis aws-sdk lru-cache
  */
 
-const Redis = require('ioredis');
-const AWS = require('aws-sdk');
-const LRU = require('lru-cache');
+// Lazy load dependencies
+let Redis;
+let AWS;
 const crypto = require('crypto');
 
 class VideoCache {
