@@ -37,44 +37,44 @@ class VideoCache {
             enableMetrics: config.enableMetrics !== false
         };
 
-        // Initialize L1: In-memory LRU
+        // L1: In-memory LRU
         this.l1 = new LRU({
             max: this.config.l1MaxSize,
             length: (value) => value.length,
             maxAge: this.config.l1MaxAge
         });
 
-        // Initialize L2: Redis
-        if (this.config.redisUrl) {
-            this.l2 = new Redis(this.config.redisUrl);
-            this.l2.on('error', (err) => console.error('VideoCache L2 Redis error:', err));
-        }
+        // Computed properties for lazy loading
+        this._l2 = null;
+        this._l3 = null;
+    }
 
-        // Initialize L3: S3/JettyThunder
-        if (this.config.s3Endpoint) {
-            this.l3 = new AWS.S3({
+    get l2() {
+        if (!this._l2 && this.config.redisUrl) {
+            this._l2 = new Redis(this.config.redisUrl);
+            // Suppress error listeners on Vercel to avoid event loop hang
+            if (!process.env.VERCEL) {
+                this._l2.on('error', (err) => console.error('VideoCache L2 Redis error:', err));
+            } else {
+                this._l2.on('error', () => { }); // No-op
+            }
+        }
+        return this._l2;
+    }
+
+    get l3() {
+        if (!this._l3 && this.config.s3Endpoint) {
+            this._l3 = new AWS.S3({
                 endpoint: this.config.s3Endpoint,
                 accessKeyId: this.config.s3AccessKey,
                 secretAccessKey: this.config.s3SecretKey,
                 s3ForcePathStyle: true,
                 signatureVersion: 'v4',
-                region: this.config.s3Region
+                region: this.config.s3Region,
+                httpOptions: { timeout: 5000 } // Fail fast
             });
         }
-
-        // Metrics
-        this.metrics = {
-            l1Hits: 0,
-            l2Hits: 0,
-            l3Hits: 0,
-            misses: 0,
-            totalRequests: 0
-        };
-
-        console.log(`🎬 VideoCache initialized`);
-        console.log(`   L1: ${this.config.l1MaxSize / 1024 / 1024}MB in-memory`);
-        console.log(`   L2: ${this.l2 ? 'Redis connected' : 'disabled'}`);
-        console.log(`   L3: ${this.l3 ? 'S3/JettyThunder' : 'disabled'}`);
+        return this._l3;
     }
 
     /**
