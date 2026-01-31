@@ -35,7 +35,7 @@ export function canUseFeature(
 
   // String features (like 'all' for cacheTypes)
   if (typeof featureValue === 'string') {
-    return featureValue !== '';
+    return (featureValue as string) !== '';
   }
 
   return false;
