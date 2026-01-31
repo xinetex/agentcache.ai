@@ -1,5 +1,5 @@
-import { db } from '../../src/db/client';
-import { decisions } from '../../src/db/schema';
+import { db } from '../../src/db/client.js';
+import { decisions } from '../../src/db/schema.js';
 import { desc } from 'drizzle-orm';
 
 export default async function handler(req, res) {

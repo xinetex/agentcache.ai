@@ -1,4 +1,4 @@
-import { vectorIndex } from './vector.js';
+import { queryMemory, upsertMemory } from './vector.js';
 import { createHash } from 'crypto';
 
 export interface SemanticCacheResult {
@@ -9,7 +9,6 @@ export interface SemanticCacheResult {
 }
 
 export class SemanticRouter {
-    private index = vectorIndex;
     private minScore: number;
 
     constructor(threshold: number = 0.90) {
@@ -20,20 +19,9 @@ export class SemanticRouter {
      * Find a semantically similar query in the cache
      */
     async find(query: string): Promise<SemanticCacheResult> {
-        if (!this.index) {
-            console.warn('SemanticRouter: Vector index not configured');
-            return { hit: false };
-        }
-
         try {
             // Query the vector index
-            // We assume the index is configured with an embedding model (e.g. BGE-M3)
-            // so we can pass the raw text query directly.
-            const results = await this.index.query({
-                data: query,
-                topK: 1,
-                includeMetadata: true,
-            });
+            const results = await queryMemory(query, 1);
 
             if (results.length > 0) {
                 const match = results[0];
@@ -60,23 +48,15 @@ export class SemanticRouter {
      * Cache a query-response pair
      */
     async cache(query: string, response: string, metadata: any = {}): Promise<void> {
-        if (!this.index) return;
-
         try {
             // Use Deterministic ID (Content-Addressable)
-            // SHA-256 of the normalized query ensures that the same query always gets the same ID.
-            // This prevents duplicate entries for the exact same semantic query and allows overwriting.
             const id = createHash('sha256').update(query.trim()).digest('hex');
 
-            await this.index.upsert({
-                id,
-                data: query, // The vector is generated from the query
-                metadata: {
-                    ...metadata,
-                    response, // Store the response in metadata
-                    query,    // Store original query for debugging
-                    cachedAt: Date.now()
-                }
+            await upsertMemory(id, query, {
+                ...metadata,
+                response, // Store the response in metadata
+                query,    // Store original query for debugging
+                cachedAt: Date.now()
             });
         } catch (error) {
             console.error('SemanticRouter cache error:', error);

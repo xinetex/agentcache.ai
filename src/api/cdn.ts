@@ -11,25 +11,25 @@ const cdn = new Hono();
 
 // Configuration for poster generation thresholds
 const POSTER_CONFIG = {
-  width: 640,
-  height: 360,
-  quality: 85,
-  format: 'jpeg',
-  fallback: true // Enable smart poster generation
+    width: 640,
+    height: 360,
+    quality: 85,
+    format: 'jpeg',
+    fallback: true // Enable smart poster generation
 };
 
 // Initialize cache with smart features
 function initSmartCache(process: any) {
-  return getVideoCache({
-    l1MaxSize: parseInt(process.env.CDN_L1_MAX_SIZE || '') || 100 * 1024 * 1024,
-    l1MaxAge: parseInt(process.env.CDN_L1_TTL || '') || 5 * 60 * 1000,
-    redisUrl: process.env.REDIS_URL || process.env.KV_URL || 'redis://localhost:6379',
-    l2TTL: parseInt(process.env.CDN_L2_TTL || '') || 3600,
-    s3Endpoint: process.env.JETTYTHUNDER_S3_ENDPOINT || process.env.S3_ENDPOINT,
-    s3AccessKey: process.env.JETTYTHUNDER_ACCESS_KEY || process.env.S3_ACCESS_KEY,
-    s3SecretKey: process.env.JETTYTHUNDER_SECRET_KEY || process.env.S3_SECRET_KEY,
-    s3Bucket: process.env.JETTYTHUNDER_BUCKET || 'jettydata-prod'
-  });
+    return getVideoCache({
+        l1MaxSize: parseInt(process.env.CDN_L1_MAX_SIZE || '') || 100 * 1024 * 1024,
+        l1MaxAge: parseInt(process.env.CDN_L1_TTL || '') || 5 * 60 * 1000,
+        redisUrl: process.env.REDIS_URL || process.env.KV_URL || 'redis://localhost:6379',
+        l2TTL: parseInt(process.env.CDN_L2_TTL || '') || 3600,
+        s3Endpoint: process.env.JETTYTHUNDER_S3_ENDPOINT || process.env.S3_ENDPOINT,
+        s3AccessKey: process.env.JETTYTHUNDER_ACCESS_KEY || process.env.S3_ACCESS_KEY,
+        s3SecretKey: process.env.JETTYTHUNDER_SECRET_KEY || process.env.S3_SECRET_KEY,
+        s3Bucket: process.env.JETTYTHUNDER_BUCKET || 'jettydata-prod'
+    });
 }
 
 // CORS for cross-domain playback
@@ -64,18 +64,18 @@ cdn.get('/stream', async (c) => {
         if (!data) {
             // Missing content - check if we should generate it
             if (isMissingContentGenerateable(targetPath)) {
-               const generated = await generateMissingContent(targetPath);
-               if (generated) {
-                 return c.body(generated.content, 200, {
-                    'Content-Type': generated.contentType,
-                    'Content-Length': generated.contentLength,
-                    'Cache-Control': 'public, max-age=3600',
-                    'X-VideoCache': 'MISS',
-                    'X-Generated': 'TRUE'
-                 });
-               }
+                const generated = await generateMissingContent(targetPath);
+                if (generated) {
+                    return c.body(generated.content as any, 200, {
+                        'Content-Type': generated.contentType,
+                        'Content-Length': generated.contentLength,
+                        'Cache-Control': 'public, max-age=3600',
+                        'X-VideoCache': 'MISS',
+                        'X-Generated': 'TRUE'
+                    });
+                }
             }
-            
+
             return c.json({ error: 'Object not found', path: targetPath }, 404);
         }
 
@@ -111,7 +111,7 @@ cdn.get('/stream', async (c) => {
 cdn.post('/warm', async (c) => {
     const body = await c.req.json();
     const { paths, jobId, outputs } = body;
-    
+
     try {
         const cache = initSmartCache(process);
         const warmed = [];
@@ -132,7 +132,7 @@ cdn.post('/warm', async (c) => {
         }
 
         return c.json({ success: true, warmed });
-    
+
     } catch (error: any) {
         return c.json({ error: 'Cache warming failed', details: error.message }, 500);
     }
@@ -144,10 +144,10 @@ cdn.post('/warm', async (c) => {
 cdn.get('/status', async (c) => {
     try {
         const cache = initSmartCache(process);
-        
+
         const [l1Stats, redisStats] = await Promise.all([
             cache.getL1Stats ? cache.getL1Stats() : { hits: 0, misses: 0 },
-            process.redis ? process.redis.info('memory') : { redis_version: 'unknown' }
+            (process as any).redis ? (process as any).redis.info('memory') : { redis_version: 'unknown' }
         ]);
 
         return c.json({
@@ -163,7 +163,7 @@ cdn.get('/status', async (c) => {
         });
 
     } catch (error: any) {
-        return c.json({ 
+        return c.json({
             status: 'unhealthy',
             error: error.message
         }, 500);
@@ -183,30 +183,31 @@ function isMissingContentGenerateable(path: string): boolean {
         /sub_.*\.png$/i,
         /.*\.png$/i, // Fallback for any PNG missing
     ];
-    
+
     return patterns.some(pattern => pattern.test(path));
 }
 
 async function generateMissingContent(targetPath: string) {
     try {
-        const colodaGenerator = import('../../services/coloda-preview.js').then(m => m.default);
-        const generator = await colodaGenerator;
-        
+        // Dynamic require to avoid TS error
+        const colodaGenerator = require('../../services/coloda-preview.js').default;
+        const generator = colodaGenerator;
+
         // Generate content based on target path
         const generated = await generator.createSmartPreview(targetPath, {
             type: detectContentType(targetPath),
             size: 'poster'
         });
-        
+
         // Return generated preview data
         const contentBuffer = Buffer.from(generated.content, 'base64');
-        
+
         return {
             content: contentBuffer,
             contentType: generated.contentType,
             contentLength: contentBuffer.length
         };
-        
+
     } catch (error) {
         console.error('Content generation failed:', error);
         // Offer a fallback simple poster
@@ -218,7 +219,7 @@ function detectContentType(path: string): string {
     if (path.match(/ai_.*poster.*\.png$/i)) return 'ai-created';
     if (path.match(/sub_.*\.png$/i)) return 'subtitle';
     if (path.match(/.*poster.*\.png$/i)) return 'poster';
-    if (path.match(/.*poster.*\.jpe?g$/i)) type = 'poster';
+    if (path.match(/.*poster.*\.jpe?g$/i)) return 'poster';
     if (path.match(/.*thumb.*\.png$/i)) return 'thumbnail';
     return 'generic';
 }
@@ -231,13 +232,13 @@ async function generateFallbackPoster(path: string) {
             AI Generated:\n${path.split('/').pop()}
         </text>
     </svg>`;
-    
+
     const buffer = Buffer.from(svg);
-    
+
     // Convert to JPEG equivalent for better compatibility
     // This would typically call an image processing service
     const jpegBuffer = await convertSVGToJPG(svg);
-    
+
     return {
         content: jpegBuffer,
         contentType: 'image/jpeg',
@@ -246,10 +247,10 @@ async function generateFallbackPoster(path: string) {
 }
 
 async function convertSVGToJPG(svgContent: string): Promise<Buffer> {
-  // In a real implementation, this would use ImageMagick or similar
-  // For now, return the SVG buffer with proper MIME handling
-  const buffer = Buffer.from(svgContent);
-  return buffer; // SVG content handled as-is
+    // In a real implementation, this would use ImageMagick or similar
+    // For now, return the SVG buffer with proper MIME handling
+    const buffer = Buffer.from(svgContent);
+    return buffer; // SVG content handled as-is
 }
 
 export default cdn;
