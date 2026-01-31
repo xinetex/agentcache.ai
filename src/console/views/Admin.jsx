@@ -21,26 +21,30 @@ export default function Admin() {
     // Real Data Loader
     const fetchData = async () => {
         setLoading(true);
+
         try {
-            // Fetch Stats
-            const statsRes = await fetch('/api/admin/stats');
-            const statsData = statsRes.ok ? await statsRes.json() : null;
+            // Fetch Stats independently
+            fetch('/api/admin/stats')
+                .then(res => res.json())
+                .then(statsData => {
+                    if (statsData && !statsData.error) {
+                        setStats({
+                            totalUsers: statsData.total_users || 0,
+                            activeSessions: statsData.active_sessions || 0,
+                            systemHealth: statsData.system_health || 'OPTIMAL',
+                            dbLatency: statsData.db_latency || '14ms'
+                        });
+                    }
+                })
+                .catch(e => console.error("Stats fetch error:", e));
 
-            // Fetch Users
+            // Fetch Users independently
             const usersRes = await fetch('/api/admin/users');
-            const usersData = usersRes.ok ? await usersRes.json() : null;
-
-            if (statsData) {
-                setStats({
-                    totalUsers: statsData.total_users || 0,
-                    activeSessions: statsData.active_sessions || 0,
-                    systemHealth: statsData.system_health || 'OPTIMAL',
-                    dbLatency: statsData.db_latency || '14ms'
-                });
-            }
-
-            if (usersData && usersData.users) {
-                setUsers(usersData.users);
+            if (usersRes.ok) {
+                const usersData = await usersRes.json();
+                if (usersData && usersData.users) {
+                    setUsers(usersData.users);
+                }
             }
         } catch (error) {
             console.error("Failed to fetch admin data:", error);

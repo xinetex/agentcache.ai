@@ -22,12 +22,24 @@ async function redis(command, ...args) {
     const { url, token } = getEnv();
     if (!url || !token) throw new Error('Upstash not configured');
     const path = `${command}/${args.map(encodeURIComponent).join('/')}`;
-    const res = await fetch(`${url}/${path}`, {
-        headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) throw new Error(`Upstash ${res.status}`);
-    const data = await res.json();
-    return data.result;
+
+    // Add 4s timeout to fetch
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), 4000);
+
+    try {
+        const res = await fetch(`${url}/${path}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            signal: controller.signal
+        });
+        clearTimeout(id);
+        if (!res.ok) throw new Error(`Upstash ${res.status}`);
+        const data = await res.json();
+        return data.result;
+    } catch (e) {
+        clearTimeout(id);
+        throw e;
+    }
 }
 
 export default async function handler(req) {
@@ -41,13 +53,13 @@ export default async function handler(req) {
         const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('REDIS_TIMEOUT')), 5000));
 
         const redisPromise = Promise.all([
-            redis('SCARD', 'subscribers'),
-            redis('SCARD', 'subscribers:pending'),
-            redis('SCARD', 'waitlist'),
-            redis('SCARD', 'keys:active'),
-            redis('GET', `stats:global:hits:d:${today}`),
-            redis('GET', `stats:global:misses:d:${today}`),
-            redis('GET', `stats:global:tokens:d:${today}`)
+            redis('SCARD', 'subscribers').catch(e => { console.error('Redis SCARD subscribers failed:', e); return 0; }),
+            redis('SCARD', 'subscribers:pending').catch(() => 0),
+            redis('SCARD', 'waitlist').catch(() => 0),
+            redis('SCARD', 'keys:active').catch(() => 0),
+            redis('GET', `stats:global:hits:d:${today}`).catch(() => 0),
+            redis('GET', `stats:global:misses:d:${today}`).catch(() => 0),
+            redis('GET', `stats:global:tokens:d:${today}`).catch(() => 0)
         ]);
 
         const [
