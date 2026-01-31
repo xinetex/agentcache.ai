@@ -148,15 +148,6 @@ app.route('/api/transcode', transcodeRouter);
 import pipelineRouter from './api/pipeline.js';
 app.route('/api/pipeline', pipelineRouter);
 
-import sentryRouter from './api/sentry.js';
-app.route('/api/sentry', sentryRouter);
-
-import intelligenceRouter from './api/intelligence.js';
-app.route('/api/intelligence', intelligenceRouter);
-
-import contentRouter from './api/content.js';
-app.route('/api/content', contentRouter);
-
 // Serve static files (landing page - defaults to community.html)
 app.get('/', (c) => {
   return c.redirect('/index.html');
@@ -1214,5 +1205,4 @@ app.get('/api', (c) => {
   });
 });
 
-// Export the app for Vercel/Serverless usage (imported by api/index.ts)
-export { app };
+
