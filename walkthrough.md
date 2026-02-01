@@ -1,90 +1,58 @@
-# Walkthrough: Unit Tests for User Dashboards and Wizards
+# The Sentinel - Installation & Configuration Walkthrough
 
-I have successfully added unit tests for the core logic components of the User Dashboards and Wizards feature. This ensures the reliability of the complexity calculation and wizard framework.
+## Summary
+To promote AgentCache.ai within the agent ecosystem, we deployed "The Sentinel" (identity: `AgentCacheSentinel`) to the **Moltbook** social network. This agent scans for users complaining about high API costs or latency and suggests AgentCache.ai as a solution.
 
-## Changes
+## Architecture
+- **Framework**: OpenClaw (v2026.1.30) running locally.
+- **Identity**: `AgentCacheSentinel` (Claimed by AgentCache brand account).
+- **Skills**:
+    - `moltbook-interact`: For reading feeds and posting replies.
+    - `agent-sentinel`: Operational safety layer.
+- **Persona**: Defined in `/Users/letstaco/Documents/agentcache-ai/SENTINEL_INSTRUCTIONS.md`.
 
-### 1. Configuration
-*   **Added `vitest`**: Installed `vitest` as a dev dependency and added a `test` script to `package.json`.
-*   **Created `vitest.config.js`**: Configured Vitest to run unit tests in the `tests/unit` directory.
+## Installation Steps Taken
 
-### 2. Unit Tests
-*   **`tests/unit/complexity-calculator.test.js`**: Added tests for:
-    *   `calculateComplexity`: Verifies correct tier, cost, and score calculation for simple, moderate, and complex pipelines.
-    *   `validateComplexityForPlan`: Checks plan limits and upgrade requirements.
-    *   `suggestOptimizations`: Ensures correct optimization suggestions (e.g., removing audit nodes, changing sectors).
-*   **`tests/unit/wizard-framework.test.js`**: Added tests for:
-    *   `PipelineWizard`: Verifies `analyzeUseCase`, `suggestNodes`, and `optimizeConfiguration` methods.
-    *   **Mocking**: Mocked `platform-memory.js` to isolate unit tests from database interactions.
+1.  **Framework Installation**:
+    ```bash
+    npm install openclaw
+    npx openclaw doctor --fix
+    ```
 
-## Verification Results
+2.  **Skill Installation**:
+    ```bash
+    npx molthub@latest install moltbook-interact --workdir ~/clawd
+    npx molthub@latest install agent-sentinel --workdir ~/clawd
+    ```
 
-### Automated Tests
-Ran `npm test` and all 17 tests passed.
+3.  **Registration**:
+    - Registered agent `AgentCacheSentinel` via Moltbook API.
+    - Claimed ownership via X (Twitter) verification.
+    - Credentials saved to `~/.config/moltbook/credentials.json`.
 
+4.  **First Deployment**:
+    - Successfully posted "AgentCacheSentinel is Online" to the `general` submolt.
+    - Attempted second post ("Open for Business"), currently rate-limited (30 min cooldown).
+
+## Useful Commands
+
+### Check Agent Status
 ```bash
-> agentcache-ai@1.0.0 test
-> vitest
-
- DEV  v4.0.14 /Users/letstaco/Documents/agentcache-ai
-
- ✓ tests/unit/complexity-calculator.test.js (10 tests)
- ✓ tests/unit/wizard-framework.test.js (7 tests)
-
- Test Files  2 passed (2)
-      Tests  17 passed (17)
+npx openclaw status
 ```
 
-### Manual Verification (E2E)
-Verified the **Wizard E2E flow** using a script (`scripts/verify_wizard_e2e.js`) connected to the new Neon DB.
-*   **Database**: Successfully connected to the new Neon instance.
-*   **Migration**: Verified schema migration (including `platform_memory_cache`).
-*   **Wizard Logic**:
-    *   `analyzeUseCase`: Correctly inferred use case from prompt.
-    *   `suggestNodes`: Returned relevant nodes for the sector.
-    *   `calculateComplexity`: Correctly calculated complexity score and cost.
-    *   `learnFromPipeline`: Successfully stored the pipeline pattern in the database (fixed SQL parameter/syntax errors).
+### Manual Posting (Debug)
+If the CLI tool fails, use the debug script we created:
+```bash
+cd ~/clawd/skills/moltbook-interact/scripts
+source venv/bin/activate
+python3 post_debug.py
+```
 
-### L3 Vector Search Verification
-Verified the **Semantic Search** functionality using `scripts/verify_l3_vector.js` against Upstash Vector.
-*   **Credentials**: Confirmed `UPSTASH_VECTOR_REST_URL` and `TOKEN` are set.
-*   **Unit Tests**: Added `tests/unit/platform-memory-l3.test.js` (5 tests passed).
-*   **Functionality**:
-    *   **Upsert**: Successfully stored a pattern with reasoning in the vector index.
-    *   **Semantic Search**: Successfully retrieved the pattern using a semantic query ("finding patterns by meaning") with high confidence (~0.91).
+### Monitor Activity
+Visit the profile: [https://moltbook.com/u/AgentCacheSentinel](https://moltbook.com/u/AgentCacheSentinel)
 
-### Geo-Sharded Cognitive Mesh
-Verified **Region Awareness** and **Elasticity** using `scripts/verify_mesh.js`.
-*   **Region Filter**: Confirmed queries can be scoped to specific regions (e.g., `eu-west-1`).
-*   **Elastic Failover**: Confirmed that if a local region query fails, the system automatically fails over to a global search to find the data.
-
-### Monitoring Dashboard
-Created a real-time visualization of the "Brain" at `public/brain.html`.
-*   **Tech Stack**: D3.js (Force Graph) + Anime.js (Animations).
-*   **Features**:
-    *   Visualizes memory nodes with size representing **Vitality**.
-    *   Shows real-time stats for Active Memories, Avg Vitality, and Mesh Traffic.
-    *   Simulates node decay and reinforcement.
-*   **Usage**: Open `public/brain.html` in a browser to view the cognitive activity.
-
-## Service Viability Audit Fixes (Jan 2026)
-
-Addressed critical gaps preventing monetization and user onboarding:
-
-### 1. Billing Infrastructure
-*   **Fixed Webhook (`api/webhooks/stripe.js`)**: Implemented actual database updates. Payment success now triggers:
-    1.  User lookup by email.
-    2.  Organization lookup.
-    3.  `tier` column update to `pro`.
-*   **Unified Checkout (`api/checkout.js`)**: Added `metadata` to Stripe Sessions to pass `source` and `client_reference_id` for better matching.
-*   **Go-Live Script (`scripts/go-live.sh`)**: Created verification tool to ensure Production Keys are set before launch.
-    *   Run: `./scripts/go-live.sh`
-
-### 2. Public Site Availability (Fixed 404s)
-*   **Vercel Routing**: Added clean URL rewrites in `vercel.json`:
-    *   `/pricing` -> `/pricing.html`
-    *   `/wizard` -> `/dashboard.html?wizard=true`
-    *   `/demo` -> `/demo-live.html`
-*   **Navigation Links**: Updated `index.html` (Hero & Nav) to point to these new valid routes instead of dead links.
-*   **Pricing Link**: Added missing "Pricing" link to the main navigation bar.
-
+## Next Steps
+- **Wait for rate limit**: The second post can be sent after ~30 minutes.
+- **Monitor Engagement**: Watch the agent's replies to ensure they remain helpful and not spammy.
+- **Migration**: Eventually move this setup from your local machine to a VPS (e.g., DigitalOcean) for 24/7 uptime.
