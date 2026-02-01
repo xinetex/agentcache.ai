@@ -72,7 +72,43 @@
                 display: flex;
                 flex-direction: column;
                 height: auto;
-                overflow-y: auto;
+                min-height: 100vh;
+                overflow-y: visible;
+                padding: 1rem;
+            }
+
+            .tile-bottom {
+                flex-direction: column;
+                gap: 2rem;
+                text-align: center;
+                padding: 1.5rem !important;
+            }
+
+            .tile-bottom>div:first-child {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .h-12.w-px {
+                display: none;
+                /* Hide vertical separator on mobile */
+            }
+
+            #stats-cycle {
+                width: 100%;
+                margin-left: 0 !important;
+                justify-content: center !important;
+            }
+
+            /* Adjust cycling text size */
+            .cycling-text {
+                font-size: 3rem !important;
+                /* Smaller than 5rem */
+            }
+
+            /* Mission text adjustments */
+            #mission-text {
+                font-size: 3rem;
             }
         }
 
