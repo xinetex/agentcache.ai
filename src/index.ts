@@ -246,9 +246,11 @@ app.get('/', (c) => {
 });
 
 // Clean URL Redirects
-app.get('/admin', (c) => c.redirect('/mission-control.html'));
+app.get('/admin', (c) => c.redirect('/admin-dashboard.html'));
+app.get('/mission-control', (c) => c.redirect('/mission-control.html')); // Keep legacy access
 app.get('/login', (c) => c.redirect('/login.html'));
-app.get('/dashboard', (c) => c.redirect('/dashboard.html'));
+app.get('/dashboard', (c) => c.redirect('/user-dashboard.html'));
+app.get('/workspace', (c) => c.redirect('/user-dashboard.html'));
 app.get('/reset-password', (c) => c.redirect('/reset-password.html'));
 
 // app.use('/*', serveStatic({ root: './public' }));
