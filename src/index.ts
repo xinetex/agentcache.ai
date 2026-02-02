@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { redis } from './lib/redis.js';
 import { ContextManager } from './infrastructure/ContextManager.js';
 import vercelIntegration from './integrations/vercel.js';
-import { antiCache } from './mcp/anticache.js';
+import { antiCache, CacheInvalidator, UrlMonitor, FreshnessCalculator, FreshnessRuleEngine } from './mcp/anticache.js';
 import { getTierQuota, getTierFeatures, getAllTiers } from './config/tiers.js';
 import { canUseNamespace, isTTLAllowed, getFeatureLimit } from './lib/tierChecker.js';
 import { stableStringify, stableHash } from './lib/stable-json.js';
@@ -48,20 +48,20 @@ function getContextManager() {
 }
 
 // Initialize Anti-Cache components (Lazy)
-let cacheInvalidator: antiCache.CacheInvalidator | null = null;
+let cacheInvalidator: CacheInvalidator | null = null;
 function getCacheInvalidator() {
-  if (!cacheInvalidator) cacheInvalidator = new antiCache.CacheInvalidator();
+  if (!cacheInvalidator) cacheInvalidator = new CacheInvalidator();
   return cacheInvalidator;
 }
 
-let urlMonitor: antiCache.UrlMonitor | null = null;
+let urlMonitor: UrlMonitor | null = null;
 function getUrlMonitor() {
-  if (!urlMonitor) urlMonitor = new antiCache.UrlMonitor();
+  if (!urlMonitor) urlMonitor = new UrlMonitor();
   return urlMonitor;
 }
 
-const freshnessCalculator = antiCache.FreshnessCalculator;
-const freshnessRules = new antiCache.FreshnessRuleEngine();
+const freshnessCalculator = FreshnessCalculator;
+const freshnessRules = new FreshnessRuleEngine();
 
 // Initialize Autonomic Pattern Engine (The "Will")
 // Wrapped to prevent server crash if DB/Redis is down
@@ -173,6 +173,15 @@ app.route('/api/explorer', explorerRouter);
 app.route('/api/governance', governanceRouter);
 app.route('/api/lab', labRouter);
 app.route('/api/admin', adminRouter);
+// Mount Treasury Sub-route
+import treasuryRouter from './api/admin/treasury.js';
+import { truthRouter } from './api/admin/truth.js';
+import { cortexRouter } from './api/admin/cortex.js';
+import { defenseRouter } from './api/admin/defense.js';
+app.route('/api/admin/treasury', treasuryRouter);
+app.route('/api/admin/truth', truthRouter);
+app.route('/api/admin/cortex', cortexRouter);
+app.route('/api/admin/defense', defenseRouter);
 app.route('/api/events', eventsRouter);
 app.route('/api/patterns', patternsRouter);
 app.route('/api/geo', geoRouter);
