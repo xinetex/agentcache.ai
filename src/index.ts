@@ -127,6 +127,7 @@ import governanceRouter from './api/governance.js';
 import labRouter from './api/lab.js';
 import authRouter from './api/auth.js';
 import billingRouter from './api/billing.js';
+import creditsRouter from './api/credits.js';
 import adminRouter from './api/admin.js';
 import eventsRouter from './api/events.js';
 import { patternsRouter } from './api/patterns.js';
@@ -151,6 +152,7 @@ app.post('/api/provision/jettythunder', provisionJettyThunder);
 // Mount Auth API
 app.route('/api/auth', authRouter);
 app.route('/api/billing', billingRouter);
+app.route('/api/credits', creditsRouter);
 
 // Mount Muscle API (JettyThunder)
 app.route('/api/muscle', muscleRouter);
