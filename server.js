@@ -60,6 +60,22 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: '1mb' })); // Limit payload size
 app.use(express.static('public'));
 
+// ---------------------------------------------------------
+// Dashboard Routes (The "User Page" & "Mission Control")
+// ---------------------------------------------------------
+app.get('/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/user-dashboard.html'));
+});
+
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/mission-control.html'));
+});
+
+app.get('/login', (req, res) => {
+    res.redirect('/dashboard'); // Auto-login flow for Demo
+});
+// ---------------------------------------------------------
+
 // Mock Edge Runtime Request/Response
 class EdgeRequest {
     constructor(req) {
