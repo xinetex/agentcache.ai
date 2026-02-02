@@ -173,11 +173,37 @@
                         </p>
                     </div>
                     <div class="flex items-center gap-3">
-                        <button
+                        <input type="file" id="context-upload-input" class="hidden" />
+                        <button onclick="document.getElementById('context-upload-input').click()"
                             class="h-9 px-4 inline-flex items-center gap-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
                             <iconify-icon icon="solar:upload-linear" class="text-lg" stroke-width="1.5"></iconify-icon>
                             Upload Context
                         </button>
+
+                        <script>
+                            document.getElementById('context-upload-input').addEventListener('change', (e) => {
+                                if (e.target.files.length > 0) {
+                                    const file = e.target.files[0];
+                                    // Simulate "Smart Analysis"
+                                    const btn = e.target.nextElementSibling;
+                                    const originalText = btn.innerHTML;
+                                    btn.innerHTML = `<iconify-icon icon="line-md:loading-twotone-loop" class="text-lg"></iconify-icon> Analyzing ${file.name}...`;
+
+                                    setTimeout(() => {
+                                        btn.innerHTML = originalText;
+                                        // Show Toast / Suggestion
+                                        alert(`📄 Context Analyzed: ${file.name}\n\n🤖 AI Suggestion: Based on this ${file.name.split('.').pop().toUpperCase()} file, we recommend using the "Data Synthesizer" agent to extract insights.`);
+
+                                        // Highlight the agent card visually
+                                        const agentCard = document.querySelectorAll('.bg-emerald-50')[1]; // Heuristic to find the card
+                                        if (agentCard) {
+                                            agentCard.parentElement.parentElement.parentElement.style.border = "2px solid #10b981";
+                                            agentCard.parentElement.parentElement.parentElement.classList.add('ring-4', 'ring-emerald-500/20');
+                                        }
+                                    }, 1500);
+                                }
+                            });
+                        </script>
                         <button
                             class="h-9 px-4 inline-flex items-center gap-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-all shadow-sm">
                             <iconify-icon icon="solar:add-circle-linear" class="text-lg"
