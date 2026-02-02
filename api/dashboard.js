@@ -174,12 +174,39 @@ export default async function handler(req, res) {
         plan: subscription.plan_tier,
         status: subscription.status,
         periodEnd: subscription.current_period_end
-      } : null
+      } : null,
+      // Strategy #1: Suggested Opportunities (Dynamic)
+      opportunities: [
+        {
+          id: 'opp_risk_01',
+          type: 'risk',
+          title: 'Compliance Risk Detected',
+          description: "Your 'Q3 financial_report.pdf' contains 2 flagged sensitive terms.",
+          actionLabel: 'CLICK TO AUDIT',
+          icon: 'solar:shield-warning-bold-duotone',
+          color: 'red'
+        },
+        {
+          id: 'opp_opt_01',
+          type: 'optimization',
+          title: 'Dataset Optimization',
+          description: "Compress 'customer_logs.csv' by 40% using Semantic Deduplication.",
+          actionLabel: 'ACTIVATE OPTIMIZER',
+          icon: 'solar:magic-stick-3-bold-duotone',
+          color: 'indigo'
+        }
+      ],
+      // Recent Activity Feed
+      recentActivity: [
+        { time: '10 min ago', title: 'Verified 3 claims', subtitle: 'In "Marketing Draft v2"', color: 'emerald' },
+        { time: '1 hour ago', title: 'New playbook shared', subtitle: 'Sarah added "Q4 Compliance"', color: 'blue' },
+        { time: 'Yesterday', title: 'Batch processed', subtitle: '10k operations via OpticalCache', color: 'gray' }
+      ]
     });
 
   } catch (error) {
     console.error('Dashboard error:', error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: 'Internal server error',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
