@@ -182,6 +182,14 @@ app.route('/api/admin/treasury', treasuryRouter);
 app.route('/api/admin/truth', truthRouter);
 app.route('/api/admin/cortex', cortexRouter);
 app.route('/api/admin/defense', defenseRouter);
+
+// Public V1 API
+import { v1Router } from './api/v1/router.js';
+app.route('/api/v1', v1Router);
+
+import { mcpRouter } from './api/mcp/router.js';
+app.route('/mcp', mcpRouter);
+
 app.route('/api/events', eventsRouter);
 app.route('/api/patterns', patternsRouter);
 app.route('/api/geo', geoRouter);

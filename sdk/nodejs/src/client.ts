@@ -11,6 +11,7 @@ import {
   Sector,
   WebhookConfig,
   ComplianceFramework,
+  VerificationResponse,
 } from './types';
 import {
   AgentCacheError,
@@ -270,12 +271,30 @@ export class AgentCache {
    * Delete a webhook
    *
    * @param webhookId - Webhook ID
-   * @returns True if successful
    */
   async deleteWebhook(webhookId: string): Promise<boolean> {
     const response = await this.retryRequest(() =>
       this.client.delete(`/api/webhooks/${webhookId}`)
     );
     return response.status === 200;
+  }
+
+  /**
+   * Verify a claim using the Trust Broker (System 2 Reasoning)
+   *
+   * @param claim - The statement or claim to verify
+   * @returns Verification result with verdict and reasoning
+   *
+   * @example
+   * ```typescript
+   * const result = await cache.verifyClaim('The earth is flat');
+   * console.log(result.data.verdict); // FALSE
+   * ```
+   */
+  async verifyClaim(claim: string): Promise<VerificationResponse> {
+    const response = await this.retryRequest(() =>
+      this.client.post<VerificationResponse>('/api/v1/truth/verify', { claim })
+    );
+    return response.data;
   }
 }

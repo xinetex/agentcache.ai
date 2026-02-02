@@ -176,3 +176,18 @@ export interface ErrorResponse {
   status_code: number;
   details?: Record<string, any>;
 }
+
+export interface VerificationResult {
+  verdict: 'TRUE' | 'FALSE' | 'UNCERTAIN';
+  confidence: number;
+  reasoning: string;
+  sources?: string[];
+}
+
+export interface VerificationResponse {
+  meta: {
+    credits_deducted: number;
+    model: string;
+  };
+  data: VerificationResult;
+}
