@@ -68,4 +68,7 @@ v1.get('/status', (c) => {
     });
 });
 
+import { docsRouter } from './docs.js';
+v1.route('/docs', docsRouter);
+
 export const v1Router = v1;
