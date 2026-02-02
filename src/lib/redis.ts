@@ -1,9 +1,12 @@
-import Redis from 'ioredis';
+import { Redis as UpstashRedis } from '@upstash/redis';
+import IORedis from 'ioredis';
 
-// import { EventEmitter } from 'events'; // Causing build issues in browser/edge envs
+// --- CONFIGURATION ---
+const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
+const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+const REDIS_URL = process.env.REDIS_URL;
 
-const REDIS_URL = process.env.REDIS_URL || process.env.UPSTASH_REDIS_URL;
-
+// --- MOCK REDIS (In-Memory Fallback) ---
 class MockRedis {
   private data = new Map<string, any>();
   private listeners = new Map<string, Function[]>();
@@ -34,72 +37,65 @@ class MockRedis {
   }
 
   duplicate() {
-    // Return a new instance, sharing the same data map for "remote" simulation
-    // In a real mock, we'd want them to share the 'data' store but be separate objects
-    // for events.
     const other = new MockRedis();
-    other['data'] = this.data; // Share data (hacky private access)
-    // For Pub/Sub to work between instances in memory, we need a shared event bus
-    // or they need to share the same EventEmitter mechanism.
+    other['data'] = this.data; // Share data
     return other;
   }
 
-  // Shared bus for Pub/Sub across instances
-  static _bus = {
-    listeners: new Map<string, Function[]>(),
-    emit(channel: string, message: string) {
-      const cbs = this.listeners.get(channel);
-      if (cbs) cbs.forEach(cb => cb(message));
-    },
-    on(channel: string, cb: Function) {
-      if (!this.listeners.has(channel)) this.listeners.set(channel, []);
-      this.listeners.get(channel)?.push(cb);
-    }
-  };
+  // Basic KV
+  async get(key: string) { return this.data.get(key) || null; }
+  async set(key: string, val: string) { this.data.set(key, val); return 'OK'; }
+  async del(key: string) { return this.data.delete(key) ? 1 : 0; }
+  async exists(key: string) { return this.data.has(key) ? 1 : 0; }
+  async ttl(key: string) { return this.data.has(key) ? -1 : -2; }
 
-  async publish(channel: string, message: string) {
-    // console.log(`[MockRedis] Publish to ${channel}: ${message}`);
-    // Emit to global bus
-    MockRedis._bus.emit(channel, message);
-    return 1; // 1 subscriber received it (fake)
+  // Compatibility shim for setex (key, seconds, value)
+  async setex(key: string, seconds: number, val: string) {
+    this.data.set(key, val);
+    // In a real mock we'd set a timeout, but for simple logic check it's fine
+    return 'OK';
   }
 
-  async subscribe(channel: string, cb?: any) {
-    // console.log(`[MockRedis] Subscribing to ${channel}`);
-    // Listen on global bus
-    MockRedis._bus.on(channel, (message: string) => {
-      // console.log(`[MockRedis] Received on ${channel}: ${message}`);
-      this.emit('message', channel, message);
-    });
-    if (cb) cb();
-    return 1;
-  }
-
-
-  async rpush(key: string, val: string) {
+  // Lists
+  async rpush(key: string, ...vals: string[]) {
     if (!this.data.has(key)) this.data.set(key, []);
-    this.data.get(key).push(val);
+    const list = this.data.get(key);
+    list.push(...vals);
+    return list.length;
   }
-  async ltrim(key: string, start: number, end: number) { }
-  async expire(key: string, ttl: number) { }
+  async ltrim(key: string, start: number, end: number) {
+    if (!this.data.has(key)) return 'OK';
+    const list = this.data.get(key);
+    if (end === -1) end = list.length - 1;
+    this.data.set(key, list.slice(start, end + 1));
+    return 'OK';
+  }
+  async expire(key: string, ttl: number) { return 1; }
   async lrange(key: string, start: number, end: number) {
-    return this.data.get(key) || [];
+    const list = this.data.get(key) || [];
+    if (end === -1) end = list.length - 1;
+    return list.slice(start, end + 1);
   }
 
-
-  // Sorted Sets (for PredictiveSynapse)
+  // Hashes
   async hget(key: string, field: string) {
     if (!this.data.has(key)) return null;
     const hash = this.data.get(key);
     if (!(hash instanceof Map)) return null;
     return hash.get(String(field));
   }
-  async hset(key: string, field: string, value: any) {
+  async hset(key: string, field: any, value?: any) {
     if (!this.data.has(key)) this.data.set(key, new Map());
     const hash = this.data.get(key);
-    if (hash instanceof Map) {
+    // Handle object vs arguments
+    if (typeof field === 'object') {
+      for (const [k, v] of Object.entries(field)) {
+        hash.set(String(k), v);
+      }
+    } else {
       hash.set(String(field), value);
     }
+    return 1;
   }
   async hdel(key: string, field: string) {
     if (!this.data.has(key)) return 0;
@@ -109,88 +105,94 @@ class MockRedis {
     }
     return 1;
   }
-  async zadd(key: string, ...args: (string | number)[]) {
-    // Mock: store as simple array, ignore score for now or implement proper zset if needed
-    if (!this.data.has(key)) this.data.set(key, new Map());
-    const zset = this.data.get(key);
-    // args is [score, member, score, member...]
-    for (let i = 0; i < args.length; i += 2) {
-      zset.set(String(args[i + 1]), Number(args[i]));
-    }
-  }
-  async zincrby(key: string, increment: number, member: string) {
-    if (!this.data.has(key)) this.data.set(key, new Map());
-    const zset = this.data.get(key);
-    const m = String(member);
-    const old = zset.get(m) || 0;
-    zset.set(m, old + increment);
-    return old + increment;
-  }
-  async zrange(key: string, start: number, stop: number) {
-    // Return keys sorted by score asc (default)
-    if (!this.data.has(key)) return [];
-    const zset = this.data.get(key);
-    const entries = Array.from(zset.entries()).sort((a: any, b: any) => a[1] - b[1]); // ASC sort
-    const sliced = entries.slice(start, stop === -1 ? undefined : stop + 1);
-    return sliced.map(x => x[0]);
-  }
 
-  async zrevrange(key: string, start: number, stop: number, withScores?: string) {
-    // Return keys sorted by score desc
-    if (!this.data.has(key)) return [];
-    const zset = this.data.get(key);
-    // Sort entries
-    const entries = Array.from(zset.entries()).sort((a: any, b: any) => b[1] - a[1]);
-    const sliced = entries.slice(start, stop === -1 ? undefined : stop + 1);
-
-    if (withScores) {
-      return sliced.flatMap(x => x);
-    }
-    return sliced.map(x => x[0]);
-  }
-
-  async get(key: string) { return this.data.get(key); }
-  async set(key: string, val: string) { this.data.set(key, val); }
-  async del(key: string) { this.data.delete(key); }
-
-
-  async incr(key: string) {
-    const val = this.data.get(key) || 0;
-    const newVal = Number(val) + 1;
-    this.data.set(key, newVal);
-    return newVal;
-  }
+  // PubSub (Minimal)
+  async publish(channel: string, message: string) { return 0; }
+  async subscribe(channel: string) { return 0; }
 }
 
+// --- UPSTASH WRAPPER ---
+// Wraps Upstash HTTP client to match IORedis signature where needed
+class UpstashWrapper {
+  private client: UpstashRedis;
+
+  constructor(url: string, token: string) {
+    console.log('⚡ Using Upstash Redis (HTTP)');
+    this.client = new UpstashRedis({ url, token });
+  }
+
+  // Passthrough for most methods
+  async get(key: string) { return this.client.get(key); }
+  async set(key: string, val: any) { return this.client.set(key, val); }
+  async del(key: string) { return this.client.del(key); }
+  async exists(key: string) { return this.client.exists(key); }
+  async ttl(key: string) { return this.client.ttl(key); }
+
+  // Lists
+  async rpush(key: string, ...vals: any[]) { return this.client.rpush(key, ...vals); }
+  async ltrim(key: string, start: number, end: number) { return this.client.ltrim(key, start, end); }
+  async expire(key: string, ttl: number) { return this.client.expire(key, ttl); }
+  async lrange(key: string, start: number, end: number) { return this.client.lrange(key, start, end); }
+
+  // Hashes
+  async hget(key: string, field: string) { return this.client.hget(key, field); }
+  async hset(key: string, field: any, value?: any) {
+    // Upstash hset supports { field: value } object
+    if (typeof field === 'object') {
+      return this.client.hset(key, field);
+    }
+    return this.client.hset(key, { [field]: value });
+  }
+  async hdel(key: string, field: string) { return this.client.hdel(key, field); }
+
+  // Compatibility Shims
+  async setex(key: string, seconds: number, val: any) {
+    return this.client.set(key, val, { ex: seconds });
+  }
+
+  // IORedis-specific
+  on(event: string, cb: Function) {
+    // Upstash HTTP doesn't have events, but we stub it to prevent crashes
+    if (event === 'connect') cb();
+    return this;
+  }
+  duplicate() { return this; } // HTTP is stateless
+}
+
+// --- FACTORY ---
 let client: any;
 
-if (REDIS_URL === 'mock' || REDIS_URL === 'redis://mock:6379' || (REDIS_URL && REDIS_URL.includes('@mock:')) || process.env.NODE_ENV === 'test') {
+const isTest = process.env.NODE_ENV === 'test';
+const isMockConfig = REDIS_URL === 'mock' || REDIS_URL?.includes('@mock:');
+
+if (isTest || isMockConfig) {
   client = new MockRedis();
-} else if (!REDIS_URL) {
-  // If no URL and not test/mock, we warn but fallback to mock to prevent crash in dev
-  console.warn('⚠️ REDIS_URL not configured. Using In-Memory Mock Redis.');
-  client = new MockRedis();
-} else {
+}
+else if (UPSTASH_URL && UPSTASH_TOKEN) {
+  // PV1: Upstash HTTP (Serverless Friendly)
+  client = new UpstashWrapper(UPSTASH_URL, UPSTASH_TOKEN);
+}
+else if (REDIS_URL) {
+  // PV2: IORedis (TCP)
   try {
-    client = new (Redis as any)(REDIS_URL, {
-      maxRetriesPerRequest: 1, // Fail fast if config is bad
-      retryStrategy: (times) => {
-        if (times > 3) return null; // Stop retrying
-        return Math.min(times * 50, 2000);
-      }
+    console.log('🔌 Using IORedis (TCP)');
+    client = new IORedis(REDIS_URL, {
+      maxRetriesPerRequest: 1,
+      retryStrategy: (times) => times > 3 ? null : Math.min(times * 50, 2000)
     });
-    // Only attach listeners in non-serverless envs to prevent event loop hanging
     if (!process.env.VERCEL) {
-      client.on('connect', () => console.log('✅ Redis connected'));
-      client.on('error', (err: Error) => console.warn('Redis Connection Warning:', err.message));
+      client.on('error', (err: any) => console.warn('Redis Connection Warning:', err.message));
     }
   } catch (e) {
-    console.warn('Failed to init Redis, falling back to mock', e);
+    console.warn('Failed to init IORedis, falling back to mock');
     client = new MockRedis();
   }
 }
+else {
+  console.warn('⚠️ No Redis credentials found. Using In-Memory Mock.');
+  client = new MockRedis();
+}
 
-// Redis client
 export const redis = client;
 
 /**
