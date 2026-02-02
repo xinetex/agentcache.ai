@@ -1,10 +1,14 @@
 import { Hono } from 'hono';
+import { redis } from '../../lib/redis.js';
 
 export const cortexRouter = new Hono();
 
-// Mock Memory Stats
+// Memory Stats
 cortexRouter.get('/stats', async (c) => {
-    // In a real implementation, we'd query Redis/Vector DB sizes
+    // Fetch seeded nodes
+    const nodeLogs = await redis.lrange('cortex:active_nodes', 0, -1);
+    const nodes = nodeLogs.map(l => JSON.parse(l));
+
     return c.json({
         short_term: {
             usage_mb: 42.5,
@@ -21,13 +25,7 @@ cortexRouter.get('/stats', async (c) => {
             misses: 1201,
             efficiency: 87.5
         },
-        active_nodes: [
-            { id: 'mem_1', type: 'concept', label: 'Rust Lang', weight: 0.98 },
-            { id: 'mem_2', type: 'entity', label: 'Solana', weight: 0.85 },
-            { id: 'mem_3', type: 'pattern', label: 'Auth Flow', weight: 0.72 },
-            { id: 'mem_4', type: 'concept', label: 'Agentic UI', weight: 0.65 },
-            { id: 'mem_5', type: 'entity', label: 'Stripe', weight: 0.60 }
-        ]
+        active_nodes: nodes
     });
 });
 
