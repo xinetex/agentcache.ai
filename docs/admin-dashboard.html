@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentCache Mission Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        gray: {
+                            850: '#1f2937',
+                            900: '#111827',
+                            925: '#0f141f',
+                            950: '#030712', // Deep background
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #050505; /* Ultra dark custom background */
+            color: #a1a1aa;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3f3f46;
+        }
+        /* Custom Checkbox */
+        .custom-checkbox input:checked + div {
+            background-color: #d4d4d8;
+            border-color: #d4d4d8;
+        }
+        .custom-checkbox input:checked + div svg {
+            display: block;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased text-sm min-h-screen flex selection:bg-white/20 selection:text-white">
+
+    <!-- Sidebar Navigation -->
+    <nav class="w-64 border-r border-white/5 flex-shrink-0 flex flex-col fixed top-0 bottom-0 left-0 bg-[#050505] z-50">
+        <div class="h-14 flex items-center px-4 border-b border-white/5">
+            <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded bg-white text-black flex items-center justify-center font-semibold text-xs tracking-tighter">
+                    AC
+                </div>
+                <span class="text-gray-200 font-medium tracking-tight">AgentCache</span>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto py-4 px-2 space-y-6">
+            <!-- Core -->
+            <div class="space-y-0.5">
+                <a href="#" class="flex items-center gap-3 px-2 py-1.5 rounded-md bg-white/5 text-gray-100 hover:text-white transition-colors group">
+                    <iconify-icon icon="solar:widget-linear" class="text-gray-400 group-hover:text-white transition-colors" width="18"></iconify-icon>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 px-2 py-1.5 rounded-md text-gray-400 hover:bg-white/5 hover:text-gray-200 transition-colors group">
+                    <iconify-icon icon="solar:users-group-rounded-linear" class="text-gray-500 group-hover:text-gray-200 transition-colors" width="18"></iconify-icon>
+                    <span>Agents</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 px-2 py-1.5 rounded-md text-gray-400 hover:bg-white/5 hover:text-gray-200 transition-colors group">
+                    <iconify-icon icon="solar:global-linear" class="text-gray-500 group-hover:text-gray-200 transition-colors" width="18"></iconify-icon>
+                    <span>Live Site</span>
+                    <iconify-icon icon="solar:arrow-right-up-linear" class="ml-auto text-gray-600" width="14"></iconify-icon>
+                </a>
+                <a href="#" class="flex items-center gap-3 px-2 py-1.5 rounded-md text-gray-400 hover:bg-white/5 hover:text-gray-200 transition-colors group">
+                    <iconify-icon icon="solar:chart-square-linear" class="text-gray-500 group-hover:text-gray-200 transition-colors" width="18"></iconify-icon>
+                    <span>Logs & Analytics</span>
+                </a>
+            </div>
+
+            <!-- Sectors -->
+            <div>
+                <div class="px-2 mb-2 text-xs font-medium text-gray-600 uppercase tracking-widest">Sectors</div>
+                <div class="space-y-0.5">
+                    <a href="#" class="flex items-center gap-3 px-2 py-1.5 rounded-md text-gray-400 hover:bg-white/5 hover:text-gray-200 transition-colors group">
+                        <iconify-icon icon="solar:wallet-linear" class="text-gray-500 group-hover:text-gray-200 transition-colors" width="18"></iconify-icon>
+                        <span>Finance</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-2 py-1.5 rounded-md text-gray-400 hover:bg-white/5 hover:text-gray-200 transition-colors group">
+                        <iconify-icon icon="solar:bolt-linear" class="text-gray-500 group-hover:text-gray-200 transition-colors" width="18"></iconify-icon>
+                        <span>Photonics</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-2 py-1.5 rounded-md text-gray-400 hover:bg-white/5 hover:text-gray-200 transition-colors group">
+                        <iconify-icon icon="solar:dna-linear" class="text-gray-500 group-hover:text-gray-200 transition-colors" width="18"></iconify-icon>
+                        <span>Biologics</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Settings -->
+            <div>
+                <div class="px-2 mb-2 text-xs font-medium text-gray-600 uppercase tracking-widest">Config</div>
+                <div class="space-y-0.5">
+                    <a href="#" class="flex items-center gap-3 px-2 py-1.5 rounded-md text-gray-400 hover:bg-white/5 hover:text-gray-200 transition-colors group">
+                        <iconify-icon icon="solar:settings-linear" class="text-gray-500 group-hover:text-gray-200 transition-colors" width="18"></iconify-icon>
+                        <span>Settings</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-2 py-1.5 rounded-md text-gray-400 hover:bg-white/5 hover:text-gray-200 transition-colors group">
+                        <iconify-icon icon="solar:key-linear" class="text-gray-500 group-hover:text-gray-200 transition-colors" width="18"></iconify-icon>
+                        <span>API Keys</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-4 border-t border-white/5">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-gray-700 to-gray-600"></div>
+                <div class="flex flex-col">
+                    <span class="text-xs font-medium text-white">Dev Team</span>
+                    <span class="text-[10px] text-gray-500">Pro Plan</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="ml-64 flex-1 flex flex-col max-w-[calc(100vw-256px)]">
+        
+        <!-- Header -->
+        <header class="h-14 border-b border-white/5 flex items-center justify-between px-6 bg-[#050505]/80 backdrop-blur-md sticky top-0 z-40">
+            <div class="flex items-center gap-2 text-gray-500 text-xs">
+                <span class="hover:text-gray-300 cursor-pointer transition-colors">Mission Control</span>
+                <span>/</span>
+                <span class="text-gray-200">Dashboard</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 px-2 py-1 rounded bg-white/5 border border-white/5">
+                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                    <span class="text-xs font-medium text-gray-300">System Online</span>
+                </div>
+                <button class="text-gray-500 hover:text-white transition-colors">
+                    <iconify-icon icon="solar:bell-linear" width="18"></iconify-icon>
+                </button>
+            </div>
+        </header>
+
+        <div class="p-6 space-y-8 pb-20">
+
+            <!-- Global Stats Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Status -->
+                <div class="p-4 rounded-xl border border-white/5 bg-white/[0.02] flex flex-col justify-between h-28 group hover:border-white/10 transition-colors">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs text-gray-500 font-medium">System Health</span>
+                        <iconify-icon icon="solar:server-square-linear" class="text-emerald-500" width="18"></iconify-icon>
+                    </div>
+                    <div>
+                        <div class="text-lg font-medium text-gray-100 tracking-tight">Healthy</div>
+                        <div class="text-xs text-emerald-500/80 mt-1 flex items-center gap-1">
+                            <iconify-icon icon="solar:check-circle-linear" width="12"></iconify-icon>
+                            All subsystems operational
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Usage -->
+                <div class="p-4 rounded-xl border border-white/5 bg-white/[0.02] flex flex-col justify-between h-28 group hover:border-white/10 transition-colors">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs text-gray-500 font-medium">Requests (24h)</span>
+                        <iconify-icon icon="solar:graph-up-linear" class="text-gray-500" width="18"></iconify-icon>
+                    </div>
+                    <div>
+                        <div class="text-lg font-medium text-gray-100 tracking-tight">842,910</div>
+                        <div class="text-xs text-gray-500 mt-1">94.2% Cache Hit Rate</div>
+                    </div>
+                </div>
+
+                <!-- Savings -->
+                <div class="p-4 rounded-xl border border-white/5 bg-white/[0.02] flex flex-col justify-between h-28 group hover:border-white/10 transition-colors">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs text-gray-500 font-medium">Compute Saved</span>
+                        <iconify-icon icon="solar:cpu-bolt-linear" class="text-gray-500" width="18"></iconify-icon>
+                    </div>
+                    <div>
+                        <div class="text-lg font-medium text-gray-100 tracking-tight">1,204h</div>
+                        <div class="text-xs text-gray-500 mt-1">~ $4,820 estimated value</div>
+                    </div>
+                </div>
+
+                <!-- Active Agents -->
+                <div class="p-4 rounded-xl border border-white/5 bg-white/[0.02] flex flex-col justify-between h-28 group hover:border-white/10 transition-colors relative overflow-hidden">
+                    <div class="flex justify-between items-start relative z-10">
+                        <span class="text-xs text-gray-500 font-medium">Top Agents</span>
+                        <a href="#" class="text-xs text-gray-400 hover:text-white transition-colors">View all &rarr;</a>
+                    </div>
+                    <div class="relative z-10 mt-2 space-y-1">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-gray-300">Alpha-One</span>
+                            <span class="text-gray-600">42k req</span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-gray-300">ResearchBot</span>
+                            <span class="text-gray-600">18k req</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div>
+                <h3 class="text-sm font-medium text-gray-200 mb-3 tracking-tight">Quick Actions</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <button class="flex items-center gap-3 p-3 rounded-lg border border-white/5 bg-white/[0.01] hover:bg-white/[0.04] hover:border-white/10 transition-all text-left group">
+                        <div class="w-8 h-8 rounded-md bg-indigo-500/10 text-indigo-400 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-500/20 transition-colors">
+                            <iconify-icon icon="solar:shield-check-linear" width="18"></iconify-icon>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs font-medium text-gray-200">New Claim</span>
+                            <span class="text-[10px] text-gray-500">Verify logic</span>
+                        </div>
+                    </button>
+                    
+                    <button class="flex items-center gap-3 p-3 rounded-lg border border-white/5 bg-white/[0.01] hover:bg-white/[0.04] hover:border-white/10 transition-all text-left group">
+                        <div class="w-8 h-8 rounded-md bg-purple-500/10 text-purple-400 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-500/20 transition-colors">
+                            <iconify-icon icon="solar:magic-stick-3-linear" width="18"></iconify-icon>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs font-medium text-gray-200">New Agent</span>
+                            <span class="text-[10px] text-gray-500">From template</span>
+                        </div>
+                    </button>
+
+                    <button class="flex items-center gap-3 p-3 rounded-lg border border-white/5 bg-white/[0.01] hover:bg-white/[0.04] hover:border-white/10 transition-all text-left group">
+                        <div class="w-8 h-8 rounded-md bg-blue-500/10 text-blue-400 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-500/20 transition-colors">
+                            <iconify-icon icon="solar:database-linear" width="18"></iconify-icon>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs font-medium text-gray-200">Connect Data</span>
+                            <span class="text-[10px] text-gray-500">Integration</span>
+                        </div>
+                    </button>
+
+                    <button class="flex items-center gap-3 p-3 rounded-lg border border-white/5 bg-white/[0.01] hover:bg-white/[0.04] hover:border-white/10 transition-all text-left group">
+                        <div class="w-8 h-8 rounded-md bg-rose-500/10 text-rose-400 flex items-center justify-center flex-shrink-0 group-hover:bg-rose-500/20 transition-colors">
+                            <iconify-icon icon="solar:danger-triangle-linear" width="18"></iconify-icon>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs font-medium text-gray-200">Incidents</span>
+                            <span class="text-[10px] text-gray-500">View status</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Trust Broker -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Main Interface -->
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="border border-white/5 rounded-xl bg-[#0a0a0a] overflow-hidden flex flex-col h-full shadow-sm">
+                        <div class="border-b border-white/5 px-4 py-3 flex items-center justify-between bg-white/[0.01]">
+                            <h3 class="text-sm font-medium text-gray-200 tracking-tight flex items-center gap-2">
+                                <iconify-icon icon="solar:shield-check-linear" class="text-emerald-500"></iconify-icon>
+                                Trust Broker
+                            </h3>
+                            <button class="text-[10px] text-gray-500 hover:text-gray-300 transition-colors flex items-center gap-1">
+                                <iconify-icon icon="solar:settings-linear" width="12"></iconify-icon>
+                                Config
+                            </button>
+                        </div>
+                        
+                        <div class="p-4 space-y-4">
+                            <!-- Input -->
+                            <div class="space-y-2">
+                                <label class="text-xs text-gray-500 font-medium ml-1">Claim to verify</label>
+                                <textarea class="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-gray-300 placeholder-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all resize-none h-32" placeholder="Enter claim or logic snippet..."></textarea>
+                            </div>
+                            
+                            <!-- Context Fields -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-2">
+                                    <label class="text-xs text-gray-500 font-medium ml-1">Context URL / Evidence</label>
+                                    <input type="text" class="w-full bg-[#050505] border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 placeholder-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all" placeholder="https://...">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-xs text-gray-500 font-medium ml-1">Model Selection</label>
+                                    <div class="relative">
+                                        <select class="w-full bg-[#050505] border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 appearance-none">
+                                            <option>GPT-4 (Deep Verify)</option>
+                                            <option>Claude 3 (Fast)</option>
+                                        </select>
+                                        <iconify-icon icon="solar:alt-arrow-down-linear" class="absolute right-3 top-2.5 text-gray-600 pointer-events-none" width="12"></iconify-icon>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="pt-2 flex items-center gap-3">
+                                <button class="bg-white text-black text-xs font-medium px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                                    <iconify-icon icon="solar:play-linear" width="14"></iconify-icon>
+                                    Verify Claim
+                                </button>
+                                <button class="text-gray-400 text-xs font-medium px-4 py-2 rounded-lg border border-white/5 hover:bg-white/5 transition-colors flex items-center gap-2">
+                                    <iconify-icon icon="solar:bookmark-linear" width="14"></iconify-icon>
+                                    Save as Rule
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Mini Log Table -->
+                        <div class="border-t border-white/5 mt-auto">
+                            <div class="px-4 py-2 bg-white/[0.01] border-b border-white/5 flex items-center justify-between">
+                                <span class="text-[10px] font-medium text-gray-500 uppercase tracking-wider">Verification Log</span>
+                                <div class="flex gap-2">
+                                    <span class="text-[10px] text-gray-600 cursor-pointer hover:text-gray-400">Filter</span>
+                                    <span class="text-[10px] text-gray-600 cursor-pointer hover:text-gray-400">Export</span>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead>
+                                        <tr class="text-[10px] text-gray-600 border-b border-white/5">
+                                            <th class="px-4 py-2 font-medium">Time</th>
+                                            <th class="px-4 py-2 font-medium">Claim Snippet</th>
+                                            <th class="px-4 py-2 font-medium">Verdict</th>
+                                            <th class="px-4 py-2 font-medium text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-xs text-gray-400">
+                                        <tr class="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors group">
+                                            <td class="px-4 py-2.5 whitespace-nowrap font-mono text-[10px]">10:42 AM</td>
+                                            <td class="px-4 py-2.5 truncate max-w-[200px]">User requested refund for...</td>
+                                            <td class="px-4 py-2.5">
+                                                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                                    Verified
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-2.5 text-right">
+                                                <button class="opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-white">
+                                                    <iconify-icon icon="solar:menu-dots-linear" width="16"></iconify-icon>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-white/[0.02] transition-colors group">
+                                            <td class="px-4 py-2.5 whitespace-nowrap font-mono text-[10px]">10:38 AM</td>
+                                            <td class="px-4 py-2.5 truncate max-w-[200px]">Policy #9942 claim limits...</td>
+                                            <td class="px-4 py-2.5">
+                                                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                                    Inconclusive
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-2.5 text-right">
+                                                <button class="opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-white">
+                                                    <iconify-icon icon="solar:menu-dots-linear" width="16"></iconify-icon>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Result Panel (Latest) -->
+                <div class="space-y-4">
+                    <div class="border border-white/5 rounded-xl bg-[#0a0a0a] p-5 h-full relative overflow-hidden">
+                        <!-- Result Background Glow -->
+                        <div class="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/5 blur-[50px] rounded-full pointer-events-none"></div>
+
+                        <div class="flex items-center justify-between mb-6">
+                            <span class="text-xs font-medium text-gray-500 uppercase tracking-widest">Latest Result</span>
+                            <div class="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                High Confidence
+                            </div>
+                        </div>
+
+                        <div class="text-center mb-8">
+                            <div class="text-5xl font-semibold text-white tracking-tighter mb-1">98/100</div>
+                            <div class="text-sm font-medium text-emerald-400 flex items-center justify-center gap-1">
+                                <iconify-icon icon="solar:check-circle-linear"></iconify-icon> Verified
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="text-xs font-medium text-gray-300 mb-2">Key Rationale</h4>
+                                <ul class="space-y-2">
+                                    <li class="flex items-start gap-2 text-xs text-gray-400">
+                                        <iconify-icon icon="solar:check-read-linear" class="text-emerald-500 mt-0.5 flex-shrink-0" width="12"></iconify-icon>
+                                        <span>Matches policy document section 4.2 regarding exclusions.</span>
+                                    </li>
+                                    <li class="flex items-start gap-2 text-xs text-gray-400">
+                                        <iconify-icon icon="solar:check-read-linear" class="text-emerald-500 mt-0.5 flex-shrink-0" width="12"></iconify-icon>
+                                        <span>Historical precedence found in Cache.</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 pt-4 border-t border-white/5 grid grid-cols-2 gap-2">
+                            <button class="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-gray-300 transition-colors">
+                                <iconify-icon icon="solar:eye-linear" width="14"></iconify-icon> Trace
+                            </button>
+                            <button class="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-gray-300 transition-colors">
+                                <iconify-icon icon="solar:export-linear" width="14"></iconify-icon> Export
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sector Tiles -->
+            <div>
+                <h3 class="text-sm font-medium text-gray-200 mb-3 tracking-tight">Active Sectors</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    
+                    <!-- Finance -->
+                    <div class="p-5 rounded-xl border border-white/5 bg-gradient-to-b from-[#0f141f] to-[#050505] hover:border-white/10 transition-all group relative">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                                    <iconify-icon icon="solar:wallet-linear" width="20"></iconify-icon>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-200">Finance</div>
+                                    <div class="text-[10px] text-gray-500">RiskCache</div>
+                                </div>
+                            </div>
+                            <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-y-4 gap-x-2 mb-4">
+                            <div>
+                                <div class="text-[10px] text-gray-500 uppercase">Monte Carlo Hits</div>
+                                <div class="text-lg font-medium text-gray-200 tracking-tight">82%</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-gray-500 uppercase">Latency p95</div>
+                                <div class="text-lg font-medium text-gray-200 tracking-tight">45ms</div>
+                            </div>
+                        </div>
+                        <div class="pt-4 border-t border-white/5 flex items-center justify-between">
+                            <span class="text-[10px] text-gray-600">Updated 2m ago</span>
+                            <a href="#" class="text-[10px] text-blue-400 hover:text-blue-300 transition-colors">View Dashboard &rarr;</a>
+                        </div>
+                    </div>
+
+                    <!-- Photonics -->
+                    <div class="p-5 rounded-xl border border-white/5 bg-gradient-to-b from-[#0f141f] to-[#050505] hover:border-white/10 transition-all group">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center">
+                                    <iconify-icon icon="solar:bolt-linear" width="20"></iconify-icon>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-200">Photonics</div>
+                                    <div class="text-[10px] text-gray-500">OpticalCache</div>
+                                </div>
+                            </div>
+                            <div class="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-y-4 gap-x-2 mb-4">
+                            <div>
+                                <div class="text-[10px] text-gray-500 uppercase">Mode</div>
+                                <div class="text-sm font-medium text-gray-200 tracking-tight mt-1">Prototyping</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-gray-500 uppercase">Eff. Throughput</div>
+                                <div class="text-lg font-medium text-gray-200 tracking-tight">1.2 TB/s</div>
+                            </div>
+                        </div>
+                        <div class="pt-4 border-t border-white/5 flex items-center justify-between">
+                            <span class="text-[10px] text-gray-600">Minor Timeout Spikes</span>
+                            <a href="#" class="text-[10px] text-orange-400 hover:text-orange-300 transition-colors">View Dashboard &rarr;</a>
+                        </div>
+                    </div>
+
+                    <!-- Biologics -->
+                    <div class="p-5 rounded-xl border border-white/5 bg-gradient-to-b from-[#0f141f] to-[#050505] hover:border-white/10 transition-all group">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-pink-500/10 text-pink-400 flex items-center justify-center">
+                                    <iconify-icon icon="solar:dna-linear" width="20"></iconify-icon>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-200">Biologics</div>
+                                    <div class="text-[10px] text-gray-500">FoldingCache</div>
+                                </div>
+                            </div>
+                            <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-y-4 gap-x-2 mb-4">
+                            <div>
+                                <div class="text-[10px] text-gray-500 uppercase">GPU Hrs Saved</div>
+                                <div class="text-lg font-medium text-gray-200 tracking-tight">840h</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-gray-500 uppercase">Queue Depth</div>
+                                <div class="text-lg font-medium text-gray-200 tracking-tight">0</div>
+                            </div>
+                        </div>
+                        <div class="pt-4 border-t border-white/5 flex items-center justify-between">
+                            <span class="text-[10px] text-gray-600">Optimization Active</span>
+                            <a href="#" class="text-[10px] text-pink-400 hover:text-pink-300 transition-colors">View Dashboard &rarr;</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lower Panels (Activity & Context) -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Activity Stream -->
+                <div class="lg:col-span-2">
+                    <h3 class="text-sm font-medium text-gray-200 mb-3 tracking-tight">Live Activity</h3>
+                    <div class="border border-white/5 rounded-xl bg-[#0a0a0a] p-0 overflow-hidden">
+                        <div class="divide-y divide-white/5">
+                            <div class="p-4 flex gap-4 hover:bg-white/[0.01] transition-colors">
+                                <div class="mt-1">
+                                    <div class="w-2 h-2 rounded-full bg-blue-500 ring-4 ring-blue-500/10"></div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-300">New Integration Added</div>
+                                    <div class="text-[10px] text-gray-500 mt-0.5">User 'Admin' connected Snowflake Data Warehouse to Finance sector.</div>
+                                </div>
+                                <span class="ml-auto text-[10px] text-gray-600 font-mono">2m ago</span>
+                            </div>
+                            <div class="p-4 flex gap-4 hover:bg-white/[0.01] transition-colors">
+                                <div class="mt-1">
+                                    <div class="w-2 h-2 rounded-full bg-amber-500 ring-4 ring-amber-500/10"></div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-300">Policy Eviction Updated</div>
+                                    <div class="text-[10px] text-gray-500 mt-0.5">TTL changed from 24h to 48h for RiskCache.</div>
+                                </div>
+                                <span class="ml-auto text-[10px] text-gray-600 font-mono">15m ago</span>
+                            </div>
+                            <div class="p-4 flex gap-4 hover:bg-white/[0.01] transition-colors">
+                                <div class="mt-1">
+                                    <div class="w-2 h-2 rounded-full bg-emerald-500 ring-4 ring-emerald-500/10"></div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-300">Large Batch Verification</div>
+                                    <div class="text-[10px] text-gray-500 mt-0.5">Processed 5,000 claims via Alpha-One agent.</div>
+                                </div>
+                                <span class="ml-auto text-[10px] text-gray-600 font-mono">1h ago</span>
+                            </div>
+                        </div>
+                        <div class="bg-white/[0.01] border-t border-white/5 p-2 text-center">
+                            <button class="text-[10px] text-gray-500 hover:text-white transition-colors">Load more events</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Rail: Alerts & Recs -->
+                <div class="space-y-6">
+                    <!-- Incidents -->
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-medium text-gray-200 tracking-tight">Alerts</h3>
+                            <a href="#" class="text-[10px] text-gray-500 hover:text-white">View all</a>
+                        </div>
+                        <div class="border border-white/5 rounded-xl bg-[#0a0a0a] p-4 space-y-3">
+                            <div class="flex gap-3 items-start">
+                                <iconify-icon icon="solar:bell-linear" class="text-amber-500 mt-0.5" width="16"></iconify-icon>
+                                <div>
+                                    <div class="text-xs font-medium text-gray-200">High Latency: OpticalCache</div>
+                                    <div class="text-[10px] text-gray-500 mt-1">Matrix backend p99 > 200ms for last 10m.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommendations -->
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-200 mb-3 tracking-tight">Recommendations</h3>
+                        <div class="border border-white/5 rounded-xl bg-[#0a0a0a] p-4 space-y-4">
+                            <div class="flex gap-3 items-start group cursor-pointer">
+                                <div class="w-6 h-6 rounded bg-indigo-500/10 text-indigo-400 flex items-center justify-center flex-shrink-0">
+                                    <iconify-icon icon="solar:tuning-linear" width="12"></iconify-icon>
+                                </div>
+                                <div>
+                                    <div class="text-xs font-medium text-gray-300 group-hover:text-indigo-400 transition-colors">Increase TTL for RiskCache</div>
+                                    <div class="text-[10px] text-gray-500 mt-0.5">Hit rate is 20%, target is 50%.</div>
+                                </div>
+                            </div>
+                            <div class="w-full h-px bg-white/5"></div>
+                            <div class="flex gap-3 items-start group cursor-pointer">
+                                <div class="w-6 h-6 rounded bg-pink-500/10 text-pink-400 flex items-center justify-center flex-shrink-0">
+                                    <iconify-icon icon="solar:link-circle-linear" width="12"></iconify-icon>
+                                </div>
+                                <div>
+                                    <div class="text-xs font-medium text-gray-300 group-hover:text-pink-400 transition-colors">Connect Biologics Workload</div>
+                                    <div class="text-[10px] text-gray-500 mt-0.5">FoldingCache is idle. Connect a source.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+</body>
+</html>
