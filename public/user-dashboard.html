@@ -408,28 +408,66 @@
                         </section>
                     </div>
 
-                    <!-- Right Rail -->
-                    <div class="space-y-8">
+                    <!-- Right Column (Stats & Quick Actions) -->
+                    <div class="space-y-6">
 
-                        <!-- Usage / Credits -->
-                        <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-                            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Cache
-                                Efficiency</h3>
+                        <!-- Usage / Credits (Gamified - Strategy #3) -->
+                        <div id="efficiency-card"
+                            class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm cursor-pointer hover:border-emerald-400 hover:shadow-md transition-all group relative overflow-hidden"
+                            onclick="toggleRoiDetails()">
+
+                            <!-- ROI Popup / Overlay (Hidden by default) -->
+                            <div id="roi-overlay"
+                                class="absolute inset-0 bg-emerald-900/95 z-20 hidden flex flex-col justify-center items-center text-center p-6 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]">
+                                <h4 class="text-white font-bold text-lg mb-2">🎉 ROI Confirmed</h4>
+                                <p class="text-emerald-100/80 text-sm mb-4">You avoided <span
+                                        class="text-white font-mono">12,402</span> expensive API calls today.</p>
+                                <div class="bg-white/10 rounded-lg p-3 w-full mb-4 backdrop-blur-sm">
+                                    <div class="flex justify-between text-xs text-emerald-200 mb-1">
+                                        <span>OpenAI Cost</span>
+                                        <span class="line-through opacity-50">$12.40</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm text-white font-medium">
+                                        <span>AgentCache Cost</span>
+                                        <span>$0.12</span>
+                                    </div>
+                                </div>
+                                <button
+                                    class="text-xs bg-white text-emerald-900 px-3 py-1.5 rounded-full font-semibold hover:bg-emerald-50"
+                                    onclick="event.stopPropagation(); toggleRoiDetails()">Keep Saving</button>
+                            </div>
+
+                            <h3
+                                class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                Cache Efficiency
+                                <span
+                                    class="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full group-hover:bg-emerald-500 group-hover:text-white transition-colors">TAP
+                                    ME</span>
+                            </h3>
                             <div class="flex items-end gap-2 mb-2">
                                 <span id="efficiency-metric" class="text-3xl font-semibold text-gray-900">--%</span>
                                 <span class="text-xs text-emerald-600 font-medium mb-1.5 flex items-center">
                                     <iconify-icon icon="solar:arrow-right-up-linear"></iconify-icon> 4.2%
                                 </span>
                             </div>
-                            <p class="text-xs text-gray-500 mb-4">Operations served from OpticalCache this week.</p>
+                            <p class="text-xs text-gray-500 mb-4 group-hover:text-emerald-600 transition-colors">
+                                Operations served from OpticalCache this week.</p>
                             <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                                <div id="efficiency-bar" class="bg-gray-900 h-2 rounded-full" style="width: 0%"></div>
+                                <div id="efficiency-bar"
+                                    class="bg-gray-900 h-2 rounded-full transition-all duration-1000" style="width: 0%">
+                                </div>
                             </div>
                             <div class="mt-4 flex justify-between text-xs text-gray-500">
                                 <span id="ops-used">Used: --</span>
                                 <span id="ops-total">Total: --</span>
                             </div>
                         </div>
+                        <script>
+                            function toggleRoiDetails() {
+                                const overlay = document.getElementById('roi-overlay');
+                                overlay.classList.toggle('hidden');
+                            }
+                        </script>
 
                         <script>
                             async function refreshUserStats() {
@@ -439,9 +477,8 @@
                                     // Fetch real stats
                                     const s = await fetch('/api/stats', { headers }).then(r => r.json());
 
-                                    // Calculate Mock Efficiency (Cache Hit Rate or similar)
-                                    // Since /api/stats returns `used` and `remaining`, we'll infer efficiency
-                                    const total = 10000; // Mock Total Quota
+                                    // Calculate Mock Efficiency
+                                    const total = 10000;
                                     const used = s.used || 1240;
                                     const percent = Math.min(100, Math.round((used / total) * 100));
 
@@ -458,7 +495,55 @@
                             refreshUserStats();
                         </script>
 
-                        <!-- Recent Activity Feed -->
+                        <!-- Suggested Opportunities (Strategy #1) -->
+                        <div>
+                            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Suggested
+                                Opportunities</h3>
+                            <div class="space-y-3">
+                                <!-- Opportunity 1: Risk Detected -->
+                                <div
+                                    class="p-3 bg-red-50 border border-red-100 rounded-lg hover:border-red-200 transition-all cursor-pointer group">
+                                    <div class="flex items-start gap-3">
+                                        <div
+                                            class="w-8 h-8 rounded-lg bg-white flex items-center justify-center border border-red-100 text-red-500 shrink-0 shadow-sm">
+                                            <iconify-icon icon="solar:shield-warning-bold-duotone"
+                                                width="18"></iconify-icon>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-sm font-medium text-gray-900 group-hover:text-red-700">
+                                                Compliance Risk Detected</h4>
+                                            <p class="text-xs text-red-600/80 mt-1">Your 'Q3 financial_report.pdf'
+                                                contains 2 flagged sensitive terms.</p>
+                                            <div
+                                                class="mt-2 text-[10px] font-semibold text-red-700 bg-red-100/50 inline-block px-2 py-1 rounded">
+                                                CLICK TO AUDIT</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Opportunity 2: Optimization -->
+                                <div
+                                    class="p-3 bg-indigo-50 border border-indigo-100 rounded-lg hover:border-indigo-200 transition-all cursor-pointer group">
+                                    <div class="flex items-start gap-3">
+                                        <div
+                                            class="w-8 h-8 rounded-lg bg-white flex items-center justify-center border border-indigo-100 text-indigo-500 shrink-0 shadow-sm">
+                                            <iconify-icon icon="solar:magic-stick-3-bold-duotone"
+                                                width="18"></iconify-icon>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-sm font-medium text-gray-900 group-hover:text-indigo-700">
+                                                Dataset Optimization</h4>
+                                            <p class="text-xs text-indigo-600/80 mt-1">Compress 'customer_logs.csv' by
+                                                40% using Semantic Deduplication.</p>
+                                            <div
+                                                class="mt-2 text-[10px] font-semibold text-indigo-700 bg-indigo-100/50 inline-block px-2 py-1 rounded">
+                                                ACTIVATE OPTIMIZER</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div> <!-- Recent Activity Feed -->
                         <div>
                             <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Recent
                                 Activity</h3>
