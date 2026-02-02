@@ -11,16 +11,21 @@ export class ArmorService {
      */
     async checkRequest(ip: string, path: string, payload?: any): Promise<{ allowed: boolean; reason?: string }> {
         // 1. Rate Limiting (Token Bucket)
-        // Key: rate:ip (TTL 60s)
-        const rateKey = `armor:rate:${ip}`;
-        const count = await redis.incrby(rateKey, 1);
+        try {
+            // Key: rate:ip (TTL 60s)
+            const rateKey = `armor:rate:${ip}`;
+            const count = await redis.incrby(rateKey, 1);
 
-        if (count === 1) {
-            await redis.expire(rateKey, 60);
-        }
+            if (count === 1) {
+                await redis.expire(rateKey, 60);
+            }
 
-        if (count > 100) { // 100 req/min limit
-            return { allowed: false, reason: "Rate Limit Exceeded" };
+            if (count > 100) { // 100 req/min limit
+                return { allowed: false, reason: "Rate Limit Exceeded" };
+            }
+        } catch (err) {
+            console.error("[Armor] Rate Limit Check Failed (Fail Open):", err);
+            // Ignore Redis errors and allow traffic
         }
 
         // 2. Payload Inspection (WAF)
@@ -39,14 +44,18 @@ export class ArmorService {
             for (const threat of threats) {
                 if (str.includes(threat)) {
                     // Log Attack to Cortex
-                    await this.cortex.synapse({
-                        sector: 'FINANCE', // Using Finance/Risk channel for Security for now
-                        type: 'WARNING',
-                        message: `🛡️ ARMOR BLOCKED: Malicious Payload detected from ${ip}`
-                    });
+                    try {
+                        await this.cortex.synapse({
+                            sector: 'FINANCE', // Using Finance/Risk channel for Security for now
+                            type: 'WARNING',
+                            message: `🛡️ ARMOR BLOCKED: Malicious Payload detected from ${ip}`
+                        });
 
-                    // Ban IP temporarily
-                    await redis.setex(`armor:ban:${ip}`, 300, 'banned');
+                        // Ban IP temporarily
+                        await redis.setex(`armor:ban:${ip}`, 300, 'banned');
+                    } catch (e) {
+                        console.error("[Armor] Failed to log threat:", e);
+                    }
 
                     return { allowed: false, reason: `Threat Detected: ${threat}` };
                 }
