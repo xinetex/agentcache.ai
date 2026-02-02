@@ -69,12 +69,24 @@ export const organizations = pgTable('organizations', {
 
 export const users = pgTable('users', {
     id: uuid('id').defaultRandom().primaryKey(),
-    email: text('email').notNull().unique(),
-    passwordHash: text('password_hash'), // Nullable for OAuth users, required for email
+    email: text('email').unique(), // Made nullable for wallet-only users (though unique constraint might need handling if multiple nulls allowed? PG allows multiple nulls in unique)
+    passwordHash: text('password_hash'), // Nullable for OAuth/Wallet users
+    walletAddress: text('wallet_address').unique(), // For SIWE
+    nonce: text('nonce'), // For SIWE verification
     name: text('name'),
     avatarUrl: text('avatar_url'),
     role: text('role').default('user'), // 'admin', 'user'
     plan: text('plan').default('free'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const userSettings = pgTable('user_settings', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id').references(() => users.id).unique().notNull(),
+    themePref: text('theme_pref').default('system'), // 'dark', 'light', 'system'
+    notificationsEnabled: boolean('notifications_enabled').default(true),
+    sectorConfig: jsonb('sector_config').default({}), // Extensible config per sector
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
 });

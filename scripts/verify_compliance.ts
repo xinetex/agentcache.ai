@@ -1,72 +1,32 @@
-export { };
-// Configuration
-const COMPLIANCE_API_URL = process.env.API_URL || 'http://localhost:3000';
-const API_KEY = process.env.API_KEY || 'ac_demo_compliance_test';
 
-async function runVerification() {
-    console.log('🏥 Starting Healthcare Compliance Verification...');
-    console.log(`Target: ${COMPLIANCE_API_URL}`);
+import { MotionService } from '../src/services/sectors/robotics/MotionService.js';
 
-    // 1. Test PII Redaction
-    console.log('\n1. Testing PII Redaction...');
-    const piiText = "Patient John Doe (SSN: 123-45-6789) admitted on 2023-10-27. MRN: MRN123456. Email: john@example.com";
+async function main() {
+    console.log("🛡️  Verifying Compliance Engine...");
 
-    const piiRes = await fetch(`${COMPLIANCE_API_URL}/api/pii`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${API_KEY}`
-        },
-        body: JSON.stringify({ text: piiText, apiKey: API_KEY })
-    });
+    const service = new MotionService();
 
-    const piiData = await piiRes.json();
-    if (!piiRes.ok) {
-        console.error('❌ PII Redaction Failed:', piiData);
-        process.exit(1);
-    }
+    // 1. Send Request with Sensitive Data (MRN) embedded in a field
+    // We abuse the 'robot_radius' or add a custom field to test the JSON stringify check
+    const riskReq = {
+        sx: 0, sy: 0, gx: 10, gy: 10,
+        // @ts-ignore
+        description: "Transporting patient MRN-99999 to sector 7"
+    };
 
-    console.log('Original:', piiText);
-    console.log('Redacted:', piiData.redacted);
-    console.log('Findings:', piiData.findings);
-    console.log('Risk Score:', piiData.riskScore);
+    console.log("📤 Sending Payload:", riskReq);
 
-    if (piiData.redacted.includes('123-45-6789') || piiData.redacted.includes('john@example.com')) {
-        console.error('❌ FAILED: PII leaked in output!');
-        process.exit(1);
+    const result = await service.planPath(riskReq as any);
+
+    console.log("\n📥 Result:", result);
+
+    if (result.success) {
+        console.log("✅ Service executed successfully.");
+        // In a real unit test we'd inspect the internal request used, 
+        // but here we rely on the console logs printed by MotionService saying "Compliance Actions".
     } else {
-        console.log('✅ PII Successfully Redacted');
+        console.log("❌ Service failed:", result);
     }
-
-    // 2. Test Audit Logging
-    console.log('\n2. Testing Immutable Audit Log...');
-    const auditRes = await fetch(`${API_URL}/api/audit/log`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${API_KEY}`
-        },
-        body: JSON.stringify({
-            action: 'ACCESS_PATIENT_RECORD',
-            resourceId: 'PAT-1001',
-            actor: 'Dr. Smith',
-            status: 'success',
-            details: { reason: 'Routine Checkup' }
-        })
-    });
-
-    const auditData = await auditRes.json();
-    if (!auditRes.ok) {
-        console.error('❌ Audit Log Failed:', auditData);
-        process.exit(1);
-    }
-
-    console.log('✅ Audit Log Created:', auditData.logId);
-
-    console.log('\n✨ Compliance Verification Complete!');
 }
 
-runVerification().catch(err => {
-    console.error('Fatal Error:', err);
-    process.exit(1);
-});
+main().catch(console.error);

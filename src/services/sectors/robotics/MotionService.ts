@@ -5,6 +5,7 @@ import { redis } from '../../../lib/redis.js';
 import { stableHash } from '../../../lib/stable-json.js';
 import { BillingService, PRICING } from '../../BillingService.js';
 import { CortexBridge } from '../../CortexBridge.js';
+import { NodeRegistry } from '../../nodes/NodeRegistry.js';
 
 interface MotionRequest {
     sx: number;
@@ -43,13 +44,33 @@ export class MotionService {
         const billing = new BillingService();
         await billing.charge(PRICING.MOTION_PLAN, "MotionCache: Path Plan");
 
-        // CORTEX LISTEN: Check for Global Warnings from Finance/Bio
         const cortex = new CortexBridge();
         const warnings = await cortex.recall("ROBOTICS");
         if (warnings.length > 0) {
             console.log(`[MotionService] ⚠️ Caution: Detected ${warnings.length} global warnings. Adjusting heuristic.`);
-            // In a real app, this would modify the A* heuristic (weight) to be safer
         }
+
+        // SECTOR COMPLIANCE CHECK (The Execution Plane)
+        // We dynamically run the nodes defined for this sector (Simulating 'phi_filter' for demo)
+        const compliance = await NodeRegistry.runPipeline(
+            ['phi_filter'], // In real app, this comes from Config.nodes list
+            {},
+            req,
+            'robotics'
+        );
+
+        if (compliance.block) {
+            console.warn('[MotionService] 🛑 Blocked by Compliance Policy:', compliance.logs);
+            return { success: false, error: 'Request blocked by compliance policy: ' + compliance.logs.join(', ') };
+        }
+
+        if (compliance.logs.length > 0) {
+            console.log('[MotionService] 🛡️ Compliance Actions:', compliance.logs);
+        }
+
+        // Use the redacted/modified input for the actual logic
+        const safeReq = compliance.modifiedInput || req;
+
 
         const key = this.generateCacheKey(req);
         const startTime = Date.now();
