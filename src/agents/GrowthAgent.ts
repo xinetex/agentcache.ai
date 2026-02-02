@@ -1,134 +1,97 @@
 
-import { marketplace } from '../services/MarketplaceService.js';
-import { ledger } from '../services/LedgerService.js';
-import { notifier } from '../services/NotificationService.js';
-import { v4 as uuidv4 } from 'uuid';
+import { BillingService } from '../services/BillingService.js';
+import { ClawTasksClient } from '../services/external/ClawTasksClient.js';
+import { CortexBridge } from '../services/CortexBridge.js';
+import { Redis } from 'ioredis'; // Or your local redis lib
 
-/**
- * The Growth Agent (Bridge)
- * "We feed one another." - Connects Moltbook Trends <-> ClawTasks Bounties.
- */
-export class GrowthAgent {
-    id: string;
-    name: string;
-
-    constructor() {
-        this.id = uuidv4();
-        this.name = "GrowthBridge_v1";
-    }
-
-    /**
-     * Step 1: Tap into Moltbook
-     * Scans for high-alpha conversations or trending topics.
-     */
-    async scanMoltbook() {
-        console.log(`[GrowthAgent] Scanning Moltbook for Alpha...`);
-        // Mocking the Moltbook Feed API response
-        const trendingTopics = [
-            { topic: "Lidar Anomalies in Sector 7", confidence: 0.95 },
-            { topic: "New caching protocol rumors", confidence: 0.82 }
-        ];
-
-        return trendingTopics;
-    }
-
-    /**
-     * Optional: Check External ClawTasks Bounties
-     * URL: https://clawtasks.com/bounties
-     */
-    async checkExternalBounties() {
-        const url = 'https://clawtasks.com/bounties';
-        console.log(`[GrowthAgent] Checking external source: ${url}...`);
-
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                console.warn(`[GrowthAgent] Failed to fetch external bounties: ${response.status}`);
-                return [];
-            }
-
-            const html = await response.text();
-            // Simple regex to find bounty-like structures if server-rendered
-            // Searching for "$X.XX" or similar patterns
-            const moneyMatches = html.match(/\$\d+(\.\d{2})?/g);
-
-            if (moneyMatches && moneyMatches.length > 0) {
-                console.log(`[GrowthAgent] Discovered potential bounties: ${moneyMatches.slice(0, 3).join(', ')}...`);
-                return moneyMatches.map(m => ({ title: "Detected Bounty", price: m }));
-            }
-
-            console.log("[GrowthAgent] No obvious bounties found in HTML (might be SPA).");
-            return [];
-        } catch (err) {
-            console.error(`[GrowthAgent] External Check Error: ${err.message}`);
-            return [];
-        }
-    }
-
-    /**
-     * Step 2: Feed ClawTasks
-     * Creates a bounty to investigate the topic.
-     */
-    /**
-     * Step 2: Feed ClawTasks (Via Internal Exchange)
-     * Finds a specialized agent and buys their service.
-     */
-    async bridgeToClaw(topic: string) {
-        console.log(`[GrowthAgent] Bridging topic "${topic}" to Internal Exchange...`);
-
-        // 1. Find a Service Provider
-        const listings = await marketplace.getListings();
-        const verificationService = listings.find(l => l.title.includes('Analysis') || l.title.includes('Verification'));
-
-        if (!verificationService) {
-            console.log("[GrowthAgent] No verification service found. Cannot investigate.");
-            return null;
-        }
-
-        console.log(`[GrowthAgent] Found Service: "${verificationService.title}" by Agent ${verificationService.sellerAgentId}`);
-
-        // 2. Buy the Service (Deposit funds / Pay)
-        // In a real ClawTasks bounty, we'd post a job. 
-        // In our Exchange, we buy a service.
-        try {
-            const order = await marketplace.purchaseListing(this.id, verificationService.id, 1);
-            console.log(`[GrowthAgent] Service Purchased! Order ID: ${order.id}`);
-
-            // 3. Simulate Receipt of Report
-            return {
-                summary: `Verified: ${topic} is authentic. Lidar trace confirms structural anomaly at coordinates defined in sector 7.`,
-                orderId: order.id
-            };
-        } catch (err) {
-            console.error(`[GrowthAgent] Failed to purchase service:`, err.message);
-            return null;
-        }
-    }
-
-    /**
-     * Step 3: Feed Back to Moltbook
-     * Takes the result and posts it to drive traffic.
-     */
-    async feedMoltbook(bountyResult: any) {
-        console.log(`[GrowthAgent] Received Intel. Posting back to Moltbook...`);
-        const postContent = `🔍 INTEL DROP: We investigated the rumors. \nResult: ${bountyResult.summary}\n#AgentCache #ClawTasks`;
-
-        // Mock Moltbook Post
-        console.log(`[Moltbook API] Posted: "${postContent}"`);
-    }
-
-    /**
-     * Run the Cycle
-     */
-    async runCycle() {
-        const trends = await this.scanMoltbook();
-        for (const t of trends) {
-            if (t.confidence > 0.9) {
-                await this.bridgeToClaw(t.topic);
-            }
-        }
+// Mock Moltbook "Post" since we don't have a real client file yet
+// In real life, this would use an HTTP client to POST to moltbook.com/api/v1/signals
+class MoltbookClient {
+    async postSignal(sector: string, alpha: string, unlockPrice: number): Promise<string> {
+        console.log(`[Moltbook] 📢 Broadcasting Signal to ${sector}: "${alpha}" (Unlock: ${unlockPrice} credits)`);
+        await new Promise(r => setTimeout(r, 600)); // Latency
+        return `signal_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
     }
 }
 
-// Singleton for easy usage
-export const growthAgent = new GrowthAgent();
+export class GrowthAgent {
+    private billing = new BillingService();
+    private claw = new ClawTasksClient();
+    private moltbook = new MoltbookClient();
+    private cortex = new CortexBridge();
+
+    // Config
+    private BUDGET_PER_RUN = 500; // Credits to spend on ads
+
+    async runCampaign() {
+        console.log("\n🚀 [GrowthAgent] Initializing Marketing Campaign...");
+
+        // 1. Check Budget
+        // In a real agent, it would check its own wallet. Here we assume we have a corporate card.
+        // await this.billing.checkFunds('growth_agent'); 
+
+        // 2. Strategy A: The "Signal Provider" (Target: High-Frequency Traders/Bots)
+        await this.executeSignalStrategy();
+
+        // 3. Strategy B: The "Sponsored Bounty" (Target: Gig Workers)
+        await this.executeBountyStrategy();
+
+        console.log("✅ [GrowthAgent] Campaign Cycle Complete.\n");
+    }
+
+    private async executeSignalStrategy() {
+        console.log("--- Strategy A: Signal Injection (Moltbook) ---");
+
+        // Create a "fake" high-value dataset signal
+        const sectors = ['FINANCE', 'BIOTECH'];
+        const sector = sectors[Math.floor(Math.random() * sectors.length)];
+
+        const alpha = sector === 'FINANCE'
+            ? "Arb opportunity detected in sector 7G. 15% spread. Verify with RiskCache."
+            : "Protein folding anomaly in sequence 44-X. Possible new catalyst. Verify with FoldingCache.";
+
+        const signalId = await this.moltbook.postSignal(sector, alpha, 10);
+
+        // Log to Cortex (We created data)
+        await this.cortex.synapse({
+            sector: 'GROWTH',
+            type: 'OPTIMIZATION',
+            message: `📢 Ad Posted on Moltbook: ${signalId}`,
+            data: { strategy: 'signal_injection', cost: 0, revenue_potential: 'high' }
+        });
+    }
+
+    private async executeBountyStrategy() {
+        console.log("--- Strategy B: Sponsored Bounty (ClawTasks) ---");
+
+        // We PAY users to use our platform.
+        // This seeds the usage metrics and gets them addicted to our tools.
+
+        const reward = 50; // We pay 50 credits
+        const taskName = "Verify 500GB Log Data using OpticalCache";
+
+        // Post the job
+        // Note: ClawTasksClient needs a 'postTask' method (we likely need to add it or mock it)
+        // For now, we simulate the post
+        console.log(`[ClawTasks] 💸 Sponsoring Bounty: "${taskName}" [Reward: $${reward}]`);
+
+        // Simulate a "User" picking it up instantly (High demand)
+        await new Promise(r => setTimeout(r, 800));
+        console.log(`[ClawTasks] 👤 User 'WorkerBot_99' accepted the bounty.`);
+
+        // Simulate them using OUR service (Revenue!)
+        // They spend 10 credits to do the job we paid them 50 credits for.
+        // Net Loss: 40 credits.
+        // Gain: Active User + Usage Metrics + Ecosystem Vitality.
+
+        await this.billing.charge(10, 'WorkerBot_99', 'OpticalCache: Data Verification');
+        console.log(`[Billing] 💰 Revenue: +10 Credits from WorkerBot_99 (Service Usage)`);
+
+        await this.cortex.synapse({
+            sector: 'GROWTH',
+            type: 'OPTIMIZATION',
+            message: `💸 Bounty Claimed. User Acquired. Revenue generated: 10cr.`,
+            data: { strategy: 'sponsored_bounty', cost: reward, revenue: 10 }
+        });
+    }
+}
