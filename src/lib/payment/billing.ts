@@ -77,25 +77,27 @@ export class BillingManager {
             success_url: successUrl,
             cancel_url: cancelUrl,
         });
+    }
+
     /**
      * Get Customer Credit Balance (Stripe Cash Balance)
      * Returns the amount in cents (e.g. 500 = $5.00)
      */
-    async getBalance(customerId: string): Promise < number > {
-            if(!this.initialized) return 1000; // Mock: $10.00 credit in dev
+    async getBalance(customerId: string): Promise<number> {
+        if (!this.initialized) return 1000; // Mock: $10.00 credit in dev
 
-            try {
-                const customer = await this.stripe.customers.retrieve(customerId) as Stripe.Customer;
-                return customer.balance || 0;
-                // Note: Positive balance in Stripe usually means amount DUE. 
-                // Negative balance means CREDIT. 
-                // We'll return the raw value for the API to format.
-            } catch(error) {
-                console.error('[Billing] Balance check failed:', error);
-                return 0;
-            }
+        try {
+            const customer = await this.stripe.customers.retrieve(customerId) as Stripe.Customer;
+            return customer.balance || 0;
+            // Note: Positive balance in Stripe usually means amount DUE. 
+            // Negative balance means CREDIT. 
+            // We'll return the raw value for the API to format.
+        } catch (error) {
+            console.error('[Billing] Balance check failed:', error);
+            return 0;
         }
     }
+}
 
-    // Singleton Export
-    export const billing = new BillingManager();
+// Singleton Export
+export const billing = new BillingManager();
