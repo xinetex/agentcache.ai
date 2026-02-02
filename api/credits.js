@@ -147,12 +147,18 @@ export default async function handler(req, res) {
     // POST /api/credits/purchase - Create Checkout
     // ============================================
     if (method === 'POST' && path === '/api/credits/purchase') {
-      const { package_id } = req.body;
+      const { package_id, api_key_hash } = req.body;
 
       if (!package_id || !CREDIT_PACKAGES[package_id]) {
         return res.status(400).json({ 
           error: 'Invalid package',
           available: Object.keys(CREDIT_PACKAGES),
+        });
+      }
+
+      if (!api_key_hash) {
+        return res.status(400).json({
+          error: 'api_key_hash required to attribute credits',
         });
       }
 
@@ -188,10 +194,11 @@ export default async function handler(req, res) {
         }],
         customer_email: user.email,
         metadata: {
-          userId: user.id,
-          packageId: package_id,
-          credits: pkg.credits,
           type: 'credit_purchase',
+          user_id: user.id,
+          package_id,
+          credits: pkg.credits,
+          api_key_hash,
         },
         success_url: `${req.headers.origin}/dashboard?purchase=success&credits=${pkg.credits}`,
         cancel_url: `${req.headers.origin}/dashboard?purchase=cancelled`,

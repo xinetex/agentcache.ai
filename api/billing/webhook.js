@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+import { addCreditsToUser } from '../credits.js';
 
 export const config = {
   runtime: 'nodejs',
@@ -88,21 +89,38 @@ export default async function handler(req, res) {
         const session = event.data.object;
         const kind = session.metadata?.type;
 
-        // --- Credits top-off ---
+        // --- Credits top-off (Checkout session) ---
         if (kind === 'credit_purchase') {
           const keyHash = session.metadata?.api_key_hash;
           const credits = parseInt(session.metadata?.credits || '0', 10);
+          const userId = session.metadata?.user_id;
+          const packageId = session.metadata?.package_id;
 
           if (!keyHash || !Number.isFinite(credits) || credits <= 0) {
             console.error('[Credits Webhook] Missing api_key_hash or credits in metadata');
             break;
           }
 
+          // Idempotency: check Redis balance by incrby; optional DB dedupe via addCreditsToUser when user_id present
           try {
             const newBalance = await upstashIncrBy(`credits:${keyHash}`, credits);
             console.log(`[Credits Webhook] Added ${credits} credits to ${keyHash.slice(0, 8)}… (new balance: ${newBalance})`);
           } catch (e) {
-            console.error('[Credits Webhook] Failed to apply credits:', e);
+            console.error('[Credits Webhook] Failed to apply credits in Redis:', e);
+          }
+
+          if (userId) {
+            try {
+              await addCreditsToUser(userId, credits, {
+                type: 'purchase',
+                packageId,
+                stripeCheckoutSessionId: session.id,
+                stripePaymentIntentId: session.payment_intent,
+                description: `Purchased ${credits} credits`,
+              });
+            } catch (e) {
+              console.error('[Credits Webhook] Failed to persist credits to DB:', e);
+            }
           }
 
           break;
