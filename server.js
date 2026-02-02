@@ -157,6 +157,12 @@ app.post('/api/tool-cache', wrap(toolCacheHandler));
 app.post('/api/tool-cache/get', wrap(toolCacheHandler));
 app.post('/api/tool-cache/set', wrap(toolCacheHandler));
 
+// MCP Bridge Route
+import mcpBridgeHandler from './api/mcp-bridge.js';
+import lidarIntentHandler from './api/lidar-intent.js';
+app.post('/api/mcp/execute', wrap(mcpBridgeHandler));
+app.post('/api/lidar/intent', wrap(lidarIntentHandler));
+
 // JettySpeed Routes
 import optimalEdgesHandler from './api/jetty/optimal-edges.js';
 import checkDuplicateHandler from './api/jetty/check-duplicate.js';

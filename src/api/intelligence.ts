@@ -14,6 +14,20 @@ function getAnalyst() {
 }
 
 /**
+ * GET /api/intelligence
+ * Retrieve the Hive Mind status (List of Agents)
+ */
+intelligenceRouter.get('/', async (c) => {
+    try {
+        const { agents } = await import('../db/schema.js');
+        const allAgents = await db.select().from(agents);
+        return c.json({ agents: allAgents });
+    } catch (err: any) {
+        return c.json({ error: err.message, agents: [] }, 500);
+    }
+});
+
+/**
  * GET /api/intelligence/banner/:hash
  * Retrieve analysis for a specific banner hash
  */

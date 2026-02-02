@@ -1,0 +1,176 @@
+.lidar-assistant-panel {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 350px;
+    height: 500px;
+    background: rgba(10, 10, 15, 0.95);
+    border: 1px solid #00f0ff;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+    z-index: 9999;
+    backdrop-filter: blur(10px);
+    font-family: 'Inter', sans-serif;
+    color: #e0e0e0;
+}
+
+.lidar-header {
+    padding: 15px;
+    background: rgba(0, 240, 255, 0.1);
+    border-bottom: 1px solid #00f0ff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.lidar-header h3 {
+    margin: 0;
+    color: #00f0ff;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: #00f0ff;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.chat-window {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.message {
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.4;
+    max-width: 85%;
+}
+
+.message.user {
+    align-self: flex-end;
+    background: rgba(0, 240, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(0, 240, 255, 0.3);
+}
+
+.message.assistant {
+    align-self: flex-start;
+    background: rgba(255, 255, 255, 0.05);
+    color: #ccc;
+    border: 1px solid #333;
+}
+
+.lidar-results {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.lidar-card {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid #444;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.lidar-card h4 {
+    margin: 8px 0 5px 0;
+    font-size: 12px;
+    color: #fff;
+    font-weight: 600;
+}
+
+.lidar-preview {
+    width: 100%;
+    height: 80px;
+    overflow: hidden;
+    border-radius: 4px;
+    border: 1px solid #333;
+    margin-bottom: 5px;
+}
+
+.lidar-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.8;
+    transition: opacity 0.3s;
+}
+
+.lidar-preview img:hover {
+    opacity: 1;
+}
+
+.lidar-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #888;
+}
+
+.scanning {
+    color: #00f0ff;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+        text-shadow: 0 0 10px #00f0ff;
+    }
+
+    100% {
+        opacity: 0.5;
+    }
+}
+
+.input-area {
+    padding: 15px;
+    border-top: 1px solid #333;
+    display: flex;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.input-area input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 8px;
+    color: white;
+    font-size: 13px;
+}
+
+.input-area input:focus {
+    outline: none;
+    border-color: #00f0ff;
+}
+
+.input-area button {
+    background: #00f0ff;
+    color: #000;
+    border: none;
+    padding: 0 15px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 12px;
+}

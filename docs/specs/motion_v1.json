@@ -1,0 +1,79 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "MotionCache API",
+        "version": "1.0.0",
+        "description": "Spatial Caching Service for Autonomous Agents"
+    },
+    "paths": {
+        "/api/motion/plan": {
+            "post": {
+                "summary": "Request a trajectory",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "sx": {
+                                        "type": "number",
+                                        "description": "Start X"
+                                    },
+                                    "sy": {
+                                        "type": "number",
+                                        "description": "Start Y"
+                                    },
+                                    "gx": {
+                                        "type": "number",
+                                        "description": "Goal X"
+                                    },
+                                    "gy": {
+                                        "type": "number",
+                                        "description": "Goal Y"
+                                    },
+                                    "map_hash": {
+                                        "type": "string",
+                                        "description": "Hash of current occupancy grid"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Optimal Path",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "path_x": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "path_y": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "from_cache": {
+                                            "type": "boolean"
+                                        },
+                                        "latency_ms": {
+                                            "type": "number"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -118,25 +118,65 @@
                     class="px-3 py-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300 border-b-2 border-transparent transition whitespace-nowrap">
                     Settings
                 </button>
+                <button onclick="switchTab('sectors')" id="tab-sectors"
+                    class="px-3 py-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-orange-500 hover:text-orange-300 border-b-2 border-transparent transition whitespace-nowrap">
+                    Sectors
+                </button>
             </nav>
 
-            <div class="flex items-center gap-4 flex-shrink-0">
-                <a href="/" target="_blank"
-                    class="text-xs font-mono text-slate-400 hover:text-white border border-slate-700 hover:border-slate-500 px-3 py-1.5 rounded transition flex items-center gap-2 hidden sm:flex">
-                    <i data-lucide="external-link" class="w-3 h-3"></i> View Live Site
-                </a>
-                <a href="/" target="_blank" class="sm:hidden text-slate-400"><i data-lucide="external-link"
-                        class="w-4 h-4"></i></a>
-                <button onclick="logout()" class="text-xs text-red-400 hover:text-red-300 font-mono hover:underline">
-                    LOGOUT
-                </button>
-            </div>
+        </div>
+
+        <div class="flex items-center gap-4 flex-shrink-0">
+            <a href="/dashboard"
+                class="text-xs font-bold text-cyan-400 hover:text-cyan-300 border border-cyan-500/50 hover:border-cyan-400 px-3 py-1.5 rounded transition flex items-center gap-2 items-center">
+                <i data-lucide="cpu" class="w-3 h-3"></i> AGENT COMMAND
+            </a>
+            <a href="/" target="_blank"
+                class="text-xs font-mono text-slate-400 hover:text-white border border-slate-700 hover:border-slate-500 px-3 py-1.5 rounded transition flex items-center gap-2 hidden sm:flex">
+                <i data-lucide="external-link" class="w-3 h-3"></i> View Live Site
+            </a>
+            <a href="/" target="_blank" class="sm:hidden text-slate-400"><i data-lucide="external-link"
+                    class="w-4 h-4"></i></a>
+            <button onclick="logout()" class="text-xs text-red-400 hover:text-red-300 font-mono hover:underline">
+                LOGOUT
+            </button>
+        </div>
         </div>
     </header>
     <main class="max-w-7xl mx-auto p-6">
         <!-- VIEW: Content Grid -->
         <div id="view-content" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             <!-- Cards Injected Here -->
+        </div>
+
+        <!-- VIEW: Defense Log -->
+        <div id="view-defense" class="hidden space-y-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-black text-white">ACTIVE DEFENSE MATRIX</h2>
+                <div id="shield-status" class="text-sm font-mono tracking-widest">CHECKING...</div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6">
+                <div class="bg-red-500/10 border border-red-500/30 p-8 rounded-2xl flex items-center justify-between">
+                    <div>
+                        <div class="text-red-400 text-xs font-bold uppercase tracking-wider mb-2">Threats Neutralized
+                        </div>
+                        <div class="text-5xl font-black text-white" id="defense-threats">--</div>
+                    </div>
+                    <i data-lucide="shield-alert" class="w-16 h-16 text-red-500"></i>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 rounded-xl p-6 border border-slate-700">
+                <div class="text-xs text-slate-500 uppercase mb-4">Traffic analysis</div>
+                <div class="h-32 flex items-end gap-1" id="traffic-viz">
+                    <!-- Bars generated loosely -->
+                    <div
+                        class="w-full bg-slate-800 h-full rounded flex items-center justify-center text-slate-600 text-xs">
+                        Traffic Normalization Active
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- VIEW: User Management -->
@@ -180,59 +220,24 @@
 
         <!-- VIEW: Treasury -->
         <div id="view-treasury" class="hidden space-y-8">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Stripe Card -->
-                <div class="card p-6 rounded-xl border-l-4 border-l-purple-500 relative overflow-hidden group">
-                    <div
-                        class="absolute right-[-20px] top-[-20px] opacity-10 group-hover:opacity-20 transition transform group-hover:scale-110">
-                        <i data-lucide="credit-card" class="w-48 h-48"></i>
-                    </div>
-                    <div class="relative z-10">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-sm font-mono text-purple-300 uppercase tracking-widest">Global Fiat
-                                    Revenue</h3>
-                                <div class="text-xs text-slate-500">STRIPE CONNECTED</div>
-                            </div>
-                            <div class="bg-purple-500/10 p-2 rounded-lg"><i data-lucide="dollar-sign"
-                                    class="text-purple-400"></i></div>
-                        </div>
-                        <div class="text-4xl font-black text-white mb-2" id="treasury-fiat-val">$0.00</div>
-                        <div class="text-xs text-slate-400 flex gap-2">
-                            <span class="text-green-400 flex items-center gap-1"><i data-lucide="trending-up"
-                                    class="w-3 h-3"></i> +12% this week</span>
-                            <span>• Subscription MRR + Credits</span>
-                        </div>
-                    </div>
+            <div class="grid grid-cols-3 gap-6 mb-8">
+                <div class="card p-6 rounded-xl border-l-4 border-l-yellow-500">
+                    <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Current Balance</h3>
+                    <div class="text-4xl font-black text-white" id="treasury-bal">---</div>
+                    <div class="text-yellow-500 text-xs mt-1">CREDITS (AC)</div>
                 </div>
-
-                <!-- Solana Card -->
-                <div class="card p-6 rounded-xl border-l-4 border-l-green-500 relative overflow-hidden group">
-                    <div
-                        class="absolute right-[-20px] top-[-20px] opacity-10 group-hover:opacity-20 transition transform group-hover:scale-110">
-                        <i data-lucide="coins" class="w-48 h-48"></i>
-                    </div>
-                    <div class="relative z-10">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-sm font-mono text-green-300 uppercase tracking-widest">Agent Treasury
-                                </h3>
-                                <div class="text-xs text-slate-500">SOLANA MAINNET</div>
-                            </div>
-                            <div class="bg-green-500/10 p-2 rounded-lg"><i data-lucide="wallet"
-                                    class="text-green-400"></i></div>
-                        </div>
-                        <div class="text-4xl font-black text-white mb-2" id="treasury-crypto-val">0.00 SOL</div>
-                        <div class="text-xs font-mono text-slate-500 truncate" id="treasury-wallet-addr">...</div>
-                    </div>
+                <div class="card p-6 rounded-xl border-l-4 border-l-emerald-500 cursor-pointer hover:bg-slate-800 transition"
+                    onclick="topUp(1000)">
+                    <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Action</h3>
+                    <div class="text-xl font-bold text-emerald-400">Add Funds</div>
+                    <div class="text-slate-500 text-xs mt-1">+1000 Credits (Simulated)</div>
                 </div>
             </div>
 
-            <!-- Transaction Stream -->
-            <div class="card rounded-xl p-6">
-                <h3 class="text-sm font-mono text-slate-400 uppercase mb-4">Recent Transactions</h3>
-                <div class="space-y-0 divide-y divide-slate-800" id="treasury-stream">
-                    <div class="p-4 text-center text-slate-500">Loading stream...</div>
+            <div class="bg-slate-800 rounded-xl p-6">
+                <h3 class="text-white font-bold mb-4">Recent Transactions</h3>
+                <div id="ledger-list" class="space-y-2 text-sm text-slate-400 font-mono">
+                    <!-- Populated via JS -->
                 </div>
             </div>
         </div>
@@ -249,44 +254,119 @@
                         <p class="text-xs text-slate-500 mb-4">Manually verify a claim using the System 2 Reasoning
                             Engine.</p>
 
-                        <textarea id="truth-input" rows="4" placeholder="Enter a claim to verify..."
-                            class="w-full bg-slate-900 border border-slate-700 rounded p-3 text-sm text-white focus:border-emerald-500 outline-none transition mb-4"></textarea>
+                        <!-- Finance Vertical -->
+                        <div class="card p-6 rounded-xl border-l-4 border-l-cyan-500">
+                            <div class="flex justify-between items-center mb-6">
+                                <div>
+                                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                        <i data-lucide="trending-up" class="text-cyan-400"></i> FINANCE (RiskCache)
+                                    </h3>
+                                    <p class="text-xs text-slate-500">Monte Carlo Simulation Caching</p>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-2xl font-black text-cyan-400" id="finance-saved">0ms</div>
+                                    <div class="text-[10px] text-slate-500 uppercase tracking-widest">Compute Saved
+                                    </div>
+                                </div>
+                            </div>
 
-                        <button onclick="verifyClaim()"
-                            class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded transition shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                            VERIFY CLAIM
-                        </button>
-
-                        <div id="verification-result"
-                            class="hidden mt-4 p-4 rounded bg-slate-900/50 border border-slate-700">
-                            <!-- Dynamic Result -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-slate-900/50 p-4 rounded-lg">
+                                    <span class="text-xs text-slate-400 uppercase">Requests</span>
+                                    <div class="text-xl font-bold text-white" id="finance-total">0</div>
+                                </div>
+                                <div class="bg-slate-900/50 p-4 rounded-lg">
+                                    <span class="text-xs text-slate-400 uppercase">Cache Hits</span>
+                                    <div class="text-xl font-bold text-green-400" id="finance-hits">0</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Stats Mini-Cards -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="card p-4 rounded-xl text-center">
-                            <div class="text-[10px] font-mono text-slate-500 uppercase">Trust Score</div>
-                            <div class="text-2xl font-black text-emerald-400" id="truth-score">--</div>
+                    <!-- Photonics Vertical (New) -->
+                    <div class="card p-6 rounded-xl border-l-4 border-l-white">
+                        <div class="flex justify-between items-center mb-6">
+                            <div>
+                                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                    <i data-lucide="zap" class="text-slate-100"></i> PHOTONICS (OpticalCache)
+                                </h3>
+                                <p class="text-xs text-slate-500">Light-Speed Matrix Operations</p>
+                            </div>
+                            <div class="text-right">
+                                <span
+                                    class="text-[10px] bg-white text-black px-2 py-1 rounded font-bold uppercase">Prototyping</span>
+                            </div>
                         </div>
-                        <div class="card p-4 rounded-xl text-center">
-                            <div class="text-[10px] font-mono text-slate-500 uppercase">Verified</div>
-                            <div class="text-2xl font-black text-white" id="truth-count">--</div>
+                        <div class="bg-slate-900/50 p-4 rounded-lg text-center">
+                            <div class="text-xs text-slate-400 uppercase mb-1">Theoretical Bandwidth</div>
+                            <div class="text-xl font-mono text-white animate-pulse">100 PetaFLOPS</div>
                         </div>
+                    </div>
+
+                    <!-- Biologics Vertical -->
+                    <div class="card p-6 rounded-xl border-l-4 border-l-pink-500">
+                        <div class="flex justify-between items-center mb-6">
+                            <div>
+                                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                    <i data-lucide="dna" class="text-pink-400"></i> BIOLOGICS (FoldingCache)
+                                </h3>
+                                <p class="text-xs text-slate-500">AlphaFold MSA Caching</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-black text-pink-400" id="biotech-saved">0.0h</div>
+                                <div class="text-[10px] text-slate-500 uppercase tracking-widest">GPU Hours Saved
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-slate-900/50 p-4 rounded-lg">
+                                <span class="text-xs text-slate-400 uppercase">Requests</span>
+                                <div class="text-xl font-bold text-white" id="biotech-total">0</div>
+                            </div>
+                            <div class="bg-slate-900/50 p-4 rounded-lg">
+                                <span class="text-xs text-slate-400 uppercase">Cache Hits</span>
+                                <div class="text-xl font-bold text-green-400" id="biotech-hits">0</div>
+                            </div>
+                        </div>
+                    </div><textarea id="truth-input" rows="4" placeholder="Enter a claim to verify..."
+                        class="w-full bg-slate-900 border border-slate-700 rounded p-3 text-sm text-white focus:border-emerald-500 outline-none transition mb-4"></textarea>
+
+                    <button onclick="verifyClaim()"
+                        class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded transition shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                        VERIFY CLAIM
+                    </button>
+
+                    <div id="verification-result"
+                        class="hidden mt-4 p-4 rounded bg-slate-900/50 border border-slate-700">
+                        <!-- Dynamic Result -->
                     </div>
                 </div>
 
-                <!-- Right: Truth Stream -->
-                <div class="lg:col-span-2 card p-6 rounded-xl">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-sm font-mono text-slate-400 uppercase">Verification Log</h3>
-                        <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-1 rounded">LIVE</span>
+                <!-- Stats Mini-Cards -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="card p-4 rounded-xl text-center">
+                        <div class="text-[10px] font-mono text-slate-500 uppercase">Trust Score</div>
+                        <div class="text-2xl font-black text-emerald-400" id="truth-score">--</div>
                     </div>
-                    <div class="space-y-4" id="truth-stream">
-                        <div class="text-center text-slate-600 py-12">No recent verifications.</div>
+                    <div class="card p-4 rounded-xl text-center">
+                        <div class="text-[10px] font-mono text-slate-500 uppercase">Verified</div>
+                        <div class="text-2xl font-black text-white" id="truth-count">--</div>
                     </div>
                 </div>
             </div>
+
+            <!-- Right: Truth Stream -->
+            <div class="lg:col-span-2 card p-6 rounded-xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-sm font-mono text-slate-400 uppercase">Verification Log</h3>
+                    <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-1 rounded">LIVE</span>
+                </div>
+                <div class="space-y-4" id="truth-stream">
+                    <div class="text-center text-slate-600 py-12">No recent verifications.</div>
+                </div>
+            </div>
+        </div>
         </div>
 
         <!-- VIEW: Cortex Explorer -->
@@ -752,17 +832,146 @@
 
 
 
+        async function loadSectorStats() {
+            try {
+                const res = await fetch('/api/motion/stats');
+                if (res.status === 401 || res.status === 403) {
+                    handleAuthError();
+                    return;
+                }
+                const stats = await res.json();
+
+                document.getElementById('motion-total').innerText = stats.total_requests;
+                document.getElementById('motion-hits').innerText = stats.cache_hits;
+                document.getElementById('motion-saved-time').innerText = stats.saved_time_ms + 'ms';
+
+                const efficiency = stats.total_requests > 0 ? Math.round((stats.cache_hits / stats.total_requests) * 100) : 0;
+                document.getElementById('motion-efficiency').innerText = efficiency + '%';
+
+                if (stats.latest_path) {
+                    drawMotionPath(stats.latest_path);
+                }
+
+                // BioTech Stats
+                const bRes = await fetch('/api/biotech/stats');
+                const bStats = await bRes.json();
+                document.getElementById('biotech-total').innerText = bStats.total_requests;
+                document.getElementById('biotech-hits').innerText = bStats.cache_hits;
+                document.getElementById('biotech-saved').innerText = bStats.saved_gpu_hours + 'h';
+
+                // Finance Stats
+                const fRes = await fetch('/api/finance/stats');
+                const fStats = await fRes.json();
+                document.getElementById('finance-total').innerText = fStats.total_requests;
+                document.getElementById('finance-hits').innerText = fStats.cache_hits;
+                document.getElementById('finance-saved').innerText = fStats.saved_time_ms + 'ms';
+            } catch (e) {
+                console.error("Stats Error", e);
+            }
+
+            try {
+                const aRes = await fetch('/api/admin/armor/stats');
+                const aStats = await aRes.json();
+
+                document.getElementById('defense-threats').innerText = aStats.threats_blocked;
+                // document.getElementById('defense-bans').innerText = aStats.active_bans;
+
+                // Visual Indicator
+                const shieldStatus = document.getElementById('shield-status');
+                if (aStats.active_bans > 0) {
+                    shieldStatus.innerHTML = '<span class="text-red-500 animate-pulse">● THREAT ACTIVE</span>';
+                } else {
+                    shieldStatus.innerHTML = '<span class="text-emerald-500">● SECURE</span>';
+                }
+
+            } catch (e) { }
+
+            // Load Treasury
+            try {
+                const res = await fetch('/api/admin/treasury/status');
+                const data = await res.json();
+                document.getElementById('treasury-bal').innerText = data.balance.toLocaleString();
+
+                const list = document.getElementById('ledger-list');
+                list.innerHTML = data.ledger.map(l => `
+                    <div class="flex justify-between border-b border-slate-700 pb-2">
+                        <span>${l.desc}</span>
+                        <span class="${l.amount < 0 ? 'text-red-400' : 'text-green-400'}">${l.amount}</span>
+                    </div>
+                `).join('');
+            } catch (e) { }
+        }
+
+        async function topUp(amt) {
+            await fetch('/api/admin/treasury/deposit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount: amt })
+            });
+            loadSectorStats(); // Refresh
+        }
+
+        function drawMotionPath(data) {
+            const canvas = document.getElementById('motionCanvas');
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+
+            // Clear
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Scale factor (assuming 60x60 grid)
+            const scaleX = canvas.width / 60;
+            const scaleY = canvas.height / 60;
+
+            // Draw Obstacles (Default Wall from script)
+            ctx.fillStyle = '#334155';
+            const ox = data.req.ox || [];
+            const oy = data.req.oy || [];
+            for (let i = 0; i < ox.length; i++) {
+                ctx.fillRect(ox[i] * scaleX, oy[i] * scaleY, scaleX, scaleY);
+            }
+
+            // Draw Path
+            if (data.path_x) {
+                ctx.beginPath();
+                ctx.strokeStyle = '#fb923c'; // Orange
+                ctx.lineWidth = 2;
+                for (let i = 0; i < data.path_x.length; i++) {
+                    const x = data.path_x[i] * scaleX;
+                    const y = data.path_y[i] * scaleY;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+
+                // Start/End
+                const sx = data.req.sx * scaleX;
+                const sy = data.req.sy * scaleY;
+                const gx = data.req.gx * scaleX;
+                const gy = data.req.gy * scaleY;
+
+                ctx.fillStyle = '#22c55e'; // Green Start
+                ctx.beginPath(); ctx.arc(sx, sy, 4, 0, Math.PI * 2); ctx.fill();
+
+                ctx.fillStyle = '#ef4444'; // Red Goal
+                ctx.beginPath(); ctx.arc(gx, gy, 4, 0, Math.PI * 2); ctx.fill();
+            }
+        }
+
         // --- AUTH & NAV ---
         function switchTab(tabId) {
             // Hide all views
-            ['content', 'users', 'analytics', 'treasury', 'truth', 'cortex', 'defense', 'settings'].forEach(id => {
+            ['content', 'users', 'analytics', 'treasury', 'truth', 'cortex', 'defense', 'settings', 'sectors'].forEach(id => {
                 const el = document.getElementById(`view-${id}`);
                 if (el) el.classList.add('hidden');
             });
 
             // Reset tabs
             const baseClass = "px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300 border-b-2 border-transparent transition";
-            ['content', 'users', 'analytics', 'treasury', 'truth', 'cortex', 'defense', 'settings'].forEach(id => {
+            ['content', 'users', 'analytics', 'treasury', 'truth', 'cortex', 'defense', 'settings', 'sectors'].forEach(id => {
                 const el = document.getElementById(`tab-${id}`);
                 if (!el) return;
 
@@ -774,6 +983,8 @@
                     el.className = baseClass.replace('text-slate-500', 'text-pink-500/70');
                 } else if (id === 'defense') {
                     el.className = baseClass.replace('text-slate-500', 'text-red-500/70');
+                } else if (id === 'sectors') {
+                    el.className = baseClass.replace('text-slate-500', 'text-orange-500/70');
                 } else {
                     el.className = baseClass;
                 }
@@ -794,6 +1005,9 @@
                 tabEl.className = activeClass.replace('border-cyan-500', 'border-pink-500 text-pink-500');
             } else if (tabId === 'defense') {
                 tabEl.className = activeClass.replace('border-cyan-500', 'border-red-500 text-red-500');
+            } else if (tabId === 'sectors') {
+                tabEl.className = activeClass.replace('border-cyan-500', 'border-orange-500 text-orange-500');
+                loadSectorStats(); // Trigger load
             } else {
                 tabEl.className = activeClass;
             }

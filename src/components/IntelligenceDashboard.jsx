@@ -56,17 +56,20 @@ const IntelligenceDashboard = ({ onBack }) => {
             </div>
 
             {/* Ingest Control */}
-            <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 100, display: 'flex', gap: '5px' }}>
-                <input
-                    type="text"
-                    placeholder="Paste Raw Banner..."
-                    value={ingestInput}
-                    onChange={e => setIngestInput(e.target.value)}
-                    style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid #444', color: 'white', padding: '5px' }}
-                />
-                <button onClick={handleIngest} style={{ background: 'cyan', color: 'black', fontWeight: 'bold' }}>INGEST</button>
-            </div>
-
+            <input
+                type="text"
+                placeholder="Paste Raw Banner..."
+                value={ingestInput}
+                onChange={e => setIngestInput(e.target.value)}
+                style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid #444', color: 'white', padding: '5px' }}
+            />
+            <button onClick={handleIngest} style={{ background: 'cyan', color: 'black', fontWeight: 'bold' }}>INGEST</button>
+            <button
+                onClick={() => window.location.hash = 'exchange'}
+                style={{ background: 'transparent', border: '1px solid cyan', color: 'cyan', fontWeight: 'bold', marginLeft: '20px' }}
+            >
+                MARKETPLACE
+            </button>
             {/* Main Graph */}
             <div style={{ width: '100%', height: '100%' }}>
                 {!loading && <ShadowGraph nodes={data.nodes} links={data.links} onNodeClick={setSelectedNode} />}
@@ -74,36 +77,38 @@ const IntelligenceDashboard = ({ onBack }) => {
             </div>
 
             {/* Detail Panel */}
-            {selectedNode && (
-                <div style={{
-                    position: 'absolute',
-                    top: 80,
-                    right: 20,
-                    width: '300px',
-                    background: 'rgba(0,0,0,0.85)',
-                    border: '1px solid cyan',
-                    padding: '20px',
-                    color: 'white',
-                    backdropFilter: 'blur(10px)',
-                    borderRadius: '8px'
-                }}>
-                    <h2 style={{ color: selectedNode.color, margin: '0 0 10px 0' }}>{selectedNode.group}</h2>
-                    <div style={{ fontSize: '12px', color: '#aaa' }}>Hash: {selectedNode.id.slice(0, 12)}...</div>
-                    <div style={{ margin: '10px 0', borderTop: '1px solid #333' }}></div>
+            {
+                selectedNode && (
+                    <div style={{
+                        position: 'absolute',
+                        top: 80,
+                        right: 20,
+                        width: '300px',
+                        background: 'rgba(0,0,0,0.85)',
+                        border: '1px solid cyan',
+                        padding: '20px',
+                        color: 'white',
+                        backdropFilter: 'blur(10px)',
+                        borderRadius: '8px'
+                    }}>
+                        <h2 style={{ color: selectedNode.color, margin: '0 0 10px 0' }}>{selectedNode.group}</h2>
+                        <div style={{ fontSize: '12px', color: '#aaa' }}>Hash: {selectedNode.id.slice(0, 12)}...</div>
+                        <div style={{ margin: '10px 0', borderTop: '1px solid #333' }}></div>
 
-                    <div style={{ marginBottom: '10px' }}>
-                        <strong>Risk Score:</strong> <span style={{ color: selectedNode.color, fontWeight: 'bold' }}>{selectedNode.val - 1}/10</span>
+                        <div style={{ marginBottom: '10px' }}>
+                            <strong>Risk Score:</strong> <span style={{ color: selectedNode.color, fontWeight: 'bold' }}>{selectedNode.val - 1}/10</span>
+                        </div>
+
+                        <p style={{ fontSize: '14px', lineHeight: '1.4' }}>
+                            {selectedNode.desc || "Analysis pending..."}
+                        </p>
+
+                        <button onClick={() => setSelectedNode(null)} style={{ marginTop: '10px', width: '100%', background: '#333', border: 'none', color: 'white', padding: '5px' }}>Close</button>
                     </div>
+                )
+            }
 
-                    <p style={{ fontSize: '14px', lineHeight: '1.4' }}>
-                        {selectedNode.desc || "Analysis pending..."}
-                    </p>
-
-                    <button onClick={() => setSelectedNode(null)} style={{ marginTop: '10px', width: '100%', background: '#333', border: 'none', color: 'white', padding: '5px' }}>Close</button>
-                </div>
-            )}
-
-        </div>
+        </div >
     );
 };
 

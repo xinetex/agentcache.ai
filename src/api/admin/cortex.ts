@@ -1,41 +1,28 @@
+
 import { Hono } from 'hono';
+import { CortexBridge } from '../../services/CortexBridge.js';
 import { redis } from '../../lib/redis.js';
 
-export const cortexRouter = new Hono();
+const cortexRouter = new Hono();
+const bridge = new CortexBridge();
 
-// Memory Stats
 cortexRouter.get('/stats', async (c) => {
-    // Fetch seeded nodes
-    const nodeLogs = await redis.lrange('cortex:active_nodes', 0, -1);
-    const nodes = nodeLogs.map(l => JSON.parse(l));
-
-    return c.json({
-        short_term: {
-            usage_mb: 42.5,
-            items: 1240,
-            status: 'healthy'
-        },
-        long_term: {
-            vectors: 8590,
-            dimensions: 1536,
-            provider: 'Upstash Vector'
-        },
-        semantic_cache: {
-            hits: 8432,
-            misses: 1201,
-            efficiency: 87.5
-        },
-        active_nodes: nodes
-    });
+    try {
+        const stats = await bridge.getStats();
+        return c.json(stats);
+    } catch (err: any) {
+        return c.json({ error: err.message }, 500);
+    }
 });
 
-// Mock Search/Explorer
-cortexRouter.post('/query', async (c) => {
-    const { q } = await c.req.json();
-    return c.json({
-        nodes: [
-            { id: 'res_1', label: `Memory of "${q}"`, score: 0.95 },
-            { id: 'res_2', label: `Related to "${q}"`, score: 0.82 }
-        ]
-    });
+cortexRouter.get('/synapses', async (c) => {
+    try {
+        const raw = await redis.lrange('cortex:stream:synapses', 0, 19);
+        const synapses = raw.map(s => JSON.parse(s));
+        return c.json(synapses);
+    } catch (err: any) {
+        return c.json({ error: err.message }, 500);
+    }
 });
+
+export { cortexRouter };

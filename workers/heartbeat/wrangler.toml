@@ -1,0 +1,11 @@
+
+name = "agentcache-heartbeat"
+main = "src/worker.js"
+compatibility_date = "2024-02-02"
+
+# Schedule: Run every hour to spin the flywheel
+[triggers]
+crons = ["0 * * * *"]
+
+[vars]
+TARGET_URL = "https://agentcache.ai/api/cron/activate-flywheel"

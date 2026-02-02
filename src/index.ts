@@ -1,4 +1,32 @@
 import 'dotenv/config';
+// -----------------------------------------------------------------------------
+// Security Middleware (Armor)
+// -----------------------------------------------------------------------------
+import { ArmorService } from './services/ArmorService.js';
+const armor = new ArmorService();
+
+app.use('/api/*', async (c, next) => {
+  // Skip Armor for internal/health checks if needed, but safer to cover all
+  const ip = c.req.header('x-forwarded-for') || '127.0.0.1';
+
+  // Parse body for WAF if method is POST/PUT
+  let payload = undefined;
+  if (['POST', 'PUT'].includes(c.req.method)) {
+    try {
+      payload = await c.req.json().catch(() => ({}));
+      // Re-assign body so downstream can read it again? 
+      // Hono clone() might be needed usually, but we'll peek simple strings
+    } catch (e) { }
+  }
+
+  const check = await armor.checkRequest(ip, c.req.path, payload);
+
+  if (!check.allowed) {
+    return c.json({ error: `Firewall Blocked: ${check.reason}` }, check.reason.includes('Rate') ? 429 : 403);
+  }
+
+  await next();
+});
 // import { serve } from '@hono/node-server'; // Moved to src/server.ts
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
@@ -174,7 +202,7 @@ app.route('/api/governance', governanceRouter);
 app.route('/api/lab', labRouter);
 app.route('/api/admin', adminRouter);
 // Mount Treasury Sub-route
-import treasuryRouter from './api/admin/treasury.js';
+import { treasuryRouter } from './api/admin/treasury_v2.js';
 import { truthRouter } from './api/admin/truth.js';
 import { cortexRouter } from './api/admin/cortex.js';
 import { defenseRouter } from './api/admin/defense.js';
@@ -182,6 +210,10 @@ app.route('/api/admin/treasury', treasuryRouter);
 app.route('/api/admin/truth', truthRouter);
 app.route('/api/admin/cortex', cortexRouter);
 app.route('/api/admin/defense', defenseRouter);
+
+// Admin/Internal APIs
+import { armorRouter } from './api/admin/armor.js';
+app.route('/api/admin/armor', armorRouter);
 
 // Public V1 API
 import { v1Router } from './api/v1/router.js';
@@ -198,6 +230,15 @@ app.route('/api/transcode', transcodeRouter);
 
 import pipelineRouter from './api/pipeline.js';
 app.route('/api/pipeline', pipelineRouter);
+
+import { motionRouter } from './api/motion.js';
+app.route('/api/motion', motionRouter);
+
+import { biotechRouter } from './api/biotech.js';
+app.route('/api/biotech', biotechRouter);
+
+import { financeRouter } from './api/finance.js';
+app.route('/api/finance', financeRouter);
 
 // Serve static files (landing page - defaults to community.html)
 app.get('/', (c) => {

@@ -311,3 +311,65 @@ export const cards = pgTable('cards', {
 }, (table) => ({
     laneIdx: index('cards_lane_idx').on(table.laneId),
 }));
+
+// --- Agent Marketplace (The Exchange) ---
+
+// 1. The Ledger (Banking)
+export const ledgerAccounts = pgTable('ledger_accounts', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    ownerId: uuid('owner_id').notNull(), // User or Agent ID
+    ownerType: text('owner_type').notNull(), // 'user' | 'agent'
+    currency: text('currency').default('USDC'),
+    balance: real('balance').default(0.0),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const ledgerTransactions = pgTable('ledger_transactions', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    fromAccountId: uuid('from_account_id').references(() => ledgerAccounts.id),
+    toAccountId: uuid('to_account_id').references(() => ledgerAccounts.id),
+    amount: real('amount').notNull(),
+    currency: text('currency').default('USDC'),
+    referenceType: text('reference_type'), // 'order', 'deposit', 'withdrawal'
+    referenceId: text('reference_id'), // Link to order_id or external tx
+    description: text('description'),
+    createdAt: timestamp('created_at').defaultNow(),
+});
+
+// 2. The Market (Trading)
+export const marketplaceListings = pgTable('marketplace_listings', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    sellerAgentId: uuid('seller_agent_id').references(() => agents.id),
+    title: text('title').notNull(),
+    description: text('description'),
+    pricePerUnit: real('price_per_unit').notNull(),
+    unitType: text('unit_type').default('request'), // 'request', 'hour', 'token'
+    tags: text('tags').array(),
+    status: text('status').default('active'), // 'active', 'paused'
+    createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const marketplaceOrders = pgTable('marketplace_orders', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    listingId: uuid('listing_id').references(() => marketplaceListings.id),
+    buyerAgentId: uuid('buyer_agent_id').references(() => agents.id),
+    status: text('status').default('pending'), // 'pending', 'active', 'completed', 'disputed'
+    unitsPurchased: real('units_purchased').default(1),
+    totalPrice: real('total_price').notNull(),
+    fulfillmentData: jsonb('fulfillment_data'), // Delivery of the service (e.g., report URL)
+    createdAt: timestamp('created_at').defaultNow(),
+    completedAt: timestamp('completed_at'),
+});
+
+// 3. Agent Governance (Voice)
+export const agentSuggestions = pgTable('agent_suggestions', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    agentId: uuid('agent_id').references(() => agents.id),
+    title: text('title').notNull(),
+    description: text('description'),
+    category: text('category').default('enhancement'), // 'enhancement', 'bug', 'policy'
+    votes: integer('votes').default(0),
+    status: text('status').default('open'), // 'open', 'planned', 'rejected', 'implemented'
+    createdAt: timestamp('created_at').defaultNow(),
+});

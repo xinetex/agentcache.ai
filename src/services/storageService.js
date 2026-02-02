@@ -40,6 +40,16 @@ export class StorageService {
       const fullKey = STORAGE_KEY_PREFIX + key;
       const serialized = JSON.stringify(data);
 
+      const hasLocalStorage = typeof localStorage !== 'undefined' && typeof localStorage.getItem === 'function';
+      const storage = hasLocalStorage ? localStorage : null;
+
+      if (!storage) {
+        // Node environment fallback (simple in-memory for now, or could use node-localstorage)
+        if (!global.mockStorage) global.mockStorage = {};
+        global.mockStorage[fullKey] = serialized;
+        return { success: true, size: serialized.length };
+      }
+
       // Check size before saving
       if (serialized.length > MAX_STORAGE_SIZE) {
         return {
@@ -84,7 +94,16 @@ export class StorageService {
   static load(key, defaultValue = null) {
     try {
       const fullKey = STORAGE_KEY_PREFIX + key;
-      const item = localStorage.getItem(fullKey);
+      let item = null;
+
+      const hasLocalStorage = typeof localStorage !== 'undefined' && typeof localStorage.getItem === 'function';
+      const storage = hasLocalStorage ? localStorage : null;
+
+      if (!storage) {
+        if (global.mockStorage) item = global.mockStorage[fullKey] || null;
+      } else {
+        item = storage.getItem(fullKey);
+      }
 
       if (item === null) {
         return defaultValue;
@@ -106,7 +125,14 @@ export class StorageService {
   static remove(key) {
     try {
       const fullKey = STORAGE_KEY_PREFIX + key;
-      localStorage.removeItem(fullKey);
+      const hasLocalStorage = typeof localStorage !== 'undefined' && typeof localStorage.removeItem === 'function';
+      const storage = hasLocalStorage ? localStorage : null;
+
+      if (storage) {
+        storage.removeItem(fullKey);
+      } else {
+        if (global.mockStorage) delete global.mockStorage[fullKey];
+      }
       return true;
     } catch (err) {
       console.error(`Failed to remove ${key}:`, err);
@@ -123,10 +149,13 @@ export class StorageService {
       let totalSize = 0;
       let itemCount = 0;
 
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key.startsWith(STORAGE_KEY_PREFIX)) {
-          const value = localStorage.getItem(key);
+      const hasLocalStorage = typeof localStorage !== 'undefined' && typeof localStorage.getItem === 'function';
+      const storage = hasLocalStorage ? localStorage : { length: 0, key: () => null, getItem: () => null };
+
+      for (let i = 0; i < storage.length; i++) {
+        const key = storage.key(i);
+        if (key && key.startsWith(STORAGE_KEY_PREFIX)) {
+          const value = storage.getItem(key);
           totalSize += value ? value.length : 0;
           itemCount++;
         }
