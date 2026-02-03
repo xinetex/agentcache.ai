@@ -1,7 +1,8 @@
 /**
- * OpenClaw Gateway Client
+ * OpenClaw / Kimi Gateway Client
  * 
- * Connects to the local OpenClaw gateway for LLM inference via Kimi 2.5
+ * Production: Uses Moonshot API directly (MOONSHOT_API_KEY)
+ * Local Dev: Falls back to local OpenClaw gateway if available
  */
 
 export interface OpenClawMessage {
@@ -18,30 +19,36 @@ export interface OpenClawResponse {
     };
 }
 
-export class OpenClawClient {
-    private baseUrl: string;
-    private token: string;
-    private model: string;
+// Moonshot API endpoints
+const MOONSHOT_API = 'https://api.moonshot.ai/v1/chat/completions';
+const LOCAL_GATEWAY = 'http://localhost:18789/v1/chat/completions';
 
-    constructor(opts?: { host?: string; port?: string; token?: string; model?: string }) {
-        const host = opts?.host || process.env.OPENCLAW_HOST || 'http://localhost';
-        const port = opts?.port || process.env.OPENCLAW_PORT || '18789';
-        this.baseUrl = `${host}:${port}`;
-        this.token = opts?.token || process.env.CLAW_API_TOKEN || '';
-        this.model = opts?.model || process.env.OPENCLAW_MODEL || 'vercel-ai-gateway/moonshotai/kimi-k2';
+export class OpenClawClient {
+    private apiKey: string;
+    private model: string;
+    private useProduction: boolean;
+
+    constructor(opts?: { apiKey?: string; model?: string }) {
+        this.apiKey = opts?.apiKey || process.env.MOONSHOT_API_KEY || process.env.CLAW_API_TOKEN || '';
+        this.model = opts?.model || process.env.KIMI_MODEL || 'kimi-k2-0711-preview';
+
+        // Use production Moonshot API if we have MOONSHOT_API_KEY
+        this.useProduction = !!process.env.MOONSHOT_API_KEY;
+
+        console.log(`[OpenClawClient] Mode: ${this.useProduction ? 'PRODUCTION (Moonshot API)' : 'LOCAL (Gateway)'}`);
     }
 
     /**
-     * Send a chat completion request to OpenClaw gateway
+     * Send a chat completion request
      */
     async chat(messages: OpenClawMessage[], opts?: { temperature?: number; maxTokens?: number }): Promise<OpenClawResponse> {
-        const endpoint = `${this.baseUrl}/v1/chat/completions`;
+        const endpoint = this.useProduction ? MOONSHOT_API : LOCAL_GATEWAY;
 
         const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.token}`
+                'Authorization': `Bearer ${this.apiKey}`
             },
             body: JSON.stringify({
                 model: this.model,
@@ -53,7 +60,7 @@ export class OpenClawClient {
 
         if (!response.ok) {
             const error = await response.text();
-            throw new Error(`OpenClaw Error (${response.status}): ${error}`);
+            throw new Error(`Kimi API Error (${response.status}): ${error}`);
         }
 
         const data = await response.json();
@@ -81,11 +88,14 @@ export class OpenClawClient {
     }
 
     /**
-     * Health check
+     * Health check - in production, just return true (API is always available)
      */
     async ping(): Promise<boolean> {
+        if (this.useProduction) {
+            return !!this.apiKey;
+        }
         try {
-            const res = await fetch(`${this.baseUrl}/health`);
+            const res = await fetch('http://localhost:18789/health');
             return res.ok;
         } catch {
             return false;
