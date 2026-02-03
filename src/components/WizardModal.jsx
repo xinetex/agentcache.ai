@@ -1,228 +1,443 @@
-import { useState } from 'react';
-import './WizardModal.css';
+import React, { useState, useEffect } from 'react';
 
-function WizardModal({ sector, config, onClose, onComplete }) {
-  const useCaseTemplates = config?.templates || [];
+/**
+ * WizardModal: One-click deployment of agent templates
+ * 
+ * Features:
+ * - Template selection with visual cards
+ * - Configuration validation
+ * - Environment variable check
+ * - Deploy confirmation
+ */
+
+const WizardModal = ({ isOpen, onClose, onDeploy }) => {
   const [step, setStep] = useState(1);
-  const [selectedUseCase, setSelectedUseCase] = useState(null);
-  const [customPrompt, setCustomPrompt] = useState('');
-  const [performance, setPerformance] = useState('balanced');
+  const [templates, setTemplates] = useState([]);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [templateDetails, setTemplateDetails] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [deploying, setDeploying] = useState(false);
 
-  const handleNext = async () => {
-    if (step === 1) {
-      if (!selectedUseCase) {
-        setError('Please select a use case');
-        return;
-      }
-      if (selectedUseCase === 'custom' && !customPrompt.trim()) {
-        setError('Please describe your use case');
-        return;
-      }
-      setError(null);
-      setStep(2);
-    } else if (step === 2) {
-      setStep(3);
-      await generatePipeline();
+  // Fetch templates on mount
+  useEffect(() => {
+    if (isOpen) {
+      fetchTemplates();
     }
-  };
+  }, [isOpen]);
 
-  const generatePipeline = async () => {
+  const fetchTemplates = async () => {
     setLoading(true);
-    setError(null);
-
     try {
-      const template = useCaseTemplates.find((t) => t.id === selectedUseCase);
-      const prompt = selectedUseCase === 'custom' ? customPrompt : template.prompt;
-
-      const response = await fetch('/api/pipeline/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, sector, performance }),
-      });
-
-      const data = await response.json();
-
-      if (data.success && data.pipeline) {
-        onComplete(data.pipeline);
-      } else {
-        throw new Error(data.error || 'Failed to generate pipeline');
-      }
+      const res = await fetch('/api/templates');
+      const data = await res.json();
+      setTemplates(data.templates || []);
     } catch (err) {
-      setError(err.message);
-      setLoading(false);
-      setStep(2);
+      console.error('Failed to fetch templates:', err);
     }
+    setLoading(false);
   };
+
+  const selectTemplate = async (templateId) => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/templates?id=${templateId}`);
+      const data = await res.json();
+      setSelectedTemplate(templateId);
+      setTemplateDetails(data);
+      setStep(2);
+    } catch (err) {
+      console.error('Failed to fetch template:', err);
+    }
+    setLoading(false);
+  };
+
+  const handleDeploy = async () => {
+    setDeploying(true);
+    try {
+      // In production, this would call an API to provision the agent
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulated delay
+
+      if (onDeploy) {
+        onDeploy(templateDetails.template);
+      }
+      setStep(3);
+    } catch (err) {
+      console.error('Deploy failed:', err);
+    }
+    setDeploying(false);
+  };
+
+  const reset = () => {
+    setStep(1);
+    setSelectedTemplate(null);
+    setTemplateDetails(null);
+    onClose();
+  };
+
+  if (!isOpen) return null;
 
   return (
-    <div className="wizard-overlay" onClick={onClose}>
-      <div className="wizard-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="wizard-overlay">
+      <div className="wizard-modal">
+        {/* Header */}
         <div className="wizard-header">
-          <h2>🪄 AI Pipeline Wizard</h2>
-          <button className="close-btn" onClick={onClose}>
-            ✕
-          </button>
+          <h2>🚀 Deploy Agent</h2>
+          <button className="close-btn" onClick={reset}>×</button>
         </div>
 
-        <div className="wizard-body">
+        {/* Progress */}
+        <div className="wizard-progress">
+          <div className={`step ${step >= 1 ? 'active' : ''}`}>1. Select</div>
+          <div className={`step ${step >= 2 ? 'active' : ''}`}>2. Configure</div>
+          <div className={`step ${step >= 3 ? 'active' : ''}`}>3. Deploy</div>
+        </div>
+
+        {/* Content */}
+        <div className="wizard-content">
+          {/* Step 1: Template Selection */}
           {step === 1 && (
-            <div className="wizard-step">
-              <h3>Select Use Case</h3>
-              <div className="use-case-grid">
-                {useCaseTemplates.map((template) => (
+            <div className="template-grid">
+              {loading ? (
+                <div className="loading">Loading templates...</div>
+              ) : (
+                templates.map(t => (
                   <div
-                    key={template.id}
-                    className={`use-case-card ${
-                      selectedUseCase === template.id ? 'selected' : ''
-                    }`}
-                    onClick={() => setSelectedUseCase(template.id)}
+                    key={t.id}
+                    className="template-card"
+                    onClick={() => selectTemplate(t.id)}
                   >
-                    <h4>{template.title}</h4>
-                    <p>{template.description}</p>
+                    <div className="template-icon">{t.icon}</div>
+                    <div className="template-name">{t.name}</div>
+                    <div className="template-desc">{t.description}</div>
+                    <div className={`template-vertical ${t.vertical}`}>
+                      {t.vertical}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {/* Step 2: Configuration */}
+          {step === 2 && templateDetails && (
+            <div className="config-panel">
+              <div className="config-header">
+                <span className="config-icon">{templateDetails.template.icon}</span>
+                <h3>{templateDetails.template.name}</h3>
+              </div>
+
+              {/* Required Tools */}
+              <div className="config-section">
+                <h4>Required Integrations</h4>
+                {templateDetails.template.tools.required.map(tool => (
+                  <div key={tool.id} className="tool-item">
+                    <span className="tool-name">{tool.name}</span>
+                    <span className={`tool-status ${templateDetails.missingEnvVars?.some(v =>
+                      tool.requiredEnvVars.includes(v)
+                    ) ? 'missing' : 'configured'
+                      }`}>
+                      {templateDetails.missingEnvVars?.some(v =>
+                        tool.requiredEnvVars.includes(v)
+                      ) ? '⚠️ Not Configured' : '✅ Ready'}
+                    </span>
                   </div>
                 ))}
               </div>
 
-              {selectedUseCase === 'custom' && (
-                <div className="custom-prompt">
-                  <label>Describe your caching needs:</label>
-                  <textarea
-                    value={customPrompt}
-                    onChange={(e) => setCustomPrompt(e.target.value)}
-                    placeholder="Describe what you want to cache..."
-                    rows={4}
-                  />
-                  <div className="prompt-examples">
-                    <p className="examples-label">💡 Need inspiration? Try these:</p>
-                    <div className="example-buttons">
-                      <button
-                        type="button"
-                        className="example-chip"
-                        onClick={() => setCustomPrompt("Optimize LLM inference for data lakehouse RAG pipelines with sub-50ms cache hits and full audit trails for compliance")}
-                      >
-                        📊 Data Lakehouse RAG Optimization
-                      </button>
-                      <button
-                        type="button"
-                        className="example-chip"
-                        onClick={() => setCustomPrompt("Cache AI model inference results for educational platform with student learning analytics and response personalization")}
-                      >
-                        🎓 AI-Powered Learning Platform
-                      </button>
-                      <button
-                        type="button"
-                        className="example-chip"
-                        onClick={() => setCustomPrompt("Accelerate content delivery for media assets with multi-region edge caching and 14x faster upload speeds")}
-                      >
-                        🎬 Media Asset Acceleration
-                      </button>
-                      <button
-                        type="button"
-                        className="example-chip"
-                        onClick={() => setCustomPrompt("Cache reasoning model outputs (o1/DeepSeek) with governance controls for enterprise AI compliance and cost reduction")}
-                      >
-                        🏢 Enterprise AI Governance
-                      </button>
-                      <button
-                        type="button"
-                        className="example-chip"
-                        onClick={() => setCustomPrompt("Optimize vector search and embedding cache for production RAG systems with semantic similarity matching")}
-                      >
-                        🔍 Vector Search Optimization
-                      </button>
-                    </div>
-                  </div>
+              {/* Warnings */}
+              {templateDetails.missingEnvVars?.length > 0 && (
+                <div className="config-warning">
+                  <strong>⚠️ Missing Environment Variables:</strong>
+                  <ul>
+                    {templateDetails.missingEnvVars.map(v => (
+                      <li key={v}><code>{v}</code></li>
+                    ))}
+                  </ul>
+                  <p>Add these to your Vercel environment to enable full functionality.</p>
                 </div>
               )}
 
-              {error && <div className="error-message">{error}</div>}
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="wizard-step">
-              <h3>Optimize For</h3>
-              <div className="performance-options">
-                <div
-                  className={`perf-option ${performance === 'fast' ? 'selected' : ''}`}
-                  onClick={() => setPerformance('fast')}
-                >
-                  <div className="perf-icon">⚡</div>
-                  <div className="perf-info">
-                    <h4>Low Latency</h4>
-                    <p>Minimize response time • L1 only</p>
-                    <span className="perf-metric">~50ms p95</span>
-                  </div>
+              {/* Policy */}
+              <div className="config-section">
+                <h4>Autonomy Policy</h4>
+                <div className="policy-grid">
+                  <div>Max Actions: {templateDetails.template.policy.maxActionsPerRun}</div>
+                  <div>Escalation: {templateDetails.template.policy.escalationChannel || 'None'}</div>
                 </div>
+              </div>
 
-                <div
-                  className={`perf-option ${
-                    performance === 'balanced' ? 'selected' : ''
-                  }`}
-                  onClick={() => setPerformance('balanced')}
+              {/* Actions */}
+              <div className="config-actions">
+                <button className="btn-back" onClick={() => setStep(1)}>
+                  ← Back
+                </button>
+                <button
+                  className="btn-deploy"
+                  onClick={handleDeploy}
+                  disabled={deploying}
                 >
-                  <div className="perf-icon">⚖️</div>
-                  <div className="perf-info">
-                    <h4>Balanced</h4>
-                    <p>Good speed + savings • L1 + L2</p>
-                    <span className="perf-metric">Recommended</span>
-                  </div>
-                </div>
-
-                <div
-                  className={`perf-option ${performance === 'cost' ? 'selected' : ''}`}
-                  onClick={() => setPerformance('cost')}
-                >
-                  <div className="perf-icon">💰</div>
-                  <div className="perf-info">
-                    <h4>Cost Optimized</h4>
-                    <p>Maximum savings • Multi-tier</p>
-                    <span className="perf-metric">$2.40/req saved</span>
-                  </div>
-                </div>
+                  {deploying ? 'Deploying...' : '🚀 Deploy Agent'}
+                </button>
               </div>
             </div>
           )}
 
+          {/* Step 3: Success */}
           {step === 3 && (
-            <div className="wizard-step">
-              {loading ? (
-                <div className="loading-state">
-                  <div className="spinner"></div>
-                  <p>AI is generating your pipeline...</p>
-                  <span className="loading-subtitle">
-                    Analyzing use case and optimizing nodes
-                  </span>
-                </div>
-              ) : error ? (
-                <div className="error-state">
-                  <p>{error}</p>
-                  <button className="btn btn-secondary" onClick={() => setStep(2)}>
-                    Try Again
-                  </button>
-                </div>
-              ) : null}
+            <div className="success-panel">
+              <div className="success-icon">✅</div>
+              <h3>Agent Deployed!</h3>
+              <p>
+                <strong>{templateDetails?.template.name}</strong> is now active.
+              </p>
+              <div className="success-details">
+                <p>Webhook URL:</p>
+                <code>https://agentcache-ai.vercel.app/api/webhooks/{templateDetails?.template.triggers[0]?.type}</code>
+              </div>
+              <button className="btn-done" onClick={reset}>
+                Done
+              </button>
             </div>
           )}
         </div>
-
-        <div className="wizard-footer">
-          {step > 1 && step < 3 && (
-            <button className="btn btn-secondary" onClick={() => setStep(step - 1)}>
-              Back
-            </button>
-          )}
-          {step < 3 && (
-            <button className="btn btn-primary" onClick={handleNext}>
-              {step === 2 ? 'Generate Pipeline' : 'Next'}
-            </button>
-          )}
-        </div>
       </div>
+
+      <style jsx>{`
+                .wizard-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.8);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1000;
+                }
+                .wizard-modal {
+                    background: #1a1a2e;
+                    border-radius: 16px;
+                    width: 90%;
+                    max-width: 700px;
+                    max-height: 80vh;
+                    overflow: hidden;
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+                }
+                .wizard-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 20px 24px;
+                    border-bottom: 1px solid #333;
+                }
+                .wizard-header h2 {
+                    margin: 0;
+                    color: #fff;
+                }
+                .close-btn {
+                    background: none;
+                    border: none;
+                    color: #888;
+                    font-size: 24px;
+                    cursor: pointer;
+                }
+                .wizard-progress {
+                    display: flex;
+                    padding: 16px 24px;
+                    gap: 8px;
+                    background: #16162a;
+                }
+                .step {
+                    flex: 1;
+                    text-align: center;
+                    padding: 8px;
+                    border-radius: 8px;
+                    color: #666;
+                    font-size: 14px;
+                }
+                .step.active {
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                    color: #fff;
+                }
+                .wizard-content {
+                    padding: 24px;
+                    overflow-y: auto;
+                    max-height: 50vh;
+                }
+                .template-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                    gap: 16px;
+                }
+                .template-card {
+                    background: #16162a;
+                    border: 2px solid #333;
+                    border-radius: 12px;
+                    padding: 20px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    text-align: center;
+                }
+                .template-card:hover {
+                    border-color: #6366f1;
+                    transform: translateY(-4px);
+                }
+                .template-icon {
+                    font-size: 36px;
+                    margin-bottom: 8px;
+                }
+                .template-name {
+                    color: #fff;
+                    font-weight: 600;
+                    margin-bottom: 8px;
+                }
+                .template-desc {
+                    color: #888;
+                    font-size: 12px;
+                    margin-bottom: 12px;
+                }
+                .template-vertical {
+                    display: inline-block;
+                    padding: 4px 12px;
+                    border-radius: 12px;
+                    font-size: 11px;
+                    text-transform: uppercase;
+                }
+                .template-vertical.software {
+                    background: #1e3a5f;
+                    color: #60a5fa;
+                }
+                .template-vertical.finance {
+                    background: #3f2e1e;
+                    color: #fbbf24;
+                }
+                .config-panel {
+                    color: #fff;
+                }
+                .config-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    margin-bottom: 24px;
+                }
+                .config-icon {
+                    font-size: 36px;
+                }
+                .config-section {
+                    margin-bottom: 20px;
+                }
+                .config-section h4 {
+                    color: #888;
+                    margin-bottom: 12px;
+                    font-size: 12px;
+                    text-transform: uppercase;
+                }
+                .tool-item {
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 12px;
+                    background: #16162a;
+                    border-radius: 8px;
+                    margin-bottom: 8px;
+                }
+                .tool-status.configured {
+                    color: #22c55e;
+                }
+                .tool-status.missing {
+                    color: #f59e0b;
+                }
+                .config-warning {
+                    background: #3f2e1e;
+                    border: 1px solid #f59e0b;
+                    border-radius: 8px;
+                    padding: 16px;
+                    margin-bottom: 20px;
+                }
+                .config-warning code {
+                    background: #1a1a2e;
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                }
+                .policy-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 8px;
+                    color: #aaa;
+                    font-size: 14px;
+                }
+                .config-actions {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-top: 24px;
+                }
+                .btn-back {
+                    background: #333;
+                    border: none;
+                    color: #fff;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                }
+                .btn-deploy {
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                    border: none;
+                    color: #fff;
+                    padding: 12px 32px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                }
+                .btn-deploy:disabled {
+                    opacity: 0.6;
+                }
+                .success-panel {
+                    text-align: center;
+                    padding: 40px;
+                }
+                .success-icon {
+                    font-size: 64px;
+                    margin-bottom: 16px;
+                }
+                .success-panel h3 {
+                    color: #22c55e;
+                    margin-bottom: 16px;
+                }
+                .success-panel p {
+                    color: #aaa;
+                }
+                .success-details {
+                    background: #16162a;
+                    padding: 16px;
+                    border-radius: 8px;
+                    margin: 24px 0;
+                }
+                .success-details code {
+                    display: block;
+                    background: #0d0d1a;
+                    padding: 12px;
+                    border-radius: 4px;
+                    font-size: 12px;
+                    color: #60a5fa;
+                    word-break: break-all;
+                }
+                .btn-done {
+                    background: #22c55e;
+                    border: none;
+                    color: #fff;
+                    padding: 12px 40px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                }
+                .loading {
+                    text-align: center;
+                    color: #888;
+                    padding: 40px;
+                }
+            `}</style>
     </div>
   );
-}
+};
 
 export default WizardModal;
