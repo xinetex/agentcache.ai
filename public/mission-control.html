@@ -914,7 +914,8 @@
                 const fleetContainer = document.getElementById('fleet-container');
                 fleetContainer.innerHTML = '<div class="text-center text-gray-500 py-8">Loading fleet data...</div>';
                 try {
-                    const res2 = await fetch('/api/agents');
+                    // Request admin scope to see internal agents (Sentinel, Researcher)
+                    const res2 = await fetch('/api/agents?scope=admin');
                     if (!res2.ok) throw new Error('API Failed');
                     const data = await res2.json();
 

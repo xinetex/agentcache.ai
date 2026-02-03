@@ -15,3 +15,25 @@
 - [x] Connected Feedback Loop to Dashboard.
 - [x] Deployed Researcher Agent (Simulated).
 - [x] Implemented "Bot Funnel" Campaign (Trust Vector).
+- [x] Secured "The Sentinel" (Hidden from public marketplace).
+
+### Phase 4: Solution Mechanics (Semantic Cache)
+- [x] **Audit**: specialized code review of `LidarCacheService` and `VectorClient`.
+- [x] **Vector**: Implement `VectorClient.embed(text)` and `search(vector)`.
+- [x] **Cache**: Upgrade `LidarCacheService` to check Vector Index before falling back to LLM.
+- [x] **Demo**: Create `api/solutions/support-cache` to demonstrate the logic.
+
+### Phase 5: The Lidar Gateway (Platform)
+- [x] **Infrastructure**: Create `api/v1/chat/completions.ts` (Isolated Namespace).
+- [x] **Logic**: Implement "Cache-First" Proxy logic (Check Lidar -> Call LLM -> Store).
+- [x] **Compliance**: Add PII Redaction stub.
+- [x] **Verify**: Ensure generic `audio1.tv` and `jettythunder` endpoints are untouched.
+- [x] **Verify**: Ensure generic `audio1.tv` and `jettythunder` endpoints are untouched.
+- [x] **Observability**: Connected Gateway logs to Mission Control.
+
+### Phase 6: Solana Payments
+- [x] **Research**: Determine best libraries (Solana Pay vs Web3.js) for payment flow.
+- [x] **Infrastructure**: Create `src/services/SolanaService.ts`.
+- [x] **wallet**: Implement "Pay with Crypto" in Pricing and "Connect Wallet" in Auth.
+- [x] **payments**: Create `api/pay/solana` to generate payment links/QR codes.
+- [x] **verify**: Implement on-chain transaction listener to confirm payment.

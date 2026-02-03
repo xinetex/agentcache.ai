@@ -1,14 +1,28 @@
+import { EmbeddingProvider } from '../lib/llm/types.js';
+import { LocalEmbeddingProvider } from '../lib/llm/providers/local-embeddings.js';
+
 export class VectorClient {
     private baseUrl: string;
+    private embeddingProvider: EmbeddingProvider;
 
     private vectors = new Map<number, number[]>(); // Mock storage
 
     constructor(baseUrl: string = 'http://localhost:5000/Vectors') {
         this.baseUrl = baseUrl;
+        // Default to local embeddings for now logic
+        this.embeddingProvider = new LocalEmbeddingProvider();
+
         if (!process.env.VECTOR_SERVICE_URL || process.env.VECTOR_SERVICE_URL === 'mock') {
             console.warn('⚠️ No VECTOR_SERVICE_URL. Using In-Memory Mock Vector Service.');
             this.baseUrl = 'mock';
         }
+    }
+
+    /**
+     * Generate embedding for text
+     */
+    async embed(text: string): Promise<number[]> {
+        return this.embeddingProvider.embed(text);
     }
 
     async addVectors(ids: number[], vectors: number[]): Promise<void> {

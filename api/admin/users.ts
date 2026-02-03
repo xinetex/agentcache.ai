@@ -10,55 +10,58 @@ export default async function handler(req, res) {
 
     try {
         // 2. Fetch Users from DB
-        const allUsers = await db.select().from(users).orderBy(desc(users.createdAt)).limit(50);
+        let allUsers = await db.select().from(users).orderBy(desc(users.createdAt)).limit(50);
 
-        // 3. Transform for UI
-        // If DB is empty (common in dev), provide high-quality mock data so Admin UI isn't broken
-        let userList = allUsers.map(u => ({
+        // 3. SEMANTIC SEEDING (Auto-Activation)
+        // If the database is empty, we seed it with initial users so the system is usable immediately.
+        // This converts "Mock Data" into "Real Data" upon first activation.
+        if (allUsers.length === 0) {
+            console.log('[System] Seeding Initial Users...');
+            const seedUsers = [
+                {
+                    id: 'usr_seed_1',
+                    name: 'Alex (You)',
+                    email: 'alex@agentcache.ai',
+                    role: 'admin',
+                    plan: 'enterprise',
+                    createdAt: new Date(),
+                },
+                {
+                    id: 'usr_seed_2',
+                    name: 'Sarah Connor',
+                    email: 'sarah@skynet.prevention',
+                    role: 'editor',
+                    plan: 'pro',
+                    createdAt: new Date(),
+                },
+                {
+                    id: 'usr_seed_3',
+                    name: 'John Doe',
+                    email: 'john@example.com',
+                    role: 'viewer',
+                    plan: 'free',
+                    createdAt: new Date(),
+                }
+            ];
+
+            // Insert into DB (works for both Real Postgres and Local Mock Store)
+            await db.insert(users).values(seedUsers);
+
+            // Re-fetch or use seed
+            allUsers = seedUsers;
+        }
+
+        // 4. Transform for UI
+        const userList = allUsers.map(u => ({
             id: u.id,
             name: u.name,
             email: u.email,
             role: u.role || 'viewer',
-            status: 'active', // Default for now
+            status: 'active', // Can derive from lastLogin later
             plan: u.plan || 'free',
             initials: u.name ? u.name.substring(0, 2).toUpperCase() : '??',
-            color: 'bg-indigo-500' // Default color
+            color: getRoleColor(u.role)
         }));
-
-        if (userList.length === 0) {
-            userList = [
-                {
-                    id: 'usr_mock_1',
-                    name: 'Alex (You)',
-                    email: 'alex@agentcache.ai',
-                    role: 'admin',
-                    status: 'active',
-                    plan: 'enterprise',
-                    initials: 'AL',
-                    color: 'bg-gradient-to-br from-indigo-500 to-purple-500'
-                },
-                {
-                    id: 'usr_mock_2',
-                    name: 'Sarah Connor',
-                    email: 'sarah@skynet.prevention',
-                    role: 'editor',
-                    status: 'active',
-                    plan: 'pro',
-                    initials: 'SC',
-                    color: 'bg-emerald-600'
-                },
-                {
-                    id: 'usr_mock_3',
-                    name: 'John Doe',
-                    email: 'john@example.com',
-                    role: 'viewer',
-                    status: 'offline',
-                    plan: 'free',
-                    initials: 'JD',
-                    color: 'bg-gray-700'
-                }
-            ];
-        }
 
         return res.status(200).json({ users: userList });
 
@@ -66,4 +69,10 @@ export default async function handler(req, res) {
         console.error('Admin User Fetch Error:', error);
         return res.status(500).json({ error: 'Failed to fetch users' });
     }
+}
+
+function getRoleColor(role) {
+    if (role === 'admin') return 'bg-gradient-to-br from-indigo-500 to-purple-500';
+    if (role === 'editor') return 'bg-emerald-600';
+    return 'bg-gray-700';
 }

@@ -47,6 +47,19 @@
           class="auth-input" placeholder="Min 8 characters">
       </div>
 
+      <!-- Wallet Connect Option -->
+      <div class="auth-divider">
+        <span>OR</span>
+      </div>
+
+      <button type="button" onclick="connectWalletMock()" class="auth-btn-secondary"
+        style="margin-top: 0; margin-bottom: 24px; border-color: #9945FF; color: #9945FF;">
+        <img
+          src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
+          class="w-5 h-5 mr-2" alt="SOL" style="width: 20px; height: 20px;">
+        Continue with Solana
+      </button>
+
       <button type="submit" class="auth-btn auth-btn-primary">
         <span>Create Account</span>
         <svg class="auth-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -161,6 +174,26 @@
 
     function hideSuccess() {
       successMsg.classList.add('auth-hidden');
+    }
+
+    // Mock Wallet Connection
+    async function connectWalletMock() {
+      // In a real app, this would use window.solana.connect()
+      const btn = document.querySelector('.auth-btn-secondary');
+      const original = btn.innerHTML;
+
+      btn.innerHTML = '<div class="auth-spinner" style="border-top-color: #9945FF"></div> Connecting...';
+
+      // Simulating wallet interaction
+      setTimeout(() => {
+        showSuccess('Wallet Connected! Redirecting...');
+        localStorage.setItem('agentcache_token', 'mock_wallet_token');
+        localStorage.setItem('agentcache_user', JSON.stringify({ name: 'Solana User', email: 'wallet@solana' }));
+
+        setTimeout(() => {
+          window.location.href = REDIRECT_URL;
+        }, 1000);
+      }, 1500);
     }
   </script>
 </body>

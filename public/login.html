@@ -37,20 +37,43 @@
       </div>
 
       <div class="auth-field">
-        <div class="auth-label-row">
+        <div class="auth-field">
           <label for="password" class="auth-label">Password</label>
-          <a href="/forgot-password.html" class="auth-link">Forgot password?</a>
+          <div class="password-wrapper">
+            <input type="password" id="password" name="password" required autocomplete="current-password"
+              class="auth-input" placeholder="Enter your password">
+            <button type="button" id="toggle-password" class="password-toggle">
+              <svg fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </button>
+          </div>
+          <div class="forgot-wrapper">
+            <a href="/forgot-password.html" class="auth-link-sm">Forgot password?</a>
+          </div>
         </div>
-        <input type="password" id="password" name="password" required autocomplete="current-password" class="auth-input"
-          placeholder="Enter your password">
-      </div>
 
-      <button type="submit" class="auth-btn auth-btn-primary">
-        <span>Sign in</span>
-        <svg class="auth-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-        </svg>
-      </button>
+        <!-- Wallet Connect Option -->
+        <div class="auth-divider">
+          <span>OR</span>
+        </div>
+
+        <button type="button" onclick="connectWalletMock()" class="auth-btn-secondary"
+          style="margin-top: 0; margin-bottom: 24px; border-color: #9945FF; color: #9945FF;">
+          <img
+            src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
+            class="w-5 h-5 mr-2" alt="SOL" style="width: 20px; height: 20px;">
+          Continue with Solana
+        </button>
+        <button type="submit" class="auth-btn auth-btn-primary">
+          <span>Sign in</span>
+          <svg class="auth-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+          </svg>
+        </button>
     </form>
 
     <!-- Error Message -->
@@ -161,6 +184,29 @@
 
     function hideError() {
       errorMsg.classList.add('auth-hidden');
+    }
+
+    function hideSuccess() {
+      successMsg.classList.add('auth-hidden');
+    }
+
+    // Mock Wallet Connection
+    async function connectWalletMock() {
+      const btn = document.querySelector('.auth-btn-secondary');
+      const original = btn.innerHTML;
+
+      btn.innerHTML = '<div class="auth-spinner" style="border-top-color: #9945FF"></div> Connecting...';
+
+      // Simulating wallet interaction
+      setTimeout(() => {
+        showSuccess('Wallet Connected! Redirecting...');
+        localStorage.setItem('agentcache_token', 'mock_wallet_token');
+        localStorage.setItem('agentcache_user', JSON.stringify({ name: 'Solana User', email: 'wallet@solana' }));
+
+        setTimeout(() => {
+          window.location.href = REDIRECT_URL;
+        }, 1000);
+      }, 1500);
     }
   </script>
 </body>

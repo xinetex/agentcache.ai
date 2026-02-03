@@ -23,3 +23,7 @@ export interface LLMProvider {
         maxTokens?: number;
     }): Promise<CompletionResponse>;
 }
+
+export interface EmbeddingProvider {
+    embed(text: string): Promise<number[]>;
+}

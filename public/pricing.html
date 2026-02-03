@@ -356,11 +356,20 @@
                             <span>Technical account manager</span>
                         </div>
                     </div>
-                    <a href="/contact.html"
-                        class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-brand-500 hover:bg-brand-600 transition font-bold">
-                        Contact Sales
-                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
-                    </a>
+                    <div class="flex justify-center gap-4">
+                        <a href="/contact.html"
+                            class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-brand-500 hover:bg-brand-600 transition font-bold">
+                            Contact Sales
+                            <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                        </a>
+                        <!-- Crypto Trigger -->
+                        <button onclick="openCryptoModal()"
+                            class="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-[#9945FF]/50 hover:bg-[#9945FF]/10 text-[#9945FF] transition font-bold">
+                            <img src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
+                                class="w-5 h-5" alt="SOL">
+                            Pay with Crypto
+                        </button>
+                    </div>
                 </div>
             </section>
 
@@ -486,6 +495,150 @@
             calculateROI();
         </script>
     </div><!-- /content-wrapper -->
+
+    <!-- Solana Payment Modal -->
+    <div id="crypto-modal" class="fixed inset-0 z-[60] hidden">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeCryptoModal()"></div>
+
+        <!-- Modal Content -->
+        <div
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-neutral-900 border border-white/10 rounded-2xl p-8 shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-[#9945FF]/20 flex items-center justify-center">
+                        <img src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
+                            class="w-6 h-6" alt="SOL">
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white text-lg">Pay with Solana</h3>
+                        <p class="text-neutral-400 text-xs">Lightning fast. Near-zero fees.</p>
+                    </div>
+                </div>
+                <button onclick="closeCryptoModal()" class="text-neutral-500 hover:text-white">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <div id="payment-step-1">
+                <div class="space-y-4 mb-6">
+                    <label class="block text-sm text-neutral-400">Select Amount</label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <button onclick="selectAmount(0.1)"
+                            class="p-3 border border-white/10 rounded-lg hover:bg-white/5 focus:ring-2 ring-[#14F195] transition text-sm font-bold text-center">0.1
+                            SOL</button>
+                        <button onclick="selectAmount(0.5)"
+                            class="p-3 border border-white/10 rounded-lg hover:bg-white/5 focus:ring-2 ring-[#14F195] transition text-sm font-bold text-center">0.5
+                            SOL</button>
+                        <button onclick="selectAmount(1.0)"
+                            class="p-3 border border-white/10 rounded-lg hover:bg-white/5 focus:ring-2 ring-[#14F195] transition text-sm font-bold text-center">1.0
+                            SOL</button>
+                    </div>
+                </div>
+                <button onclick="generatePayment()"
+                    class="w-full py-4 bg-gradient-to-r from-[#9945FF] to-[#14F195] rounded-xl font-bold text-black hover:opacity-90 transition">
+                    Generate Payment Link
+                </button>
+            </div>
+
+            <div id="payment-step-2" class="hidden text-center">
+                <div class="bg-white p-4 rounded-xl inline-block mb-6">
+                    <img id="qr-code" src="" alt="QR Code" class="w-48 h-48">
+                </div>
+                <p class="text-white font-mono text-lg mb-2"><span id="display-amount">0</span> SOL</p>
+                <p class="text-neutral-500 text-sm mb-6">Scan with Phantom or Backpack</p>
+
+                <div class="flex items-center justify-center gap-2 text-neutral-400">
+                    <div class="w-2 h-2 bg-[#14F195] rounded-full animate-pulse"></div>
+                    <span class="text-xs">Listening for transaction...</span>
+                </div>
+            </div>
+
+            <div id="payment-success" class="hidden text-center py-8">
+                <div
+                    class="w-16 h-16 bg-[#14F195]/20 text-[#14F195] rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="check" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-2">Payment Confirmed!</h3>
+                <p class="text-neutral-400 mb-6">Your credits have been added.</p>
+                <button onclick="closeCryptoModal()"
+                    class="px-6 py-2 border border-white/20 rounded-lg hover:bg-white/5 transition">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentAmount = 0.1;
+        let pollInterval;
+
+        function openCryptoModal() {
+            document.getElementById('crypto-modal').classList.remove('hidden');
+        }
+
+        function closeCryptoModal() {
+            document.getElementById('crypto-modal').classList.add('hidden');
+            clearInterval(pollInterval);
+            // Reset UI
+            document.getElementById('payment-step-1').classList.remove('hidden');
+            document.getElementById('payment-step-2').classList.add('hidden');
+            document.getElementById('payment-success').classList.add('hidden');
+        }
+
+        function selectAmount(amt) {
+            currentAmount = amt;
+        }
+
+        async function generatePayment() {
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = 'Creating...';
+
+            try {
+                const res = await fetch('/api/pay/solana', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: currentAmount, label: 'AgentCache Cloud' })
+                });
+                const data = await res.json();
+
+                if (data.url) {
+                    // Show QR
+                    document.getElementById('payment-step-1').classList.add('hidden');
+                    document.getElementById('payment-step-2').classList.remove('hidden');
+
+                    // Generate QR (using quickchart or similar public api for demo simplicity, or pass data.url to a lib)
+                    // Encoding the 'solana:...' URL
+                    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data.url)}`;
+                    document.getElementById('qr-code').src = qrUrl;
+                    document.getElementById('display-amount').innerText = currentAmount;
+
+                    // Start Polling
+                    pollForCompletion(data.reference, currentAmount);
+                }
+            } catch (e) {
+                alert('Error generating payment connection');
+            } finally {
+                btn.innerText = originalText;
+            }
+        }
+
+        function pollForCompletion(reference, amount) {
+            pollInterval = setInterval(async () => {
+                try {
+                    const res = await fetch(`/api/pay/verify?reference=${reference}&amount=${amount}`);
+                    const data = await res.json();
+
+                    if (data.status === 'confirmed') {
+                        clearInterval(pollInterval);
+                        document.getElementById('payment-step-2').classList.add('hidden');
+                        document.getElementById('payment-success').classList.remove('hidden');
+                    }
+                } catch (e) {
+                    // ignore poll errors
+                }
+            }, 2000);
+        }
+    </script>
 
     <!-- Firefly Animation -->
     <script src="/assets/fireflies.js"></script>

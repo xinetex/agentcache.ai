@@ -8,20 +8,10 @@ export default async function handler(req, res) {
         // 1. Fetch Agents
         const allAgents = await db.select().from(agents).orderBy(desc(agents.createdAt)).limit(20);
 
-        // 2. Transform / Mock
-        let agentList = allAgents.map(a => ({
-            id: a.id,
-            name: a.name,
-            role: a.role || 'Assistant',
-            description: a.description || 'An intelligent agent.',
-            status: a.status || 'Active',
-            icon: a.icon || 'solar:robot-2-linear',
-            color: a.color || 'bg-blue-100 text-blue-600'
-        }));
-
-        // Mock Fallback if DB is empty
-        if (agentList.length === 0) {
-            agentList = [
+        // 2. SEMANTIC SEEDING (Auto-Activation)
+        if (allAgents.length === 0) {
+            console.log('[System] Seeding Initial Agents...');
+            const seedAgents = [
                 {
                     id: 'agt_sentinel',
                     name: 'The Sentinel',
@@ -30,7 +20,8 @@ export default async function handler(req, res) {
                     status: 'Active',
                     icon: 'solar:shield-check-linear',
                     color: 'bg-emerald-100 text-emerald-600',
-                    link: '/chat.html?agent=sentinel'
+                    visibility: 'internal',
+                    createdAt: new Date()
                 },
                 {
                     id: 'agt_synth',
@@ -40,7 +31,8 @@ export default async function handler(req, res) {
                     status: 'Idle',
                     icon: 'solar:chart-2-linear',
                     color: 'bg-blue-100 text-blue-600',
-                    link: '/chat.html?agent=synthesizer'
+                    visibility: 'public',
+                    createdAt: new Date()
                 },
                 {
                     id: 'agt_coder',
@@ -50,7 +42,8 @@ export default async function handler(req, res) {
                     status: 'Active',
                     icon: 'solar:code-circle-linear',
                     color: 'bg-purple-100 text-purple-600',
-                    link: '/chat.html?agent=coder'
+                    visibility: 'public',
+                    createdAt: new Date()
                 },
                 {
                     id: 'agt_researcher',
@@ -59,10 +52,36 @@ export default async function handler(req, res) {
                     description: 'Conducts autonomous surveys on Moltbook to gather user feedback.',
                     status: 'Active',
                     icon: 'solar:chat-round-dots-linear',
-                    color: 'bg-orange-100 text-orange-600 mr-2', // Added mr-2 for spacing if needed, though grid handles gap
-                    link: '/chat.html?agent=researcher'
+                    color: 'bg-orange-100 text-orange-600',
+                    visibility: 'internal',
+                    createdAt: new Date()
                 }
             ];
+
+            // Insert into DB
+            await db.insert(agents).values(seedAgents);
+            // Re-fetch or use local
+            allAgents = seedAgents;
+        }
+
+        // 3. Transform & Filter
+        let agentList = allAgents.map(a => ({
+            id: a.id,
+            name: a.name,
+            role: a.role || 'Assistant',
+            description: a.description || 'An intelligent agent.',
+            status: a.status || 'Active',
+            icon: a.icon || 'solar:robot-2-linear',
+            color: a.color || 'bg-blue-100 text-blue-600',
+            visibility: a.visibility || 'public',
+            link: `/chat.html?agent=${a.id}`
+        }));
+
+        // 3. Filter for Public View
+        // If ?scope=admin is NOT present, hide internal agents
+        const scope = req.query.scope;
+        if (scope !== 'admin') {
+            agentList = agentList.filter(a => a.visibility !== 'internal');
         }
 
         return res.status(200).json({ agents: agentList });
