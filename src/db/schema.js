@@ -435,6 +435,17 @@ export const signals = pgTable('signals', {
     metadata: jsonb('metadata'), // SSID, Banner, Headers
     seenAt: timestamp('seen_at').defaultNow(),
 }, (table) => ({
-    geoIdx: index('signal_geo_idx').on(table.lat, table.lon),
     targetIdx: index('signal_target_idx').on(table.target),
 }));
+
+// --- Engine V2: Transcripts ---
+export const jobTranscripts = pgTable('job_transcripts', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    jobId: text('job_id').notNull(),
+    lane: text('lane').notNull(),
+    agent: text('agent').notNull(),
+    logs: jsonb('logs').notNull(), // Array of JSON Log Events
+    startTime: timestamp('start_time').defaultNow(),
+    endTime: timestamp('end_time'),
+    status: text('status').default('running'), // running, completed, failed
+});
