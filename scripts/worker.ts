@@ -13,6 +13,7 @@ import 'dotenv/config';
 import { LaneService } from '../src/lib/workflow/LaneService.js';
 import { TranscriptLogger } from '../src/lib/workflow/TranscriptLogger.js';
 import { PRAgent } from '../src/agents/suite/PRAgent.js';
+import { TriageAgent } from '../src/agents/suite/TriageAgent.js';
 
 const lanes = new LaneService();
 
@@ -32,8 +33,8 @@ async function processJob(lane: string, job: any) {
 
         switch (job.type) {
             case 'pr_review':
-                const agent = new PRAgent();
-                await agent.runReview({
+                const prAgent = new PRAgent();
+                await prAgent.runReview({
                     owner: job.payload.owner,
                     repo: job.payload.repo,
                     prNumber: job.payload.prNumber,
@@ -41,6 +42,15 @@ async function processJob(lane: string, job: any) {
                     author: job.payload.author
                 });
                 logger.info('pr_review_complete', { prNumber: job.payload.prNumber });
+                break;
+
+            case 'incident_triage':
+                const triageAgent = new TriageAgent();
+                const result = await triageAgent.runTriage(job.payload);
+                logger.info('incident_triage_complete', {
+                    alertId: job.payload.alertId,
+                    severity: result.severity
+                });
                 break;
 
             default:
