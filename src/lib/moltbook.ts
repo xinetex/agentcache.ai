@@ -120,6 +120,12 @@ export class MoltbookService {
             body: JSON.stringify(body)
         });
     }
+    /**
+     * Get comments for a post
+     */
+    async getComments(postId: string, limit: number = 20) {
+        return this.request(`/posts/${postId}/comments?limit=${limit}`);
+    }
 }
 
 // Singleton instance for server-side usage

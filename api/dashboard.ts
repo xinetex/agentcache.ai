@@ -61,8 +61,9 @@ export async function dashboardHandler(req, res) {
         // 5. Construct Response
         const dashboardData = {
             user: {
-                name: userProfile.name || 'Explorer',
-                email: userProfile.email
+                name: userProfile?.name || null, // Null triggers "Connect" flow
+                email: userProfile?.email || null,
+                isAnonymous: !userResult[0]
             },
             usage: {
                 requests: currentUsage.edgeInvocations || 0,

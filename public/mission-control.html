@@ -42,49 +42,99 @@
     <!-- 1. LEFT SIDEBAR (Navigation) -->
     <aside class="w-64 bg-[#09090b] border-r border-white/5 flex flex-col justify-between shrink-0 z-20">
         <div>
+            <!-- Header -->
             <div class="h-14 flex items-center px-6 border-b border-white/5">
                 <div class="flex items-center gap-2 text-white font-bold tracking-tight">
                     <iconify-icon icon="solar:infinity-bold" class="text-emerald-500"></iconify-icon>
                     AgentCache
                 </div>
             </div>
-            <nav class="p-4 space-y-1">
-                <a href="/mission-control.html"
-                    class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-white bg-white/5 rounded-lg border border-white/5">
-                    <iconify-icon icon="solar:widget-linear"></iconify-icon> Dashboard
-                </a>
-                <a href="/user-dashboard.html"
-                    class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                    <iconify-icon icon="solar:users-group-rounded-linear"></iconify-icon> Workspace
-                </a>
-                <a href="/agents.html"
-                    class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                    <iconify-icon icon="solar:graph-new-linear"></iconify-icon> Agents
-                </a>
-                <div class="pt-4 pb-2">
-                    <div class="px-3 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Sectors
+
+            <!-- Nav Links -->
+            <div class="flex-1 overflow-y-auto py-4 px-2 space-y-6">
+                <!-- Core Operations -->
+                <div>
+                    <div class="px-2 mb-2 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Operations
+                    </div>
+                    <div class="space-y-0.5">
+                        <a href="/mission-control.html"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-white bg-white/5 rounded-lg border border-white/5">
+                            <iconify-icon icon="solar:widget-linear" class="text-emerald-400"></iconify-icon>
+                            Mission Control
+                        </a>
+                        <a href="#" onclick="switchTab('fleet'); return false;"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                            <iconify-icon icon="solar:users-group-rounded-linear"></iconify-icon>
+                            Fleet Management
+                        </a>
+                        <a href="#" onclick="switchTab('logs'); return false;"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                            <iconify-icon icon="solar:chart-square-linear"></iconify-icon>
+                            System Logs
+                        </a>
                     </div>
                 </div>
-                <a href="/sector.html?name=finance"
-                    class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                    <iconify-icon icon="solar:wallet-money-linear"></iconify-icon> Finance
-                </a>
-                <a href="/sector.html?name=biotech"
-                    class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                    <iconify-icon icon="solar:atom-linear"></iconify-icon> Biologics
-                </a>
-            </nav>
-        </div>
-        <div class="p-4 border-t border-white/5">
-            <div class="flex items-center gap-3 px-3 py-2">
-                <div
-                    class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-xs font-bold text-emerald-400">
-                    DT</div>
-                <div class="text-xs">
-                    <div class="text-white font-medium">Dev Team</div>
-                    <div class="text-gray-600">Pro Plan</div>
+
+                <!-- Sectors (The "Mission" part) -->
+                <div>
+                    <div class="px-2 mb-2 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Active Sectors
+                    </div>
+                    <div class="space-y-0.5">
+                        <a href="/sector.html?name=finance"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors group">
+                            <iconify-icon icon="solar:wallet-money-linear"
+                                class="group-hover:text-blue-400 transition-colors"></iconify-icon>
+                            Finance
+                        </a>
+                        <a href="/sector.html?name=photonics"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors group">
+                            <iconify-icon icon="solar:bolt-linear"
+                                class="group-hover:text-amber-400 transition-colors"></iconify-icon>
+                            Photonics
+                        </a>
+                        <a href="/sector.html?name=biologics"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors group">
+                            <iconify-icon icon="solar:dna-linear"
+                                class="group-hover:text-pink-400 transition-colors"></iconify-icon>
+                            Biologics
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Configuration -->
+                <div>
+                    <div class="px-2 mb-2 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Configuration
+                    </div>
+                    <div class="space-y-0.5">
+                        <a href="/settings.html"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                            <iconify-icon icon="solar:settings-linear"></iconify-icon>
+                            Global Settings
+                        </a>
+                        <a href="/get-key.html"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                            <iconify-icon icon="solar:key-linear"></iconify-icon>
+                            API Keys
+                        </a>
+                    </div>
                 </div>
             </div>
+        </div>
+
+        <!-- User Context (Admin) -->
+        <div class="p-4 border-t border-white/5 bg-[#050505]">
+            <a href="/user-dashboard.html"
+                class="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-lg transition-colors group">
+                <div
+                    class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-xs font-bold text-emerald-400 border border-emerald-500/30">
+                    AC
+                </div>
+                <div class="flex-1">
+                    <div class="text-white text-xs font-medium">Admin Console</div>
+                    <div class="text-gray-600 text-[10px] group-hover:text-emerald-400 transition-colors">Switch to User
+                        View &rarr;</div>
+                </div>
+            </a>
         </div>
     </aside>
 
@@ -158,75 +208,368 @@
                 </div>
             </section>
 
-            <!-- CORE WIDGETS -->
-            <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[500px]">
+            <!-- ADMIN TABS -->
+            <div class="border-b border-white/5 mb-6">
+                <nav class="-mb-px flex gap-6" aria-label="Tabs">
+                    <button onclick="switchTab('dashboard')" id="tab-dashboard"
+                        class="border-b-2 border-emerald-500 py-4 px-1 text-sm font-medium text-emerald-500 hover:text-emerald-400 transition-colors">
+                        <iconify-icon icon="solar:widget-linear" class="mr-2"></iconify-icon>Overview
+                    </button>
+                    <button onclick="switchTab('fleet')" id="tab-fleet"
+                        class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-300 hover:border-gray-300 transition-colors">
+                        <iconify-icon icon="solar:users-group-rounded-linear" class="mr-2"></iconify-icon>Fleet
+                    </button>
+                    <button onclick="switchTab('users')" id="tab-users"
+                        class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-300 hover:border-gray-300 transition-colors">
+                        <iconify-icon icon="solar:user-id-linear" class="mr-2"></iconify-icon>Users & IAM
+                    </button>
+                    <button onclick="switchTab('logs')" id="tab-logs"
+                        class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-300 hover:border-gray-300 transition-colors">
+                        <iconify-icon icon="solar:code-square-linear" class="mr-2"></iconify-icon>System Logs
+                    </button>
+                </nav>
+            </div>
 
-                <!-- Center Stage: Trust Broker Console -->
-                <div class="lg:col-span-2 glass rounded-2xl p-0 overflow-hidden flex flex-col relative">
-                    <div class="h-12 border-b border-white/5 flex items-center justify-between px-4 bg-white/[0.02]">
-                        <div class="flex items-center gap-2">
-                            <iconify-icon icon="solar:verified-check-bold" class="text-emerald-500"></iconify-icon>
-                            <span class="text-sm font-medium text-white">Trust Broker</span>
+            <!-- TAB CONTENT: DASHBOARD -->
+            <div id="view-dashboard" class="admin-view space-y-6">
+                <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[500px]">
+                    <!-- EXISTING Trust Broker Console -->
+                    <div class="lg:col-span-2 glass rounded-2xl p-0 overflow-hidden flex flex-col relative">
+                        <div
+                            class="h-12 border-b border-white/5 flex items-center justify-between px-4 bg-white/[0.02]">
+                            <div class="flex items-center gap-2">
+                                <iconify-icon icon="solar:verified-check-bold" class="text-emerald-500"></iconify-icon>
+                                <span class="text-sm font-medium text-white">Trust Broker</span>
+                            </div>
+                            <div class="text-xs text-gray-600 font-mono">ID: T-992A</div>
                         </div>
-                        <div class="text-xs text-gray-600 font-mono">ID: T-992A</div>
+                        <div class="flex-1 p-6 flex flex-col justify-center items-center text-center space-y-4">
+                            <div class="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-2">
+                                <iconify-icon icon="solar:shield-check-linear"
+                                    class="text-3xl text-emerald-500"></iconify-icon>
+                            </div>
+                            <h3 class="text-lg text-white font-medium">Verify Claims & Logic</h3>
+                            <p class="text-sm text-gray-500 max-w-sm">Enter a claim or logic snippet below to
+                                verify its truth against the immutable ledger.</p>
+                            <div class="w-full max-w-md bg-black/20 border border-white/10 rounded-lg p-3 flex gap-2">
+                                <input type="text" placeholder="e.g. 'User A has admin rights'"
+                                    class="bg-transparent border-none text-sm text-white flex-1 focus:ring-0 placeholder-gray-600">
+                                <button
+                                    class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded transition-colors">Verify</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex-1 p-6 flex flex-col justify-center items-center text-center space-y-4">
-                        <div class="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-2">
-                            <iconify-icon icon="solar:shield-check-linear"
-                                class="text-3xl text-emerald-500"></iconify-icon>
-                        </div>
-                        <h3 class="text-lg text-white font-medium">Verify Claims & Logic</h3>
-                        <p class="text-sm text-gray-500 max-w-sm">Enter a claim or logic snippet below to
-                            verify its truth against the immutable ledger.</p>
 
-                        <div class="w-full max-w-md bg-black/20 border border-white/10 rounded-lg p-3 flex gap-2">
-                            <input type="text" placeholder="e.g. 'User A has admin rights'"
-                                class="bg-transparent border-none text-sm text-white flex-1 focus:ring-0 placeholder-gray-600">
+                    <!-- EXISTING Activity Feed -->
+                    <div class="glass rounded-2xl p-5 overflow-hidden flex flex-col">
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Live Activity</h3>
+                        <div class="space-y-4 overflow-y-auto pr-2 custom-scrollbar">
+                            <div class="flex gap-3">
+                                <div class="mt-1 w-2 h-2 rounded-full bg-blue-500 shrink-0"></div>
+                                <div>
+                                    <div class="text-sm text-gray-300">New Integration</div>
+                                    <div class="text-xs text-gray-600 mt-1">Snowflake connected to Finance.</div>
+                                    <div class="text-[10px] text-gray-700 mt-1">2m ago</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+            <!-- Feedback Widget (New) -->
+            <div class="glass rounded-2xl p-5 mt-6 border border-amber-500/30 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-3 opacity-20 pointer-events-none">
+                    <iconify-icon icon="solar:transmission-circle-bold" class="text-6xl text-amber-500"></iconify-icon>
+                </div>
+                <div class="flex justify-between items-center mb-4 relative z-10">
+                    <h3 class="text-xs font-semibold text-amber-500 uppercase tracking-wider flex items-center gap-2">
+                        <iconify-icon icon="solar:record-circle-bold" class="animate-pulse"></iconify-icon>
+                        Active Research Campaign
+                    </h3>
+                    <span class="text-[10px] text-gray-400 bg-white/5 px-2 py-1 rounded">Phase 1: Trust</span>
+                </div>
+                <div id="feedback-widget" class="space-y-4 relative z-10">
+                    <div class="animate-pulse text-gray-600 text-xs">Loading Campaign Data...</div>
+                </div>
+            </div>
+
+            <!-- TAB CONTENT: FLEET -->
+            <div id="view-fleet" class="admin-view hidden space-y-6">
+                <!-- Fleet Stats -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/5">
+                        <div class="text-xs text-gray-500 uppercase">Active Agents</div>
+                        <div class="text-2xl text-white font-medium">3</div>
+                    </div>
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/5">
+                        <div class="text-xs text-gray-500 uppercase">Total Memory</div>
+                        <div class="text-2xl text-emerald-400 font-medium">4.2 GB</div>
+                    </div>
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/5">
+                        <div class="text-xs text-gray-500 uppercase">Avg Response</div>
+                        <div class="text-2xl text-blue-400 font-medium">240ms</div>
+                    </div>
+                </div>
+
+                <!-- Fleet Table -->
+                <div class="glass rounded-xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center">
+                        <h3 class="text-sm font-medium text-white">Deployed Agents</h3>
+                        <button onclick="loadFleet()"
+                            class="text-xs text-emerald-500 hover:text-emerald-400 flex items-center gap-1">
+                            <iconify-icon icon="solar:restart-bold"></iconify-icon> Refresh
+                        </button>
+                    </div>
+                    <div id="fleet-container" class="p-4 grid grid-cols-1 gap-4">
+                        <!-- Filled by JS -->
+                        <div class="text-center text-gray-500 py-8">Initializing Fleet Uplink...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB CONTENT: USERS -->
+            <div id="view-users" class="admin-view hidden space-y-6">
+                <div class="glass rounded-xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center">
+                        <h3 class="text-sm font-medium text-white">Platform Users</h3>
+                        <div class="flex gap-2">
+                            <input type="text" placeholder="Search users..."
+                                class="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none">
+                            <button onclick="loadUsers()"
+                                class="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                title="Refresh">
+                                <iconify-icon icon="solar:restart-bold"></iconify-icon>
+                            </button>
                             <button
-                                class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded transition-colors">Verify</button>
+                                class="px-3 py-1.5 bg-emerald-600 text-white text-xs rounded-lg hover:bg-emerald-500">Add
+                                User</button>
                         </div>
                     </div>
+                    <table class="w-full text-left">
+                        <thead class="bg-white/[0.02] text-xs uppercase text-gray-500">
+                            <tr>
+                                <th class="px-6 py-3 font-medium">User</th>
+                                <th class="px-6 py-3 font-medium">Role</th>
+                                <th class="px-6 py-3 font-medium">Status</th>
+                                <th class="px-6 py-3 font-medium">Plan</th>
+                                <th class="px-6 py-3 font-medium text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body" class="divide-y divide-white/5 text-sm">
+                            <!-- Rows will be injected by JS -->
+                        </tbody>
+                    </table>
                 </div>
+            </div>
 
-                <!-- Right Rail: Activity Feed -->
-                <div class="glass rounded-2xl p-5 overflow-hidden flex flex-col">
-                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Live
-                        Activity</h3>
-                    <div class="space-y-4 overflow-y-auto pr-2 custom-scrollbar">
-                        <!-- Item 1 -->
-                        <div class="flex gap-3">
-                            <div class="mt-1 w-2 h-2 rounded-full bg-blue-500 shrink-0"></div>
-                            <div>
-                                <div class="text-sm text-gray-300">New Integration Added</div>
-                                <div class="text-xs text-gray-600 mt-1">User 'Admin' connected Snowflake
-                                    Data Warehouse.</div>
-                                <div class="text-[10px] text-gray-700 mt-1">2m ago</div>
-                            </div>
-                        </div>
-                        <!-- Item 2 -->
-                        <div class="flex gap-3">
-                            <div class="mt-1 w-2 h-2 rounded-full bg-amber-500 shrink-0"></div>
-                            <div>
-                                <div class="text-sm text-gray-300">Policy Eviction</div>
-                                <div class="text-xs text-gray-600 mt-1">TTL changed from 24h to 48h for
-                                    RiskCache.</div>
-                                <div class="text-[10px] text-gray-700 mt-1">15m ago</div>
-                            </div>
-                        </div>
-                        <!-- Item 3 -->
-                        <div class="flex gap-3">
-                            <div class="mt-1 w-2 h-2 rounded-full bg-emerald-500 shrink-0"></div>
-                            <div>
-                                <div class="text-sm text-gray-300">Large Batch Verified</div>
-                                <div class="text-xs text-gray-600 mt-1">5,000 claims processed via Alpha-One
-                                    agent.</div>
-                                <div class="text-[10px] text-gray-700 mt-1">1h ago</div>
-                            </div>
-                        </div>
+            <!-- TAB CONTENT: LOGS -->
+            <div id="view-logs"
+                class="admin-view hidden h-[600px] glass rounded-xl overflow-hidden flex flex-col font-mono text-xs">
+                <div class="px-4 py-2 bg-black/40 border-b border-white/5 flex justify-between items-center">
+                    <div class="flex gap-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50"></div>
+                        <div class="w-3 h-3 rounded-full bg-amber-500/20 border border-amber-500/50"></div>
+                        <div class="w-3 h-3 rounded-full bg-emerald-500/20 border border-emerald-500/50"></div>
+                    </div>
+                    <span class="text-gray-500">system.log --tail -f</span>
+                </div>
+                <div class="flex-1 p-4 overflow-y-auto space-y-1 text-gray-400 bg-[#0a0a0a]" id="log-console">
+                    <div class="flex h-full items-center justify-center text-gray-600 italic text-center">
+                        Initializing uplink...<br>Connecting to system stream...
                     </div>
                 </div>
+            </div>
 
-            </section>
+            <script>
+                // State
+                let usersData = [];
+                let hasLoadedUsers = false;
+                let hasLoadedFleet = false;
+                let hasLoadedFeedback = false;
+
+                // Logs State
+                let logCursor = null;
+                let logPollInterval = null;
+                let isPollingLogs = false;
+
+                async function switchTab(tabName) {
+                    // 1. Hide all views
+                    document.querySelectorAll('.admin-view').forEach(el => el.classList.add('hidden'));
+                    // 2. Show target view
+                    document.getElementById('view-' + tabName).classList.remove('hidden');
+
+                    // 3. Update Tab Styles
+                    document.querySelectorAll('nav[aria-label="Tabs"] button').forEach(btn => {
+                        btn.classList.remove('border-emerald-500', 'text-emerald-500');
+                        btn.classList.add('border-transparent', 'text-gray-500');
+                    });
+                    const activeBtn = document.getElementById('tab-' + tabName);
+                    activeBtn.classList.remove('border-transparent', 'text-gray-500');
+                    activeBtn.classList.add('border-emerald-500', 'text-emerald-500');
+
+                    // 4. Lazy Load Data
+                    if (tabName === 'users' && !hasLoadedUsers) await loadUsers();
+                    if (tabName === 'fleet' && !hasLoadedFleet) await loadFleet();
+                    if (tabName === 'dashboard' && !hasLoadedFeedback) await loadFeedback();
+
+                    // 5. Handle Logs Polling
+                    if (tabName === 'logs') {
+                        startLogPolling();
+                    } else {
+                        stopLogPolling();
+                    }
+                    // --- FEEDBACK LOGIC ---
+                    async function loadFeedback() {
+                        const widget = document.getElementById('feedback-widget');
+                        try {
+                            const res = await fetch('/api/admin/feedback');
+                            const data = await res.json();
+                            const camp = data.feedback.campaign;
+
+                            // If we have a campaign, show the "Deploy" view
+                            if (camp) {
+                                widget.innerHTML = `
+                                <div>
+                                    <div class="text-lg text-white font-light mb-1">${camp.name}</div>
+                                    <p class="text-xs text-gray-400 mb-4">Post this payload to Moltbook to "Honey Pot" bot responses.</p>
+                                    
+                                    <div class="bg-black/30 rounded-lg p-3 border border-indigo-500/30 mb-3 relative group">
+                                        <div class="text-[10px] text-indigo-400 font-mono whitespace-pre-wrap leading-relaxed">${camp.copyText}</div>
+                                        <button onclick="copyCampaign('${camp.id}')" id="btn-${camp.id}" 
+                                            class="absolute top-2 right-2 bg-indigo-600 hover:bg-indigo-500 text-white p-1.5 rounded text-xs transition-colors flex items-center gap-1">
+                                            <iconify-icon icon="solar:copy-linear"></iconify-icon> Copy
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="flex gap-2">
+                                        <button class="flex-1 py-2 rounded-lg bg-gray-800 text-gray-400 text-xs hover:bg-gray-700">Skip Function</button>
+                                        <button class="flex-1 py-2 rounded-lg bg-emerald-900/50 text-emerald-400 border border-emerald-500/20 text-xs hover:bg-emerald-900/80">Mark Deployed</button>
+                                    </div>
+                                </div>
+                            `;
+
+                                // Attach copy logic to window for inline onclick
+                                window.copyCampaign = (id) => {
+                                    navigator.clipboard.writeText(camp.copyText).then(() => {
+                                        const btn = document.getElementById('btn-' + id);
+                                        const original = btn.innerHTML;
+                                        btn.innerHTML = '<iconify-icon icon="solar:check-circle-bold"></iconify-icon> Copied';
+                                        btn.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
+                                        setTimeout(() => {
+                                            btn.innerHTML = original;
+                                            btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-500');
+                                        }, 2000);
+                                    });
+                                };
+
+                            } else {
+                                // Fallback to results view if no active campaign
+                                widget.innerHTML = '<div class="text-gray-500 text-xs">No active campaigns.</div>';
+                            }
+
+                            hasLoadedFeedback = true;
+                        } catch (e) {
+                            console.error(e);
+                            widget.innerHTML = '<div class="text-red-400 text-xs">Failed to load campaign.</div>';
+                        }
+                    }
+
+                    document.addEventListener('DOMContentLoaded', loadFeedback); // Load on init too since it's default tab
+
+                    // --- FLEET LOGIC ---
+                    async function loadFleet() {
+                        const fleetContainer = document.getElementById('fleet-container');
+                        fleetContainer.innerHTML = '<div class="text-center text-gray-500 py-8">Loading fleet data...</div>';
+                        try {
+                            const res2 = await fetch('/api/agents');
+                            if (!res2.ok) throw new Error('API Failed');
+                            const data = await res2.json();
+
+                            // data.agents is the array based on my api/agents.ts implementation
+                            if (data.agents && data.agents.length > 0) {
+                                fleetContainer.innerHTML = data.agents.map(agent => `
+                                <div class="flex items-center gap-4 p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                                    <div class="w-10 h-10 rounded-lg ${agent.color || 'bg-gray-700'} flex items-center justify-center text-xl text-white shrink-0">
+                                        <iconify-icon icon="${agent.icon}"></iconify-icon>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-white">${agent.name}</div>
+                                        <div class="text-xs text-gray-400">${agent.role}</div>
+                                    </div>
+                                    <span class="text-xs px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${agent.status}</span>
+                                </div>
+                            `).join('');
+                            } else {
+                                fleetContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No agents deployed.</div>';
+                            }
+                            hasLoadedFleet = true;
+                        } catch (e) {
+                            console.error(e);
+                            fleetContainer.innerHTML = '<div class="text-center text-red-400 py-8">Failed to load fleet. Check console.</div>';
+                        }
+                    }
+
+                    async function loadUsers() {
+                        const tbody = document.getElementById('users-table-body');
+                        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Loading users...</td></tr>';
+
+                        try {
+                            const res = await fetch('/api/admin/users');
+                            if (!res.ok) throw new Error('API Failed');
+                            const data = await res.json();
+                            usersData = data.users || [];
+                            renderUsers(usersData);
+                            hasLoadedUsers = true;
+                        } catch (e) {
+                            console.error(e);
+                            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-red-400">Failed to load users. check console.</td></tr>';
+                        }
+                    }
+
+                    function renderUsers(users) {
+                        const tbody = document.getElementById('users-table-body');
+                        if (users.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">No users found.</td></tr>';
+                            return;
+                        }
+
+                        tbody.innerHTML = users.map(u => `
+                        <tr class="hover:bg-white/[0.02] transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full ${u.color || 'bg-gray-700'} flex items-center justify-center text-xs font-bold text-white shadow-inner">
+                                        ${u.initials}
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-white text-sm">${u.name}</div>
+                                        <div class="text-xs text-gray-500">${u.email}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-gray-300 text-sm capitalize">${u.role}</td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getStatusColor(u.status)}">
+                                    ${u.status}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-300 text-sm capitalize">${u.plan}</td>
+                            <td class="px-6 py-4 text-right">
+                                <button class="text-gray-500 hover:text-white transition-colors p-1 rounded hover:bg-white/10">
+                                    <iconify-icon icon="solar:menu-dots-bold"></iconify-icon>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                    }
+
+                    function getStatusColor(status) {
+                        switch (status.toLowerCase()) {
+                            case 'active': return 'bg-emerald-500/10 text-emerald-400';
+                            case 'offline': return 'bg-gray-500/10 text-gray-400';
+                            case 'banned': return 'bg-red-500/10 text-red-400';
+                            default: return 'bg-blue-500/10 text-blue-400';
+                        }
+                    }
+            </script>
 
             <!-- Quick Links -->
             <div>
@@ -401,33 +744,258 @@
     </main>
 
     <script>
-        // Use same polling logic as before, just cleaner structure
-        async function refreshStats() {
-            const headers = { 'X-API-Key': 'ac_demo_admin' };
-            try {
-                const h = await fetch('/api/health').then(r => r.json());
-                const s = await fetch('/api/stats', { headers }).then(r => r.json());
-                const a = await fetch('/api/admin/armor/stats', { headers }).then(r => r.json());
+            // --- GLOBAL STATE ---
+            let usersData = [];
+            let hasLoadedUsers = false;
+            let hasLoadedFleet = false;
+            let hasLoadedFeedback = false;
 
-                if (h) {
-                    document.getElementById('health-metric').innerText = h.status.charAt(0).toUpperCase() + h.status.slice(1);
-                    document.getElementById('status-text').innerText = h.status === 'ok' ? 'Online' : 'Issues';
-                    document.getElementById('status-dot').className = h.status === 'ok' ? 'w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'w-1.5 h-1.5 rounded-full bg-rose-500';
+            let logCursor = null;
+            let logPollInterval = null;
+            let isPollingLogs = false;
+
+            // --- NAVIGATION ---
+            async function switchTab(tabName) {
+                // 1. Hide all views
+                document.querySelectorAll('.admin-view').forEach(el => el.classList.add('hidden'));
+                // 2. Show target view
+                document.getElementById('view-' + tabName).classList.remove('hidden');
+
+                // 3. Update Tab Styles
+                document.querySelectorAll('nav[aria-label="Tabs"] button').forEach(btn => {
+                    btn.classList.remove('border-emerald-500', 'text-emerald-500');
+                    btn.classList.add('border-transparent', 'text-gray-500');
+                });
+                const activeBtn = document.getElementById('tab-' + tabName);
+                activeBtn.classList.remove('border-transparent', 'text-gray-500');
+                activeBtn.classList.add('border-emerald-500', 'text-emerald-500');
+
+                // 4. Lazy Load Data
+                if (tabName === 'users' && !hasLoadedUsers) await loadUsers();
+                if (tabName === 'fleet' && !hasLoadedFleet) await loadFleet();
+                if (tabName === 'dashboard' && !hasLoadedFeedback) await loadFeedback();
+
+                // 5. Handle Logs Polling
+                if (tabName === 'logs') {
+                    startLogPolling();
+                } else {
+                    stopLogPolling();
+                }
+            }
+
+            // --- 1. USERS LOGIC ---
+            async function loadUsers() {
+                const tbody = document.getElementById('users-table-body');
+                tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Loading users...</td></tr>';
+
+                try {
+                    const res = await fetch('/api/admin/users');
+                    if (!res.ok) throw new Error('API Failed');
+                    const data = await res.json();
+                    usersData = data.users || [];
+                    renderUsers(usersData);
+                    hasLoadedUsers = true;
+                } catch (e) {
+                    console.error(e);
+                    tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-red-400">Failed to load users. check console.</td></tr>';
+                }
+            }
+
+            function renderUsers(users) {
+                const tbody = document.getElementById('users-table-body');
+                if (users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">No users found.</td></tr>';
+                    return;
                 }
 
-                if (s) {
-                    // Generic mock data if api/stats returns mock
-                    // We don't have exact id mapping for s values yet in this template, mostly visual
+                tbody.innerHTML = users.map(u => `
+                <tr class="hover:bg-white/[0.02] transition-colors">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full ${u.color || 'bg-gray-700'} flex items-center justify-center text-xs font-bold text-white shadow-inner">
+                                ${u.initials}
+                            </div>
+                            <div>
+                                <div class="font-medium text-white text-sm">${u.name}</div>
+                                <div class="text-xs text-gray-500">${u.email}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-gray-300 text-sm capitalize">${u.role}</td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getStatusColor(u.status)}">
+                            ${u.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-gray-300 text-sm capitalize">${u.plan}</td>
+                    <td class="px-6 py-4 text-right">
+                        <button class="text-gray-500 hover:text-white transition-colors p-1 rounded hover:bg-white/10">
+                            <iconify-icon icon="solar:menu-dots-bold"></iconify-icon>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            }
+
+            function getStatusColor(status) {
+                switch (status.toLowerCase()) {
+                    case 'active': return 'bg-emerald-500/10 text-emerald-400';
+                    case 'offline': return 'bg-gray-500/10 text-gray-400';
+                    case 'banned': return 'bg-red-500/10 text-red-400';
+                    default: return 'bg-blue-500/10 text-blue-400';
+                }
+            }
+
+            // --- 2. LOGS LOGIC ---
+            function startLogPolling() {
+                if (isPollingLogs) return;
+                isPollingLogs = true;
+                fetchLogs(); // Initial
+                logPollInterval = setInterval(fetchLogs, 3000); // 3s poll
+            }
+
+            function stopLogPolling() {
+                isPollingLogs = false;
+                if (logPollInterval) clearInterval(logPollInterval);
+            }
+
+            async function fetchLogs() {
+                try {
+                    let url = '/api/admin/logs';
+                    if (logCursor) url += `?since=${logCursor}`;
+
+                    const res = await fetch(url);
+                    if (!res.ok) return;
+
+                    const data = await res.json();
+                    if (data.logs && data.logs.length > 0) {
+                        renderLogs(data.logs);
+                        scrollToBottom();
+                    }
+                    if (data.cursor) logCursor = data.cursor;
+
+                } catch (e) {
+                    console.warn("Log Poll Error", e);
+                }
+            }
+
+            function renderLogs(newLogs) {
+                const consoleEl = document.getElementById('log-console');
+                if (consoleEl.innerHTML.includes('text-center')) {
+                    consoleEl.innerHTML = '';
                 }
 
-                document.getElementById('treasury-metric').innerText = '$' + (4863 + Math.floor(Math.random() * 50)).toLocaleString(); // Sim live change
+                const fragment = document.createDocumentFragment();
+                newLogs.forEach(log => {
+                    const row = document.createElement('div');
+                    row.className = "flex gap-2 font-mono hover:bg-white/[0.02]";
+                    row.innerHTML = `
+                    <span class="text-gray-600 w-16 shrink-0">[${log.timestampStr}]</span> 
+                    <span class="${log.levelColor} w-16 shrink-0 font-bold">${log.level}</span>
+                    <span class="text-gray-500 w-24 shrink-0 truncate border-r border-gray-800 pr-2">${log.source}</span>
+                    <span class="text-gray-300">${log.message}</span>
+                `;
+                    fragment.appendChild(row);
+                });
+                consoleEl.appendChild(fragment);
 
-                if (a && a.threats_blocked) document.getElementById('armor-blocked').innerText = a.threats_blocked;
+                while (consoleEl.children.length > 500) {
+                    consoleEl.removeChild(consoleEl.firstChild);
+                }
+            }
 
-            } catch (e) { console.log("Polling error (expected in dev without full backend)"); }
-        }
-        setInterval(refreshStats, 5000);
-        refreshStats();
+            function scrollToBottom() {
+                const consoleEl = document.getElementById('log-console');
+                consoleEl.scrollTop = consoleEl.scrollHeight;
+            }
+
+            // --- 3. FLEET LOGIC ---
+            async function loadFleet() {
+                const fleetContainer = document.getElementById('fleet-container');
+                fleetContainer.innerHTML = '<div class="text-center text-gray-500 py-8">Loading fleet data...</div>';
+                try {
+                    const res2 = await fetch('/api/agents');
+                    if (!res2.ok) throw new Error('API Failed');
+                    const data = await res2.json();
+
+                    if (data.agents && data.agents.length > 0) {
+                        fleetContainer.innerHTML = data.agents.map(agent => `
+                        <div class="flex items-center gap-4 p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                            <div class="w-10 h-10 rounded-lg ${agent.color || 'bg-gray-700'} flex items-center justify-center text-xl text-white shrink-0">
+                                <iconify-icon icon="${agent.icon}"></iconify-icon>
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-white">${agent.name}</div>
+                                <div class="text-xs text-gray-400">${agent.role}</div>
+                            </div>
+                            <span class="text-xs px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${agent.status}</span>
+                        </div>
+                    `).join('');
+                    } else {
+                        fleetContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No agents deployed.</div>';
+                    }
+                    hasLoadedFleet = true;
+                } catch (e) {
+                    console.error(e);
+                    fleetContainer.innerHTML = '<div class="text-center text-red-400 py-8">Failed to load fleet. Check console.</div>';
+                }
+            }
+
+            // --- 4. FEEDBACK LOGIC ---
+            async function loadFeedback() {
+                const widget = document.getElementById('feedback-widget');
+                try {
+                    const res = await fetch('/api/admin/feedback');
+                    const data = await res.json();
+                    const camp = data.feedback.campaign;
+
+                    if (camp) {
+                        widget.innerHTML = `
+                        <div>
+                            <div class="text-lg text-white font-light mb-1">${camp.name}</div>
+                            <p class="text-xs text-gray-400 mb-4">Post this payload to Moltbook to "Honey Pot" bot responses.</p>
+                            
+                            <div class="bg-black/30 rounded-lg p-3 border border-indigo-500/30 mb-3 relative group">
+                                <div class="text-[10px] text-indigo-400 font-mono whitespace-pre-wrap leading-relaxed">${camp.copyText}</div>
+                                <button onclick="copyCampaign('${camp.id}')" id="btn-${camp.id}" 
+                                    class="absolute top-2 right-2 bg-indigo-600 hover:bg-indigo-500 text-white p-1.5 rounded text-xs transition-colors flex items-center gap-1">
+                                    <iconify-icon icon="solar:copy-linear"></iconify-icon> Copy
+                                </button>
+                            </div>
+                            
+                            <div class="flex gap-2">
+                                <button class="flex-1 py-2 rounded-lg bg-gray-800 text-gray-400 text-xs hover:bg-gray-700">Skip Function</button>
+                                <button class="flex-1 py-2 rounded-lg bg-emerald-900/50 text-emerald-400 border border-emerald-500/20 text-xs hover:bg-emerald-900/80">Mark Deployed</button>
+                            </div>
+                        </div>
+                    `;
+
+                        window.copyCampaign = (id) => {
+                            navigator.clipboard.writeText(camp.copyText).then(() => {
+                                const btn = document.getElementById('btn-' + id);
+                                const original = btn.innerHTML;
+                                btn.innerHTML = '<iconify-icon icon="solar:check-circle-bold"></iconify-icon> Copied';
+                                btn.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
+                                setTimeout(() => {
+                                    btn.innerHTML = original;
+                                    btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-500');
+                                }, 2000);
+                            });
+                        };
+
+                    } else {
+                        widget.innerHTML = '<div class="text-gray-500 text-xs">No active campaigns.</div>';
+                    }
+
+                    hasLoadedFeedback = true;
+                } catch (e) {
+                    console.error(e);
+                    widget.innerHTML = '<div class="text-red-400 text-xs">Failed to load campaign.</div>';
+                }
+            }
+
+            // Init
+            document.addEventListener('DOMContentLoaded', loadFeedback);
     </script>
 </body>
 
