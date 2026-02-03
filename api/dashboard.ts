@@ -58,11 +58,6 @@ export async function dashboardHandler(req, res) {
                 hitRate: hitRate,
                 totalMonthlyCost: currentUsage.totalCreditsUsed || 0,
             },
-            activeWorkflows: [], // TODO: Wire to pipelines table if exists, or use mock for now.
-            // Actually, let's just query the 'pipelines' table if we have it?
-            // Checking imports... we don't have 'pipelines' imported. 
-            // Let's stick to 'decisions' as proxy for now or just return empty for "Clean UI".
-            // Better: Return empty array to solve "Clean UI" request immediately.
             activeWorkflows: [],
             opportunities: opportunities.map(op => ({
                 id: op.id,
