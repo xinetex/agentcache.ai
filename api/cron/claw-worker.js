@@ -1,5 +1,5 @@
 
-import { ClawService } from '../../src/services/ClawService.js';
+import { ClawTasksService } from '../../src/services/ClawTasksService.js';
 
 export default async function handler(req, res) {
     // 1. Security Check (Vercel Cron)
@@ -10,18 +10,18 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const apiToken = process.env.CLAW_API_TOKEN;
+    const apiToken = process.env.CLAWTASKS_API_KEY;
     if (!apiToken) {
-        console.error('CLAW_API_TOKEN missing');
-        return res.status(500).json({ error: 'Configuration Error' });
+        console.warn('[ClawWorker] CLAWTASKS_API_KEY missing - skipping');
+        return res.status(200).json({ status: 'Skipped - no API key' });
     }
 
     try {
-        const service = new ClawService(apiToken);
+        const service = new ClawTasksService(apiToken);
         await service.runOnce();
         res.status(200).json({ status: 'Job Completed' });
     } catch (error) {
-        console.error('Claw Cron Error:', error);
+        console.error('ClawTasks Cron Error:', error);
         res.status(500).json({ error: error.message });
     }
 }
