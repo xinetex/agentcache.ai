@@ -8,7 +8,7 @@ export class BillingManager {
         const key = apiKey || process.env.STRIPE_SECRET_KEY;
         if (key) {
             this.stripe = new Stripe(key, {
-                apiVersion: '2025-01-27.acacia', // Latest as of 2026 dev time
+                apiVersion: '2025-02-24.acacia', // Latest as of 2026 dev time
             });
             this.initialized = true;
         } else {

@@ -42,7 +42,7 @@ memoryRouter.post('/store', async (c) => {
   }
 
   const apiKey = c.get('apiKey');
-  const keyHash = apiKey ? createHash('sha256').update(apiKey).digest('hex') : null;
+  const keyHash = apiKey ? createHash('sha256').update(apiKey as string).digest('hex') : null;
 
   const id = uuidv4();
   const now = Date.now();

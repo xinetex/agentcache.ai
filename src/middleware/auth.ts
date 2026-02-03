@@ -103,7 +103,7 @@ export async function authenticateApiKey(c: any) {
         // Check Redis cache first (5 min TTL)
         const cachedTier = await redis.get(cacheKey);
         if (cachedTier) {
-            tier = cachedTier;
+            tier = cachedTier as string;
             tierFeatures = getTierFeatures(tier);
         } else {
             // Query Postgres with Drizzle (Join api_keys -> organizations to get tier)

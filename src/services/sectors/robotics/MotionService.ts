@@ -79,7 +79,7 @@ export class MotionService {
         try {
             const cached = await redis.get(key);
             if (cached) {
-                const result = JSON.parse(cached);
+                const result = JSON.parse(cached as unknown as string);
                 const latency = Date.now() - startTime;
 
                 // Telemetry (Async fire-and-forget)
@@ -187,10 +187,10 @@ export class MotionService {
         ]);
 
         return {
-            total_requests: parseInt(total || '0'),
-            cache_hits: parseInt(hits || '0'),
-            saved_time_ms: parseInt(savedMs || '0'),
-            latest_path: latest ? JSON.parse(latest) : null
+            total_requests: parseInt((total as unknown as string) || '0'),
+            cache_hits: parseInt((hits as unknown as string) || '0'),
+            saved_time_ms: parseInt((savedMs as unknown as string) || '0'),
+            latest_path: latest ? JSON.parse(latest as unknown as string) : null
         };
     }
 }

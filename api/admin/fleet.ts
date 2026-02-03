@@ -3,7 +3,7 @@ import { db } from '../../src/db/client.js';
 import { agents, agentRegistry, users } from '../../src/db/schema.js';
 import { eq } from 'drizzle-orm';
 
-export const config = { runtime: 'edge' };
+export const config = { runtime: 'nodejs' };
 
 export default async function handler(req) {
     const { method } = req;

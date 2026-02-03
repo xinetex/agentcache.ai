@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data | AgentCache</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+        }
+    </style>
+</head>
+
+<body class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col shrink-0 z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-100">
+            <a href="/user-dashboard.html"
+                class="flex items-center gap-2 text-gray-900 font-medium hover:text-blue-600">
+                <iconify-icon icon="solar:arrow-left-linear"></iconify-icon> Back
+            </a>
+        </div>
+        <nav class="flex-1 p-4 space-y-1">
+            <a href="/user-dashboard.html"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-lg">Home</a>
+            <a href="/data.html"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg">Data &
+                Context</a>
+            <div class="pt-4 pb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Sources</div>
+            <a href="#"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-lg">
+                <iconify-icon icon="solar:folder-with-files-linear" class="text-lg"></iconify-icon> My Uploads
+            </a>
+            <a href="#"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-lg">
+                <iconify-icon icon="solar:cloud-storage-linear" class="text-lg"></iconify-icon> Connected DBs
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col bg-white">
+
+        <!-- Header -->
+        <header class="h-16 border-b border-gray-200 flex items-center justify-between px-8 bg-white z-10 sticky top-0">
+            <h1 class="text-xl font-bold text-gray-900">Data Explorer</h1>
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <iconify-icon icon="solar:magnifer-linear"
+                        class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></iconify-icon>
+                    <input type="text" placeholder="Search files..."
+                        class="h-9 pl-10 pr-4 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all w-64">
+                </div>
+                <button
+                    class="h-9 px-4 inline-flex items-center gap-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all shadow-sm">
+                    <iconify-icon icon="solar:upload-linear" class="text-lg"></iconify-icon>
+                    Upload File
+                </button>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="flex-1 overflow-y-auto p-8">
+            <div class="max-w-6xl mx-auto">
+
+                <!-- Breadcrumbs -->
+                <div class="flex items-center gap-2 text-sm text-gray-500 mb-6">
+                    <span class="hover:text-gray-900 cursor-pointer">Root</span>
+                    <span class="text-gray-300">/</span>
+                    <span class="font-medium text-gray-900">Project Alpha</span>
+                </div>
+
+                <!-- File Grid/List -->
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider w-8">
+                                    <input type="checkbox"
+                                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                </th>
+                                <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Name
+                                </th>
+                                <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Type
+                                </th>
+                                <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Size
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-right">
+                                    Modified</th>
+                                <th class="w-10"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <!-- Folder -->
+                            <tr class="hover:bg-gray-50 transition-colors group cursor-pointer">
+                                <td class="px-6 py-4"><input type="checkbox"
+                                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                </td>
+                                <td class="px-6 py-4 flex items-center gap-3">
+                                    <iconify-icon icon="solar:folder-2-bold-duotone"
+                                        class="text-2xl text-blue-400"></iconify-icon>
+                                    <span class="text-sm font-medium text-gray-900">Financial Reports</span>
+                                </td>
+                                <td class="px-6 py-4 text-xs text-gray-500">Folder</td>
+                                <td class="px-6 py-4 text-xs text-gray-500">--</td>
+                                <td class="px-6 py-4 text-xs text-gray-500 text-right">Oct 24, 2025</td>
+                                <td class="px-4 text-gray-400 hover:text-gray-600"><iconify-icon
+                                        icon="solar:menu-dots-linear" width="20"></iconify-icon></td>
+                            </tr>
+
+                            <!-- PDF -->
+                            <tr class="hover:bg-gray-50 transition-colors group cursor-pointer">
+                                <td class="px-6 py-4"><input type="checkbox"
+                                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                </td>
+                                <td class="px-6 py-4 flex items-center gap-3">
+                                    <iconify-icon icon="solar:file-text-bold-duotone"
+                                        class="text-2xl text-red-400"></iconify-icon>
+                                    <span class="text-sm font-medium text-gray-900">Q3_2025_Overview.pdf</span>
+                                </td>
+                                <td class="px-6 py-4 text-xs text-gray-500">PDF Document</td>
+                                <td class="px-6 py-4 text-xs text-gray-500">2.4 MB</td>
+                                <td class="px-6 py-4 text-xs text-gray-500 text-right">2h ago</td>
+                                <td class="px-4 text-gray-400 hover:text-gray-600"><iconify-icon
+                                        icon="solar:menu-dots-linear" width="20"></iconify-icon></td>
+                            </tr>
+
+                            <!-- CSV -->
+                            <tr class="hover:bg-gray-50 transition-colors group cursor-pointer">
+                                <td class="px-6 py-4"><input type="checkbox"
+                                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                </td>
+                                <td class="px-6 py-4 flex items-center gap-3">
+                                    <iconify-icon icon="solar:file-text-bold-duotone"
+                                        class="text-2xl text-emerald-400"></iconify-icon>
+                                    <span class="text-sm font-medium text-gray-900">vendor_list_export.csv</span>
+                                </td>
+                                <td class="px-6 py-4 text-xs text-gray-500">CSV Spreadsheet</td>
+                                <td class="px-6 py-4 text-xs text-gray-500">145 KB</td>
+                                <td class="px-6 py-4 text-xs text-gray-500 text-right">1d ago</td>
+                                <td class="px-4 text-gray-400 hover:text-gray-600"><iconify-icon
+                                        icon="solar:menu-dots-linear" width="20"></iconify-icon></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+    </main>
+
+    <!-- Hidden File Input -->
+    <input type="file" id="file-upload" class="hidden">
+
+    <script>
+        const API_KEY = localStorage.getItem('agent_api_key') || 'ac_demo_user';
+        const fileListContainer = document.querySelector('tbody');
+        const uploadBtn = document.querySelector('button.bg-blue-600');
+        const fileInput = document.getElementById('file-upload');
+
+        // Utils
+        const formatSize = (bytes) => {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        };
+
+        const formatDate = (ts) => {
+            const date = new Date(ts);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        };
+
+        const getIconForType = (type) => {
+            if (type.includes('pdf')) return 'solar:file-text-bold-duotone text-red-400';
+            if (type.includes('csv') || type.includes('sheet')) return 'solar:file-text-bold-duotone text-emerald-400';
+            if (type.includes('image')) return 'solar:gallery-bold-duotone text-purple-400';
+            return 'solar:file-bold-duotone text-blue-400';
+        };
+
+        // 1. Fetch & Render Files
+        async function loadFiles() {
+            try {
+                const res = await fetch('/api/assets/list', {
+                    headers: { 'x-api-key': API_KEY }
+                });
+                const data = await res.json();
+
+                if (data.files && data.files.length > 0) {
+                    fileListContainer.innerHTML = data.files.map(file => `
+                        <tr class="hover:bg-gray-50 transition-colors group cursor-pointer animated fadeIn">
+                            <td class="px-6 py-4"><input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"></td>
+                            <td class="px-6 py-4 flex items-center gap-3">
+                                <iconify-icon icon="${getIconForType(file.type)}" class="text-2xl"></iconify-icon>
+                                <span class="text-sm font-medium text-gray-900 truncate max-w-[200px]">${file.name}</span>
+                            </td>
+                            <td class="px-6 py-4 text-xs text-gray-500">${file.type.split('/')[1]?.toUpperCase() || 'FILE'}</td>
+                            <td class="px-6 py-4 text-xs text-gray-500">${formatSize(file.size)}</td>
+                            <td class="px-6 py-4 text-xs text-gray-500 text-right">${formatDate(file.timestamp)}</td>
+                            <td class="px-4 text-gray-400 hover:text-gray-600 text-right">
+                                <a href="${file.url}" target="_blank" title="Download from IPFS">
+                                    <iconify-icon icon="solar:download-linear" width="20"></iconify-icon>
+                                </a>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    // Keep placeholder if empty, or show empty state
+                    // For now, let's keep the hardcoded ones as "Examples" if list is empty?
+                    // No, let's replace. If empty, show message.
+                   if(data.files.length === 0) {
+                        fileListContainer.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-gray-400 text-sm">No files found. Upload one to get started.</td></tr>`;
+                   }
+                }
+            } catch (err) {
+                console.error('Failed to load files:', err);
+            }
+        }
+
+        // 2. Upload Handler
+        uploadBtn.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Optimistic UI (Show loading state)
+            const loadingRow = document.createElement('tr');
+            loadingRow.innerHTML = `
+                <td colspan="6" class="px-6 py-4 bg-blue-50 text-blue-700 text-sm font-medium animate-pulse">
+                    <iconify-icon icon="line-md:loading-twotone-loop" class="mr-2"></iconify-icon>
+                    Uploading ${file.name}...
+                </td>
+            `;
+            fileListContainer.prepend(loadingRow);
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const res = await fetch('/api/assets/upload', {
+                    method: 'POST',
+                    headers: { 'x-api-key': API_KEY },
+                    body: formData
+                });
+                
+                const result = await res.json();
+                
+                loadingRow.remove();
+
+                if (result.success) {
+                    loadFiles(); // Refresh list
+                } else {
+                    alert('Upload failed: ' + (result.error || 'Unknown error'));
+                }
+            } catch (err) {
+                loadingRow.remove();
+                console.error(err);
+                alert('Upload failed. Check console.');
+            }
+        });
+
+        // Initialize
+        loadFiles();
+
+    </script>
+</body>
+
+</html>

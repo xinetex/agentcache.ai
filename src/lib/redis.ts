@@ -66,6 +66,15 @@ class MockRedis {
     return [];
   }
 
+  async incr(key: string) {
+    return this.incrby(key, 1);
+  }
+
+  async llen(key: string) {
+    const list = this.store.get(key);
+    return Array.isArray(list) ? list.length : 0;
+  }
+
 
   pipeline() {
     // Return a mock pipeline that just executes immediately or buffers

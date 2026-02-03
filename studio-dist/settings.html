@@ -1,853 +1,425 @@
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>Dashboard Settings</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link id="all-fonts-link-font-geist" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-geist">.font-geist { font-family: 'Geist', sans-serif !important; }</style><link id="all-fonts-link-font-roboto" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-roboto">.font-roboto { font-family: 'Roboto', sans-serif !important; }</style><link id="all-fonts-link-font-montserrat" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-montserrat">.font-montserrat { font-family: 'Montserrat', sans-serif !important; }</style><link id="all-fonts-link-font-poppins" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-poppins">.font-poppins { font-family: 'Poppins', sans-serif !important; }</style><link id="all-fonts-link-font-playfair" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;900&amp;display=swap"><style id="all-fonts-style-font-playfair">.font-playfair { font-family: 'Playfair Display', serif !important; }</style><link id="all-fonts-link-font-instrument-serif" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:wght@400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-instrument-serif">.font-instrument-serif { font-family: 'Instrument Serif', serif !important; }</style><link id="all-fonts-link-font-merriweather" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&amp;display=swap"><style id="all-fonts-style-font-merriweather">.font-merriweather { font-family: 'Merriweather', serif !important; }</style><link id="all-fonts-link-font-bricolage" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-bricolage">.font-bricolage { font-family: 'Bricolage Grotesque', sans-serif !important; }</style><link id="all-fonts-link-font-jakarta" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap"><style id="all-fonts-style-font-jakarta">.font-jakarta { font-family: 'Plus Jakarta Sans', sans-serif !important; }</style><link id="all-fonts-link-font-manrope" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap"><style id="all-fonts-style-font-manrope">.font-manrope { font-family: 'Manrope', sans-serif !important; }</style><link id="all-fonts-link-font-space-grotesk" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-space-grotesk">.font-space-grotesk { font-family: 'Space Grotesk', sans-serif !important; }</style><link id="all-fonts-link-font-work-sans" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;800&amp;display=swap"><style id="all-fonts-style-font-work-sans">.font-work-sans { font-family: 'Work Sans', sans-serif !important; }</style><link id="all-fonts-link-font-pt-serif" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&amp;display=swap"><style id="all-fonts-style-font-pt-serif">.font-pt-serif { font-family: 'PT Serif', serif !important; }</style><link id="all-fonts-link-font-geist-mono" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-geist-mono">.font-geist-mono { font-family: 'Geist Mono', monospace !important; }</style><link id="all-fonts-link-font-space-mono" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;display=swap"><style id="all-fonts-style-font-space-mono">.font-space-mono { font-family: 'Space Mono', monospace !important; }</style><link id="all-fonts-link-font-quicksand" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-quicksand">.font-quicksand { font-family: 'Quicksand', sans-serif !important; }</style><link id="all-fonts-link-font-nunito" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&amp;display=swap"><style id="all-fonts-style-font-nunito">.font-nunito { font-family: 'Nunito', sans-serif !important; }</style>
-  </head>
-  <body class="min-h-screen bg-slate-950 text-slate-100 antialiased flex">
-    <div class="flex min-h-screen w-full bg-slate-950 text-slate-100">
-      <!-- Sidebar -->
-      <aside class="hidden lg:flex lg:flex-col lg:w-64 border-r border-slate-800/80 bg-slate-950/90 backdrop-blur">
-        <div class="flex items-center justify-between px-6 py-5 border-b border-slate-800/80">
-          <div class="flex items-center gap-2">
-            <div class="h-7 w-7 rounded-md bg-sky-500/20 border border-sky-400/40 flex items-center justify-center">
-              <span class="text-sm font-semibold tracking-tight text-sky-300">AP</span>
-            </div>
-            <div class="flex flex-col">
-              <span class="text-base font-semibold text-slate-50 tracking-tight">AgentCache</span>
-              <span class="text-xs font-medium text-slate-500 tracking-tight">Inference Control</span>
-            </div>
-          </div>
-        </div>
 
-        <nav class="flex-1 overflow-y-auto">
-          <div class="px-3 pt-4 pb-6 space-y-2 text-sm">
-            <div class="px-3 text-[0.7rem] font-medium uppercase tracking-[0.16em] text-slate-500">
-              Main
-            </div>
-            <a href="/dashboard.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm font-medium text-slate-400 hover:bg-slate-900/80 hover:text-slate-100">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="layout-dashboard" class="lucide lucide-layout-dashboard w-4 h-4 stroke-[1.5] text-sky-300"><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect></svg>
-              <span>Dashboard</span>
-            </a>
-            <a href="/pipelines.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm text-slate-400 hover:bg-slate-900/80 hover:text-slate-100">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="workflow" class="lucide lucide-workflow w-4 h-4 stroke-[1.5] text-slate-500"><rect width="8" height="8" x="3" y="3" rx="2"></rect><path d="M7 11v4a2 2 0 0 0 2 2h4"></path><rect width="8" height="8" x="13" y="13" rx="2"></rect></svg>
-              <span>Pipelines</span>
-            </a>
-            <a href="/studio.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm text-slate-400 hover:bg-slate-900/80 hover:text-slate-100">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="workflow" class="lucide lucide-workflow w-4 h-4 stroke-[1.5] text-slate-500"><rect width="8" height="8" x="3" y="3" rx="2"></rect><path d="M7 11v4a2 2 0 0 0 2 2h4"></path><rect width="8" height="8" x="13" y="13" rx="2"></rect></svg>
-              <span>Studio</span>
-            </a>
-            <a href="/cognitive-universe.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm text-slate-400 hover:bg-slate-900/80 hover:text-slate-100">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="brain" class="lucide lucide-brain w-4 h-4 stroke-[1.5] text-slate-500"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"></path><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"></path></svg>
-              <span>Cognitive Universe</span>
-            </a>
-            <a href="/analytics.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm text-slate-400 hover:bg-slate-900/80 hover:text-slate-100">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="activity" class="lucide lucide-activity w-4 h-4 stroke-[1.5] text-slate-500"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path></svg>
-              <span>Analytics</span>
-            </a>
-          </div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings | AgentCache</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f9fafb;
+    }
 
-          <div class="px-3 pt-2 space-y-2 text-sm">
-            <div class="px-3 text-[0.7rem] font-medium uppercase tracking-[0.16em] text-slate-500">
-              Settings
-            </div>
-            <a href="/settings.html" class="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm font-medium bg-slate-900 text-slate-50">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sliders" class="lucide lucide-sliders w-4 h-4 stroke-[1.5] text-slate-50"><path d="M10 8h4"></path><path d="M12 21v-9"></path><path d="M12 8V3"></path><path d="M17 16h4"></path><path d="M19 12V3"></path><path d="M19 21v-5"></path><path d="M3 14h4"></path><path d="M5 10V3"></path><path d="M5 21v-7"></path></svg>
-              <span>Settings</span>
-            </a>
-          </div>
-        </nav>
+    .tab-active {
+      background-color: #f3f4f6;
+      color: #111827;
+      border-right: 3px solid #0ea5e9;
+    }
 
-        <div class="border-t border-slate-800/80 p-4 text-xs">
-          <div class="flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2">
-              <div id="sidebarInitials" class="h-7 w-7 rounded-full bg-slate-800 flex items-center justify-center text-[0.7rem] font-semibold tracking-tight">
-                JD
-              </div>
-              <div class="flex flex-col">
-                <span id="sidebarName" class="text-xs font-medium text-slate-100">Jane Doe</span>
-                <span id="sidebarEmail" class="text-[0.7rem] text-slate-500">jane@acme.ai</span>
-              </div>
-            </div>
-            <button id="logoutBtn" class="rounded-md border border-slate-800 bg-slate-900/80 hover:bg-slate-900 text-slate-300 px-2 py-1 text-[0.7rem] font-medium">
-              Logout
-            </button>
-          </div>
-        </div>
-      </aside>
+    .tab-inactive {
+      color: #6b7280;
+    }
 
-      <!-- Main Content -->
-      <div class="flex-1 flex flex-col">
-        <!-- Top bar -->
-        <header class="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur flex items-center justify-between px-4 sm:px-6 py-3">
-          <div class="flex items-center gap-3">
-            <button class="lg:hidden inline-flex items-center justify-center rounded-md border border-slate-800 bg-slate-900/80 text-slate-200 h-9 w-9">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="menu" class="lucide lucide-menu w-4 h-4 stroke-[1.5]"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg>
-            </button>
-            <div class="flex flex-col">
-              <div class="flex items-center gap-2">
-                <h1 class="text-xl sm:text-2xl font-semibold tracking-tight text-slate-50">
-                  Settings
-                </h1>
-                <span class="inline-flex items-center gap-1 rounded-full border border-slate-700 bg-slate-900/80 px-2.5 py-0.5 text-xs font-medium text-slate-300">
-                  /dashboard/settings
-                </span>
-              </div>
-              <span class="text-sm text-slate-500">
-                Manage API keys, sectors, team access, and usage limits
-              </span>
-            </div>
-          </div>
+    .tab-inactive:hover {
+      background-color: #f9fafb;
+      color: #374151;
+    }
+  </style>
+</head>
 
-          <div class="flex items-center gap-2 sm:gap-3">
-            <button class="inline-flex items-center gap-1.5 rounded-md border border-slate-800 bg-slate-900/80 hover:bg-slate-900 px-3 py-1.5 text-xs sm:text-sm font-medium text-slate-100">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="save" class="lucide lucide-save w-4 h-4 stroke-[1.5] text-slate-300"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"></path><path d="M17 21v-8H7v8"></path><path d="M7 3v5h8"></path></svg>
-              <span class="hidden sm:inline">Save changes</span>
-              <span class="sm:hidden">Save</span>
-            </button>
-          </div>
-        </header>
+<body class="flex h-screen overflow-hidden">
 
-        <!-- Content -->
-        <main class="flex-1 overflow-y-auto">
-          <div class="max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-7 space-y-6 sm:space-y-8">
-            
-            <!-- Profile & Security Section (Full Width) -->
-            <section class="space-y-4">
-              <div class="rounded-lg border border-slate-800 bg-slate-950/60 p-4">
-                <div class="flex items-center gap-2 mb-4">
-                  <div class="h-7 w-7 rounded-md bg-violet-500/15 border border-violet-400/60 flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 stroke-[1.5] text-violet-200"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                  </div>
-                  <div>
-                    <h2 class="text-base font-semibold tracking-tight text-slate-100">Profile & Security</h2>
-                    <p class="text-sm text-slate-500">Manage your account details and password</p>
-                  </div>
-                </div>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <!-- Profile Info -->
-                  <div class="space-y-4">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-300 mb-2">Full Name</label>
-                      <input type="text" id="profileFullName" class="w-full rounded-md border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500" placeholder="Your name" />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-slate-300 mb-2">Email</label>
-                      <input type="email" id="profileEmail" disabled class="w-full rounded-md border border-slate-700 bg-slate-900/50 px-3 py-2 text-sm text-slate-400 cursor-not-allowed" />
-                      <p class="text-xs text-slate-500 mt-1">Email cannot be changed</p>
-                    </div>
-                    <button id="updateProfileBtn" class="inline-flex items-center gap-1.5 rounded-md bg-sky-600 hover:bg-sky-500 px-4 py-2 text-sm font-medium text-white">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"></path><path d="M17 21v-8H7v8"></path><path d="M7 3v5h8"></path></svg>
-                      Update Profile
-                    </button>
-                  </div>
-                  
-                  <!-- Change Password -->
-                  <div class="space-y-4">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-300 mb-2">Current Password</label>
-                      <input type="password" id="currentPassword" class="w-full rounded-md border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500" placeholder="Enter current password" />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-slate-300 mb-2">New Password</label>
-                      <input type="password" id="newPassword" class="w-full rounded-md border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500" placeholder="Enter new password" />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-slate-300 mb-2">Confirm New Password</label>
-                      <input type="password" id="confirmPassword" class="w-full rounded-md border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500" placeholder="Confirm new password" />
-                    </div>
-                    <button id="changePasswordBtn" class="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 px-4 py-2 text-sm font-medium text-white">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
-                      Change Password
-                    </button>
-                  </div>
-                </div>
-                
-                <!-- Status Message -->
-                <div id="profileMessage" class="hidden mt-4 p-3 rounded-md"></div>
-              </div>
-            </section>
-            
-            <!-- Settings Grid -->
-            <section class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-              <!-- API Keys -->
-              <div class="space-y-3 rounded-lg border border-slate-800 bg-slate-950/60 p-4">
-                <div class="flex items-center justify-between gap-2">
-                  <div class="flex items-center gap-2">
-                    <div class="h-7 w-7 rounded-md bg-sky-500/15 border border-sky-400/50 flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="key-round" class="lucide lucide-key-round w-4 h-4 stroke-[1.5] text-sky-200"><path d="m21 2-2 2"></path><path d="m19 4-3.5 3.5"></path><circle cx="7.5" cy="15.5" r="3.5"></circle><path d="m10 13 6-6"></path><path d="m10 13 4 4"></path><path d="m10 13 3 3"></path></svg>
-                    </div>
-                    <div>
-                      <h2 class="text-base font-semibold tracking-tight text-slate-100">
-                        API Keys
-                      </h2>
-                      <p class="text-sm text-slate-500">
-                        Generate, revoke, and view keys for your workspace
-                      </p>
-                    </div>
-                  </div>
-                  <button class="inline-flex items-center gap-1.5 rounded-md border border-sky-500/60 bg-sky-500/15 hover:bg-sky-500/25 px-2.5 py-1.5 text-xs font-medium text-sky-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="plus" class="lucide lucide-plus w-3.5 h-3.5 stroke-[1.5]"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
-                    New key
-                  </button>
-                </div>
-
-                <div class="space-y-2 text-sm">
-                  <div class="flex items-center justify-between gap-2 rounded-md border border-slate-800/80 bg-slate-900/60 px-3 py-2">
-                    <div class="flex flex-col">
-                      <span class="text-xs font-medium text-slate-300 uppercase tracking-[0.14em]">
-                        Server-side key
-                      </span>
-                      <span class="mt-1 text-slate-100 font-geist-mono text-sm">
-                        sk_live_2f9c...a7b9
-                      </span>
-                      <span class="text-xs text-slate-500 mt-1">
-                        Created 12 days ago · Last used 3 min ago
-                      </span>
-                    </div>
-                    <div class="flex flex-col items-end gap-1">
-                      <button class="inline-flex items-center gap-1 rounded-md border border-slate-700 bg-slate-900/80 hover:bg-slate-900 px-2 py-1 text-xs text-slate-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="copy" class="lucide lucide-copy w-3.5 h-3.5 stroke-[1.5]"><rect width="14" height="14" x="8" y="8" rx="2"></rect><path d="M4 16V6a2 2 0 0 1 2-2h10"></path></svg>
-                        Copy
-                      </button>
-                      <button class="inline-flex items-center gap-1 text-[0.7rem] text-rose-300 hover:text-rose-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="trash-2" class="lucide lucide-trash-2 w-3 h-3 stroke-[1.5]"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>
-                        Revoke
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="flex items-center justify-between gap-2 rounded-md border border-slate-800/80 bg-slate-950/60 px-3 py-2">
-                    <div class="flex flex-col">
-                      <span class="text-xs font-medium text-slate-300 uppercase tracking-[0.14em]">
-                        Client key
-                      </span>
-                      <span class="mt-1 text-slate-100 font-geist-mono text-sm">
-                        pk_public_9c1d...f0e2
-                      </span>
-                      <span class="text-xs text-slate-500 mt-1">
-                        Created 3 days ago · Never used
-                      </span>
-                    </div>
-                    <div class="flex flex-col items-end gap-1">
-                      <button class="inline-flex items-center gap-1 rounded-md border border-slate-700 bg-slate-900/80 hover:bg-slate-900 px-2 py-1 text-xs text-slate-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="copy" class="lucide lucide-copy w-3.5 h-3.5 stroke-[1.5]"><rect width="14" height="14" x="8" y="8" rx="2"></rect><path d="M4 16V6a2 2 0 0 1 2-2h10"></path></svg>
-                        Copy
-                      </button>
-                      <button class="inline-flex items-center gap-1 text-[0.7rem] text-rose-300 hover:text-rose-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="trash-2" class="lucide lucide-trash-2 w-3 h-3 stroke-[1.5]"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>
-                        Revoke
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Sector configuration -->
-              <div class="space-y-3 rounded-lg border border-slate-800 bg-slate-950/60 p-4">
-                <div class="flex items-center justify-between gap-2">
-                  <div class="flex items-center gap-2">
-                    <div class="h-7 w-7 rounded-md bg-emerald-500/15 border border-emerald-400/60 flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="building-2" class="lucide lucide-building-2 w-4 h-4 stroke-[1.5] text-emerald-200"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18"></path><path d="M6 18h12"></path><path d="M10 6h.01"></path><path d="M14 6h.01"></path><path d="M10 10h.01"></path><path d="M14 10h.01"></path><path d="M10 14h.01"></path><path d="M14 14h.01"></path><path d="M10 18v4"></path><path d="M14 18v4"></path></svg>
-                    </div>
-                    <div>
-                      <h2 class="text-base font-semibold tracking-tight text-slate-100">
-                        Sector configuration
-                      </h2>
-                      <p class="text-sm text-slate-500">
-                        Enable sector-specific controls and policies
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="space-y-3 text-sm">
-                  <div class="flex items-center justify-between gap-2 rounded-md border border-slate-800/80 bg-slate-900/60 px-3 py-2">
-                    <div>
-                      <div class="flex items-center gap-2">
-                        <span class="text-slate-100">Healthcare</span>
-                        <span class="text-[0.7rem] text-emerald-300 border border-emerald-500/40 bg-emerald-500/10 rounded-full px-2 py-0.5">
-                          HIPAA
-                        </span>
-                      </div>
-                      <p class="text-xs text-slate-500 mt-1">
-                        PHI redaction, stricter logging, region locking
-                      </p>
-                    </div>
-                    <button class="inline-flex items-center justify-between rounded-full bg-emerald-500/20 border border-emerald-500/60 w-11 h-6 px-1">
-                      <span class="text-[0.6rem] text-emerald-200">On</span>
-                      <span class="h-4 w-4 rounded-full bg-emerald-400 shadow-sm"></span>
-                    </button>
-                  </div>
-
-                  <div class="flex items-center justify-between gap-2 rounded-md border border-slate-800/80 bg-slate-950/60 px-3 py-2">
-                    <div>
-                      <div class="flex items-center gap-2">
-                        <span class="text-slate-100">Finance</span>
-                        <span class="text-[0.7rem] text-sky-300 border border-sky-500/40 bg-sky-500/10 rounded-full px-2 py-0.5">
-                          PCI / SOX
-                        </span>
-                      </div>
-                      <p class="text-xs text-slate-500 mt-1">
-                        PII masking, audit trails, model selection constraints
-                      </p>
-                    </div>
-                    <button class="inline-flex items-center justify-start rounded-full bg-slate-900 border border-slate-600 w-11 h-6 px-1">
-                      <span class="h-4 w-4 rounded-full bg-slate-500 shadow-sm"></span>
-                    </button>
-                  </div>
-
-                  <div class="flex items-center justify-between gap-2 rounded-md border border-slate-800/80 bg-slate-950/60 px-3 py-2">
-                    <div>
-                      <span class="text-slate-100">Legal</span>
-                      <p class="text-xs text-slate-500 mt-1">
-                        Document retention, privileged data safeguards
-                      </p>
-                    </div>
-                    <button class="inline-flex items-center justify-start rounded-full bg-slate-900 border border-slate-600 w-11 h-6 px-1">
-                      <span class="h-4 w-4 rounded-full bg-slate-500 shadow-sm"></span>
-                    </button>
-                  </div>
-
-                  <div class="flex items-center justify-between gap-2 rounded-md border border-dashed border-slate-800/80 bg-slate-950/40 px-3 py-2">
-                    <div>
-                      <span class="text-slate-200">Other sectors</span>
-                      <p class="text-xs text-slate-500 mt-1">
-                        Add custom sector presets and controls
-                      </p>
-                    </div>
-                    <button class="inline-flex items-center gap-1 rounded-md border border-slate-700 bg-slate-900/80 hover:bg-slate-900 px-2 py-1 text-xs text-slate-200">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="plus" class="lucide lucide-plus w-3.5 h-3.5 stroke-[1.5]"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
-                      Add sector
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Team management -->
-              <div class="space-y-3 rounded-lg border border-slate-800 bg-slate-950/60 p-4">
-                <div class="flex items-center justify-between gap-2">
-                  <div class="flex items-center gap-2">
-                    <div class="h-7 w-7 rounded-md bg-sky-500/15 border border-sky-400/50 flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="users" class="lucide lucide-users w-4 h-4 stroke-[1.5] text-sky-200"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    </div>
-                    <div>
-                      <h2 class="text-base font-semibold tracking-tight text-slate-100">
-                        Team management
-                      </h2>
-                      <p class="text-sm text-slate-500">
-                        Invite teammates and manage roles
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="space-y-3 text-sm">
-                  <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch">
-                    <input type="email" placeholder="name@company.com" class="flex-1 rounded-md border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500" />
-                    <button class="inline-flex items-center justify-center gap-1.5 rounded-md border border-sky-500/60 bg-sky-500/15 hover:bg-sky-500/25 px-3 py-2 text-xs font-medium text-sky-100">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="send" class="lucide lucide-send w-3.5 h-3.5 stroke-[1.5]"><path d="m22 2-7 20-4-9-9-4Z"></path><path d="M22 2 11 13"></path></svg>
-                      Invite
-                    </button>
-                  </div>
-
-                  <div class="border-t border-slate-800/80 pt-3 space-y-2">
-                    <div class="flex items-center justify-between text-xs text-slate-500">
-                      <span>Members</span>
-                      <span>Role</span>
-                    </div>
-
-                    <div class="flex items-center justify-between gap-2 rounded-md border border-slate-800/80 bg-slate-900/60 px-3 py-2">
-                      <div class="flex items-center gap-2">
-                        <div id="teamInitials" class="h-7 w-7 rounded-full bg-slate-800 flex items-center justify-center text-[0.7rem] font-semibold tracking-tight">
-                          JD
-                        </div>
-                        <div class="flex flex-col">
-                          <span id="teamName" class="text-sm text-slate-100">Jane Doe</span>
-                          <span id="teamEmail" class="text-xs text-slate-500">jane@acme.ai</span>
-                        </div>
-                      </div>
-                      <div class="flex items-center gap-2">
-                        <select class="rounded-md border border-slate-700 bg-slate-950/80 text-xs text-slate-100 px-2 py-1 pr-6">
-                          <option>Owner</option>
-                          <option>Admin</option>
-                          <option>Editor</option>
-                          <option>Viewer</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div class="flex items-center justify-between gap-2 rounded-md border border-slate-800/80 bg-slate-950/60 px-3 py-2">
-                      <div class="flex items-center gap-2">
-                        <div class="h-7 w-7 rounded-full bg-slate-800 flex items-center justify-center text-[0.7rem] font-semibold tracking-tight">
-                          MS
-                        </div>
-                        <div class="flex flex-col">
-                          <span class="text-sm text-slate-100">Michael Smith</span>
-                          <span class="text-xs text-slate-500">michael@acme.ai</span>
-                        </div>
-                      </div>
-                      <div class="flex items-center gap-2">
-                        <select class="rounded-md border border-slate-700 bg-slate-950/80 text-xs text-slate-100 px-2 py-1 pr-6">
-                          <option>Admin</option>
-                          <option>Editor</option>
-                          <option>Viewer</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div class="flex items-center justify-between gap-2 rounded-md border border-slate-800/80 bg-slate-950/60 px-3 py-2">
-                      <div class="flex items-center gap-2">
-                        <div class="h-7 w-7 rounded-full bg-slate-800 flex items-center justify-center text-[0.7rem] font-semibold tracking-tight">
-                          AK
-                        </div>
-                        <div class="flex flex-col">
-                          <span class="text-sm text-slate-100">Amir Khan</span>
-                          <span class="text-xs text-slate-500">amir@acme.ai</span>
-                        </div>
-                      </div>
-                      <div class="flex items-center gap-2">
-                        <select class="rounded-md border border-slate-700 bg-slate-950/80 text-xs text-slate-100 px-2 py-1 pr-6">
-                          <option>Editor</option>
-                          <option>Viewer</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Billing / usage limits -->
-              <div class="space-y-3 rounded-lg border border-slate-800 bg-slate-950/60 p-4">
-                <div class="flex items-center justify-between gap-2">
-                  <div class="flex items-center gap-2">
-                    <div class="h-7 w-7 rounded-md bg-violet-500/15 border border-violet-400/60 flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="credit-card" class="lucide lucide-credit-card w-4 h-4 stroke-[1.5] text-violet-200"><rect width="20" height="14" x="2" y="5" rx="2"></rect><path d="M2 10h20"></path></svg>
-                    </div>
-                    <div>
-                      <h2 class="text-base font-semibold tracking-tight text-slate-100">
-                        Billing &amp; usage limits
-                      </h2>
-                      <p class="text-sm text-slate-500">
-                        Control monthly spend and monitor usage
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="space-y-3 text-sm">
-                  <div class="rounded-md border border-slate-800/80 bg-slate-900/60 px-3 py-2">
-                    <div class="flex items-center justify-between">
-                      <span class="text-slate-200">Monthly budget</span>
-                      <span class="text-slate-100 font-medium">$12,000</span>
-                    </div>
-                    <div class="mt-2 flex items-center gap-2">
-                      <div class="flex-1 h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                        <div class="h-full bg-violet-400" style="width:58%"></div>
-                      </div>
-                      <span class="text-xs text-violet-300">58% used</span>
-                    </div>
-                    <div class="mt-1 flex items-center justify-between text-[0.7rem] text-slate-500">
-                      <span>Resets in 5 days</span>
-                      <button class="text-slate-300 hover:text-slate-100">
-                        Edit limit
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-2 gap-3 text-xs">
-                    <div class="rounded-md border border-slate-800/80 bg-slate-950/60 px-3 py-2">
-                      <span class="text-slate-400">Current cycle spend</span>
-                      <div class="mt-1 text-sm font-semibold tracking-tight text-slate-50">
-                        $6,960
-                      </div>
-                      <span class="text-[0.7rem] text-slate-500">
-                        Baseline: $11,400
-                      </span>
-                    </div>
-                    <div class="rounded-md border border-slate-800/80 bg-slate-950/60 px-3 py-2">
-                      <span class="text-slate-400">Hard cap</span>
-                      <div class="mt-1 text-sm font-semibold tracking-tight text-slate-50">
-                        $14,000
-                      </div>
-                      <span class="text-[0.7rem] text-emerald-300">
-                        Alerts at 80%, 95%
-                      </span>
-                    </div>
-                  </div>
-
-                  <div class="rounded-md border border-slate-800/80 bg-slate-950/60 px-3 py-2">
-                    <span class="text-xs text-slate-400">Rate limits</span>
-                    <div class="mt-2 space-y-1.5 text-xs">
-                      <div class="flex items-center justify-between">
-                        <span class="text-slate-200">Requests / minute</span>
-                        <span class="text-slate-100 font-medium">4,000</span>
-                      </div>
-                      <div class="flex items-center justify-between">
-                        <span class="text-slate-200">Tokens / day</span>
-                        <span class="text-slate-100 font-medium">80M</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <button class="inline-flex items-center justify-center gap-1.5 rounded-md border border-slate-700 bg-slate-900/80 hover:bg-slate-900 w-full px-3 py-2 text-xs font-medium text-slate-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="external-link" class="lucide lucide-external-link w-3.5 h-3.5 stroke-[1.5]"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg>
-                    Open billing portal
-                  </button>
-                </div>
-              </div>
-            </section>
-          </div>
-        </main>
-      </div>
+  <!-- Sidebar -->
+  <aside class="w-64 bg-white border-r border-gray-200 flex flex-col">
+    <div class="h-16 flex items-center px-6 border-b border-gray-100">
+      <a href="/user-dashboard.html"
+        class="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors">
+        <iconify-icon icon="solar:arrow-left-linear"></iconify-icon>
+        <span class="text-sm font-medium">Back to Workspace</span>
+      </a>
     </div>
 
-    <script>
-      // Initialize Lucide icons
-      if (window.lucide) {
-        lucide.createIcons();
-      }
+    <nav class="flex-1 p-4 space-y-1">
+      <button onclick="switchTab('general')" id="tab-general"
+        class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-l-lg transition-colors tab-active text-left">
+        <iconify-icon icon="solar:settings-linear" class="text-lg"></iconify-icon> General
+      </button>
+      <button onclick="switchTab('robotics')" id="tab-robotics"
+        class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-l-lg transition-colors tab-inactive text-left">
+        <iconify-icon icon="solar:box-minimalistic-linear" class="text-lg"></iconify-icon> Robotics
+      </button>
+      <button onclick="switchTab('finance')" id="tab-finance"
+        class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-l-lg transition-colors tab-inactive text-left">
+        <iconify-icon icon="solar:wallet-money-linear" class="text-lg"></iconify-icon> Finance
+      </button>
+      <button onclick="switchTab('legal')" id="tab-legal"
+        class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-l-lg transition-colors tab-inactive text-left">
+        <iconify-icon icon="solar:scale-linear" class="text-lg"></iconify-icon> Legal
+      </button>
+      <button onclick="switchTab('security')" id="tab-security"
+        class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-l-lg transition-colors tab-inactive text-left">
+        <iconify-icon icon="solar:shield-keyhole-linear" class="text-lg"></iconify-icon> Security
+      </button>
+    </nav>
+  </aside>
 
-      // State
-      let userConfig = {
-        sectors: JSON.parse(localStorage.getItem('agentcache_sectors') || '{"healthcare": true, "finance": false, "legal": false}')
-      };
-      let apiKeys = [
-        {
-          id: 'key_1',
-          type: 'Server-side key',
-          value: 'sk_live_2f9c...a7b9',
-          created: '12 days ago',
-          lastUsed: '3 min ago'
-        },
-        {
-          id: 'key_2',
-          type: 'Client key',
-          value: 'pk_public_9c1d...f0e2',
-          created: '3 days ago',
-          lastUsed: 'Never used'
-        }
-      ];
+  <!-- Main Content -->
+  <main class="flex-1 overflow-y-auto p-8">
+    <div class="max-w-2xl mx-auto">
 
-      // Initialize settings
-      document.addEventListener('DOMContentLoaded', async () => {
-        await loadUserData();
-        setupLogout();
-        setupSectorToggles();
-        setupAPIKeyHandlers();
-        setupTeamInvite();
-        setupSaveButton();
-        setupProfileHandlers();
-      });
-      
-      // Load real user data from API
-      async function loadUserData() {
-        console.log('[Settings] Starting loadUserData...');
-        try {
-          const token = localStorage.getItem('agentcache_token');
-          console.log('[Settings] Token exists:', !!token);
-          
-          if (!token) {
-            console.log('[Settings] No token, redirecting to login');
-            window.location.href = '/login.html?redirect=/settings.html';
-            return;
-          }
-          
-          console.log('[Settings] Fetching /api/auth/me');
-          const response = await fetch('/api/auth/me', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          
-          console.log('[Settings] Response status:', response.status);
-          
-          if (response.ok) {
-            const data = await response.json();
-            const user = data.user;
-            console.log('[Settings] User data:', { email: user.email, full_name: user.full_name, id: user.id });
-            
-            // Get user display name and initials
-            const displayName = user.full_name || user.email.split('@')[0];
-            const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-            console.log('[Settings] Display name:', displayName, 'Initials:', initials);
-            
-            // Update sidebar
-            const sidebarInitials = document.getElementById('sidebarInitials');
-            const sidebarName = document.getElementById('sidebarName');
-            const sidebarEmail = document.getElementById('sidebarEmail');
-            
-            if (sidebarInitials) sidebarInitials.textContent = initials;
-            if (sidebarName) sidebarName.textContent = displayName;
-            if (sidebarEmail) sidebarEmail.textContent = user.email;
-            
-            // Update team section (current user)
-            const teamInitials = document.getElementById('teamInitials');
-            const teamName = document.getElementById('teamName');
-            const teamEmail = document.getElementById('teamEmail');
-            
-            if (teamInitials) teamInitials.textContent = initials;
-            if (teamName) teamName.textContent = displayName;
-            if (teamEmail) teamEmail.textContent = user.email;
-            
-            // Update profile form fields
-            const profileFullName = document.getElementById('profileFullName');
-            const profileEmail = document.getElementById('profileEmail');
-            
-            if (profileFullName) profileFullName.value = user.full_name || '';
-            if (profileEmail) profileEmail.value = user.email;
-            
-            console.log('User data loaded:', displayName, user.email);
-          } else {
-            console.error('[Settings] Failed to load user:', response.status);
-            const errorText = await response.text();
-            console.error('[Settings] Error response:', errorText);
-            if (response.status === 401) {
-              localStorage.removeItem('agentcache_token');
-              window.location.href = '/login.html?redirect=/settings.html';
+      <div class="flex justify-between items-center mb-8">
+        <h1 class="text-2xl font-bold text-gray-900" id="page-title">General Settings</h1>
+        <span id="save-status" class="text-xs text-gray-400 font-medium opacity-0 transition-opacity">Saved</span>
+      </div>
+
+      <!-- GENERAL TAB -->
+      <div id="content-general" class="space-y-6">
+        <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <h2 class="text-base font-semibold text-gray-900 mb-4">Appearance</h2>
+          <div class="grid grid-cols-3 gap-4">
+            <label class="cursor-pointer">
+              <input type="radio" name="theme" value="light" class="peer sr-only" onchange="saveSettings()">
+              <div
+                class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 peer-checked:border-blue-500 peer-checked:bg-blue-50 text-center transition-all">
+                <iconify-icon icon="solar:sun-2-linear"
+                  class="text-2xl mb-2 text-gray-500 peer-checked:text-blue-600"></iconify-icon>
+                <div class="text-sm font-medium text-gray-700 peer-checked:text-blue-700">Light</div>
+              </div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="theme" value="dark" class="peer sr-only" onchange="saveSettings()">
+              <div
+                class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 peer-checked:border-blue-500 peer-checked:bg-blue-50 text-center transition-all">
+                <iconify-icon icon="solar:moon-stars-linear"
+                  class="text-2xl mb-2 text-gray-500 peer-checked:text-blue-600"></iconify-icon>
+                <div class="text-sm font-medium text-gray-700 peer-checked:text-blue-700">Dark</div>
+              </div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="theme" value="system" class="peer sr-only" onchange="saveSettings()">
+              <div
+                class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 peer-checked:border-blue-500 peer-checked:bg-blue-50 text-center transition-all">
+                <iconify-icon icon="solar:laptop-minimalistic-linear"
+                  class="text-2xl mb-2 text-gray-500 peer-checked:text-blue-600"></iconify-icon>
+                <div class="text-sm font-medium text-gray-700 peer-checked:text-blue-700">System</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <h2 class="text-base font-semibold text-gray-900 mb-4">Notifications</h2>
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-sm font-medium text-gray-900">Enable Email Alerts</div>
+              <div class="text-xs text-gray-500">Receive reports and critical alerts via email.</div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="notif-toggle" class="sr-only peer" onchange="saveSettings()">
+              <div
+                class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROBOTICS TAB -->
+      <div id="content-robotics" class="space-y-6 hidden">
+        <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <h2 class="text-base font-semibold text-gray-900 mb-4">Motion Planning</h2>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Unit System</label>
+              <select id="robot-units"
+                class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                onchange="saveSettings()">
+                <option value="metric">Metric (Meters / Kg)</option>
+                <option value="imperial">Imperial (Feet / Lbs)</option>
+              </select>
+            </div>
+
+            <div>
+              <div class="flex justify-between">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Safety Margin (Obstacle Buffer)</label>
+                <span class="text-xs text-gray-500" id="safety-val">0.2m</span>
+              </div>
+              <input type="range" id="robot-margin" min="0.1" max="2.0" step="0.1" class="w-full"
+                oninput="document.getElementById('safety-val').innerText = this.value + 'm'; saveSettings()">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FINANCE TAB -->
+      <div id="content-finance" class="space-y-6 hidden">
+        <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <h2 class="text-base font-semibold text-gray-900 mb-4">Risk Profile</h2>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Tolerance Level</label>
+              <select id="finance-risk"
+                class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                onchange="saveSettings()">
+                <option value="conservative">Conservative (Low Yield / Safe)</option>
+                <option value="moderate">Moderate (Balanced)</option>
+                <option value="aggressive">Aggressive (High Alpha)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- TREASURY MOCK -->
+        <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-base font-semibold text-gray-900">Treasury & Billing</h2>
+            <div class="text-right">
+              <span class="block text-xs text-gray-500">Current Balance</span>
+              <span class="block text-xl font-bold text-gray-900" id="wallet-balance">$0.00</span>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Add Funds (Mock Mode)</label>
+            <div class="flex gap-2">
+              <button onclick="deposit(10)"
+                class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors">+$10</button>
+              <button onclick="deposit(100)"
+                class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors">+$100</button>
+              <button onclick="deposit(1000)"
+                class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors">+$1,000</button>
+              <button onclick="deposit(5000)"
+                class="px-4 py-2 bg-gray-900 text-white border border-gray-900 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors ml-auto">Custom...</button>
+            </div>
+            <p class="text-xs text-gray-400 mt-2 flex items-center gap-1">
+              <iconify-icon icon="solar:info-circle-linear"></iconify-icon>
+              Payments are simulated. No real cards charged.
+            </p>
+          </div>
+
+          <script>
+            async function deposit(amount) {
+              const btn = event.target;
+              const oldText = btn.innerText;
+              btn.innerText = "Processing...";
+              btn.disabled = true;
+
+              try {
+                const token = localStorage.getItem('agentcache_token');
+                const res = await fetch('/api/billing/deposit', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                  },
+                  body: JSON.stringify({ amount })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                  document.getElementById('wallet-balance').innerText = '$' + data.balance.toFixed(2);
+                  // Flash success
+                  btn.className = "px-4 py-2 bg-emerald-500 text-white border border-emerald-500 rounded-lg text-sm font-medium transition-colors";
+                  btn.innerText = "Success";
+                  setTimeout(() => {
+                    btn.className = "px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors";
+                    btn.innerText = oldText;
+                    btn.disabled = false;
+                  }, 2000);
+                }
+              } catch (e) {
+                alert("Deposit failed: " + e.message);
+                btn.innerText = "Error";
+              }
             }
+          </script>
+        </div>
+      </div>
+
+      <!-- LEGAL TAB -->
+      <div id="content-legal" class="space-y-6 hidden">
+        <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <h2 class="text-base font-semibold text-gray-900 mb-4">Compliance Engine</h2>
+
+          <div class="space-y-4">
+            <div class="flex items-center gap-2">
+              <input type="checkbox" id="legal-redact" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                onchange="saveSettings()">
+              <label for="legal-redact" class="text-sm text-gray-700">Auto-Redact PII/PHI in Reports</label>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="checkbox" id="legal-gdpr" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                onchange="saveSettings()">
+              <label for="legal-gdpr" class="text-sm text-gray-700">Enforce GDPR Data Locality</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECURITY TAB -->
+      <div id="content-security" class="space-y-6 hidden">
+        <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <h2 class="text-base font-semibold text-gray-900 mb-4">Password</h2>
+          <button
+            class="w-full bg-gray-50 text-gray-700 font-medium py-2 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
+            onclick="triggerReset()">
+            Send Password Reset Email
+          </button>
+          <p class="text-xs text-gray-500 mt-2 text-center">We'll send a magic link to your registered email.</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // State
+    const tabs = ['general', 'robotics', 'finance', 'legal', 'security'];
+    const titles = {
+      general: 'General Settings',
+      robotics: 'Robotics Configuration',
+      finance: 'Financial Risk Profile',
+      legal: 'Compliance Settings',
+      security: 'Security & Access'
+    };
+
+    async function init() {
+      // Fetch current settings
+      const token = localStorage.getItem('agentcache_token');
+      if (!token && !localStorage.getItem('token')) {
+        // Redirect if no auth? For demo we stay
+      }
+
+      try {
+        const res = await fetch('/api/user/settings', {
+          headers: { 'Authorization': `Bearer ${token || 'demo'}` }
+        });
+        const data = await res.json();
+
+        // Populate Form
+        // General
+        if (data.themePref) {
+          const radio = document.querySelector(`input[name="theme"][value="${data.themePref}"]`);
+          if (radio) radio.checked = true;
+        }
+        document.getElementById('notif-toggle').checked = data.notificationsEnabled;
+
+        // Sectors
+        if (data.sectorConfig) {
+          // Robotics
+          if (data.sectorConfig.robotics) {
+            document.getElementById('robot-units').value = data.sectorConfig.robotics.unit || 'metric';
+            document.getElementById('robot-margin').value = data.sectorConfig.robotics.safetyMargin || 0.2;
+            document.getElementById('safety-val').innerText = (data.sectorConfig.robotics.safetyMargin || 0.2) + 'm';
           }
-        } catch (error) {
-          console.error('[Settings] Failed to load user data:', error);
-          console.error('[Settings] Error stack:', error.stack);
-          // Show error to user
-          alert('Failed to load user data. Please refresh the page or contact support.');
+          // Finance
+          if (data.sectorConfig.finance) {
+            document.getElementById('finance-risk').value = data.sectorConfig.finance.riskTolerance || 'moderate';
+          }
+          // Legal
+          if (data.sectorConfig.legal) {
+            document.getElementById('legal-redact').checked = !!data.sectorConfig.legal.autoRedact;
+          }
         }
-      }
-      
-      // Setup logout button
-      function setupLogout() {
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) {
-          logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('agentcache_token');
-            localStorage.removeItem('agentcache_user');
-            window.location.href = '/login.html';
-          });
-        }
-      }
 
-      function setupSectorToggles() {
-        const healthcareToggle = document.querySelector('.inline-flex.items-center.justify-between.rounded-full.bg-emerald-500\\/20');
-        const financeToggle = document.querySelectorAll('.inline-flex.items-center.justify-start.rounded-full.bg-slate-900')[0];
-        const legalToggle = document.querySelectorAll('.inline-flex.items-center.justify-start.rounded-full.bg-slate-900')[1];
+      } catch (e) { console.error("Fetch Settings Failed", e); }
+    }
 
-        if (healthcareToggle) {
-          healthcareToggle.addEventListener('click', () => toggleSector('healthcare', healthcareToggle));
-        }
-        if (financeToggle) {
-          financeToggle.addEventListener('click', () => toggleSector('finance', financeToggle));
-        }
-        if (legalToggle) {
-          legalToggle.addEventListener('click', () => toggleSector('legal', legalToggle));
-        }
-      }
+    function switchTab(id) {
+      // Update Title
+      document.getElementById('page-title').innerText = titles[id];
 
-      function toggleSector(sectorId, toggleElement) {
-        userConfig.sectors[sectorId] = !userConfig.sectors[sectorId];
-        
-        // Update UI
-        if (userConfig.sectors[sectorId]) {
-          toggleElement.className = 'inline-flex items-center justify-between rounded-full bg-emerald-500/20 border border-emerald-500/60 w-11 h-6 px-1';
-          toggleElement.innerHTML = '<span class="text-[0.6rem] text-emerald-200">On</span><span class="h-4 w-4 rounded-full bg-emerald-400 shadow-sm"></span>';
+      // Toggle Content
+      tabs.forEach(t => {
+        const el = document.getElementById(`content-${t}`);
+        const btn = document.getElementById(`tab-${t}`);
+        if (t === id) {
+          el.classList.remove('hidden');
+          btn.classList.remove('tab-inactive');
+          btn.classList.add('tab-active');
         } else {
-          toggleElement.className = 'inline-flex items-center justify-start rounded-full bg-slate-900 border border-slate-600 w-11 h-6 px-1';
-          toggleElement.innerHTML = '<span class="h-4 w-4 rounded-full bg-slate-500 shadow-sm"></span>';
+          el.classList.add('hidden');
+          btn.classList.remove('tab-active');
+          btn.classList.add('tab-inactive');
         }
-      }
+      });
+    }
 
-      function setupAPIKeyHandlers() {
-        // New key button
-        const newKeyBtn = document.querySelector('.inline-flex.items-center.gap-1\\.5.rounded-md.border.border-sky-500\\/60');
-        if (newKeyBtn) {
-          newKeyBtn.addEventListener('click', generateAPIKey);
-        }
+    let debounceTimer;
+    function saveSettings() {
+      // Show saving...
+      const status = document.getElementById('save-status');
+      status.innerText = "Saving...";
+      status.style.opacity = 1;
 
-        // Copy buttons
-        const copyBtns = document.querySelectorAll('button:has(svg[data-lucide="copy"])');
-        copyBtns.forEach((btn, idx) => {
-          btn.addEventListener('click', () => copyAPIKey(apiKeys[idx].value));
-        });
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(async () => {
 
-        // Revoke buttons
-        const revokeBtns = document.querySelectorAll('button:has(svg[data-lucide="trash-2"])');
-        revokeBtns.forEach((btn, idx) => {
-          btn.addEventListener('click', () => revokeAPIKey(apiKeys[idx].id));
-        });
-      }
-
-      function generateAPIKey() {
-        const newKey = {
-          id: 'key_' + Date.now(),
-          type: 'Server-side key',
-          value: 'sk_live_' + Math.random().toString(36).substring(2, 6) + '...' + Math.random().toString(36).substring(2, 6),
-          created: 'Just now',
-          lastUsed: 'Never used'
-        };
-        apiKeys.push(newKey);
-        alert('New API key generated:\n\n' + newKey.value + '\n\nCopy this now - you won\'t see it again!');
-      }
-
-      function copyAPIKey(value) {
-        navigator.clipboard.writeText(value.replace('...', ''));
-        alert('API key copied to clipboard!');
-      }
-
-      function revokeAPIKey(keyId) {
-        if (confirm('Revoke this API key? This action cannot be undone.')) {
-          apiKeys = apiKeys.filter(k => k.id !== keyId);
-          alert('API key revoked successfully');
-        }
-      }
-
-      function setupTeamInvite() {
-        const inviteBtn = document.querySelector('button:has(svg[data-lucide="send"])');
-        const emailInput = document.querySelector('input[type="email"]');
-        
-        if (inviteBtn && emailInput) {
-          inviteBtn.addEventListener('click', () => {
-            const email = emailInput.value.trim();
-            if (email && email.includes('@')) {
-              alert('Invite sent to ' + email);
-              emailInput.value = '';
-            } else {
-              alert('Please enter a valid email address');
+        // Gather Data
+        const payload = {
+          themePref: document.querySelector('input[name="theme"]:checked')?.value || 'system',
+          notificationsEnabled: document.getElementById('notif-toggle').checked,
+          sectorConfig: {
+            robotics: {
+              unit: document.getElementById('robot-units').value,
+              safetyMargin: parseFloat(document.getElementById('robot-margin').value)
+            },
+            finance: {
+              riskTolerance: document.getElementById('finance-risk').value
+            },
+            legal: {
+              autoRedact: document.getElementById('legal-redact').checked,
+              // gdpr: ...
             }
-          });
-        }
-      }
+          }
+        };
 
-      function setupSaveButton() {
-        const saveBtn = document.querySelector('button:has(svg[data-lucide="save"])');
-        if (saveBtn) {
-          saveBtn.addEventListener('click', saveSettings);
-        }
-      }
-
-      function saveSettings() {
-        // Persist to localStorage
-        localStorage.setItem('agentcache_sectors', JSON.stringify(userConfig.sectors));
-        
-        // In production, would POST to /api/settings
-        alert('Settings saved successfully!\n\nEnabled sectors: ' + Object.keys(userConfig.sectors).filter(k => userConfig.sectors[k]).join(', '));
-      }
-      
-      // Profile & Security Handlers
-      function setupProfileHandlers() {
-        const updateProfileBtn = document.getElementById('updateProfileBtn');
-        const changePasswordBtn = document.getElementById('changePasswordBtn');
-        
-        if (updateProfileBtn) {
-          updateProfileBtn.addEventListener('click', updateProfile);
-        }
-        
-        if (changePasswordBtn) {
-          changePasswordBtn.addEventListener('click', changePassword);
-        }
-      }
-      
-      async function updateProfile() {
-        const fullName = document.getElementById('profileFullName').value.trim();
-        const messageDiv = document.getElementById('profileMessage');
-        
-        if (!fullName) {
-          showMessage('Please enter your full name', 'error');
-          return;
-        }
-        
+        // Send API
+        const token = localStorage.getItem('agentcache_token');
         try {
-          const token = localStorage.getItem('agentcache_token');
-          const response = await fetch('/api/user/update-profile', {
+          await fetch('/api/user/settings', {
             method: 'PUT',
             headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ full_name: fullName })
+            body: JSON.stringify(payload)
           });
-          
-          const data = await response.json();
-          
-          if (response.ok) {
-            showMessage('Profile updated successfully!', 'success');
-            // Reload user data to update UI
-            await loadUserData();
-          } else {
-            showMessage(data.error || 'Failed to update profile', 'error');
-          }
-        } catch (error) {
-          console.error('Update profile error:', error);
-          showMessage('Failed to update profile. Please try again.', 'error');
+
+          status.innerText = "Saved";
+          setTimeout(() => status.style.opacity = 0, 1500);
+
+        } catch (e) {
+          status.innerText = "Error Saving";
+          console.error(e);
         }
+
+      }, 500); // 500ms debounce
+    }
+
+    async function triggerReset() {
+      // Mock email for now since we don't have user object easily in frontend state without a fetch
+      // But we can prompt or assume current user.
+      const email = prompt("Confirm your email address:");
+      if (email) {
+        await fetch('/api/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        alert("Reset link sent to console logs (Mock Mode)");
       }
-      
-      async function changePassword() {
-        const currentPassword = document.getElementById('currentPassword').value;
-        const newPassword = document.getElementById('newPassword').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        
-        // Validation
-        if (!currentPassword || !newPassword || !confirmPassword) {
-          showMessage('Please fill in all password fields', 'error');
-          return;
-        }
-        
-        if (newPassword !== confirmPassword) {
-          showMessage('New passwords do not match', 'error');
-          return;
-        }
-        
-        if (newPassword.length < 8) {
-          showMessage('Password must be at least 8 characters long', 'error');
-          return;
-        }
-        
-        try {
-          const token = localStorage.getItem('agentcache_token');
-          const response = await fetch('/api/user/change-password', {
-            method: 'PUT',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              current_password: currentPassword,
-              new_password: newPassword
-            })
-          });
-          
-          const data = await response.json();
-          
-          if (response.ok) {
-            showMessage('Password changed successfully!', 'success');
-            // Clear password fields
-            document.getElementById('currentPassword').value = '';
-            document.getElementById('newPassword').value = '';
-            document.getElementById('confirmPassword').value = '';
-          } else {
-            showMessage(data.error || 'Failed to change password', 'error');
-          }
-        } catch (error) {
-          console.error('Change password error:', error);
-          showMessage('Failed to change password. Please try again.', 'error');
-        }
-      }
-      
-      function showMessage(message, type) {
-        const messageDiv = document.getElementById('profileMessage');
-        messageDiv.textContent = message;
-        messageDiv.className = type === 'success' 
-          ? 'mt-4 p-3 rounded-md bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 text-sm'
-          : 'mt-4 p-3 rounded-md bg-rose-500/20 border border-rose-500/40 text-rose-200 text-sm';
-        messageDiv.classList.remove('hidden');
-        
-        // Auto-hide after 5 seconds
-        setTimeout(() => {
-          messageDiv.classList.add('hidden');
-        }, 5000);
-      }
-    </script>
-  </body>
+    }
+
+    // Init
+    init();
+
+  </script>
+</body>
+
 </html>

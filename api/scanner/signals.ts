@@ -2,7 +2,7 @@
 import { ScannerService } from '../../src/services/ScannerService.js';
 
 export const config = {
-    runtime: 'edge', // or nodejs
+    runtime: 'nodejs', // DB requires Node.js
 };
 
 export default async function handler(req) {

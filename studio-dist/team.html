@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team | AgentCache</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+        }
+    </style>
+</head>
+
+<body class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col shrink-0 z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-100">
+            <a href="/user-dashboard.html"
+                class="flex items-center gap-2 text-gray-900 font-medium hover:text-blue-600">
+                <iconify-icon icon="solar:arrow-left-linear"></iconify-icon> Back
+            </a>
+        </div>
+        <nav class="flex-1 p-4 space-y-1">
+            <a href="/user-dashboard.html"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-lg">Home</a>
+            <a href="/data.html"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-lg">Data</a>
+            <a href="/team.html"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg">Team</a>
+            <a href="/settings.html"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-lg">Settings</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col bg-white">
+
+        <div class="p-8 max-w-5xl mx-auto w-full">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Engineering Team</h1>
+                    <p class="text-gray-500 text-sm mt-1">Manage members and access rights.</p>
+                </div>
+                <button
+                    class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center gap-2">
+                    <iconify-icon icon="solar:user-plus-linear" class="text-lg"></iconify-icon> Invite Member
+                </button>
+            </div>
+
+            <!-- Members Table -->
+            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden mb-8">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                            <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                            <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Last Active
+                            </th>
+                            <th class="w-10"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100" id="members-list">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <script>
+                async function loadMembers() {
+                    try {
+                        const res = await fetch('/api/team/members');
+                        const data = await res.json();
+                        const container = document.getElementById('members-list');
+
+                        container.innerHTML = data.members.map(m => `
+                            <tr>
+                                <td class="px-6 py-4 flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-${m.color}-100 flex items-center justify-center text-xs font-bold text-${m.color}-600">
+                                        ${m.initials}
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900">${m.name}</div>
+                                        <div class="text-xs text-gray-500">${m.email}</div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600">${m.role}</td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${m.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-gray-100 text-gray-600 border border-gray-200'}">
+                                        ${m.status}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">Recently</td>
+                                <td class="px-6 py-4 text-gray-400 hover:text-gray-600 cursor-pointer text-right">
+                                    <iconify-icon icon="solar:menu-dots-linear"></iconify-icon>
+                                </td>
+                            </tr>
+                        `).join('');
+                    } catch (e) {
+                        console.error("Failed to load members", e);
+                    }
+                }
+                loadMembers();
+            </script>
+
+            <!-- Team Settings -->
+            <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                <h2 class="text-base font-semibold text-gray-900 mb-4">Permissions</h2>
+                <div class="flex items-center justify-between py-2">
+                    <div>
+                        <div class="text-sm font-medium text-gray-900">Allow members to create Agents</div>
+                        <div class="text-xs text-gray-500">If disabled, only Admins can deploy new agents.</div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" checked class="sr-only peer">
+                        <div
+                            class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</body>
+
+</html>

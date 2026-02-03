@@ -1,573 +1,1399 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mission Control - AgentCache</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&family=JetBrains+Mono:wght@400;600&display=swap"
-        rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
         body {
-            font-family: 'Inter', sans-serif;
-            background: #0f172a;
-            color: #f8fafc;
+            font-family: 'Outfit', sans-serif;
+            background-color: #050505;
+            color: #e5e7eb;
         }
 
-        /* ... styles ... */
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
     </style>
 </head>
 
-<!-- Auth Modal -->
-<div id="auth-modal" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md hidden">
-    <div class="card p-8 rounded-xl max-w-sm w-full text-center shadow-2xl border border-cyan-500/20">
-        <h2 class="text-2xl font-black mb-2 tracking-tighter">IDENTIFY YOURSELF</h2>
-        <p class="text-slate-400 text-sm mb-6">Restricted Access. Level 5 Clearance Required.</p>
-        <input type="password" id="admin-token" placeholder="ENTER ADMIN TOKEN"
-            class="w-full bg-slate-900 border border-slate-700 p-3 rounded mb-4 text-center text-cyan-500 font-mono focus:border-cyan-500 outline-none transition uppercase">
-        <button onclick="authenticate()"
-            class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded transition shadow-[0_0_20px_rgba(6,182,212,0.3)]">
-            ACCESS TERMINAL
-        </button>
-        <p id="auth-error" class="hidden text-red-400 text-xs mt-4 animate-pulse">ACCESS DENIED</p>
-    </div>
-</div>
+<body class="h-screen flex overflow-hidden">
 
-<!-- Dashboard Header -->
-<header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-            <h1 class="text-xl font-black tracking-tighter text-white">MISSION CONTROL</h1>
-            <span class="flex h-2 w-2 relative">
-                <span
-                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-            </span>
-            <span class="text-[10px] font-mono text-green-500 tracking-wider">SYSTEM ONLINE</span>
+    <!-- 1. LEFT SIDEBAR (Navigation) -->
+    <aside class="w-64 bg-[#09090b] border-r border-white/5 flex flex-col justify-between shrink-0 z-20">
+        <div>
+            <!-- Header -->
+            <div class="h-14 flex items-center px-6 border-b border-white/5">
+                <div class="flex items-center gap-2 text-white font-bold tracking-tight">
+                    <iconify-icon icon="solar:infinity-bold" class="text-emerald-500"></iconify-icon>
+                    AgentCache
+                </div>
+            </div>
+
+            <!-- Nav Links -->
+            <div class="flex-1 overflow-y-auto py-4 px-2 space-y-6">
+                <!-- Core Operations -->
+                <div>
+                    <div class="px-2 mb-2 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Operations
+                    </div>
+                    <div class="space-y-0.5">
+                        <a href="/mission-control.html"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-white bg-white/5 rounded-lg border border-white/5">
+                            <iconify-icon icon="solar:widget-linear" class="text-emerald-400"></iconify-icon>
+                            Mission Control
+                        </a>
+                        <a href="#" onclick="switchTab('fleet'); return false;"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                            <iconify-icon icon="solar:users-group-rounded-linear"></iconify-icon>
+                            Fleet Management
+                        </a>
+                        <a href="#" onclick="switchTab('logs'); return false;"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                            <iconify-icon icon="solar:chart-square-linear"></iconify-icon>
+                            System Logs
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Sectors (The "Mission" part) -->
+                <div>
+                    <div class="px-2 mb-2 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Active Sectors
+                    </div>
+                    <div class="space-y-0.5">
+                        <a href="/sector.html?name=finance"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors group">
+                            <iconify-icon icon="solar:wallet-money-linear"
+                                class="group-hover:text-blue-400 transition-colors"></iconify-icon>
+                            Finance
+                        </a>
+                        <a href="/sector.html?name=photonics"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors group">
+                            <iconify-icon icon="solar:bolt-linear"
+                                class="group-hover:text-amber-400 transition-colors"></iconify-icon>
+                            Photonics
+                        </a>
+                        <a href="/sector.html?name=biologics"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors group">
+                            <iconify-icon icon="solar:dna-linear"
+                                class="group-hover:text-pink-400 transition-colors"></iconify-icon>
+                            Biologics
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Configuration -->
+                <div>
+                    <div class="px-2 mb-2 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Configuration
+                    </div>
+                    <div class="space-y-0.5">
+                        <a href="/settings.html"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                            <iconify-icon icon="solar:settings-linear"></iconify-icon>
+                            Global Settings
+                        </a>
+                        <a href="/get-key.html"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                            <iconify-icon icon="solar:key-linear"></iconify-icon>
+                            API Keys
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <nav class="flex gap-1">
-            <button onclick="switchTab('content')" id="tab-content"
-                class="px-4 py-2 text-xs font-bold uppercase tracking-widest text-white border-b-2 border-cyan-500 transition">
-                Content Grid
-            </button>
-            <button onclick="switchTab('users')" id="tab-users"
-                class="px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300 border-b-2 border-transparent transition">
-                User Management
-            </button>
-            <button onclick="switchTab('analytics')" id="tab-analytics"
-                class="px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300 border-b-2 border-transparent transition">
-                Analytics
-            </button>
-        </nav>
-
-        <div class="flex items-center gap-4">
-            <a href="/" target="_blank"
-                class="text-xs font-mono text-slate-400 hover:text-white border border-slate-700 hover:border-slate-500 px-3 py-1.5 rounded transition flex items-center gap-2">
-                <i data-lucide="external-link" class="w-3 h-3"></i> View Live Site
+        <!-- User Context (Admin) -->
+        <div class="p-4 border-t border-white/5 bg-[#050505]">
+            <a href="/user-dashboard.html"
+                class="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-lg transition-colors group">
+                <div
+                    class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-xs font-bold text-emerald-400 border border-emerald-500/30">
+                    AC
+                </div>
+                <div class="flex-1">
+                    <div class="text-white text-xs font-medium">Admin Console</div>
+                    <div class="text-gray-600 text-[10px] group-hover:text-emerald-400 transition-colors">Switch to User
+                        View &rarr;</div>
+                </div>
             </a>
-            <button onclick="logout()" class="text-xs text-red-400 hover:text-red-300 font-mono hover:underline">
-                LOGOUT
-            </button>
         </div>
-    </div>
-</header>
+    </aside>
 
-<!-- VIEW: Content Grid -->
-<main id="view-content" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-    <!-- Cards Injected Here -->
-</main>
-
-<!-- VIEW: User Management -->
-<main id="view-users" class="hidden">
-    <div class="card rounded-xl overflow-hidden">
-        <table class="w-full text-left text-sm text-slate-400">
-            <thead class="bg-slate-800/50 text-xs uppercase font-mono text-slate-200">
-                <tr>
-                    <th class="p-4">User</th>
-                    <th class="p-4">Role</th>
-                    <th class="p-4">Plan</th>
-                    <th class="p-4">Joined</th>
-                    <th class="p-4 text-right">Action</th>
-                </tr>
-            </thead>
-            <tbody id="users-table-body" class="divide-y divide-slate-800">
-                <tr>
-                    <td colspan="5" class="p-8 text-center">Loading Users...</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</main>
-
-<!-- VIEW: Analytics -->
-<main id="view-analytics" class="hidden space-y-8">
-    <!-- Stats Row -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6" id="stats-row"></div>
-    <!-- Charts Row -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="card p-6 rounded-xl">
-            <h3 class="text-sm font-mono text-slate-400 uppercase mb-4">Traffic Growth (7 Days)</h3>
-            <canvas id="growthChart"></canvas>
-        </div>
-        <div class="card p-6 rounded-xl">
-            <h3 class="text-sm font-mono text-slate-400 uppercase mb-4">Top Users (Score)</h3>
-            <div id="top-users-list" class="space-y-4"></div>
-        </div>
-    </div>
-</main>
-
-<!-- Edit Modal (Content) -->
-<div id="edit-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">
-    <div class="card p-8 rounded-xl max-w-lg w-full shadow-2xl relative">
-        <button onclick="closeEdit()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i
-                data-lucide="x"></i></button>
-
-        <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
-            <i data-lucide="edit-3" class="w-5 h-5 text-cyan-400"></i> Edit Transmission
-        </h3>
-
-        <input type="hidden" id="edit-id">
-        <input type="hidden" id="edit-lane">
-        <input type="hidden" id="edit-template">
-
-        <div class="space-y-4">
-            <div>
-                <label class="block text-xs font-mono text-slate-500 uppercase mb-1">Subtitle / Label</label>
-                <input type="text" id="edit-subtitle"
-                    class="w-full p-2 rounded bg-slate-900 border border-slate-700 focus:border-cyan-500 outline-none text-cyan-400 font-mono text-sm">
+    <!-- 2. MAIN CONTENT (Center) -->
+    <script src="js/wireless-map.js"></script>
+    <main class="flex-1 overflow-y-auto bg-[#050505] relative custom-scrollbar">
+        <!-- Top Bar -->
+        <header
+            class="h-14 border-b border-white/5 flex items-center justify-between px-6 sticky top-0 bg-[#050505]/80 backdrop-blur-md z-10">
+            <div class="text-xs text-gray-500">Mission Control / <span class="text-gray-200">System
+                    Overview</span></div>
+            <div id="status-pill" class="flex items-center gap-2 px-2 py-1 rounded bg-white/5 border border-white/5">
+                <div id="status-dot"
+                    class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]">
+                </div>
+                <span id="status-text" class="text-xs font-medium text-gray-300">Online</span>
             </div>
+        </header>
 
-            <div>
-                <label class="block text-xs font-mono text-slate-500 uppercase mb-1">Title / Hero Text</label>
-                <input type="text" id="edit-title"
-                    class="w-full p-2 rounded bg-slate-900 border border-slate-700 focus:border-cyan-500 outline-none font-bold text-lg">
-            </div>
+        <div class="p-8 max-w-7xl mx-auto space-y-8">
 
-            <div>
-                <label class="block text-xs font-mono text-slate-500 uppercase mb-1">Content / Description</label>
-                <textarea id="edit-content" rows="4"
-                    class="w-full p-2 rounded bg-slate-900 border border-slate-700 focus:border-cyan-500 outline-none text-slate-300 text-sm loading-relaxed"></textarea>
-            </div>
-        </div>
+            <!-- HEADER METRICS -->
 
-        <div class="mt-8 flex gap-3">
-            <button onclick="saveCard()"
-                class="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded-lg transition flex justify-center items-center gap-2">
-                <i data-lucide="save" class="w-4 h-4"></i> Save Changes
-            </button>
-        </div>
-    </div>
-</div>
+            <!-- VIEW: SIGNALS (New) -->
+            <section id="view-signals" class="hidden h-full flex flex-col">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-light text-white">Wireless Intelligence</h2>
+                        <div class="text-sm text-gray-500">Real-time spectral analysis of agent environment.</div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="map.fetchData()"
+                            class="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-xs text-white rounded-lg flex items-center gap-2 border border-white/5 transition-colors">
+                            <iconify-icon icon="solar:refresh-linear"></iconify-icon> Scan
+                        </button>
+                    </div>
+                </div>
 
-<script>
-    // Icons
-    lucide.createIcons();
-    let contentData = null;
-    let chartInstance = null;
+                <div class="flex-1 glass rounded-2xl overflow-hidden relative border border-white/5">
+                    <canvas id="wireless-map-canvas" class="w-full h-full block"></canvas>
 
-    // Auth Functions
-    function authenticate() {
-        const token = document.getElementById('admin-token').value;
-        if (token.length > 5) {
-            localStorage.setItem('admin_token', token);
-            document.getElementById('auth-modal').classList.add('hidden');
-            loadContent();
-            loadUsers();
-            loadAnalytics();
-        } else {
-            document.getElementById('auth-error').classList.remove('hidden');
-        }
-    }
-
-    function logout() {
-        localStorage.removeItem('admin_token');
-        location.reload();
-    }
-
-    // Tab Switching
-    function switchTab(tabId) {
-        // Hide all views
-        document.getElementById('view-content').classList.add('hidden');
-        document.getElementById('view-users').classList.add('hidden');
-        document.getElementById('view-analytics').classList.add('hidden');
-
-        // Reset tabs
-        document.getElementById('tab-content').className = "px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300 border-b-2 border-transparent transition";
-        document.getElementById('tab-users').className = "px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300 border-b-2 border-transparent transition";
-        document.getElementById('tab-analytics').className = "px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300 border-b-2 border-transparent transition";
-
-        // Activate view
-        document.getElementById(`view-${tabId}`).classList.remove('hidden');
-
-        // Activate tab
-        document.getElementById(`tab-${tabId}`).className = "px-4 py-2 text-xs font-bold uppercase tracking-widest text-white border-b-2 border-cyan-500 transition";
-    }
-
-    // --- CONTENT GRID ---
-    async function loadContent() {
-        try {
-            const res = await fetch('/api/content');
-            contentData = await res.json();
-            renderEditor();
-        } catch (err) {
-            console.error("Fetch Error:", err);
-            // ... error handling ...
-        }
-    }
-
-    function renderEditor() {
-        const grid = document.getElementById('view-content');
-        grid.innerHTML = '';
-        const lanes = ['mission', 'usecases', 'pricing', 'stats'];
-
-        lanes.forEach(laneId => {
-            const laneCards = contentData.cards
-                .filter(c => c.laneId === laneId)
-                .sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
-
-            const laneTitle = contentData.lanes.find(l => l.id === laneId)?.title || laneId.toUpperCase();
-
-            // Lane Wrapper
-            const laneWrapper = document.createElement('div');
-            laneWrapper.className = "flex flex-col gap-4";
-
-            // Header (Add + Button)
-            laneWrapper.innerHTML = `
-                    <div class="flex items-center justify-between border-b border-slate-800 pb-2 mt-4">
-                        <h2 class="text-xl font-mono text-slate-400 uppercase tracking-widest leading-none">>> ${laneTitle} CHANNEL</h2>
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs text-slate-600 font-mono">${laneCards.length} UNITS</span>
-                            <button onclick="addCard('${laneId}')" class="p-1 rounded bg-slate-800 hover:bg-cyan-900 text-slate-400 hover:text-cyan-400 transition" title="Add Card">
-                                <i data-lucide="plus" class="w-4 h-4"></i>
-                            </button>
+                    <!-- Overlay Stats -->
+                    <div class="absolute top-4 right-4 flex flex-col items-end gap-2 pointer-events-none">
+                        <div
+                            class="px-3 py-1 bg-black/60 backdrop-blur rounded text-xs font-mono text-emerald-400 border border-emerald-500/30">
+                            SIGNAL: STRONG
+                        </div>
+                        <div
+                            class="px-3 py-1 bg-black/60 backdrop-blur rounded text-xs font-mono text-white border border-white/10">
+                            AGENTS: <span id="map-agent-count">--</span>
                         </div>
                     </div>
-                    <div id="lane-${laneId}" class="flex flex-col gap-4 min-h-[100px]"></div>
-                `;
+                </div>
+            </section>
 
-            grid.appendChild(laneWrapper);
-            const listEl = laneWrapper.querySelector(`#lane-${laneId}`);
+            <!-- VIEW: OVERVIEW (Existing) -->
+            <section id="view-overview">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <!-- System Health -->
+                    <div class="glass p-5 rounded-xl flex flex-col justify-between h-32">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs text-gray-500 uppercase tracking-wider">Health</span>
+                            <iconify-icon icon="solar:server-square-linear" class="text-emerald-500"></iconify-icon>
+                        </div>
+                        <div>
+                            <div id="health-metric" class="text-2xl font-light text-white">Healthy</div>
+                            <div class="text-xs text-emerald-500/80 mt-1 flex items-center gap-1">
+                                <iconify-icon icon="solar:check-circle-linear"></iconify-icon> All systems go
+                            </div>
+                        </div>
+                    </div>
 
-            laneCards.forEach(card => {
-                const cardEl = document.createElement('div');
-                cardEl.className = "card p-4 rounded-xl group hover:border-cyan-500/50 transition relative overflow-hidden flex gap-3 items-start bg-slate-900/50";
-                cardEl.dataset.id = card.id;
+                    <!-- Treasury -->
+                    <div class="glass p-5 rounded-xl flex flex-col justify-between h-32">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs text-gray-500 uppercase tracking-wider">Treasury</span>
+                            <iconify-icon icon="solar:wallet-linear" class="text-gray-400"></iconify-icon>
+                        </div>
+                        <div>
+                            <div id="treasury-metric" class="text-2xl font-light text-white">$4,863</div>
+                            <div class="text-xs text-gray-500 mt-1">Credits Available</div>
+                        </div>
+                    </div>
 
-                // Preview Content Logic
-                let preview = '';
-                if (card.template === 'hero') {
-                    preview = `
-                            <div class="flex-1">
-                                <div class="text-[10px] text-cyan-500 font-mono mb-1">${card.data.subtitle}</div>
-                                <div class="text-xl font-black leading-none mb-1">${card.data.title}</div>
-                                <div class="text-xs text-slate-400 line-clamp-1">${card.data.content}</div>
-                            </div>`;
-                } else if (card.template === 'stat') {
-                    preview = `
-                            <div class="flex-1">
-                                <div class="flex justify-between items-center mb-1">
-                                    <div class="text-xs text-slate-500 font-mono">${card.data.subtitle}</div>
-                                    <div class="text-lg font-bold text-cyan-400">${card.data.title}</div>
+                    <!-- Blocked Threats -->
+                    <div class="glass p-5 rounded-xl flex flex-col justify-between h-32">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs text-gray-500 uppercase tracking-wider">Defense</span>
+                            <iconify-icon icon="solar:shield-warning-linear" class="text-rose-400"></iconify-icon>
+                        </div>
+                        <div>
+                            <div id="armor-blocked" class="text-2xl font-light text-white">142</div>
+                            <div class="text-xs text-rose-500/80 mt-1">Threats Blocked (24h)</div>
+                        </div>
+                    </div>
+
+                    <!-- Throughput -->
+                    <div class="glass p-5 rounded-xl flex flex-col justify-between h-32">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs text-gray-500 uppercase tracking-wider">Throughput</span>
+                            <iconify-icon icon="solar:bolt-linear" class="text-amber-400"></iconify-icon>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-light text-white">1.2 TB/s</div>
+                            <div class="text-xs text-gray-500 mt-1">Optical Bus Load</div>
+                        </div>
+                    </div>
+            </section>
+
+            <!-- ADMIN TABS -->
+            <div class="border-b border-white/5 mb-6">
+                <nav class="-mb-px flex gap-6" aria-label="Tabs">
+                    <button onclick="switchTab('dashboard')" id="tab-dashboard"
+                        class="border-b-2 border-emerald-500 py-4 px-1 text-sm font-medium text-emerald-500 hover:text-emerald-400 transition-colors">
+                        <iconify-icon icon="solar:widget-linear" class="mr-2"></iconify-icon>Overview
+                    </button>
+                    <button onclick="switchTab('fleet')" id="tab-fleet"
+                        class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-300 hover:border-gray-300 transition-colors">
+                        <iconify-icon icon="solar:users-group-rounded-linear" class="mr-2"></iconify-icon>Fleet
+                    </button>
+                    <button onclick="switchTab('users')" id="tab-users"
+                        class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-300 hover:border-gray-300 transition-colors">
+                        <iconify-icon icon="solar:user-id-linear" class="mr-2"></iconify-icon>Users & IAM
+                    </button>
+                    <button onclick="switchTab('logs')" id="tab-logs"
+                        class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-300 hover:border-gray-300 transition-colors">
+                        <iconify-icon icon="solar:code-square-linear" class="mr-2"></iconify-icon>System Logs
+                    </button>
+                </nav>
+            </div>
+
+            <!-- TAB CONTENT: DASHBOARD -->
+            <div id="view-dashboard" class="admin-view space-y-6">
+                <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[500px]">
+                    <!-- EXISTING Trust Broker Console -->
+                    <div class="lg:col-span-2 glass rounded-2xl p-0 overflow-hidden flex flex-col relative">
+                        <div
+                            class="h-12 border-b border-white/5 flex items-center justify-between px-4 bg-white/[0.02]">
+                            <div class="flex items-center gap-2">
+                                <iconify-icon icon="solar:verified-check-bold" class="text-emerald-500"></iconify-icon>
+                                <span class="text-sm font-medium text-white">Trust Broker</span>
+                            </div>
+                            <div class="text-xs text-gray-600 font-mono">ID: T-992A</div>
+                        </div>
+                        <div class="flex-1 p-6 flex flex-col justify-center items-center text-center space-y-4">
+                            <div class="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-2">
+                                <iconify-icon icon="solar:shield-check-linear"
+                                    class="text-3xl text-emerald-500"></iconify-icon>
+                            </div>
+                            <h3 class="text-lg text-white font-medium">Verify Claims & Logic</h3>
+                            <p class="text-sm text-gray-500 max-w-sm">Enter a claim or logic snippet below to
+                                verify its truth against the immutable ledger.</p>
+                            <div class="w-full max-w-md bg-black/20 border border-white/10 rounded-lg p-3 flex gap-2">
+                                <input type="text" placeholder="e.g. 'User A has admin rights'"
+                                    class="bg-transparent border-none text-sm text-white flex-1 focus:ring-0 placeholder-gray-600">
+                                <button
+                                    class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded transition-colors">Verify</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- EXISTING Activity Feed -->
+                    <div class="glass rounded-2xl p-5 overflow-hidden flex flex-col">
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Live Activity</h3>
+                        <div class="space-y-4 overflow-y-auto pr-2 custom-scrollbar">
+                            <div class="flex gap-3">
+                                <div class="mt-1 w-2 h-2 rounded-full bg-blue-500 shrink-0"></div>
+                                <div>
+                                    <div class="text-sm text-gray-300">New Integration</div>
+                                    <div class="text-xs text-gray-600 mt-1">Snowflake connected to Finance.</div>
+                                    <div class="text-[10px] text-gray-700 mt-1">2m ago</div>
                                 </div>
-                                <div class="text-xs text-slate-400 line-clamp-1">${card.data.content}</div>
-                            </div>`;
-                } else {
-                    preview = `
-                            <div class="flex-1">
-                                <div class="text-[10px] text-indigo-400 font-mono mb-1">${card.data.subtitle}</div>
-                                <div class="font-bold text-base mb-1">${card.data.title}</div>
-                                <div class="text-xs text-slate-400 line-clamp-2">${card.data.content}</div>
-                            </div>`;
-                }
-
-                // Card Inner HTML
-                cardEl.innerHTML = `
-                        <div class="cursor-grab text-slate-600 hover:text-slate-400 flex items-center handle pt-1">
-                            <i data-lucide="grip-vertical" class="w-4 h-4"></i>
+                            </div>
                         </div>
-                        ${preview}
-                        <div class="flex flex-col gap-2 justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 relative">
-                            <button onclick="openEdit('${card.id}')" class="p-1.5 rounded bg-slate-800 hover:bg-cyan-900 text-slate-400 hover:text-cyan-400 transition cursor-pointer" title="Edit">
-                                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                    </div>
+            </div>
+            <!-- Feedback Widget (New) -->
+            <div class="glass rounded-2xl p-5 mt-6 border border-amber-500/30 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-3 opacity-20 pointer-events-none">
+                    <iconify-icon icon="solar:transmission-circle-bold" class="text-6xl text-amber-500"></iconify-icon>
+                </div>
+                <div class="flex justify-between items-center mb-4 relative z-10">
+                    <h3 class="text-xs font-semibold text-amber-500 uppercase tracking-wider flex items-center gap-2">
+                        <iconify-icon icon="solar:record-circle-bold" class="animate-pulse"></iconify-icon>
+                        Active Research Campaign
+                    </h3>
+                    <span class="text-[10px] text-gray-400 bg-white/5 px-2 py-1 rounded">Phase 1: Trust</span>
+                </div>
+                <div id="feedback-widget" class="space-y-4 relative z-10">
+                    <div class="animate-pulse text-gray-600 text-xs">Loading Campaign Data...</div>
+                </div>
+            </div>
+
+            <!-- TAB CONTENT: FLEET -->
+            <div id="view-fleet" class="admin-view hidden space-y-6">
+                <!-- Fleet Stats -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/5">
+                        <div class="text-xs text-gray-500 uppercase">Active Agents</div>
+                        <div class="text-2xl text-white font-medium">3</div>
+                    </div>
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/5">
+                        <div class="text-xs text-gray-500 uppercase">Total Memory</div>
+                        <div class="text-2xl text-emerald-400 font-medium">4.2 GB</div>
+                    </div>
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/5">
+                        <div class="text-xs text-gray-500 uppercase">Avg Response</div>
+                        <div class="text-2xl text-blue-400 font-medium">240ms</div>
+                    </div>
+                </div>
+
+                <!-- Fleet Table -->
+                <div class="glass rounded-xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center">
+                        <h3 class="text-sm font-medium text-white">Deployed Agents</h3>
+                        <button onclick="loadFleet()"
+                            class="text-xs text-emerald-500 hover:text-emerald-400 flex items-center gap-1">
+                            <iconify-icon icon="solar:restart-bold"></iconify-icon> Refresh
+                        </button>
+                    </div>
+                    <div id="fleet-container" class="p-4 grid grid-cols-1 gap-4">
+                        <!-- Filled by JS -->
+                        <div class="text-center text-gray-500 py-8">Initializing Fleet Uplink...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB CONTENT: USERS -->
+            <div id="view-users" class="admin-view hidden space-y-6">
+                <div class="glass rounded-xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center">
+                        <h3 class="text-sm font-medium text-white">Platform Users</h3>
+                        <div class="flex gap-2">
+                            <input type="text" placeholder="Search users..."
+                                class="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none">
+                            <button onclick="loadUsers()"
+                                class="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                title="Refresh">
+                                <iconify-icon icon="solar:restart-bold"></iconify-icon>
                             </button>
-                            <button onclick="deleteCard('${card.id}')" class="p-1.5 rounded bg-slate-800 hover:bg-red-900/50 text-slate-400 hover:text-red-400 transition cursor-pointer" title="Delete">
-                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                            </button>
+                            <button
+                                class="px-3 py-1.5 bg-emerald-600 text-white text-xs rounded-lg hover:bg-emerald-500">Add
+                                User</button>
                         </div>
-                    `;
-                listEl.appendChild(cardEl);
-            });
+                    </div>
+                    <table class="w-full text-left">
+                        <thead class="bg-white/[0.02] text-xs uppercase text-gray-500">
+                            <tr>
+                                <th class="px-6 py-3 font-medium">User</th>
+                                <th class="px-6 py-3 font-medium">Role</th>
+                                <th class="px-6 py-3 font-medium">Status</th>
+                                <th class="px-6 py-3 font-medium">Plan</th>
+                                <th class="px-6 py-3 font-medium text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body" class="divide-y divide-white/5 text-sm">
+                            <!-- Rows will be injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-            // Init Sortable
-            new Sortable(listEl, {
-                group: 'shared',
-                handle: '.handle',
-                animation: 150,
-                ghostClass: 'opacity-50',
-                onEnd: function (evt) {
-                    const targetLaneId = evt.to.id.replace('lane-', '');
-                    // Update UI state order immediately (Optimistic)
-                    const cardIds = Array.from(evt.to.children).map(el => el.dataset.id);
+            <!-- TAB CONTENT: LOGS -->
+            <div id="view-logs"
+                class="admin-view hidden h-[600px] glass rounded-xl overflow-hidden flex flex-col font-mono text-xs">
+                <div class="px-4 py-2 bg-black/40 border-b border-white/5 flex justify-between items-center">
+                    <div class="flex gap-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50"></div>
+                        <div class="w-3 h-3 rounded-full bg-amber-500/20 border border-amber-500/50"></div>
+                        <div class="w-3 h-3 rounded-full bg-emerald-500/20 border border-emerald-500/50"></div>
+                    </div>
+                    <span class="text-gray-500">system.log --tail -f</span>
+                </div>
+                <div class="flex-1 p-4 overflow-y-auto space-y-1 text-gray-400 bg-[#0a0a0a]" id="log-console">
+                    <div class="flex h-full items-center justify-center text-gray-600 italic text-center">
+                        Initializing uplink...<br>Connecting to system stream...
+                    </div>
+                </div>
+            </div>
 
-                    cardIds.forEach((id, index) => {
-                        const card = contentData.cards.find(c => c.id === id);
-                        if (card) {
-                            card.laneId = targetLaneId; // Update lane if moved
-                            card.data.order = index;    // Update order
+            <script>
+                // State
+                let usersData = [];
+                let hasLoadedUsers = false;
+                let hasLoadedFleet = false;
+                let hasLoadedFeedback = false;
 
-                            // Persist
-                            fetch('/api/content/card', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': 'Bearer ' + localStorage.getItem('admin_token')
-                                },
-                                body: JSON.stringify(card)
-                            }).catch(e => console.error("Order Save Failed", e));
-                        }
+                // Logs State
+                let logCursor = null;
+                let logPollInterval = null;
+                let isPollingLogs = false;
+
+                async function switchTab(tabName) {
+                    // 1. Hide all views
+                    document.querySelectorAll('.admin-view').forEach(el => el.classList.add('hidden'));
+                    // 2. Show target view
+                    document.getElementById('view-' + tabName).classList.remove('hidden');
+
+                    // 3. Update Tab Styles
+                    document.querySelectorAll('nav[aria-label="Tabs"] button').forEach(btn => {
+                        btn.classList.remove('border-emerald-500', 'text-emerald-500');
+                        btn.classList.add('border-transparent', 'text-gray-500');
                     });
-                }
-            });
-        });
-        lucide.createIcons();
-    }
+                    const activeBtn = document.getElementById('tab-' + tabName);
+                    activeBtn.classList.remove('border-transparent', 'text-gray-500');
+                    activeBtn.classList.add('border-emerald-500', 'text-emerald-500');
 
-    // --- ACTIONS ---
-    async function addCard(laneId) {
-        const id = `card-${Date.now()}`;
-        const template = laneId === 'mission' ? 'hero' : 'standard';
-        const payload = {
-            id,
-            laneId,
-            template,
-            data: { title: 'NEW CARD', subtitle: 'DRAFT', content: 'Edit this content.' }
-        };
+                    // 4. Lazy Load Data
+                    if (tabName === 'users' && !hasLoadedUsers) await loadUsers();
+                    if (tabName === 'fleet' && !hasLoadedFleet) await loadFleet();
+                    if (tabName === 'dashboard' && !hasLoadedFeedback) await loadFeedback();
 
-        try {
-            const res = await fetch('/api/content/card', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + localStorage.getItem('admin_token')
-                },
-                body: JSON.stringify(payload)
-            });
-            if (res.ok) {
-                contentData.cards.push(payload);
-                renderEditor();
-                openEdit(id); // Open editor immediately
-            }
-        } catch (e) {
-            console.error(e);
-            alert('Failed to create card: ' + e.message);
-        }
-    }
+                    // 5. Handle Logs Polling
+                    if (tabName === 'logs') {
+                        startLogPolling();
+                    } else {
+                        stopLogPolling();
+                    }
+                    // --- FEEDBACK LOGIC ---
+                    async function loadFeedback() {
+                        const widget = document.getElementById('feedback-widget');
+                        try {
+                            const res = await fetch('/api/admin/feedback');
+                            const data = await res.json();
+                            const camp = data.feedback.campaign;
 
-    async function deleteCard(id) {
-        if (!confirm("Are you sure you want to delete this transmission?")) return;
+                            // If we have a campaign, show the "Deploy" view
+                            if (camp) {
+                                widget.innerHTML = `
+                                <div>
+                                    <div class="text-lg text-white font-light mb-1">${camp.name}</div>
+                                    <p class="text-xs text-gray-400 mb-4">Post this payload to Moltbook to "Honey Pot" bot responses.</p>
+                                    
+                                    <div class="bg-black/30 rounded-lg p-3 border border-indigo-500/30 mb-3 relative group">
+                                        <div class="text-[10px] text-indigo-400 font-mono whitespace-pre-wrap leading-relaxed">${camp.copyText}</div>
+                                        <button onclick="copyCampaign('${camp.id}')" id="btn-${camp.id}" 
+                                            class="absolute top-2 right-2 bg-indigo-600 hover:bg-indigo-500 text-white p-1.5 rounded text-xs transition-colors flex items-center gap-1">
+                                            <iconify-icon icon="solar:copy-linear"></iconify-icon> Copy
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="flex gap-2">
+                                        <button class="flex-1 py-2 rounded-lg bg-gray-800 text-gray-400 text-xs hover:bg-gray-700">Skip Function</button>
+                                        <button class="flex-1 py-2 rounded-lg bg-emerald-900/50 text-emerald-400 border border-emerald-500/20 text-xs hover:bg-emerald-900/80">Mark Deployed</button>
+                                    </div>
+                                </div>
+                            `;
 
-        try {
-            const res = await fetch(`/api/content/card/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('admin_token')
-                }
-            });
+                                // Attach copy logic to window for inline onclick
+                                window.copyCampaign = (id) => {
+                                    navigator.clipboard.writeText(camp.copyText).then(() => {
+                                        const btn = document.getElementById('btn-' + id);
+                                        const original = btn.innerHTML;
+                                        btn.innerHTML = '<iconify-icon icon="solar:check-circle-bold"></iconify-icon> Copied';
+                                        btn.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
+                                        setTimeout(() => {
+                                            btn.innerHTML = original;
+                                            btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-500');
+                                        }, 2000);
+                                    });
+                                };
 
-            if (res.ok) {
-                contentData.cards = contentData.cards.filter(c => c.id !== id);
-                renderEditor();
-            } else {
-                alert('Delete Failed');
-            }
-        } catch (e) {
-            console.error(e);
-            alert('Connection Error');
-        }
-    }
+                            } else {
+                                // Fallback to results view if no active campaign
+                                widget.innerHTML = '<div class="text-gray-500 text-xs">No active campaigns.</div>';
+                            }
 
-    // --- EDIT LOGIC (Existing) ---
-    function openEdit(cardId) {
-        const card = contentData.cards.find(c => c.id === cardId);
-        if (!card) return;
-        document.getElementById('edit-id').value = card.id;
-        document.getElementById('edit-lane').value = card.laneId;
-        document.getElementById('edit-template').value = card.template;
-        document.getElementById('edit-subtitle').value = card.data.subtitle || '';
-        document.getElementById('edit-title').value = card.data.title || '';
-        document.getElementById('edit-content').value = card.data.content || '';
-        document.getElementById('edit-modal').classList.remove('hidden');
-    }
+                            hasLoadedFeedback = true;
+                        } catch (e) {
+                            console.error(e);
+                            widget.innerHTML = '<div class="text-red-400 text-xs">Failed to load campaign.</div>';
+                        }
+                    }
 
-    function closeEdit() {
-        document.getElementById('edit-modal').classList.add('hidden');
-    }
+                    document.addEventListener('DOMContentLoaded', loadFeedback); // Load on init too since it's default tab
 
-    async function saveCard() {
-        const btn = document.querySelector('#edit-modal button');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<span class="animate-spin">⏳</span> Transmitting...';
-        btn.disabled = true;
+                    // --- FLEET LOGIC ---
+                    async function loadFleet() {
+                        const fleetContainer = document.getElementById('fleet-container');
+                        fleetContainer.innerHTML = '<div class="text-center text-gray-500 py-8">Loading fleet data...</div>';
+                        try {
+                            const res2 = await fetch('/api/agents');
+                            if (!res2.ok) throw new Error('API Failed');
+                            const data = await res2.json();
 
-        const id = document.getElementById('edit-id').value;
-        const laneId = document.getElementById('edit-lane').value;
-        const template = document.getElementById('edit-template').value;
-        const data = {
-            subtitle: document.getElementById('edit-subtitle').value,
-            title: document.getElementById('edit-title').value,
-            content: document.getElementById('edit-content').value,
-        };
-        const payload = { id, laneId, template, data };
+                            // data.agents is the array based on my api/agents.ts implementation
+                            if (data.agents && data.agents.length > 0) {
+                                fleetContainer.innerHTML = data.agents.map(agent => `
+                                <div class="flex items-center gap-4 p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                                    <div class="w-10 h-10 rounded-lg ${agent.color || 'bg-gray-700'} flex items-center justify-center text-xl text-white shrink-0">
+                                        <iconify-icon icon="${agent.icon}"></iconify-icon>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-white">${agent.name}</div>
+                                        <div class="text-xs text-gray-400">${agent.role}</div>
+                                    </div>
+                                    <span class="text-xs px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${agent.status}</span>
+                                </div>
+                            `).join('');
+                            } else {
+                                fleetContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No agents deployed.</div>';
+                            }
+                            hasLoadedFleet = true;
+                        } catch (e) {
+                            console.error(e);
+                            fleetContainer.innerHTML = '<div class="text-center text-red-400 py-8">Failed to load fleet. Check console.</div>';
+                        }
+                    }
 
-        try {
-            const res = await fetch('/api/content/card', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + localStorage.getItem('admin_token')
-                },
-                body: JSON.stringify(payload)
-            });
-            if (res.ok) {
-                const idx = contentData.cards.findIndex(c => c.id === id);
-                if (idx !== -1) contentData.cards[idx] = payload;
-                renderEditor();
-                closeEdit();
-            } else {
-                alert('Save Failed');
-            }
-        } catch (e) {
-            console.error(e);
-            alert('Connection Error');
-        } finally {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }
-    }
+                    async function loadUsers() {
+                        const tbody = document.getElementById('users-table-body');
+                        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Loading users...</td></tr>';
 
+                        try {
+                            const res = await fetch('/api/admin/users');
+                            if (!res.ok) throw new Error('API Failed');
+                            const data = await res.json();
+                            usersData = data.users || [];
+                            renderUsers(usersData);
+                            hasLoadedUsers = true;
+                        } catch (e) {
+                            console.error(e);
+                            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-red-400">Failed to load users. check console.</td></tr>';
+                        }
+                    }
 
-    // --- USERS LOAD ---
-    async function loadUsers() {
-        const token = localStorage.getItem('admin_token');
-        try {
-            const res = await fetch('/api/admin-stats/users', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (!res.ok) throw new Error("Auth Failed");
-            const data = await res.json();
+                    function renderUsers(users) {
+                        const tbody = document.getElementById('users-table-body');
+                        if (users.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">No users found.</td></tr>';
+                            return;
+                        }
 
-            const tbody = document.getElementById('users-table-body');
-            tbody.innerHTML = data.users.map(u => `
-                    <tr class="hover:bg-slate-800/50 transition">
-                        <td class="p-4 flex items-center gap-3">
-                            <div class="h-8 w-8 rounded-full bg-slate-700 flex items-center justify-center font-bold text-xs">
-                                ${u.name.charAt(0)}
+                        tbody.innerHTML = users.map(u => `
+                        <tr class="hover:bg-white/[0.02] transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full ${u.color || 'bg-gray-700'} flex items-center justify-center text-xs font-bold text-white shadow-inner">
+                                        ${u.initials}
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-white text-sm">${u.name}</div>
+                                        <div class="text-xs text-gray-500">${u.email}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-gray-300 text-sm capitalize">${u.role}</td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getStatusColor(u.status)}">
+                                    ${u.status}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-300 text-sm capitalize">${u.plan}</td>
+                            <td class="px-6 py-4 text-right">
+                                <button class="text-gray-500 hover:text-white transition-colors p-1 rounded hover:bg-white/10">
+                                    <iconify-icon icon="solar:menu-dots-bold"></iconify-icon>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                    }
+
+                    function getStatusColor(status) {
+                        switch (status.toLowerCase()) {
+                            case 'active': return 'bg-emerald-500/10 text-emerald-400';
+                            case 'offline': return 'bg-gray-500/10 text-gray-400';
+                            case 'banned': return 'bg-red-500/10 text-red-400';
+                            default: return 'bg-blue-500/10 text-blue-400';
+                        }
+                    }
+            </script>
+
+            <!-- Quick Links -->
+            <div>
+                <h3 class="text-sm font-medium text-gray-200 mb-3 tracking-tight">Quick Actions</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <button
+                        class="flex items-center gap-3 p-3 rounded-lg border border-white/5 bg-white/[0.01] hover:bg-white/[0.04] hover:border-white/10 transition-all text-left group">
+                        <div
+                            class="w-8 h-8 rounded-md bg-indigo-500/10 text-indigo-400 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-500/20 transition-colors">
+                            <iconify-icon icon="solar:shield-check-linear" width="18"></iconify-icon>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs font-medium text-gray-200">New Claim</span>
+                            <span class="text-[10px] text-gray-500">Verify logic</span>
+                        </div>
+                    </button>
+
+                    <a href="/agents.html"
+                        class="flex items-center gap-3 p-3 rounded-lg border border-white/5 bg-white/[0.01] hover:bg-white/[0.04] hover:border-white/10 transition-all text-left group">
+                        <div
+                            class="w-8 h-8 rounded-md bg-purple-500/10 text-purple-400 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-500/20 transition-colors">
+                            <iconify-icon icon="solar:magic-stick-3-linear" width="18"></iconify-icon>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs font-medium text-gray-200">New Agent</span>
+                            <span class="text-[10px] text-gray-500">From template</span>
+                        </div>
+                    </a>
+
+                    <a href="/data.html"
+                        class="flex items-center gap-3 p-3 rounded-lg border border-white/5 bg-white/[0.01] hover:bg-white/[0.04] hover:border-white/10 transition-all text-left group">
+                        <div
+                            class="w-8 h-8 rounded-md bg-blue-500/10 text-blue-400 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-500/20 transition-colors">
+                            <iconify-icon icon="solar:database-linear" width="18"></iconify-icon>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs font-medium text-gray-200">Connect Data</span>
+                            <span class="text-[10px] text-gray-500">Integration</span>
+                        </div>
+                    </a>
+
+                    <button
+                        class="flex items-center gap-3 p-3 rounded-lg border border-white/5 bg-white/[0.01] hover:bg-white/[0.04] hover:border-white/10 transition-all text-left group">
+                        <div
+                            class="w-8 h-8 rounded-md bg-rose-500/10 text-rose-400 flex items-center justify-center flex-shrink-0 group-hover:bg-rose-500/20 transition-colors">
+                            <iconify-icon icon="solar:danger-triangle-linear" width="18"></iconify-icon>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs font-medium text-gray-200">Incidents</span>
+                            <span class="text-[10px] text-gray-500">View status</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Active Sectors -->
+            <div>
+                <h3 class="text-sm font-medium text-gray-200 mb-3 tracking-tight">Active Sectors</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                    <!-- Finance -->
+                    <div
+                        class="p-5 rounded-xl border border-white/5 bg-gradient-to-b from-[#0f141f] to-[#050505] hover:border-white/10 transition-all group relative">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                                    <iconify-icon icon="solar:wallet-linear" width="20"></iconify-icon>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-200">Finance</div>
+                                    <div class="text-[10px] text-gray-500">RiskCache</div>
+                                </div>
+                            </div>
+                            <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-y-4 gap-x-2 mb-4">
+                            <div>
+                                <div class="text-[10px] text-gray-500 uppercase">Monte Carlo Hits</div>
+                                <div class="text-lg font-medium text-gray-200 tracking-tight">82%</div>
                             </div>
                             <div>
-                                <div class="font-medium text-white">${u.name}</div>
-                                <div class="text-xs text-slate-500">${u.email}</div>
-                        </td>
-                        <td class="p-4"><span class="bg-slate-800 px-2 py-1 rounded text-xs font-mono uppercase">${u.role}</span></td>
-                        <td class="p-4"><span class="text-cyan-400 font-bold text-xs uppercase">${u.plan || 'Free'}</span></td>
-                        <td class="p-4">${new Date(u.created_at).toLocaleDateString()}</td>
-                        <td class="p-4 text-right">
-                             <button class="text-slate-500 hover:text-white transition"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
-                        </td>
-                    </tr>
-                `).join('');
-            lucide.createIcons();
-        } catch (e) {
-            console.error(e);
-            document.getElementById('users-table-body').innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-400">Failed to load users. Resticted Access.</td></tr>`;
-        }
-    }
-
-    // --- ANALYTICS LOAD ---
-    async function loadAnalytics() {
-        const token = localStorage.getItem('admin_token');
-        try {
-            const res = await fetch('/api/admin-stats', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (!res.ok) throw new Error("Auth Failed");
-            const stats = await res.json();
-
-            // 1. Render Stats Cards
-            const card = (label, value, color) => `
-                    <div class="card p-6 rounded-xl">
-                        <div class="text-xs font-mono text-slate-500 uppercase mb-2">${label}</div>
-                        <div class="text-3xl font-black ${color}">${value}</div>
-                    </div>
-                `;
-
-            document.getElementById('stats-row').innerHTML = `
-                    ${card('Total Users', stats.total_users, 'text-white')}
-                    ${card('Hits Today', stats.cache_hits_today, 'text-cyan-400')}
-                    ${card('Hit Rate', stats.hit_rate + '%', 'text-green-400')}
-                    ${card('Cost Saved', stats.cost_saved_today, 'text-purple-400')}
-                `;
-
-            // 2. Render Top Users
-            document.getElementById('top-users-list').innerHTML = stats.top_users.map(u => `
-                    <div class="flex justify-between items-center text-sm border-b border-slate-800 pb-2">
-                        <div class="flex items-center gap-3">
-                             <span class="text-slate-600 font-mono">#${u.rank}</span>
-                             <span class="text-white">${u.name}</span>
+                                <div class="text-[10px] text-gray-500 uppercase">Latency p95</div>
+                                <div class="text-lg font-medium text-gray-200 tracking-tight">45ms</div>
+                            </div>
                         </div>
-                        <div class="font-mono text-cyan-500">${u.score.toLocaleString()}</div>
+                        <div class="pt-4 border-t border-white/5 flex items-center justify-between">
+                            <span class="text-[10px] text-gray-600">Updated 2m ago</span>
+                            <a href="/sector.html?name=finance"
+                                class="text-[10px] text-blue-400 hover:text-blue-300 transition-colors">View
+                                Dashboard
+                                &rarr;</a>
+                        </div>
+                    </div>
+
+                    <!-- Photonics -->
+                    <div
+                        class="p-5 rounded-xl border border-white/5 bg-gradient-to-b from-[#0f141f] to-[#050505] hover:border-white/10 transition-all group">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center">
+                                    <iconify-icon icon="solar:bolt-linear" width="20"></iconify-icon>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-200">Photonics</div>
+                                    <div class="text-[10px] text-gray-500">OpticalCache</div>
+                                </div>
+                            </div>
+                            <div class="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-y-4 gap-x-2 mb-4">
+                            <div>
+                                <div class="text-[10px] text-gray-500 uppercase">Mode</div>
+                                <div class="text-sm font-medium text-gray-200 tracking-tight mt-1">Prototyping</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-gray-500 uppercase">Eff. Throughput</div>
+                                <div class="text-lg font-medium text-gray-200 tracking-tight">1.2 TB/s</div>
+                            </div>
+                        </div>
+                        <div class="pt-4 border-t border-white/5 flex items-center justify-between">
+                            <span class="text-[10px] text-gray-600">Minor Timeout Spikes</span>
+                            <a href="/sector.html?name=photonics"
+                                class="text-[10px] text-orange-400 hover:text-orange-300 transition-colors">View
+                                Dashboard &rarr;</a>
+                        </div>
+                    </div>
+
+                    <!-- Biologics -->
+                    <div
+                        class="p-5 rounded-xl border border-white/5 bg-gradient-to-b from-[#0f141f] to-[#050505] hover:border-white/10 transition-all group">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-8 h-8 rounded-lg bg-pink-500/10 text-pink-400 flex items-center justify-center">
+                                    <iconify-icon icon="solar:dna-linear" width="20"></iconify-icon>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-200">Biologics</div>
+                                    <div class="text-[10px] text-gray-500">FoldingCache</div>
+                                </div>
+                            </div>
+                            <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-y-4 gap-x-2 mb-4">
+                            <div>
+                                <div class="text-[10px] text-gray-500 uppercase">GPU Hrs Saved</div>
+                                <div class="text-lg font-medium text-gray-200 tracking-tight">840h</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-gray-500 uppercase">Queue Depth</div>
+                                <div class="text-lg font-medium text-gray-200 tracking-tight">0</div>
+                            </div>
+                        </div>
+                        <div class="pt-4 border-t border-white/5 flex items-center justify-between">
+                            <span class="text-[10px] text-gray-600">Optimization Active</span>
+                            <a href="/sector.html?name=biologics"
+                                class="text-[10px] text-pink-400 hover:text-pink-300 transition-colors">View
+                                Dashboard
+                                &rarr;</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </main>
+
+    <script>
+                    // --- GLOBAL STATE ---
+                    let usersData = [];
+                    let hasLoadedUsers = false;
+                    let hasLoadedFleet = false;
+                    let hasLoadedFeedback = false;
+
+                    let logCursor = null;
+                    let logPollInterval = null;
+                    let isPollingLogs = false;
+
+                    // --- NAVIGATION ---
+                    async function switchTab(tabName) {
+                        // 1. Hide all views
+                        document.querySelectorAll('.admin-view').forEach(el => el.classList.add('hidden'));
+                        // 2. Show target view
+                        document.getElementById('view-' + tabName).classList.remove('hidden');
+
+                        // 3. Update Tab Styles
+                        document.querySelectorAll('nav[aria-label="Tabs"] button').forEach(btn => {
+                            btn.classList.remove('border-emerald-500', 'text-emerald-500');
+                            btn.classList.add('border-transparent', 'text-gray-500');
+                        });
+                        const activeBtn = document.getElementById('tab-' + tabName);
+                        activeBtn.classList.remove('border-transparent', 'text-gray-500');
+                        activeBtn.classList.add('border-emerald-500', 'text-emerald-500');
+
+                        // 4. Lazy Load Data
+                        if (tabName === 'users' && !hasLoadedUsers) await loadUsers();
+                        if (tabName === 'fleet' && !hasLoadedFleet) await loadFleet();
+                        if (tabName === 'dashboard' && !hasLoadedFeedback) await loadFeedback();
+
+                        // 5. Handle Logs Polling
+                        if (tabName === 'logs') {
+                            startLogPolling();
+                        } else {
+                            stopLogPolling();
+                        }
+                    }
+
+                    // --- 1. USERS LOGIC ---
+                    async function loadUsers() {
+                        const tbody = document.getElementById('users-table-body');
+                        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Loading users...</td></tr>';
+
+                        try {
+                            const res = await fetch('/api/admin/users');
+                            if (!res.ok) throw new Error('API Failed');
+                            const data = await res.json();
+                            usersData = data.users || [];
+                            renderUsers(usersData);
+                            hasLoadedUsers = true;
+                        } catch (e) {
+                            console.error(e);
+                            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-red-400">Failed to load users. check console.</td></tr>';
+                        }
+                    }
+
+                    function renderUsers(users) {
+                        const tbody = document.getElementById('users-table-body');
+                        if (users.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">No users found.</td></tr>';
+                            return;
+                        }
+
+                        tbody.innerHTML = users.map(u => `
+                <tr class="hover:bg-white/[0.02] transition-colors">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full ${u.color || 'bg-gray-700'} flex items-center justify-center text-xs font-bold text-white shadow-inner">
+                                ${u.initials}
+                            </div>
+                            <div>
+                                <div class="font-medium text-white text-sm">${u.name}</div>
+                                <div class="text-xs text-gray-500">${u.email}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-gray-300 text-sm capitalize">${u.role}</td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getStatusColor(u.status)}">
+                            ${u.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-gray-300 text-sm capitalize">${u.plan}</td>
+                    <td class="px-6 py-4 text-right">
+                        <button class="text-gray-500 hover:text-white transition-colors p-1 rounded hover:bg-white/10">
+                            <iconify-icon icon="solar:menu-dots-bold"></iconify-icon>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+                    }
+
+                    function getStatusColor(status) {
+                        switch (status.toLowerCase()) {
+                            case 'active': return 'bg-emerald-500/10 text-emerald-400';
+                            case 'offline': return 'bg-gray-500/10 text-gray-400';
+                            case 'banned': return 'bg-red-500/10 text-red-400';
+                            default: return 'bg-blue-500/10 text-blue-400';
+                        }
+                    }
+
+                    // --- 2. LOGS LOGIC ---
+                    function startLogPolling() {
+                        if (isPollingLogs) return;
+                        isPollingLogs = true;
+                        fetchLogs(); // Initial
+                        logPollInterval = setInterval(fetchLogs, 3000); // 3s poll
+                    }
+
+                    function stopLogPolling() {
+                        isPollingLogs = false;
+                        if (logPollInterval) clearInterval(logPollInterval);
+                    }
+
+                    async function fetchLogs() {
+                        try {
+                            let url = '/api/admin/logs';
+                            if (logCursor) url += `?since=${logCursor}`;
+
+                            const res = await fetch(url);
+                            if (!res.ok) return;
+
+                            const data = await res.json();
+                            if (data.logs && data.logs.length > 0) {
+                                renderLogs(data.logs);
+                                scrollToBottom();
+                            }
+                            if (data.cursor) logCursor = data.cursor;
+
+                        } catch (e) {
+                            console.warn("Log Poll Error", e);
+                        }
+                    }
+
+                    function renderLogs(newLogs) {
+                        const consoleEl = document.getElementById('log-console');
+                        if (consoleEl.innerHTML.includes('text-center')) {
+                            consoleEl.innerHTML = '';
+                        }
+
+                        const fragment = document.createDocumentFragment();
+                        newLogs.forEach(log => {
+                            const row = document.createElement('div');
+                            row.className = "flex gap-2 font-mono hover:bg-white/[0.02]";
+                            row.innerHTML = `
+                    <span class="text-gray-600 w-16 shrink-0">[${log.timestampStr}]</span> 
+                    <span class="${log.levelColor} w-16 shrink-0 font-bold">${log.level}</span>
+                    <span class="text-gray-500 w-24 shrink-0 truncate border-r border-gray-800 pr-2">${log.source}</span>
+                    <span class="text-gray-300">${log.message}</span>
+                `;
+                            fragment.appendChild(row);
+                        });
+                        consoleEl.appendChild(fragment);
+
+                        while (consoleEl.children.length > 500) {
+                            consoleEl.removeChild(consoleEl.firstChild);
+                        }
+                    }
+
+                    function scrollToBottom() {
+                        const consoleEl = document.getElementById('log-console');
+                        consoleEl.scrollTop = consoleEl.scrollHeight;
+                    }
+
+                    // --- 3. FLEET LOGIC ---
+                    async function loadFleet() {
+                        const fleetContainer = document.getElementById('fleet-container');
+                        fleetContainer.innerHTML = '<div class="text-center text-gray-500 py-8">Loading fleet data...</div>';
+                        try {
+                            // Request admin scope to see internal agents (Sentinel, Researcher)
+                            const res2 = await fetch('/api/agents?scope=admin');
+                            if (!res2.ok) throw new Error('API Failed');
+                            const data = await res2.json();
+
+                            if (data.agents && data.agents.length > 0) {
+                                fleetContainer.innerHTML = data.agents.map(agent => `
+                        <div class="flex items-center gap-4 p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                            <div class="w-10 h-10 rounded-lg ${agent.color || 'bg-gray-700'} flex items-center justify-center text-xl text-white shrink-0">
+                                <iconify-icon icon="${agent.icon}"></iconify-icon>
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-white">${agent.name}</div>
+                                <div class="text-xs text-gray-400">${agent.role}</div>
+                            </div>
+                            <span class="text-xs px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${agent.status}</span>
+                        </div>
+                    `).join('');
+                            } else {
+                                fleetContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No agents deployed.</div>';
+                            }
+                            hasLoadedFleet = true;
+                        } catch (e) {
+                            console.error(e);
+                            fleetContainer.innerHTML = '<div class="text-center text-red-400 py-8">Failed to load fleet. Check console.</div>';
+                        }
+                    }
+
+                    // --- 4. FEEDBACK LOGIC ---
+                    async function loadFeedback() {
+                        const widget = document.getElementById('feedback-widget');
+                        try {
+                            const res = await fetch('/api/admin/feedback');
+                            const data = await res.json();
+                            const camp = data.feedback.campaign;
+
+                            if (camp) {
+                                widget.innerHTML = `
+                        <div>
+                            <div class="text-lg text-white font-light mb-1">${camp.name}</div>
+                            <p class="text-xs text-gray-400 mb-4">Post this payload to Moltbook to "Honey Pot" bot responses.</p>
+                            
+                            <div class="bg-black/30 rounded-lg p-3 border border-indigo-500/30 mb-3 relative group">
+                                <div class="text-[10px] text-indigo-400 font-mono whitespace-pre-wrap leading-relaxed">${camp.copyText}</div>
+                                <button onclick="copyCampaign('${camp.id}')" id="btn-${camp.id}" 
+                                    class="absolute top-2 right-2 bg-indigo-600 hover:bg-indigo-500 text-white p-1.5 rounded text-xs transition-colors flex items-center gap-1">
+                                    <iconify-icon icon="solar:copy-linear"></iconify-icon> Copy
+                                </button>
+                            </div>
+                            
+                            <div class="flex gap-2">
+                                <button class="flex-1 py-2 rounded-lg bg-gray-800 text-gray-400 text-xs hover:bg-gray-700">Skip Function</button>
+                                <button class="flex-1 py-2 rounded-lg bg-emerald-900/50 text-emerald-400 border border-emerald-500/20 text-xs hover:bg-emerald-900/80">Mark Deployed</button>
+                            </div>
+                        </div>
+                    `;
+
+                                window.copyCampaign = (id) => {
+                                    navigator.clipboard.writeText(camp.copyText).then(() => {
+                                        const btn = document.getElementById('btn-' + id);
+                                        const original = btn.innerHTML;
+                                        btn.innerHTML = '<iconify-icon icon="solar:check-circle-bold"></iconify-icon> Copied';
+                                        btn.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
+                                        setTimeout(() => {
+                                            btn.innerHTML = original;
+                                            btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-500');
+                                        }, 2000);
+                                    });
+                                };
+
+                            } else {
+                                widget.innerHTML = '<div class="text-gray-500 text-xs">No active campaigns.</div>';
+                            }
+
+                            hasLoadedFeedback = true;
+                        } catch (e) {
+                            console.error(e);
+                            widget.innerHTML = '<div class="text-red-400 text-xs">Failed to load campaign.</div>';
+                        }
+                    }
+
+                    // Init
+                    document.addEventListener('DOMContentLoaded', loadFeedback);
+                    // --- Notification System ---
+                    const notifDropdown = document.getElementById('notif-dropdown');
+                    const notifList = document.getElementById('notif-list');
+                    const notifBadge = document.getElementById('notif-badge');
+                    let notificationInterval;
+
+                    function toggleNotifications() {
+                        notifDropdown.classList.toggle('hidden');
+                    }
+
+                    async function fetchNotifications() {
+                        // Assume user is logged in and we have a token or mock ID
+                        const user = JSON.parse(localStorage.getItem('agentcache_user'));
+                        const userId = user ? user.id : 'mock-user-id'; // Fallback for dev
+
+                        try {
+                            const res = await fetch(`/api/notifications?userId=${userId}`);
+                            const data = await res.json();
+
+                            if (data.notifications && data.notifications.length > 0) {
+                                renderNotifications(data.notifications);
+                                notifBadge.classList.remove('hidden');
+                            } else {
+                                notifBadge.classList.add('hidden');
+                                notifList.innerHTML = '<div class="p-4 text-center text-slate-500 text-xs">No new notifications</div>';
+                            }
+                        } catch (e) {
+                            console.error('Failed to fetch notifications', e);
+                        }
+                    }
+
+                    function renderNotifications(items) {
+                        notifList.innerHTML = items.map(n => `
+            <div class="p-4 border-b border-slate-700/50 hover:bg-slate-700/30 transition cursor-pointer" onclick="markRead('${n.id}')">
+                <div class="flex gap-3">
+                    <div class="mt-1">
+                        ${getIconForType(n.type)}
+                    </div>
+                    <div>
+                        <div class="text-sm font-bold text-slate-200 mb-1">${n.title}</div>
+                        <div class="text-xs text-slate-400 leading-relaxed">${n.message}</div>
+                        <div class="text-[10px] text-slate-600 mt-2">${new Date(n.createdAt).toLocaleTimeString()}</div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+                    }
+
+                    function getIconForType(type) {
+                        switch (type) {
+                            case 'success': return '<i data-lucide="check-circle" class="w-4 h-4 text-emerald-500"></i>';
+                            case 'warning': return '<i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>';
+                            case 'error': return '<i data-lucide="x-circle" class="w-4 h-4 text-red-500"></i>';
+                            default: return '<i data-lucide="info" class="w-4 h-4 text-blue-500"></i>';
+                        }
+                    }
+
+                    async function markRead(id) {
+                        const user = JSON.parse(localStorage.getItem('agentcache_user'));
+                        const userId = user ? user.id : 'mock-user-id';
+
+                        await fetch('/api/notifications/read', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ notificationId: id, userId })
+                        });
+                        fetchNotifications(); // Refresh
+                    }
+
+                    async function markAllRead() {
+                        const user = JSON.parse(localStorage.getItem('agentcache_user'));
+                        const userId = user ? user.id : 'mock-user-id';
+
+                        await fetch('/api/notifications/read', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ notificationId: 'all', userId })
+                        });
+                        fetchNotifications();
+                    }
+
+                    // Initialize Notification Polling
+                    setInterval(fetchNotifications, 30000); // Poll every 30s
+                    fetchNotifications(); // Initial call
+
+    </script>
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal"
+        class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeSettings()"></div>
+        <div class="relative w-full max-w-4xl h-[600px] glass rounded-2xl overflow-hidden flex shadow-2xl transform scale-95 transition-transform duration-300"
+            id="settings-panel">
+
+            <!-- Sidebar -->
+            <div class="w-64 bg-black/40 border-r border-white/5 flex flex-col">
+                <div class="h-16 flex items-center px-6 border-b border-white/5">
+                    <span class="text-sm font-bold text-white tracking-widest uppercase">Settings</span>
+                </div>
+                <nav class="flex-1 p-4 space-y-1">
+                    <button onclick="switchSettingsTab('general')" id="set-tab-general"
+                        class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-emerald-400 bg-white/5 rounded-lg transition-colors text-left">
+                        <iconify-icon icon="solar:settings-linear"></iconify-icon> General
+                    </button>
+                    <button onclick="switchSettingsTab('account')" id="set-tab-account"
+                        class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors text-left">
+                        <iconify-icon icon="solar:user-id-linear"></iconify-icon> Account
+                    </button>
+                    <button onclick="switchSettingsTab('system')" id="set-tab-system"
+                        class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors text-left hidden"
+                        data-role="admin">
+                        <iconify-icon icon="solar:server-path-linear"></iconify-icon> System
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 flex flex-col bg-[#050505]/95">
+                <div class="h-16 flex items-center justify-between px-8 border-b border-white/5">
+                    <h2 id="settings-title" class="text-lg font-light text-white">General Preferences</h2>
+                    <button onclick="closeSettings()" class="text-gray-500 hover:text-white transition-colors">
+                        <iconify-icon icon="solar:close-circle-linear" class="text-2xl"></iconify-icon>
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+
+                    <!-- General Tab -->
+                    <div id="set-view-general" class="settings-view space-y-8">
+                        <!-- Appearance -->
+                        <div>
+                            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Appearance</h3>
+                            <div
+                                class="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5">
+                                <div>
+                                    <div class="text-sm font-medium text-white">Theme Preference</div>
+                                    <div class="text-xs text-gray-500">Sync with system or force dark mode.</div>
+                                </div>
+                                <select id="input-theme" onchange="saveUserPrefs()"
+                                    class="bg-black/50 border border-white/10 text-white text-xs rounded-lg px-3 py-2 focus:ring-1 focus:ring-emerald-500 outline-none">
+                                    <option value="system">System Default</option>
+                                    <option value="dark">Dark Mode</option>
+                                    <option value="light">Light Mode</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Notifications -->
+                        <div>
+                            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Notifications
+                            </h3>
+                            <div
+                                class="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5">
+                                <div>
+                                    <div class="text-sm font-medium text-white">Enable Notifications</div>
+                                    <div class="text-xs text-gray-500">Receive alerts for payments and system events.
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="input-notifs" onchange="saveUserPrefs()"
+                                        class="sr-only peer">
+                                    <div
+                                        class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-emerald-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600">
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account Tab -->
+                    <div id="set-view-account" class="settings-view hidden space-y-8">
+                        <div>
+                            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Profile</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1">Display Name</label>
+                                    <input type="text" id="input-name"
+                                        class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1">Email</label>
+                                    <input type="email" id="input-email" disabled
+                                        class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-gray-500 cursor-not-allowed">
+                                </div>
+                                <button onclick="saveProfile()"
+                                    class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded-lg transition-colors">
+                                    Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Tab (Admin) -->
+                    <div id="set-view-system" class="settings-view hidden space-y-8">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest">Global Configuration
+                                (system_settings)</h3>
+                            <button onclick="addSystemSetting()"
+                                class="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
+                                <iconify-icon icon="solar:add-circle-linear"></iconify-icon> Add Key
+                            </button>
+                        </div>
+
+                        <div id="system-settings-list" class="space-y-4">
+                            <!-- Injected via JS -->
+                            <div class="text-center text-gray-500 text-xs py-8">Loading system settings...</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+            // --- SETTINGS LOGIC ---
+
+            function openSettings() {
+                const modal = document.getElementById('settings-modal');
+                const panel = document.getElementById('settings-panel');
+
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                panel.classList.remove('scale-95');
+                panel.classList.add('scale-100');
+
+                loadUserPrefs();
+                checkAdminRole();
+            }
+
+            function closeSettings() {
+                const modal = document.getElementById('settings-modal');
+                const panel = document.getElementById('settings-panel');
+
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                panel.classList.remove('scale-100');
+                panel.classList.add('scale-95');
+            }
+
+            function switchSettingsTab(tab) {
+                document.querySelectorAll('.settings-view').forEach(el => el.classList.add('hidden'));
+                document.getElementById('set-view-' + tab).classList.remove('hidden');
+
+                document.querySelectorAll('[id^="set-tab-"]').forEach(btn => {
+                    btn.classList.remove('text-emerald-400', 'bg-white/5');
+                    btn.classList.add('text-gray-500');
+                });
+                const active = document.getElementById('set-tab-' + tab);
+                active.classList.add('text-emerald-400', 'bg-white/5');
+                active.classList.remove('text-gray-500');
+
+                document.getElementById('settings-title').innerText = tab.charAt(0).toUpperCase() + tab.slice(1) + (tab === 'general' ? ' Preferences' : ' Settings');
+
+                if (tab === 'system') loadSystemSettings();
+            }
+
+            // 1. User Preferences
+            async function loadUserPrefs() {
+                try {
+                    const res = await fetch('/api/settings/preferences', {
+                        headers: { 'x-user-id': getUserId() }
+                    });
+                    const data = await res.json();
+
+                    document.getElementById('input-theme').value = data.themePref || 'system';
+                    document.getElementById('input-notifs').checked = data.notificationsEnabled;
+                } catch (e) { console.error(e); }
+            }
+
+            async function saveUserPrefs() {
+                const themePref = document.getElementById('input-theme').value;
+                const notificationsEnabled = document.getElementById('input-notifs').checked;
+
+                try {
+                    await fetch('/api/settings/preferences', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-user-id': getUserId()
+                        },
+                        body: JSON.stringify({ themePref, notificationsEnabled })
+                    });
+                    if (themePref === 'dark') document.documentElement.classList.add('dark');
+                    if (themePref === 'light') document.documentElement.classList.remove('dark');
+                } catch (e) { console.error(e); }
+            }
+
+            // 2. System Settings (Admin)
+            async function checkAdminRole() {
+                const user = JSON.parse(localStorage.getItem('agentcache_user'));
+                if (user && user.role === 'admin') {
+                    document.getElementById('set-tab-system').classList.remove('hidden');
+                }
+            }
+
+            async function loadSystemSettings() {
+                const list = document.getElementById('system-settings-list');
+                list.innerHTML = '<div class="text-center text-gray-500 text-xs py-8">Loading...</div>';
+
+                try {
+                    const res = await fetch('/api/admin/settings', {
+                        headers: { 'x-user-id': getUserId() }
+                    });
+                    if (res.status === 403) {
+                        list.innerHTML = '<div class="text-red-400 text-xs">Access Denied</div>';
+                        return;
+                    }
+                    const data = await res.json();
+                    const entries = Object.entries(data);
+
+                    if (entries.length === 0) {
+                        list.innerHTML = '<div class="text-center text-gray-500 text-xs">No global settings defined.</div>';
+                        return;
+                    }
+
+                    list.innerHTML = entries.map(([key, val]) => `
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/5 flex flex-col gap-2">
+                         <div class="flex justify-between items-center">
+                             <div class="text-xs font-mono text-emerald-400">${key}</div>
+                             <button onclick="editSystemSetting('${key}')" class="text-gray-500 hover:text-white"><iconify-icon icon="solar:pen-linear"></iconify-icon></button>
+                         </div>
+                         <div class="text-xs text-gray-300 font-mono bg-black/30 p-2 rounded truncate">${JSON.stringify(val)}</div>
                     </div>
                 `).join('');
 
-            // 3. Render Chart
-            const ctx = document.getElementById('growthChart').getContext('2d');
-            if (chartInstance) chartInstance.destroy();
+                } catch (e) { console.error(e); }
+            }
 
-            chartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: stats.growth_data.map(d => d.day),
-                    datasets: [{
-                        label: 'Users',
-                        data: stats.growth_data.map(d => d.users),
-                        borderColor: '#06b6d4',
-                        backgroundColor: 'rgba(6, 182, 212, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { display: false } },
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' } }
-                    }
+            async function editSystemSetting(key) {
+                const val = prompt(`Enter JSON value for ${key}:`);
+                if (!val) return;
+
+                try {
+                    const parsed = JSON.parse(val);
+                    await fetch('/api/admin/settings', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-user-id': getUserId()
+                        },
+                        body: JSON.stringify({ key, value: parsed, description: 'Updated via UI' })
+                    });
+                    loadSystemSettings(); // refresh
+                } catch (e) {
+                    alert('Invalid JSON');
                 }
-            });
+            }
 
-        } catch (e) {
-            console.error(e);
-        }
-    }
+            function addSystemSetting() {
+                const key = prompt("Enter Setting Key (e.g. global_maintenance):");
+                if (!key) return;
+                editSystemSetting(key);
+            }
 
-    // --- INITIALIZATION ---
-    document.addEventListener('DOMContentLoaded', () => {
-        const token = localStorage.getItem('admin_token');
-        if (!token) {
-            document.getElementById('auth-modal').classList.remove('hidden');
-        } else {
-            loadContent();
-            loadUsers();
-            loadAnalytics();
-        }
-        lucide.createIcons();
-    });
-</script>
+            // Helpers
+            function getUserId() {
+                const user = JSON.parse(localStorage.getItem('agentcache_user'));
+                return user ? user.id : 'mock-user-id';
+            }
+
+            // Attach to global scope
+            window.openSettings = openSettings;
+    </script>
 </body>
 
 </html>

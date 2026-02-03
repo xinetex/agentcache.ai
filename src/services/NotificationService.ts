@@ -23,6 +23,17 @@ export class NotificationService {
                 metadata
             });
             console.log(`[Notification] Sent to ${userId}: ${title}`);
+
+            // 3. Forward to Telegram (if critical or info)
+            if (type !== 'success') {
+                try {
+                    // Lazy load to avoid circular deps
+                    const { TelegramService } = await import('./external/TelegramService.js');
+                    await TelegramService.notifyAdmin(`*${title}*\n${message}`);
+                } catch (e) {
+                    console.warn('[Notification] Failed to forward to Telegram:', e);
+                }
+            }
         } catch (err) {
             console.error('[Notification] Failed to send:', err);
         }

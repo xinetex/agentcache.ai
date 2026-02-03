@@ -4,7 +4,7 @@ import { systemSettings, users } from '../../src/db/schema.js';
 import { eq } from 'drizzle-orm';
 import { parseBody } from '../../lib/request.js';
 
-export const config = { runtime: 'edge' };
+export const config = { runtime: 'nodejs' };
 
 export default async function handler(req) {
     const { method } = req;
