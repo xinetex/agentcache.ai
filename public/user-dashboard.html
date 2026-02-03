@@ -349,6 +349,11 @@
 
                             const data = await res.json();
 
+                            // 1. Render User Greeting
+                            if (data.user?.name) {
+                                document.getElementById('user-greeting').innerText = `Good morning, ${data.user.name}`;
+                            }
+
                             // 2. Render Efficiency Metrics
                             const total = 10000; // Mock Quota
                             const used = data.usage?.requests || 0;
@@ -383,17 +388,52 @@
 
                             // 4. Render Activity
                             const actContainer = document.getElementById('activity-list');
-                            if (actContainer && data.recentActivity?.length) {
-                                actContainer.innerHTML = data.recentActivity.map(act => `
-                                           <div class="relative pl-6">
-                                                <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 bg-white border-2 border-${act.color}-500 rounded-full"></div>
-                                                <p class="text-xs text-gray-500 mb-0.5">${act.time}</p>
-                                                <p class="text-sm text-gray-900 font-medium">${act.title}</p>
-                                                <p class="text-xs text-gray-500 truncate">${act.subtitle}</p>
+                            if (actContainer) {
+                                if (data.recentActivity?.length) {
+                                    actContainer.innerHTML = data.recentActivity.map(act => `
+                                            <div class="relative pl-6">
+                                                    <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 bg-white border-2 border-${act.color}-500 rounded-full"></div>
+                                                    <p class="text-xs text-gray-500 mb-0.5">${act.time}</p>
+                                                    <p class="text-sm text-gray-900 font-medium">${act.title}</p>
+                                                    <p class="text-xs text-gray-500 truncate">${act.subtitle}</p>
+                                                </div>
+                                            `).join('');
+                                } else {
+                                    actContainer.innerHTML = '<div class="text-xs text-slate-400 p-2 ml-4">No recent activity.</div>';
+                                }
+                            }
+
+                            // 5. Render Active Workflows
+                            const wfContainer = document.getElementById('active-workflows-list');
+                            if (wfContainer && data.activeWorkflows?.length > 0) {
+                                wfContainer.innerHTML = `<div class="divide-y divide-gray-100">${data.activeWorkflows.map(wf => `
+                                            <div class="p-4 hover:bg-gray-50 transition-colors cursor-pointer group">
+                                                 <div class="flex items-center justify-between">
+                                                     <div>${wf.name}</div>
+                                                     <div class="text-xs bg-blue-50 text-blue-600 px-2.5 py-0.5 rounded-full border border-blue-100">${wf.status || 'Active'}</div>
+                                                 </div>
                                             </div>
-                                        `).join('');
-                            } else {
-                                actContainer.innerHTML = '<div class="text-xs text-slate-400 p-2 ml-4">No recent activity.</div>';
+                                        `).join('')}</div>`;
+                                wfContainer.classList.remove('min-h-[100px]', 'flex-col', 'justify-center', 'flex');
+                            }
+
+                            // 6. Render Recommended Agents
+                            const agentsContainer = document.getElementById('recommended-agents-list');
+                            if (agentsContainer) {
+                                if (!data.recommendedAgents || data.recommendedAgents.length === 0) {
+                                    agentsContainer.innerHTML = `
+                                                <div class="col-span-1 md:col-span-2 bg-gray-50 border border-dashed border-gray-300 rounded-xl p-8 text-center">
+                                                    <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400">
+                                                        <iconify-icon icon="solar:users-group-rounded-linear" class="text-xl"></iconify-icon>
+                                                    </div>
+                                                    <p class="text-sm text-gray-900 font-medium">Explore the Agent Exchange</p>
+                                                    <p class="text-xs text-gray-500 mt-1 mb-4">Find expert agents to automate your tasks.</p>
+                                                    <a href="/index.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 shadow-sm text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                                                        Browse Marketplace <iconify-icon icon="solar:arrow-right-linear"></iconify-icon>
+                                                    </a>
+                                                </div>
+                                             `;
+                                }
                             }
 
                         } catch (e) {

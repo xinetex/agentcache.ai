@@ -1,6 +1,6 @@
 
 import { db } from '../src/db/client.js';
-import { creditUsageDaily, decisions, agents, marketplaceListings } from '../src/db/schema.js';
+import { creditUsageDaily, decisions, agents, marketplaceListings, users } from '../src/db/schema.js';
 import { eq, desc } from 'drizzle-orm';
 
 export async function dashboardHandler(req, res) {
@@ -19,7 +19,14 @@ export async function dashboardHandler(req, res) {
 
     try {
         // Mock User Context (replace with real auth)
+        // For the "Clean Onboarding" case, we might want a fresh user or just generic.
+        // Let's see if we can get a user from the DB, or fallback to a generic object.
         const mockUserId = '00000000-0000-0000-0000-000000000000'; // Placeholder
+
+        // 1.5 Fetch User Profile
+        // Try to find ANY user to mock the session, or use the mock ID
+        const userResult = await db.select().from(users).limit(1);
+        const userProfile = userResult[0] || { name: 'User', email: 'user@example.com' };
 
         // 2. Fetch Usage (Efficiency)
         const usageData = await db.select()
@@ -53,6 +60,10 @@ export async function dashboardHandler(req, res) {
 
         // 5. Construct Response
         const dashboardData = {
+            user: {
+                name: userProfile.name || 'Explorer',
+                email: userProfile.email
+            },
             usage: {
                 requests: currentUsage.edgeInvocations || 0,
                 hitRate: hitRate,
