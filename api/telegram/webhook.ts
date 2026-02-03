@@ -1,5 +1,5 @@
 
-import { TelegramService } from '../../src/services/external/TelegramService';
+import { TelegramService } from '../../src/services/external/TelegramService.js';
 
 export const config = {
     runtime: 'nodejs', // Telegraf requires Node.js APIs (http/https/crypto)
