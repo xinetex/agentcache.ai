@@ -1,7 +1,7 @@
 
-import { db } from '../db';
-import { creditUsageDaily, decisions, agents, marketplaceListings } from '../db/schema';
-import { eq, desc, sql } from 'drizzle-orm';
+import { db } from '../src/db/client.js';
+import { creditUsageDaily, decisions, agents, marketplaceListings } from '../src/db/schema.js';
+import { eq, desc } from 'drizzle-orm';
 
 export async function dashboardHandler(req, res) {
     // 1. Auth Check (Mock for now, replacing hardcoded check)

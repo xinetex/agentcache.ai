@@ -170,35 +170,42 @@
                         </p>
                     </div>
                     <div class="flex items-center gap-3">
-                        <a href="/data.html"
-                            class="h-9 px-4 inline-flex items-center gap-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
-                            <iconify-icon icon="solar:upload-linear" class="text-lg" stroke-width="1.5"></iconify-icon>
-                            Upload Context
-                        </a>
+                        <div class="relative">
+                            <input type="file" id="context-upload-input" class="hidden">
+                            <label for="context-upload-input" id="upload-label"
+                                class="h-9 px-4 inline-flex items-center gap-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm cursor-pointer select-none">
+                                <iconify-icon icon="solar:upload-linear" class="text-lg"
+                                    stroke-width="1.5"></iconify-icon>
+                                <span>Upload Context</span>
+                            </label>
+                        </div>
 
                         <script>
-                            document.getElementById('context-upload-input').addEventListener('change', (e) => {
-                                if (e.target.files.length > 0) {
-                                    const file = e.target.files[0];
-                                    // Simulate "Smart Analysis"
-                                    const btn = e.target.nextElementSibling;
-                                    const originalText = btn.innerHTML;
-                                    btn.innerHTML = `<iconify-icon icon="line-md:loading-twotone-loop" class="text-lg"></iconify-icon> Analyzing ${file.name}...`;
+                            const uploadInput = document.getElementById('context-upload-input');
+                            if (uploadInput) {
+                                uploadInput.addEventListener('change', (e) => {
+                                    if (e.target.files.length > 0) {
+                                        const file = e.target.files[0];
+                                        const label = document.getElementById('upload-label');
+                                        const originalContent = label.innerHTML;
 
-                                    setTimeout(() => {
-                                        btn.innerHTML = originalText;
-                                        // Show Toast / Suggestion
-                                        alert(`📄 Context Analyzed: ${file.name}\n\n🤖 AI Suggestion: Based on this ${file.name.split('.').pop().toUpperCase()} file, we recommend using the "Data Synthesizer" agent to extract insights.`);
+                                        label.innerHTML = `<iconify-icon icon="line-md:loading-twotone-loop" class="text-lg"></iconify-icon> Analyzing...`;
 
-                                        // Highlight the agent card visually
-                                        const agentCard = document.querySelectorAll('.bg-emerald-50')[1]; // Heuristic to find the card
-                                        if (agentCard) {
-                                            agentCard.parentElement.parentElement.parentElement.style.border = "2px solid #10b981";
-                                            agentCard.parentElement.parentElement.parentElement.classList.add('ring-4', 'ring-emerald-500/20');
-                                        }
-                                    }, 1500);
-                                }
-                            });
+                                        setTimeout(() => {
+                                            label.innerHTML = originalContent;
+                                            alert(`📄 Context Analyzed: ${file.name}\n\n🤖 AI Suggestion: Based on this ${file.name.split('.').pop().toUpperCase()} file, we recommend using the "Data Synthesizer" agent.`);
+
+                                            // Visual feedback on agent card
+                                            const cards = document.querySelectorAll('.group');
+                                            if (cards.length > 1) {
+                                                const synthesizer = cards[1];
+                                                synthesizer.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50/50');
+                                                setTimeout(() => synthesizer.classList.remove('ring-2', 'ring-emerald-500', 'bg-emerald-50/50'), 3000);
+                                            }
+                                        }, 1500);
+                                    }
+                                });
+                            }
                         </script>
                         <button
                             class="h-9 px-4 inline-flex items-center gap-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-all shadow-sm">
