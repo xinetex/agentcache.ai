@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sector Dashboard | AgentCache</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gray: { 850: '#1f2937', 900: '#111827', 950: '#030712' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #050505;
+            color: #a1a1aa;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body class="h-screen flex text-sm">
+
+    <!-- Sidebar (Simplified) -->
+    <aside class="w-16 flex flex-col items-center py-4 bg-[#09090b] border-r border-white/5">
+        <a href="/mission-control.html" class="mb-6 text-white hover:text-emerald-400">
+            <iconify-icon icon="solar:arrow-left-linear" width="24"></iconify-icon>
+        </a>
+        <div class="space-y-4">
+            <a href="#"
+                class="w-10 h-10 rounded-lg bg-white/5 text-gray-400 hover:text-white flex items-center justify-center transition-colors">
+                <iconify-icon icon="solar:widget-linear" width="20"></iconify-icon>
+            </a>
+            <a href="#"
+                class="w-10 h-10 rounded-lg bg-white/5 text-gray-400 hover:text-white flex items-center justify-center transition-colors">
+                <iconify-icon icon="solar:chart-square-linear" width="20"></iconify-icon>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 p-8 overflow-y-auto">
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 id="sector-title" class="text-3xl font-light text-white tracking-tight">Sector Overview</h1>
+                <p id="sector-desc" class="text-gray-500 mt-1">Real-time cache performance metrics.</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]"></div>
+                <span class="text-emerald-500 font-mono">LIVE</span>
+            </div>
+        </header>
+
+        <!-- Metrics Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="glass p-6 rounded-xl">
+                <div class="text-gray-500 text-xs uppercase tracking-wider mb-2">Hit Rate</div>
+                <div class="text-4xl font-thin text-white" id="metric-hit">94.2%</div>
+            </div>
+            <div class="glass p-6 rounded-xl">
+                <div class="text-gray-500 text-xs uppercase tracking-wider mb-2">Latency (P99)</div>
+                <div class="text-4xl font-thin text-white" id="metric-lat">12ms</div>
+                <div class="text-xs text-gray-600 mt-2">Target: < 50ms</div>
+                </div>
+                <div class="glass p-6 rounded-xl">
+                    <div class="text-gray-500 text-xs uppercase tracking-wider mb-2">Throughput</div>
+                    <div class="text-4xl font-thin text-white" id="metric-tps">4.1 TB/s</div>
+                </div>
+            </div>
+
+            <!-- Big Chart Placeholder -->
+            <div class="glass rounded-xl p-8 h-96 flex flex-col justify-center items-center text-center">
+                <iconify-icon icon="solar:graph-new-linear" class="text-6xl text-gray-700 mb-4"></iconify-icon>
+                <h3 class="text-gray-300 font-medium">Visualization Stream</h3>
+                <p class="text-gray-600 text-xs max-w-sm mt-2">
+                    Real-time node graph visualization for this sector is initializing.
+                    Data is streaming from the Cache Bus.
+                </p>
+            </div>
+
+    </main>
+
+    <script>
+        // Simple Query Param Logic
+        const params = new URLSearchParams(window.location.search);
+        const sector = params.get('name') || 'Unknown';
+
+        const config = {
+            finance: { title: 'Finance Sector', desc: 'RiskCache & High Freq Trading Nodes', color: 'blue' },
+            photonics: { title: 'Photonics Sector', desc: 'OpticalCache & Light Transport', color: 'orange' },
+            biologics: { title: 'Biologics Sector', desc: 'FoldingCache & Protein Sequence', color: 'pink' }
+        };
+
+        const data = config[sector.toLowerCase()] || { title: sector, desc: 'Sector Overview' };
+
+        document.getElementById('sector-title').innerText = data.title;
+        document.getElementById('sector-desc').innerText = data.desc;
+        document.title = `${data.title} | Mission Control`;
+
+    </script>
+</body>
+
+</html>

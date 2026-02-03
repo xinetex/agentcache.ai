@@ -48,13 +48,30 @@ export default async function handler(req) {
         const cid = await uploadToIPFS(file);
         const gatewayUrl = getGatewayUrl(cid);
 
-        return new Response(JSON.stringify({
-            success: true,
-            cid,
-            url: gatewayUrl,
+        // --- PERSISTENCE (Redis) ---
+        const { redis } = await import('../../src/lib/redis.ts'); // Dynamic import for mixed JS/TS env
+        const { createHash } = await import('crypto');
+
+        const hash = createHash('sha256').update(apiKey).digest('hex');
+        const storageKey = `files:${hash}`;
+
+        const fileRecord = {
+            id: cid, // Use CID as ID
             name: file.name,
             size: file.size,
+            type: file.type || 'application/octet-stream',
+            url: gatewayUrl,
+            storage: 'ipfs',
             timestamp: Date.now()
+        };
+
+        // Push to Redis List
+        await redis.lpush(storageKey, JSON.stringify(fileRecord));
+        // ---------------------------
+
+        return new Response(JSON.stringify({
+            success: true,
+            ...fileRecord
         }), {
             status: 200,
             headers: {

@@ -138,6 +138,26 @@ export default async function handler(req: Request, context: any): Promise<Respo
         });
 
     } catch (error: any) {
+        console.error("AI Provider Error:", error);
+
+        // Graceful Fallback for Demo/Quota limits
+        if (error.message.includes('429') || error.message.includes('quota') || error.message.includes('Insufficient balance')) {
+            const fallbackResponse = "I apologize, but my access to the external neural core (Moonshot API) is currently rate-limited or out of credits. \n\nHowever, I can still access local systems. How can I assist you with the internal dashboard data?";
+
+            return new Response(JSON.stringify({
+                message: fallbackResponse,
+                contextSource: 'System (Fallback)',
+                latency: 10,
+                cached: false,
+                metrics: {
+                    provider: 'fallback',
+                    error: error.message
+                }
+            }), {
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
         return new Response(JSON.stringify({ error: error.message }), { status: 500 });
     }
 }

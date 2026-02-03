@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflows | AgentCache</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+        }
+    </style>
+</head>
+
+<body class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col">
+        <div class="h-16 flex items-center px-6 border-b border-gray-100">
+            <a href="/user-dashboard.html"
+                class="flex items-center gap-2 text-gray-900 font-medium hover:text-blue-600">
+                <iconify-icon icon="solar:arrow-left-linear"></iconify-icon> Back
+            </a>
+        </div>
+        <nav class="flex-1 p-4 space-y-1">
+            <a href="/user-dashboard.html"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-lg">Home</a>
+            <a href="/agents.html"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-lg">Assistants</a>
+            <a href="/workflows.html"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg">Workflows</a>
+            <a href="/settings.html"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-lg">Settings</a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto p-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-900">Active Workflows</h1>
+                <button
+                    class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center gap-2">
+                    <iconify-icon icon="solar:play-circle-linear" class="text-lg"></iconify-icon> New Execution
+                </button>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Workflow
+                                Name</th>
+                            <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Agent</th>
+                            <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Progress
+                            </th>
+                            <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Started
+                            </th>
+                            <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-right">
+                                Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100" id="workflows-list">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <script>
+                async function loadWorkflows() {
+                    try {
+                        const token = localStorage.getItem('agentcache_token') || 'demo';
+                        // Note: api/pipelines/list.js checks for Bearer token. 
+                        // For simpler dev flow if auth fails, we might need a mock mode or ensure token exists.
+
+                        const res = await fetch('/api/pipelines/list', {
+                            headers: { 'Authorization': 'Bearer ' + token }
+                        });
+
+                        if (!res.ok) throw new Error(res.statusText);
+
+                        const data = await res.json();
+                        const container = document.getElementById('workflows-list');
+
+                        if (!data.pipelines || data.pipelines.length === 0) {
+                            container.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-gray-400">No active workflows found.</td></tr>`;
+                            return;
+                        }
+
+                        container.innerHTML = data.pipelines.map(p => {
+                            // Map Status to Colors
+                            let statusColor = 'gray';
+                            if (p.status === 'active' || p.status === 'running') statusColor = 'blue';
+                            if (p.status === 'completed') statusColor = 'emerald';
+                            if (p.status === 'failed') statusColor = 'red';
+                            if (p.status === 'paused') statusColor = 'amber';
+
+                            const progress = p.status === 'completed' ? 100 : (p.status === 'running' ? 60 : 0);
+
+                            return `
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4">
+                                    <span class="font-medium text-gray-900 block">${p.name}</span>
+                                    <span class="text-xs text-gray-500">ID: #${p.id.slice(0, 8)}</span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600 capitalize">${p.sector || 'General'}</td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${statusColor}-50 text-${statusColor}-700 border border-${statusColor}-100">
+                                        ${p.status}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="w-24 bg-gray-100 rounded-full h-1.5">
+                                        <div class="bg-${statusColor}-500 h-1.5 rounded-full" style="width: ${progress}%"></div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">${new Date(p.updatedAt).toLocaleDateString()}</td>
+                                <td class="px-6 py-4 text-right">
+                                    <button class="text-gray-400 hover:text-gray-600"><iconify-icon icon="solar:menu-dots-linear" width="20"></iconify-icon></button>
+                                </td>
+                            </tr>
+                            `;
+                        }).join('');
+                    } catch (e) {
+                        console.error("Failed to load workflows", e);
+                        // Mock fallback for demo if API fails/empty
+                        const container = document.getElementById('workflows-list');
+                        if (container.children.length === 0) {
+                            container.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-gray-400">Unable to load workflows (Auth/Connection Error).</td></tr>`;
+                        }
+                    }
+                }
+                loadWorkflows();
+            </script>
+        </div>
+    </main>
+</body>
+
+</html>

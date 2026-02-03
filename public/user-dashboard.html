@@ -60,37 +60,35 @@
 
             <!-- Main Nav -->
             <nav class="p-4 space-y-1">
-                <a href="#"
+                <a href="/user-dashboard.html"
                     class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-900 bg-gray-50 rounded-lg group">
                     <iconify-icon icon="solar:home-smile-linear" class="text-lg text-gray-500 group-hover:text-gray-900"
                         stroke-width="1.5"></iconify-icon>
                     Home
                 </a>
-                <a href="#"
+                <a href="/chat.html"
+                    class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-lg group transition-colors">
+                    <iconify-icon icon="solar:chat-round-line-linear"
+                        class="text-lg text-gray-400 group-hover:text-gray-900" stroke-width="1.5"></iconify-icon>
+                    Chat
+                </a>
+                <a href="/agents.html"
                     class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-lg group transition-colors">
                     <iconify-icon icon="solar:users-group-rounded-linear"
                         class="text-lg text-gray-400 group-hover:text-gray-900" stroke-width="1.5"></iconify-icon>
                     Assistants
                 </a>
-                <a href="#"
+                <a href="/workflows.html"
                     class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-lg group transition-colors">
-                    <iconify-icon icon="solar:chat-line-linear" class="text-lg text-gray-400 group-hover:text-gray-900"
-                        stroke-width="1.5"></iconify-icon>
-                    Conversations
-                </a>
-                <a href="#"
-                    class="flex items-center justify-between px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-lg group transition-colors">
-                    <div class="flex items-center gap-3">
-                        <iconify-icon icon="solar:play-stream-linear"
-                            class="text-lg text-gray-400 group-hover:text-gray-900" stroke-width="1.5"></iconify-icon>
-                        Workflows
-                    </div>
-                </a>
-                <a href="#"
-                    class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-lg group transition-colors">
-                    <iconify-icon icon="solar:folder-with-files-linear"
+                    <iconify-icon icon="solar:play-stream-linear"
                         class="text-lg text-gray-400 group-hover:text-gray-900" stroke-width="1.5"></iconify-icon>
-                    Data & Files
+                    Workflows
+                </a>
+                <a href="/settings.html"
+                    class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-lg group transition-colors">
+                    <iconify-icon icon="solar:settings-linear" class="text-lg text-gray-400 group-hover:text-gray-900"
+                        stroke-width="1.5"></iconify-icon>
+                    Settings
                 </a>
             </nav>
 
@@ -98,12 +96,12 @@
             <div class="px-4 pt-4 pb-2">
                 <p class="px-3 text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Teams</p>
                 <nav class="space-y-1">
-                    <a href="#"
+                    <a href="/team.html?id=engineering"
                         class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-lg group transition-colors">
                         <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
                         Engineering
                     </a>
-                    <a href="#"
+                    <a href="/team.html?id=marketing"
                         class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-lg group transition-colors">
                         <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                         Marketing
@@ -118,13 +116,12 @@
                 <div
                     class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 to-gray-300 border border-gray-200 flex items-center justify-center text-xs font-semibold text-gray-600">
                     AL</div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-900 truncate">Alex Lewis</p>
-                    <p class="text-xs text-gray-500 truncate">Pro Plan</p>
-                </div>
-                <iconify-icon icon="solar:settings-linear" class="text-gray-400 hover:text-gray-600"
-                    stroke-width="1.5"></iconify-icon>
-            </button>
+        </div>
+        <a href="/settings.html">
+            <iconify-icon icon="solar:settings-linear" class="text-gray-400 hover:text-gray-600"
+                stroke-width="1.5"></iconify-icon>
+        </a>
+        </button>
         </div>
     </aside>
 
@@ -173,12 +170,11 @@
                         </p>
                     </div>
                     <div class="flex items-center gap-3">
-                        <input type="file" id="context-upload-input" class="hidden" />
-                        <button onclick="document.getElementById('context-upload-input').click()"
+                        <a href="/data.html"
                             class="h-9 px-4 inline-flex items-center gap-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
                             <iconify-icon icon="solar:upload-linear" class="text-lg" stroke-width="1.5"></iconify-icon>
                             Upload Context
-                        </button>
+                        </a>
 
                         <script>
                             document.getElementById('context-upload-input').addEventListener('change', (e) => {
@@ -222,7 +218,8 @@
                         <section class="space-y-4">
                             <div class="flex items-center justify-between">
                                 <h2 class="text-base font-semibold text-gray-900">Active Workflows</h2>
-                                <a href="#" class="text-sm text-gray-500 hover:text-gray-900 transition-colors">View
+                                <a href="/workflows.html"
+                                    class="text-sm text-gray-500 hover:text-gray-900 transition-colors">View
                                     all</a>
                             </div>
 
@@ -364,9 +361,11 @@
                                     </p>
                                     <div class="flex items-center justify-between pt-2 border-t border-gray-50 mt-2">
                                         <span class="text-[10px] text-gray-400">Avg latency: 1.2s</span>
-                                        <button
-                                            class="text-xs font-medium text-gray-900 flex items-center gap-1 group-hover:gap-2 transition-all">
-                                            Start Chat <iconify-icon icon="solar:arrow-right-linear"></iconify-icon>
+                                        class="text-xs font-medium text-gray-900 flex items-center gap-1
+                                        group-hover:gap-2 transition-all">
+                                        <a href="/chat.html?agent=contract_auditor"
+                                            class="flex items-center gap-1">Start Chat <iconify-icon
+                                                icon="solar:arrow-right-linear"></iconify-icon></a>
                                         </button>
                                     </div>
                                 </div>
