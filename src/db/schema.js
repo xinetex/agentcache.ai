@@ -449,3 +449,31 @@ export const jobTranscripts = pgTable('job_transcripts', {
     endTime: timestamp('end_time'),
     status: text('status').default('running'), // running, completed, failed
 });
+
+// --- Product Research: Survey Responses ---
+export const surveyResponses = pgTable('survey_responses', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    channel: text('channel').notNull(), // 'telegram', 'moltbook', 'clawtasks'
+    userId: text('user_id'), // External user identifier
+    question: text('question').notNull(),
+    response: text('response').notNull(),
+    sentiment: text('sentiment').default('neutral'), // 'positive', 'negative', 'neutral'
+    insights: jsonb('insights').default([]), // Extracted themes/keywords
+    metadata: jsonb('metadata').default({}), // Extra context
+    createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+    channelIdx: index('survey_channel_idx').on(table.channel),
+}));
+
+// --- Product Research: Market Insights ---
+export const marketInsights = pgTable('market_insights', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    weekOf: timestamp('week_of').notNull(),
+    topSkills: jsonb('top_skills').default([]), // Most requested skills
+    painPoints: jsonb('pain_points').default([]), // Common complaints
+    opportunities: jsonb('opportunities').default([]), // Product ideas
+    surveyCount: integer('survey_count').default(0),
+    bountyAnalysis: jsonb('bounty_analysis').default({}), // ClawTasks patterns
+    createdAt: timestamp('created_at').defaultNow(),
+});
+

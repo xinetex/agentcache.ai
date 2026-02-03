@@ -1,6 +1,11 @@
 
 import { Telegraf, Context } from 'telegraf';
 import { OpenClawClient } from '../../lib/openclaw.js';
+import { ResearcherAgent } from '../../agents/ResearcherAgent.js';
+
+// Message count per user for triggering research questions
+const userMessageCounts: Map<number, number> = new Map();
+const pendingResearchQuestions: Map<number, string> = new Map();
 
 // Initialize dedicated bot instance
 // We use a singleton pattern so we don't recreate it on every function invocation if possible
@@ -8,6 +13,7 @@ import { OpenClawClient } from '../../lib/openclaw.js';
 export class TelegramService {
     private static instance: Telegraf;
     private static openClaw: OpenClawClient;
+    private static researcher: ResearcherAgent;
     private static isInitialized = false;
 
     static getInstance(): Telegraf | null {
@@ -19,6 +25,7 @@ export class TelegramService {
         if (!this.instance) {
             this.instance = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
             this.openClaw = new OpenClawClient();
+            this.researcher = new ResearcherAgent();
             this.setupCommands(this.instance);
             this.isInitialized = true;
         }
@@ -49,14 +56,35 @@ export class TelegramService {
         // Default: Chat with Kimi 2.5 for any text message
         bot.on('text', async (ctx) => {
             const userMessage = ctx.message.text;
+            const userId = ctx.from.id;
 
             // Skip if it's a command
             if (userMessage.startsWith('/')) return;
 
             try {
+                // Check if user is answering a research question
+                const pendingQuestion = pendingResearchQuestions.get(userId);
+                if (pendingQuestion) {
+                    // Record the response
+                    await this.researcher.recordResponse(
+                        'telegram',
+                        String(userId),
+                        pendingQuestion,
+                        userMessage
+                    );
+                    pendingResearchQuestions.delete(userId);
+                    await ctx.reply("🙏 Thanks for your feedback! It helps us build better tools.\n\nAnything else I can help with?");
+                    return;
+                }
+
+                // Track message count
+                const count = (userMessageCounts.get(userId) || 0) + 1;
+                userMessageCounts.set(userId, count);
+
                 // Show typing indicator
                 await ctx.sendChatAction('typing');
 
+                // Regular Kimi chat
                 const response = await this.openClaw.complete(userMessage,
                     `You are Kimi, an intelligent AI assistant powering the AgentCache Telegram bot. 
 You are helpful, concise, and friendly. Keep responses under 300 words unless asked for more detail.
@@ -64,6 +92,16 @@ Current time: ${new Date().toISOString()}`
                 );
 
                 await ctx.reply(response, { parse_mode: 'Markdown' });
+
+                // After every 5 messages, ask a research question
+                if (count % 5 === 0 && count > 0) {
+                    const question = this.researcher.getTodaysQuestion();
+                    pendingResearchQuestions.set(userId, question);
+
+                    setTimeout(async () => {
+                        await ctx.reply(`📊 *Quick Question*\n\n${question}\n\n_(Your feedback helps us build better AI tools!)_`, { parse_mode: 'Markdown' });
+                    }, 1000);
+                }
 
             } catch (error: any) {
                 console.error('[Telegram] Kimi chat error:', error);
