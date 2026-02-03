@@ -13,6 +13,7 @@ interface FoldingResult {
     confidence_plddt: number;
     msa_cached: boolean;
     latency_ms: number;
+    job_id?: string; // If async
 }
 
 export class FoldingService {
@@ -57,7 +58,24 @@ export class FoldingService {
         // Cache the MSA
         await redis.setex(key, 60 * 60 * 24 * 7, "MSA_DATA_BLOB"); // 7 days
 
-        // 3. Inference
+        if (req.mode === 'high_accuracy') {
+            // Offload to Compute Worker
+            const { Compute } = await import('../../../lib/compute.js');
+            const dispatch = await Compute.dispatch('folding', {
+                input: req,
+                priority: 'high'
+            });
+
+            return {
+                structure_pdb: "PENDING_WORKER",
+                confidence_plddt: 0,
+                msa_cached: false,
+                latency_ms: Date.now() - startTime,
+                job_id: dispatch.jobId
+            };
+        }
+
+        // 3. Inference (Standard/Fast Mode)
         await new Promise(resolve => setTimeout(resolve, 50));
 
         await this.updateStats(false, 0);

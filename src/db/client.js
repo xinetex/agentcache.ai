@@ -17,7 +17,10 @@ if (!connectionString) {
         ledger_accounts: [],
         ledger_transactions: [],
         marketplace_orders: [],
-        agents: []
+        agents: [],
+        users: [],
+        decisions: [],
+        credit_usage_daily: []
     };
 
     // Chainable Mock Helper with State
@@ -35,6 +38,11 @@ if (!connectionString) {
                 if (!currentTable && tableObj === schema.ledgerTransactions) currentTable = 'ledger_transactions';
                 if (!currentTable && tableObj === schema.marketplaceOrders) currentTable = 'marketplace_orders';
                 if (!currentTable && tableObj === schema.agents) currentTable = 'agents';
+
+                // Dashboard Tables
+                if (!currentTable && tableObj === schema.users) currentTable = 'users';
+                if (!currentTable && tableObj === schema.decisions) currentTable = 'decisions';
+                if (!currentTable && tableObj === schema.creditUsageDaily) currentTable = 'credit_usage_daily';
 
                 return mock;
             },

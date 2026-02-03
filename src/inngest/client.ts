@@ -1,6 +1,7 @@
 
 import { Inngest } from "inngest";
-import { schemas } from "./types"; // We will define types next
+import { schemas } from "./types";
+import { computeWorker } from "./functions/compute.js";
 
 /**
  * Inngest Client
