@@ -1,11 +1,13 @@
 
 import { Telegraf, Context } from 'telegraf';
+import { OpenClawClient } from '../../lib/openclaw.js';
 
 // Initialize dedicated bot instance
 // We use a singleton pattern so we don't recreate it on every function invocation if possible
 // though in serverless, it effectively re-inits per hot container.
 export class TelegramService {
     private static instance: Telegraf;
+    private static openClaw: OpenClawClient;
     private static isInitialized = false;
 
     static getInstance(): Telegraf | null {
@@ -16,6 +18,7 @@ export class TelegramService {
 
         if (!this.instance) {
             this.instance = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
+            this.openClaw = new OpenClawClient();
             this.setupCommands(this.instance);
             this.isInitialized = true;
         }
@@ -25,22 +28,48 @@ export class TelegramService {
     private static setupCommands(bot: Telegraf) {
         // /start - Greeting
         bot.start((ctx) => {
-            ctx.reply(`🚀 AgentCache Command Online.\nUser ID: \`${ctx.from.id}\`\n\nAdd this ID to your 'ADMIN_TELEGRAM_ID' env var to receive alerts.`);
+            ctx.reply(`🚀 AgentCache Command Online.\nUser ID: \`${ctx.from.id}\`\n\n*Powered by Kimi 2.5*\n\nAdd this ID to your 'ADMIN_TELEGRAM_ID' env var to receive alerts.\n\nSend me any message to chat with Kimi!`, { parse_mode: 'Markdown' });
         });
 
         // /status - System Health
-        bot.command('status', (ctx) => {
-            ctx.reply("✅ **System Status**:\nAll Systems Nominal.\nFlywheel: ACTIVE");
+        bot.command('status', async (ctx) => {
+            const isOnline = await this.openClaw.ping();
+            ctx.reply(`✅ **System Status**:\nOpenClaw Gateway: ${isOnline ? 'ONLINE 🟢' : 'OFFLINE 🔴'}\nModel: Kimi 2.5 (K2)\nFlywheel: ACTIVE`, { parse_mode: 'Markdown' });
         });
 
         // /balance - Treasury Check
         bot.command('balance', (ctx) => {
             // In real app, fetch from BillingManager
-            ctx.reply("💰 **Treasury Balance**:\nCredits: 4500\nUSD Estimate: $45.00");
+            ctx.reply("💰 **Treasury Balance**:\nCredits: 4500\nUSD Estimate: $45.00", { parse_mode: 'Markdown' });
         });
 
         // /help
-        bot.help((ctx) => ctx.reply("Available commands: /status, /balance, /deploy"));
+        bot.help((ctx) => ctx.reply("🤖 *AgentCache Bot - Powered by Kimi 2.5*\n\nCommands:\n/status - System health\n/balance - Treasury check\n/deploy - Deploy an agent\n\nOr just send me a message to chat with Kimi!", { parse_mode: 'Markdown' }));
+
+        // Default: Chat with Kimi 2.5 for any text message
+        bot.on('text', async (ctx) => {
+            const userMessage = ctx.message.text;
+
+            // Skip if it's a command
+            if (userMessage.startsWith('/')) return;
+
+            try {
+                // Show typing indicator
+                await ctx.sendChatAction('typing');
+
+                const response = await this.openClaw.complete(userMessage,
+                    `You are Kimi, an intelligent AI assistant powering the AgentCache Telegram bot. 
+You are helpful, concise, and friendly. Keep responses under 300 words unless asked for more detail.
+Current time: ${new Date().toISOString()}`
+                );
+
+                await ctx.reply(response, { parse_mode: 'Markdown' });
+
+            } catch (error: any) {
+                console.error('[Telegram] Kimi chat error:', error);
+                await ctx.reply(`⚠️ Sorry, I couldn't process that. Error: ${error.message}`);
+            }
+        });
     }
 
     /**
