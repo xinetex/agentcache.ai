@@ -139,6 +139,7 @@
     </aside>
 
     <!-- 2. MAIN CONTENT (Center) -->
+    <script src="js/wireless-map.js"></script>
     <main class="flex-1 overflow-y-auto bg-[#050505] relative custom-scrollbar">
         <!-- Top Bar -->
         <header
@@ -156,56 +157,91 @@
         <div class="p-8 max-w-7xl mx-auto space-y-8">
 
             <!-- HEADER METRICS -->
-            <section class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <!-- System Health -->
-                <div class="glass p-5 rounded-xl flex flex-col justify-between h-32">
-                    <div class="flex justify-between items-start">
-                        <span class="text-xs text-gray-500 uppercase tracking-wider">Health</span>
-                        <iconify-icon icon="solar:server-square-linear" class="text-emerald-500"></iconify-icon>
-                    </div>
+
+            <!-- VIEW: SIGNALS (New) -->
+            <section id="view-signals" class="hidden h-full flex flex-col">
+                <div class="flex justify-between items-center mb-6">
                     <div>
-                        <div id="health-metric" class="text-2xl font-light text-white">Healthy</div>
-                        <div class="text-xs text-emerald-500/80 mt-1 flex items-center gap-1">
-                            <iconify-icon icon="solar:check-circle-linear"></iconify-icon> All systems go
+                        <h2 class="text-2xl font-light text-white">Wireless Intelligence</h2>
+                        <div class="text-sm text-gray-500">Real-time spectral analysis of agent environment.</div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="map.fetchData()"
+                            class="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-xs text-white rounded-lg flex items-center gap-2 border border-white/5 transition-colors">
+                            <iconify-icon icon="solar:refresh-linear"></iconify-icon> Scan
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex-1 glass rounded-2xl overflow-hidden relative border border-white/5">
+                    <canvas id="wireless-map-canvas" class="w-full h-full block"></canvas>
+
+                    <!-- Overlay Stats -->
+                    <div class="absolute top-4 right-4 flex flex-col items-end gap-2 pointer-events-none">
+                        <div
+                            class="px-3 py-1 bg-black/60 backdrop-blur rounded text-xs font-mono text-emerald-400 border border-emerald-500/30">
+                            SIGNAL: STRONG
+                        </div>
+                        <div
+                            class="px-3 py-1 bg-black/60 backdrop-blur rounded text-xs font-mono text-white border border-white/10">
+                            AGENTS: <span id="map-agent-count">--</span>
                         </div>
                     </div>
                 </div>
+            </section>
 
-                <!-- Treasury -->
-                <div class="glass p-5 rounded-xl flex flex-col justify-between h-32">
-                    <div class="flex justify-between items-start">
-                        <span class="text-xs text-gray-500 uppercase tracking-wider">Treasury</span>
-                        <iconify-icon icon="solar:wallet-linear" class="text-gray-400"></iconify-icon>
+            <!-- VIEW: OVERVIEW (Existing) -->
+            <section id="view-overview">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <!-- System Health -->
+                    <div class="glass p-5 rounded-xl flex flex-col justify-between h-32">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs text-gray-500 uppercase tracking-wider">Health</span>
+                            <iconify-icon icon="solar:server-square-linear" class="text-emerald-500"></iconify-icon>
+                        </div>
+                        <div>
+                            <div id="health-metric" class="text-2xl font-light text-white">Healthy</div>
+                            <div class="text-xs text-emerald-500/80 mt-1 flex items-center gap-1">
+                                <iconify-icon icon="solar:check-circle-linear"></iconify-icon> All systems go
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <div id="treasury-metric" class="text-2xl font-light text-white">$4,863</div>
-                        <div class="text-xs text-gray-500 mt-1">Credits Available</div>
-                    </div>
-                </div>
 
-                <!-- Blocked Threats -->
-                <div class="glass p-5 rounded-xl flex flex-col justify-between h-32">
-                    <div class="flex justify-between items-start">
-                        <span class="text-xs text-gray-500 uppercase tracking-wider">Defense</span>
-                        <iconify-icon icon="solar:shield-warning-linear" class="text-rose-400"></iconify-icon>
+                    <!-- Treasury -->
+                    <div class="glass p-5 rounded-xl flex flex-col justify-between h-32">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs text-gray-500 uppercase tracking-wider">Treasury</span>
+                            <iconify-icon icon="solar:wallet-linear" class="text-gray-400"></iconify-icon>
+                        </div>
+                        <div>
+                            <div id="treasury-metric" class="text-2xl font-light text-white">$4,863</div>
+                            <div class="text-xs text-gray-500 mt-1">Credits Available</div>
+                        </div>
                     </div>
-                    <div>
-                        <div id="armor-blocked" class="text-2xl font-light text-white">142</div>
-                        <div class="text-xs text-rose-500/80 mt-1">Threats Blocked (24h)</div>
-                    </div>
-                </div>
 
-                <!-- Throughput -->
-                <div class="glass p-5 rounded-xl flex flex-col justify-between h-32">
-                    <div class="flex justify-between items-start">
-                        <span class="text-xs text-gray-500 uppercase tracking-wider">Throughput</span>
-                        <iconify-icon icon="solar:bolt-linear" class="text-amber-400"></iconify-icon>
+                    <!-- Blocked Threats -->
+                    <div class="glass p-5 rounded-xl flex flex-col justify-between h-32">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs text-gray-500 uppercase tracking-wider">Defense</span>
+                            <iconify-icon icon="solar:shield-warning-linear" class="text-rose-400"></iconify-icon>
+                        </div>
+                        <div>
+                            <div id="armor-blocked" class="text-2xl font-light text-white">142</div>
+                            <div class="text-xs text-rose-500/80 mt-1">Threats Blocked (24h)</div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="text-2xl font-light text-white">1.2 TB/s</div>
-                        <div class="text-xs text-gray-500 mt-1">Optical Bus Load</div>
+
+                    <!-- Throughput -->
+                    <div class="glass p-5 rounded-xl flex flex-col justify-between h-32">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs text-gray-500 uppercase tracking-wider">Throughput</span>
+                            <iconify-icon icon="solar:bolt-linear" class="text-amber-400"></iconify-icon>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-light text-white">1.2 TB/s</div>
+                            <div class="text-xs text-gray-500 mt-1">Optical Bus Load</div>
+                        </div>
                     </div>
-                </div>
             </section>
 
             <!-- ADMIN TABS -->
@@ -744,71 +780,71 @@
     </main>
 
     <script>
-            // --- GLOBAL STATE ---
-            let usersData = [];
-            let hasLoadedUsers = false;
-            let hasLoadedFleet = false;
-            let hasLoadedFeedback = false;
+                    // --- GLOBAL STATE ---
+                    let usersData = [];
+                    let hasLoadedUsers = false;
+                    let hasLoadedFleet = false;
+                    let hasLoadedFeedback = false;
 
-            let logCursor = null;
-            let logPollInterval = null;
-            let isPollingLogs = false;
+                    let logCursor = null;
+                    let logPollInterval = null;
+                    let isPollingLogs = false;
 
-            // --- NAVIGATION ---
-            async function switchTab(tabName) {
-                // 1. Hide all views
-                document.querySelectorAll('.admin-view').forEach(el => el.classList.add('hidden'));
-                // 2. Show target view
-                document.getElementById('view-' + tabName).classList.remove('hidden');
+                    // --- NAVIGATION ---
+                    async function switchTab(tabName) {
+                        // 1. Hide all views
+                        document.querySelectorAll('.admin-view').forEach(el => el.classList.add('hidden'));
+                        // 2. Show target view
+                        document.getElementById('view-' + tabName).classList.remove('hidden');
 
-                // 3. Update Tab Styles
-                document.querySelectorAll('nav[aria-label="Tabs"] button').forEach(btn => {
-                    btn.classList.remove('border-emerald-500', 'text-emerald-500');
-                    btn.classList.add('border-transparent', 'text-gray-500');
-                });
-                const activeBtn = document.getElementById('tab-' + tabName);
-                activeBtn.classList.remove('border-transparent', 'text-gray-500');
-                activeBtn.classList.add('border-emerald-500', 'text-emerald-500');
+                        // 3. Update Tab Styles
+                        document.querySelectorAll('nav[aria-label="Tabs"] button').forEach(btn => {
+                            btn.classList.remove('border-emerald-500', 'text-emerald-500');
+                            btn.classList.add('border-transparent', 'text-gray-500');
+                        });
+                        const activeBtn = document.getElementById('tab-' + tabName);
+                        activeBtn.classList.remove('border-transparent', 'text-gray-500');
+                        activeBtn.classList.add('border-emerald-500', 'text-emerald-500');
 
-                // 4. Lazy Load Data
-                if (tabName === 'users' && !hasLoadedUsers) await loadUsers();
-                if (tabName === 'fleet' && !hasLoadedFleet) await loadFleet();
-                if (tabName === 'dashboard' && !hasLoadedFeedback) await loadFeedback();
+                        // 4. Lazy Load Data
+                        if (tabName === 'users' && !hasLoadedUsers) await loadUsers();
+                        if (tabName === 'fleet' && !hasLoadedFleet) await loadFleet();
+                        if (tabName === 'dashboard' && !hasLoadedFeedback) await loadFeedback();
 
-                // 5. Handle Logs Polling
-                if (tabName === 'logs') {
-                    startLogPolling();
-                } else {
-                    stopLogPolling();
-                }
-            }
+                        // 5. Handle Logs Polling
+                        if (tabName === 'logs') {
+                            startLogPolling();
+                        } else {
+                            stopLogPolling();
+                        }
+                    }
 
-            // --- 1. USERS LOGIC ---
-            async function loadUsers() {
-                const tbody = document.getElementById('users-table-body');
-                tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Loading users...</td></tr>';
+                    // --- 1. USERS LOGIC ---
+                    async function loadUsers() {
+                        const tbody = document.getElementById('users-table-body');
+                        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Loading users...</td></tr>';
 
-                try {
-                    const res = await fetch('/api/admin/users');
-                    if (!res.ok) throw new Error('API Failed');
-                    const data = await res.json();
-                    usersData = data.users || [];
-                    renderUsers(usersData);
-                    hasLoadedUsers = true;
-                } catch (e) {
-                    console.error(e);
-                    tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-red-400">Failed to load users. check console.</td></tr>';
-                }
-            }
+                        try {
+                            const res = await fetch('/api/admin/users');
+                            if (!res.ok) throw new Error('API Failed');
+                            const data = await res.json();
+                            usersData = data.users || [];
+                            renderUsers(usersData);
+                            hasLoadedUsers = true;
+                        } catch (e) {
+                            console.error(e);
+                            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-red-400">Failed to load users. check console.</td></tr>';
+                        }
+                    }
 
-            function renderUsers(users) {
-                const tbody = document.getElementById('users-table-body');
-                if (users.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">No users found.</td></tr>';
-                    return;
-                }
+                    function renderUsers(users) {
+                        const tbody = document.getElementById('users-table-body');
+                        if (users.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">No users found.</td></tr>';
+                            return;
+                        }
 
-                tbody.innerHTML = users.map(u => `
+                        tbody.innerHTML = users.map(u => `
                 <tr class="hover:bg-white/[0.02] transition-colors">
                     <td class="px-6 py-4">
                         <div class="flex items-center gap-3">
@@ -835,92 +871,92 @@
                     </td>
                 </tr>
             `).join('');
-            }
-
-            function getStatusColor(status) {
-                switch (status.toLowerCase()) {
-                    case 'active': return 'bg-emerald-500/10 text-emerald-400';
-                    case 'offline': return 'bg-gray-500/10 text-gray-400';
-                    case 'banned': return 'bg-red-500/10 text-red-400';
-                    default: return 'bg-blue-500/10 text-blue-400';
-                }
-            }
-
-            // --- 2. LOGS LOGIC ---
-            function startLogPolling() {
-                if (isPollingLogs) return;
-                isPollingLogs = true;
-                fetchLogs(); // Initial
-                logPollInterval = setInterval(fetchLogs, 3000); // 3s poll
-            }
-
-            function stopLogPolling() {
-                isPollingLogs = false;
-                if (logPollInterval) clearInterval(logPollInterval);
-            }
-
-            async function fetchLogs() {
-                try {
-                    let url = '/api/admin/logs';
-                    if (logCursor) url += `?since=${logCursor}`;
-
-                    const res = await fetch(url);
-                    if (!res.ok) return;
-
-                    const data = await res.json();
-                    if (data.logs && data.logs.length > 0) {
-                        renderLogs(data.logs);
-                        scrollToBottom();
                     }
-                    if (data.cursor) logCursor = data.cursor;
 
-                } catch (e) {
-                    console.warn("Log Poll Error", e);
-                }
-            }
+                    function getStatusColor(status) {
+                        switch (status.toLowerCase()) {
+                            case 'active': return 'bg-emerald-500/10 text-emerald-400';
+                            case 'offline': return 'bg-gray-500/10 text-gray-400';
+                            case 'banned': return 'bg-red-500/10 text-red-400';
+                            default: return 'bg-blue-500/10 text-blue-400';
+                        }
+                    }
 
-            function renderLogs(newLogs) {
-                const consoleEl = document.getElementById('log-console');
-                if (consoleEl.innerHTML.includes('text-center')) {
-                    consoleEl.innerHTML = '';
-                }
+                    // --- 2. LOGS LOGIC ---
+                    function startLogPolling() {
+                        if (isPollingLogs) return;
+                        isPollingLogs = true;
+                        fetchLogs(); // Initial
+                        logPollInterval = setInterval(fetchLogs, 3000); // 3s poll
+                    }
 
-                const fragment = document.createDocumentFragment();
-                newLogs.forEach(log => {
-                    const row = document.createElement('div');
-                    row.className = "flex gap-2 font-mono hover:bg-white/[0.02]";
-                    row.innerHTML = `
+                    function stopLogPolling() {
+                        isPollingLogs = false;
+                        if (logPollInterval) clearInterval(logPollInterval);
+                    }
+
+                    async function fetchLogs() {
+                        try {
+                            let url = '/api/admin/logs';
+                            if (logCursor) url += `?since=${logCursor}`;
+
+                            const res = await fetch(url);
+                            if (!res.ok) return;
+
+                            const data = await res.json();
+                            if (data.logs && data.logs.length > 0) {
+                                renderLogs(data.logs);
+                                scrollToBottom();
+                            }
+                            if (data.cursor) logCursor = data.cursor;
+
+                        } catch (e) {
+                            console.warn("Log Poll Error", e);
+                        }
+                    }
+
+                    function renderLogs(newLogs) {
+                        const consoleEl = document.getElementById('log-console');
+                        if (consoleEl.innerHTML.includes('text-center')) {
+                            consoleEl.innerHTML = '';
+                        }
+
+                        const fragment = document.createDocumentFragment();
+                        newLogs.forEach(log => {
+                            const row = document.createElement('div');
+                            row.className = "flex gap-2 font-mono hover:bg-white/[0.02]";
+                            row.innerHTML = `
                     <span class="text-gray-600 w-16 shrink-0">[${log.timestampStr}]</span> 
                     <span class="${log.levelColor} w-16 shrink-0 font-bold">${log.level}</span>
                     <span class="text-gray-500 w-24 shrink-0 truncate border-r border-gray-800 pr-2">${log.source}</span>
                     <span class="text-gray-300">${log.message}</span>
                 `;
-                    fragment.appendChild(row);
-                });
-                consoleEl.appendChild(fragment);
+                            fragment.appendChild(row);
+                        });
+                        consoleEl.appendChild(fragment);
 
-                while (consoleEl.children.length > 500) {
-                    consoleEl.removeChild(consoleEl.firstChild);
-                }
-            }
+                        while (consoleEl.children.length > 500) {
+                            consoleEl.removeChild(consoleEl.firstChild);
+                        }
+                    }
 
-            function scrollToBottom() {
-                const consoleEl = document.getElementById('log-console');
-                consoleEl.scrollTop = consoleEl.scrollHeight;
-            }
+                    function scrollToBottom() {
+                        const consoleEl = document.getElementById('log-console');
+                        consoleEl.scrollTop = consoleEl.scrollHeight;
+                    }
 
-            // --- 3. FLEET LOGIC ---
-            async function loadFleet() {
-                const fleetContainer = document.getElementById('fleet-container');
-                fleetContainer.innerHTML = '<div class="text-center text-gray-500 py-8">Loading fleet data...</div>';
-                try {
-                    // Request admin scope to see internal agents (Sentinel, Researcher)
-                    const res2 = await fetch('/api/agents?scope=admin');
-                    if (!res2.ok) throw new Error('API Failed');
-                    const data = await res2.json();
+                    // --- 3. FLEET LOGIC ---
+                    async function loadFleet() {
+                        const fleetContainer = document.getElementById('fleet-container');
+                        fleetContainer.innerHTML = '<div class="text-center text-gray-500 py-8">Loading fleet data...</div>';
+                        try {
+                            // Request admin scope to see internal agents (Sentinel, Researcher)
+                            const res2 = await fetch('/api/agents?scope=admin');
+                            if (!res2.ok) throw new Error('API Failed');
+                            const data = await res2.json();
 
-                    if (data.agents && data.agents.length > 0) {
-                        fleetContainer.innerHTML = data.agents.map(agent => `
+                            if (data.agents && data.agents.length > 0) {
+                                fleetContainer.innerHTML = data.agents.map(agent => `
                         <div class="flex items-center gap-4 p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
                             <div class="w-10 h-10 rounded-lg ${agent.color || 'bg-gray-700'} flex items-center justify-center text-xl text-white shrink-0">
                                 <iconify-icon icon="${agent.icon}"></iconify-icon>
@@ -932,26 +968,26 @@
                             <span class="text-xs px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${agent.status}</span>
                         </div>
                     `).join('');
-                    } else {
-                        fleetContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No agents deployed.</div>';
+                            } else {
+                                fleetContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No agents deployed.</div>';
+                            }
+                            hasLoadedFleet = true;
+                        } catch (e) {
+                            console.error(e);
+                            fleetContainer.innerHTML = '<div class="text-center text-red-400 py-8">Failed to load fleet. Check console.</div>';
+                        }
                     }
-                    hasLoadedFleet = true;
-                } catch (e) {
-                    console.error(e);
-                    fleetContainer.innerHTML = '<div class="text-center text-red-400 py-8">Failed to load fleet. Check console.</div>';
-                }
-            }
 
-            // --- 4. FEEDBACK LOGIC ---
-            async function loadFeedback() {
-                const widget = document.getElementById('feedback-widget');
-                try {
-                    const res = await fetch('/api/admin/feedback');
-                    const data = await res.json();
-                    const camp = data.feedback.campaign;
+                    // --- 4. FEEDBACK LOGIC ---
+                    async function loadFeedback() {
+                        const widget = document.getElementById('feedback-widget');
+                        try {
+                            const res = await fetch('/api/admin/feedback');
+                            const data = await res.json();
+                            const camp = data.feedback.campaign;
 
-                    if (camp) {
-                        widget.innerHTML = `
+                            if (camp) {
+                                widget.innerHTML = `
                         <div>
                             <div class="text-lg text-white font-light mb-1">${camp.name}</div>
                             <p class="text-xs text-gray-400 mb-4">Post this payload to Moltbook to "Honey Pot" bot responses.</p>
@@ -971,65 +1007,65 @@
                         </div>
                     `;
 
-                        window.copyCampaign = (id) => {
-                            navigator.clipboard.writeText(camp.copyText).then(() => {
-                                const btn = document.getElementById('btn-' + id);
-                                const original = btn.innerHTML;
-                                btn.innerHTML = '<iconify-icon icon="solar:check-circle-bold"></iconify-icon> Copied';
-                                btn.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
-                                setTimeout(() => {
-                                    btn.innerHTML = original;
-                                    btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-500');
-                                }, 2000);
-                            });
-                        };
+                                window.copyCampaign = (id) => {
+                                    navigator.clipboard.writeText(camp.copyText).then(() => {
+                                        const btn = document.getElementById('btn-' + id);
+                                        const original = btn.innerHTML;
+                                        btn.innerHTML = '<iconify-icon icon="solar:check-circle-bold"></iconify-icon> Copied';
+                                        btn.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
+                                        setTimeout(() => {
+                                            btn.innerHTML = original;
+                                            btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-500');
+                                        }, 2000);
+                                    });
+                                };
 
-                    } else {
-                        widget.innerHTML = '<div class="text-gray-500 text-xs">No active campaigns.</div>';
+                            } else {
+                                widget.innerHTML = '<div class="text-gray-500 text-xs">No active campaigns.</div>';
+                            }
+
+                            hasLoadedFeedback = true;
+                        } catch (e) {
+                            console.error(e);
+                            widget.innerHTML = '<div class="text-red-400 text-xs">Failed to load campaign.</div>';
+                        }
                     }
 
-                    hasLoadedFeedback = true;
-                } catch (e) {
-                    console.error(e);
-                    widget.innerHTML = '<div class="text-red-400 text-xs">Failed to load campaign.</div>';
-                }
-            }
+                    // Init
+                    document.addEventListener('DOMContentLoaded', loadFeedback);
+                    // --- Notification System ---
+                    const notifDropdown = document.getElementById('notif-dropdown');
+                    const notifList = document.getElementById('notif-list');
+                    const notifBadge = document.getElementById('notif-badge');
+                    let notificationInterval;
 
-            // Init
-            document.addEventListener('DOMContentLoaded', loadFeedback);
-            // --- Notification System ---
-            const notifDropdown = document.getElementById('notif-dropdown');
-            const notifList = document.getElementById('notif-list');
-            const notifBadge = document.getElementById('notif-badge');
-            let notificationInterval;
-
-            function toggleNotifications() {
-                notifDropdown.classList.toggle('hidden');
-            }
-
-            async function fetchNotifications() {
-                // Assume user is logged in and we have a token or mock ID
-                const user = JSON.parse(localStorage.getItem('agentcache_user'));
-                const userId = user ? user.id : 'mock-user-id'; // Fallback for dev
-
-                try {
-                    const res = await fetch(`/api/notifications?userId=${userId}`);
-                    const data = await res.json();
-
-                    if (data.notifications && data.notifications.length > 0) {
-                        renderNotifications(data.notifications);
-                        notifBadge.classList.remove('hidden');
-                    } else {
-                        notifBadge.classList.add('hidden');
-                        notifList.innerHTML = '<div class="p-4 text-center text-slate-500 text-xs">No new notifications</div>';
+                    function toggleNotifications() {
+                        notifDropdown.classList.toggle('hidden');
                     }
-                } catch (e) {
-                    console.error('Failed to fetch notifications', e);
-                }
-            }
 
-            function renderNotifications(items) {
-                notifList.innerHTML = items.map(n => `
+                    async function fetchNotifications() {
+                        // Assume user is logged in and we have a token or mock ID
+                        const user = JSON.parse(localStorage.getItem('agentcache_user'));
+                        const userId = user ? user.id : 'mock-user-id'; // Fallback for dev
+
+                        try {
+                            const res = await fetch(`/api/notifications?userId=${userId}`);
+                            const data = await res.json();
+
+                            if (data.notifications && data.notifications.length > 0) {
+                                renderNotifications(data.notifications);
+                                notifBadge.classList.remove('hidden');
+                            } else {
+                                notifBadge.classList.add('hidden');
+                                notifList.innerHTML = '<div class="p-4 text-center text-slate-500 text-xs">No new notifications</div>';
+                            }
+                        } catch (e) {
+                            console.error('Failed to fetch notifications', e);
+                        }
+                    }
+
+                    function renderNotifications(items) {
+                        notifList.innerHTML = items.map(n => `
             <div class="p-4 border-b border-slate-700/50 hover:bg-slate-700/30 transition cursor-pointer" onclick="markRead('${n.id}')">
                 <div class="flex gap-3">
                     <div class="mt-1">
@@ -1043,45 +1079,320 @@
                 </div>
             </div>
         `).join('');
+                    }
+
+                    function getIconForType(type) {
+                        switch (type) {
+                            case 'success': return '<i data-lucide="check-circle" class="w-4 h-4 text-emerald-500"></i>';
+                            case 'warning': return '<i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>';
+                            case 'error': return '<i data-lucide="x-circle" class="w-4 h-4 text-red-500"></i>';
+                            default: return '<i data-lucide="info" class="w-4 h-4 text-blue-500"></i>';
+                        }
+                    }
+
+                    async function markRead(id) {
+                        const user = JSON.parse(localStorage.getItem('agentcache_user'));
+                        const userId = user ? user.id : 'mock-user-id';
+
+                        await fetch('/api/notifications/read', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ notificationId: id, userId })
+                        });
+                        fetchNotifications(); // Refresh
+                    }
+
+                    async function markAllRead() {
+                        const user = JSON.parse(localStorage.getItem('agentcache_user'));
+                        const userId = user ? user.id : 'mock-user-id';
+
+                        await fetch('/api/notifications/read', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ notificationId: 'all', userId })
+                        });
+                        fetchNotifications();
+                    }
+
+                    // Initialize Notification Polling
+                    setInterval(fetchNotifications, 30000); // Poll every 30s
+                    fetchNotifications(); // Initial call
+
+    </script>
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal"
+        class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeSettings()"></div>
+        <div class="relative w-full max-w-4xl h-[600px] glass rounded-2xl overflow-hidden flex shadow-2xl transform scale-95 transition-transform duration-300"
+            id="settings-panel">
+
+            <!-- Sidebar -->
+            <div class="w-64 bg-black/40 border-r border-white/5 flex flex-col">
+                <div class="h-16 flex items-center px-6 border-b border-white/5">
+                    <span class="text-sm font-bold text-white tracking-widest uppercase">Settings</span>
+                </div>
+                <nav class="flex-1 p-4 space-y-1">
+                    <button onclick="switchSettingsTab('general')" id="set-tab-general"
+                        class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-emerald-400 bg-white/5 rounded-lg transition-colors text-left">
+                        <iconify-icon icon="solar:settings-linear"></iconify-icon> General
+                    </button>
+                    <button onclick="switchSettingsTab('account')" id="set-tab-account"
+                        class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors text-left">
+                        <iconify-icon icon="solar:user-id-linear"></iconify-icon> Account
+                    </button>
+                    <button onclick="switchSettingsTab('system')" id="set-tab-system"
+                        class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors text-left hidden"
+                        data-role="admin">
+                        <iconify-icon icon="solar:server-path-linear"></iconify-icon> System
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 flex flex-col bg-[#050505]/95">
+                <div class="h-16 flex items-center justify-between px-8 border-b border-white/5">
+                    <h2 id="settings-title" class="text-lg font-light text-white">General Preferences</h2>
+                    <button onclick="closeSettings()" class="text-gray-500 hover:text-white transition-colors">
+                        <iconify-icon icon="solar:close-circle-linear" class="text-2xl"></iconify-icon>
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+
+                    <!-- General Tab -->
+                    <div id="set-view-general" class="settings-view space-y-8">
+                        <!-- Appearance -->
+                        <div>
+                            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Appearance</h3>
+                            <div
+                                class="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5">
+                                <div>
+                                    <div class="text-sm font-medium text-white">Theme Preference</div>
+                                    <div class="text-xs text-gray-500">Sync with system or force dark mode.</div>
+                                </div>
+                                <select id="input-theme" onchange="saveUserPrefs()"
+                                    class="bg-black/50 border border-white/10 text-white text-xs rounded-lg px-3 py-2 focus:ring-1 focus:ring-emerald-500 outline-none">
+                                    <option value="system">System Default</option>
+                                    <option value="dark">Dark Mode</option>
+                                    <option value="light">Light Mode</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Notifications -->
+                        <div>
+                            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Notifications
+                            </h3>
+                            <div
+                                class="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5">
+                                <div>
+                                    <div class="text-sm font-medium text-white">Enable Notifications</div>
+                                    <div class="text-xs text-gray-500">Receive alerts for payments and system events.
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="input-notifs" onchange="saveUserPrefs()"
+                                        class="sr-only peer">
+                                    <div
+                                        class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-emerald-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600">
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account Tab -->
+                    <div id="set-view-account" class="settings-view hidden space-y-8">
+                        <div>
+                            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Profile</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1">Display Name</label>
+                                    <input type="text" id="input-name"
+                                        class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1">Email</label>
+                                    <input type="email" id="input-email" disabled
+                                        class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-gray-500 cursor-not-allowed">
+                                </div>
+                                <button onclick="saveProfile()"
+                                    class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded-lg transition-colors">
+                                    Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Tab (Admin) -->
+                    <div id="set-view-system" class="settings-view hidden space-y-8">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest">Global Configuration
+                                (system_settings)</h3>
+                            <button onclick="addSystemSetting()"
+                                class="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
+                                <iconify-icon icon="solar:add-circle-linear"></iconify-icon> Add Key
+                            </button>
+                        </div>
+
+                        <div id="system-settings-list" class="space-y-4">
+                            <!-- Injected via JS -->
+                            <div class="text-center text-gray-500 text-xs py-8">Loading system settings...</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+            // --- SETTINGS LOGIC ---
+
+            function openSettings() {
+                const modal = document.getElementById('settings-modal');
+                const panel = document.getElementById('settings-panel');
+
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                panel.classList.remove('scale-95');
+                panel.classList.add('scale-100');
+
+                loadUserPrefs();
+                checkAdminRole();
             }
 
-            function getIconForType(type) {
-                switch (type) {
-                    case 'success': return '<i data-lucide="check-circle" class="w-4 h-4 text-emerald-500"></i>';
-                    case 'warning': return '<i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>';
-                    case 'error': return '<i data-lucide="x-circle" class="w-4 h-4 text-red-500"></i>';
-                    default: return '<i data-lucide="info" class="w-4 h-4 text-blue-500"></i>';
+            function closeSettings() {
+                const modal = document.getElementById('settings-modal');
+                const panel = document.getElementById('settings-panel');
+
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                panel.classList.remove('scale-100');
+                panel.classList.add('scale-95');
+            }
+
+            function switchSettingsTab(tab) {
+                document.querySelectorAll('.settings-view').forEach(el => el.classList.add('hidden'));
+                document.getElementById('set-view-' + tab).classList.remove('hidden');
+
+                document.querySelectorAll('[id^="set-tab-"]').forEach(btn => {
+                    btn.classList.remove('text-emerald-400', 'bg-white/5');
+                    btn.classList.add('text-gray-500');
+                });
+                const active = document.getElementById('set-tab-' + tab);
+                active.classList.add('text-emerald-400', 'bg-white/5');
+                active.classList.remove('text-gray-500');
+
+                document.getElementById('settings-title').innerText = tab.charAt(0).toUpperCase() + tab.slice(1) + (tab === 'general' ? ' Preferences' : ' Settings');
+
+                if (tab === 'system') loadSystemSettings();
+            }
+
+            // 1. User Preferences
+            async function loadUserPrefs() {
+                try {
+                    const res = await fetch('/api/settings/preferences', {
+                        headers: { 'x-user-id': getUserId() }
+                    });
+                    const data = await res.json();
+
+                    document.getElementById('input-theme').value = data.themePref || 'system';
+                    document.getElementById('input-notifs').checked = data.notificationsEnabled;
+                } catch (e) { console.error(e); }
+            }
+
+            async function saveUserPrefs() {
+                const themePref = document.getElementById('input-theme').value;
+                const notificationsEnabled = document.getElementById('input-notifs').checked;
+
+                try {
+                    await fetch('/api/settings/preferences', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-user-id': getUserId()
+                        },
+                        body: JSON.stringify({ themePref, notificationsEnabled })
+                    });
+                    if (themePref === 'dark') document.documentElement.classList.add('dark');
+                    if (themePref === 'light') document.documentElement.classList.remove('dark');
+                } catch (e) { console.error(e); }
+            }
+
+            // 2. System Settings (Admin)
+            async function checkAdminRole() {
+                const user = JSON.parse(localStorage.getItem('agentcache_user'));
+                if (user && user.role === 'admin') {
+                    document.getElementById('set-tab-system').classList.remove('hidden');
                 }
             }
 
-            async function markRead(id) {
-                const user = JSON.parse(localStorage.getItem('agentcache_user'));
-                const userId = user ? user.id : 'mock-user-id';
+            async function loadSystemSettings() {
+                const list = document.getElementById('system-settings-list');
+                list.innerHTML = '<div class="text-center text-gray-500 text-xs py-8">Loading...</div>';
 
-                await fetch('/api/notifications/read', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ notificationId: id, userId })
-                });
-                fetchNotifications(); // Refresh
+                try {
+                    const res = await fetch('/api/admin/settings', {
+                        headers: { 'x-user-id': getUserId() }
+                    });
+                    if (res.status === 403) {
+                        list.innerHTML = '<div class="text-red-400 text-xs">Access Denied</div>';
+                        return;
+                    }
+                    const data = await res.json();
+                    const entries = Object.entries(data);
+
+                    if (entries.length === 0) {
+                        list.innerHTML = '<div class="text-center text-gray-500 text-xs">No global settings defined.</div>';
+                        return;
+                    }
+
+                    list.innerHTML = entries.map(([key, val]) => `
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/5 flex flex-col gap-2">
+                         <div class="flex justify-between items-center">
+                             <div class="text-xs font-mono text-emerald-400">${key}</div>
+                             <button onclick="editSystemSetting('${key}')" class="text-gray-500 hover:text-white"><iconify-icon icon="solar:pen-linear"></iconify-icon></button>
+                         </div>
+                         <div class="text-xs text-gray-300 font-mono bg-black/30 p-2 rounded truncate">${JSON.stringify(val)}</div>
+                    </div>
+                `).join('');
+
+                } catch (e) { console.error(e); }
             }
 
-            async function markAllRead() {
-                const user = JSON.parse(localStorage.getItem('agentcache_user'));
-                const userId = user ? user.id : 'mock-user-id';
+            async function editSystemSetting(key) {
+                const val = prompt(`Enter JSON value for ${key}:`);
+                if (!val) return;
 
-                await fetch('/api/notifications/read', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ notificationId: 'all', userId })
-                });
-                fetchNotifications();
+                try {
+                    const parsed = JSON.parse(val);
+                    await fetch('/api/admin/settings', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-user-id': getUserId()
+                        },
+                        body: JSON.stringify({ key, value: parsed, description: 'Updated via UI' })
+                    });
+                    loadSystemSettings(); // refresh
+                } catch (e) {
+                    alert('Invalid JSON');
+                }
             }
 
-            // Initialize Notification Polling
-            setInterval(fetchNotifications, 30000); // Poll every 30s
-            fetchNotifications(); // Initial call
+            function addSystemSetting() {
+                const key = prompt("Enter Setting Key (e.g. global_maintenance):");
+                if (!key) return;
+                editSystemSetting(key);
+            }
 
+            // Helpers
+            function getUserId() {
+                const user = JSON.parse(localStorage.getItem('agentcache_user'));
+                return user ? user.id : 'mock-user-id';
+            }
+
+            // Attach to global scope
+            window.openSettings = openSettings;
     </script>
 </body>
 

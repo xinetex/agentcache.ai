@@ -224,6 +224,28 @@ export const notifications = pgTable('notifications', {
     userUnreadIdx: index('notif_user_unread_idx').on(table.userId, table.isRead),
 }));
 
+// --- Platform Control Plane ---
+
+export const systemSettings = pgTable('system_settings', {
+    key: text('key').primaryKey(), // e.g., 'global_maintenance_mode', 'default_model'
+    value: jsonb('value').notNull(),
+    description: text('description'),
+    updatedAt: timestamp('updated_at').defaultNow(),
+    updatedBy: uuid('updated_by').references(() => users.id),
+});
+
+export const agentRegistry = pgTable('agent_registry', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    agentId: uuid('agent_id').references(() => agents.id),
+    isEnabled: boolean('is_enabled').default(false),
+    schedule: text('schedule'), // Cron expression
+    budgetLimit: real('budget_limit').default(0), // Daily limit
+    capabilities: text('capabilities').array(),
+    lastHeartbeat: timestamp('last_heartbeat'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+});
+
 // --- Credits Top-Off Billing System ---
 
 // Auto top-off settings per user
@@ -400,3 +422,19 @@ export const agentSuggestions = pgTable('agent_suggestions', {
     status: text('status').default('open'), // 'open', 'planned', 'rejected', 'implemented'
     createdAt: timestamp('created_at').defaultNow(),
 });
+
+// --- Wireless Intelligence (WiGLE / Shodan Style) ---
+export const signals = pgTable('signals', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    agentId: uuid('agent_id').references(() => agents.id), // The Scanner
+    target: text('target').notNull(), // IP, URL, or Logical Node
+    type: text('type').notNull(), // 'wifi', 'bluetooth', 'http', 'anomaly'
+    strength: real('strength').default(0), // -100 to 0 (dBm) or 0.0-1.0
+    lat: real('lat'), // Virtual X (0-100)
+    lon: real('lon'), // Virtual Y (0-100)
+    metadata: jsonb('metadata'), // SSID, Banner, Headers
+    seenAt: timestamp('seen_at').defaultNow(),
+}, (table) => ({
+    geoIdx: index('signal_geo_idx').on(table.lat, table.lon),
+    targetIdx: index('signal_target_idx').on(table.target),
+}));

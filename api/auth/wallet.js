@@ -93,13 +93,20 @@ export default async function handler(req, res) {
                 // CREATE NEW USER
                 console.log(`[WalletAuth] Creating new user for wallet ${address}`);
 
+                // Check Environment Allowlist for Admin Role
+                // SECURITY: strictly verify against Environment Variable, no hardcoded fallbacks
+                const adminWallets = (process.env.ADMIN_WALLETS || '').split(',').map(w => w.trim().toLowerCase());
+                const initialRole = adminWallets.includes(address.toLowerCase()) ? 'admin' : 'user';
+                const initialPlan = initialRole === 'admin' ? 'enterprise' : 'starter';
+
                 try {
                     const newUser = await sql`
                         INSERT INTO users (wallet_address, role, plan)
-                        VALUES (${address}, 'user', 'starter')
+                        VALUES (${address}, ${initialRole}, ${initialPlan})
                         RETURNING id, wallet_address, role, email, created_at
                     `;
                     user = newUser[0];
+                    console.log(`[WalletAuth] User created with role: ${initialRole}`);
                 } catch (e) {
                     console.error("User creation failed:", e.message);
                     return res.status(500).json({ error: 'DB Error: ' + e.message });

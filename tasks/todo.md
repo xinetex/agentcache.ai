@@ -44,3 +44,9 @@
 - [x] **API**: `GET /api/notifications` and `POST /api/notifications/read`.
 - [x] **UI**: Add "Bell" dropdown to Mission Control and Global Nav.
 - [x] **Wire-up**: Connected Solana, Stripe, and GrowthAgent to Notification System.
+
+## Phase 8: Platform Controls (Professional Grade)
+- [ ] **Schema**: Create `system_settings`, `user_preferences`, `agent_registry` tables.
+- [ ] **API**: Build `/api/settings` endpoints for Admin and User controls.
+- [ ] **UI**: Implement "Settings" modal and "Admin Dashboard" in Mission Control.
+- [ ] **Fleet**: Build Agent Fleet Management UI.
