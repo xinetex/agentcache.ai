@@ -2,6 +2,7 @@
 import { BillingService } from '../services/BillingService.js';
 import { ClawTasksClient } from '../services/external/ClawTasksClient.js';
 import { CortexBridge } from '../services/CortexBridge.js';
+import { notifier } from '../services/NotificationService.js';
 import { Redis } from 'ioredis'; // Or your local redis lib
 
 // Mock Moltbook "Post" since we don't have a real client file yet
@@ -37,6 +38,9 @@ export class GrowthAgent {
         await this.executeBountyStrategy();
 
         console.log("✅ [GrowthAgent] Campaign Cycle Complete.\n");
+
+        // Notify Admin (using 'admin' as placeholder for now, ensuring visibility)
+        await notifier.send('admin', 'info', 'Growth Campaign Complete', 'Growth Agent finished a marketing cycle.');
     }
 
     private async executeSignalStrategy() {
@@ -54,11 +58,13 @@ export class GrowthAgent {
 
         // Log to Cortex (We created data)
         await this.cortex.synapse({
-            sector: 'GROWTH',
+            sector: 'FINANCE',
             type: 'OPTIMIZATION',
             message: `📢 Ad Posted on Moltbook: ${signalId}`,
             data: { strategy: 'signal_injection', cost: 0, revenue_potential: 'high' }
         });
+
+        await notifier.send('admin', 'info', 'Moltbook Signal Injected', `Posted signal ${signalId} to ${sector}`);
     }
 
     private async executeBountyStrategy() {
@@ -88,10 +94,12 @@ export class GrowthAgent {
         console.log(`[Billing] 💰 Revenue: +10 Credits from WorkerBot_99 (Service Usage)`);
 
         await this.cortex.synapse({
-            sector: 'GROWTH',
+            sector: 'FINANCE',
             type: 'OPTIMIZATION',
             message: `💸 Bounty Claimed. User Acquired. Revenue generated: 10cr.`,
             data: { strategy: 'sponsored_bounty', cost: reward, revenue: 10 }
         });
+
+        await notifier.send('admin', 'success', 'New User Acquired', `WorkerBot_99 claimed bounty and spent 10 credits.`);
     }
 }

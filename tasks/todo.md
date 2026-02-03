@@ -37,3 +37,10 @@
 - [x] **wallet**: Implement "Pay with Crypto" in Pricing and "Connect Wallet" in Auth.
 - [x] **payments**: Create `api/pay/solana` to generate payment links/QR codes.
 - [x] **verify**: Implement on-chain transaction listener to confirm payment.
+
+### Phase 7: Professional Notification System
+- [x] **Schema**: Define `notifications` table (id, userId, type, message, read, metadata).
+- [x] **Service**: Create `src/services/NotificationService.ts` for dispatch logic.
+- [x] **API**: `GET /api/notifications` and `POST /api/notifications/read`.
+- [x] **UI**: Add "Bell" dropdown to Mission Control and Global Nav.
+- [x] **Wire-up**: Connected Solana, Stripe, and GrowthAgent to Notification System.

@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import { addCreditsToUser } from '../credits.js';
+import { notifier } from '../../src/services/NotificationService.js';
 
 export const config = {
   runtime: 'nodejs',
@@ -118,6 +119,17 @@ export default async function handler(req, res) {
                 stripePaymentIntentId: session.payment_intent,
                 description: `Purchased ${credits} credits`,
               });
+
+              // --- NOTIFICATION ---
+              await notifier.send(
+                userId,
+                'success',
+                'Credits Purchased',
+                `Successfully added ${credits} credits to your account.`,
+                '/billing'
+              );
+              // --------------------
+
             } catch (e) {
               console.error('[Credits Webhook] Failed to persist credits to DB:', e);
             }

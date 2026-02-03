@@ -997,6 +997,91 @@
 
             // Init
             document.addEventListener('DOMContentLoaded', loadFeedback);
+            // --- Notification System ---
+            const notifDropdown = document.getElementById('notif-dropdown');
+            const notifList = document.getElementById('notif-list');
+            const notifBadge = document.getElementById('notif-badge');
+            let notificationInterval;
+
+            function toggleNotifications() {
+                notifDropdown.classList.toggle('hidden');
+            }
+
+            async function fetchNotifications() {
+                // Assume user is logged in and we have a token or mock ID
+                const user = JSON.parse(localStorage.getItem('agentcache_user'));
+                const userId = user ? user.id : 'mock-user-id'; // Fallback for dev
+
+                try {
+                    const res = await fetch(`/api/notifications?userId=${userId}`);
+                    const data = await res.json();
+
+                    if (data.notifications && data.notifications.length > 0) {
+                        renderNotifications(data.notifications);
+                        notifBadge.classList.remove('hidden');
+                    } else {
+                        notifBadge.classList.add('hidden');
+                        notifList.innerHTML = '<div class="p-4 text-center text-slate-500 text-xs">No new notifications</div>';
+                    }
+                } catch (e) {
+                    console.error('Failed to fetch notifications', e);
+                }
+            }
+
+            function renderNotifications(items) {
+                notifList.innerHTML = items.map(n => `
+            <div class="p-4 border-b border-slate-700/50 hover:bg-slate-700/30 transition cursor-pointer" onclick="markRead('${n.id}')">
+                <div class="flex gap-3">
+                    <div class="mt-1">
+                        ${getIconForType(n.type)}
+                    </div>
+                    <div>
+                        <div class="text-sm font-bold text-slate-200 mb-1">${n.title}</div>
+                        <div class="text-xs text-slate-400 leading-relaxed">${n.message}</div>
+                        <div class="text-[10px] text-slate-600 mt-2">${new Date(n.createdAt).toLocaleTimeString()}</div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+            }
+
+            function getIconForType(type) {
+                switch (type) {
+                    case 'success': return '<i data-lucide="check-circle" class="w-4 h-4 text-emerald-500"></i>';
+                    case 'warning': return '<i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>';
+                    case 'error': return '<i data-lucide="x-circle" class="w-4 h-4 text-red-500"></i>';
+                    default: return '<i data-lucide="info" class="w-4 h-4 text-blue-500"></i>';
+                }
+            }
+
+            async function markRead(id) {
+                const user = JSON.parse(localStorage.getItem('agentcache_user'));
+                const userId = user ? user.id : 'mock-user-id';
+
+                await fetch('/api/notifications/read', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ notificationId: id, userId })
+                });
+                fetchNotifications(); // Refresh
+            }
+
+            async function markAllRead() {
+                const user = JSON.parse(localStorage.getItem('agentcache_user'));
+                const userId = user ? user.id : 'mock-user-id';
+
+                await fetch('/api/notifications/read', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ notificationId: 'all', userId })
+                });
+                fetchNotifications();
+            }
+
+            // Initialize Notification Polling
+            setInterval(fetchNotifications, 30000); // Poll every 30s
+            fetchNotifications(); // Initial call
+
     </script>
 </body>
 

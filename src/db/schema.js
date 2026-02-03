@@ -209,6 +209,21 @@ export const agentAlerts = pgTable('agent_alerts', {
     resolvedAt: timestamp('resolved_at'),
 });
 
+// --- Notifications System ---
+export const notifications = pgTable('notifications', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id').references(() => users.id).notNull(),
+    type: text('type').notNull(), // 'info', 'success', 'warning', 'error'
+    title: text('title').notNull(),
+    message: text('message').notNull(),
+    link: text('link'), // Action link (optional)
+    isRead: boolean('is_read').default(false),
+    createdAt: timestamp('created_at').defaultNow(),
+    metadata: jsonb('metadata'), // Flexible metadata
+}, (table) => ({
+    userUnreadIdx: index('notif_user_unread_idx').on(table.userId, table.isRead),
+}));
+
 // --- Credits Top-Off Billing System ---
 
 // Auto top-off settings per user
