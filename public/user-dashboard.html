@@ -253,169 +253,117 @@
                         <!-- Recommended Agents -->
                         <section class="space-y-4">
                             <h2 class="text-base font-semibold text-gray-900">Recommended Agents</h2>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                                <!-- Agent Card 1 -->
-                                <div
-                                    class="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer flex flex-col justify-between h-40 group">
-                                    <div class="flex justify-between items-start">
-                                        <div class="flex gap-3">
-                                            <div
-                                                class="w-10 h-10 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-700">
-                                                <iconify-icon icon="solar:document-text-linear" class="text-xl"
-                                                    stroke-width="1.5"></iconify-icon>
-                                            </div>
-                                            <div>
-                                                <h3 class="text-sm font-semibold text-gray-900">Contract Auditor</h3>
-                                                <p class="text-xs text-gray-500 mt-0.5">Legal & Compliance</p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100"
-                                            title="Trust Score">
-                                            <iconify-icon icon="solar:shield-check-linear"></iconify-icon>
-                                            99%
-                                        </div>
-                                    </div>
-                                    <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed">
-                                        Analyze legal documents for compliance risks and suggest edits based on
-                                        playbook.
-                                    </p>
-                                    <div class="flex items-center justify-between pt-2 border-t border-gray-50 mt-2">
-                                        <span class="text-[10px] text-gray-400">Avg latency: 1.2s</span>
-                                        class="text-xs font-medium text-gray-900 flex items-center gap-1
-                                        group-hover:gap-2 transition-all">
-                                        <a href="/chat.html?agent=contract_auditor"
-                                            class="flex items-center gap-1">Start Chat <iconify-icon
-                                                icon="solar:arrow-right-linear"></iconify-icon></a>
-                                        </button>
-                                    </div>
+                            <div id="recommended-agents-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Loading / Empty State -->
+                                <div class="col-span-2 text-center py-8 text-gray-500 text-sm">
+                                    Loading Recommendations...
                                 </div>
-
-                                <!-- Agent Card 2 -->
-                                <div
-                                    class="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer flex flex-col justify-between h-40 group">
-                                    <div class="flex justify-between items-start">
-                                        <div class="flex gap-3">
-                                            <div
-                                                class="w-10 h-10 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-700">
-                                                <iconify-icon icon="solar:chart-2-linear" class="text-xl"
-                                                    stroke-width="1.5"></iconify-icon>
-                                            </div>
-                                            <div>
-                                                <h3 class="text-sm font-semibold text-gray-900">Data Synthesizer</h3>
-                                                <p class="text-xs text-gray-500 mt-0.5">Analytics</p>
-                                            </div>
-                                        </div>
-                                        <div
-                                            class="flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
-                                            <iconify-icon icon="solar:shield-check-linear"></iconify-icon>
-                                            96%
-                                        </div>
-                                    </div>
-                                    <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed">
-                                        Merge CSVs and SQL dumps into actionable visualized reports.
-                                    </p>
-                                    <div class="flex items-center justify-between pt-2 border-t border-gray-50 mt-2">
-                                        <span class="text-[10px] text-gray-400">Cached result available</span>
-                                        <button
-                                            class="text-xs font-medium text-gray-900 flex items-center gap-1 group-hover:gap-2 transition-all">
-                                            Run Workflow <iconify-icon icon="solar:arrow-right-linear"></iconify-icon>
-                                        </button>
-                                    </div>
-                                </div>
-
                             </div>
                         </section>
+                        <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                            Merge CSVs and SQL dumps into actionable visualized reports.
+                        </p>
+                        <div class="flex items-center justify-between pt-2 border-t border-gray-50 mt-2">
+                            <span class="text-[10px] text-gray-400">Cached result available</span>
+                            <button
+                                class="text-xs font-medium text-gray-900 flex items-center gap-1 group-hover:gap-2 transition-all">
+                                Run Workflow <iconify-icon icon="solar:arrow-right-linear"></iconify-icon>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Right Column (Stats & Quick Actions) -->
-                    <div class="space-y-6">
+                </div>
+                </section>
+            </div>
 
-                        <!-- Usage / Credits (Gamified - Strategy #3) -->
-                        <div id="efficiency-card"
-                            class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm cursor-pointer hover:border-emerald-400 hover:shadow-md transition-all group relative overflow-hidden"
-                            onclick="toggleRoiDetails()">
+            <!-- Right Column (Stats & Quick Actions) -->
+            <div class="space-y-6">
 
-                            <!-- ROI Popup / Overlay (Hidden by default) -->
-                            <div id="roi-overlay"
-                                class="absolute inset-0 bg-emerald-900/95 z-20 hidden flex flex-col justify-center items-center text-center p-6 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]">
-                                <h4 class="text-white font-bold text-lg mb-2">🎉 ROI Confirmed</h4>
-                                <p class="text-emerald-100/80 text-sm mb-4">You avoided <span
-                                        class="text-white font-mono">12,402</span> expensive API calls today.</p>
-                                <div class="bg-white/10 rounded-lg p-3 w-full mb-4 backdrop-blur-sm">
-                                    <div class="flex justify-between text-xs text-emerald-200 mb-1">
-                                        <span>OpenAI Cost</span>
-                                        <span class="line-through opacity-50">$12.40</span>
-                                    </div>
-                                    <div class="flex justify-between text-sm text-white font-medium">
-                                        <span>AgentCache Cost</span>
-                                        <span>$0.12</span>
-                                    </div>
-                                </div>
-                                <button
-                                    class="text-xs bg-white text-emerald-900 px-3 py-1.5 rounded-full font-semibold hover:bg-emerald-50"
-                                    onclick="event.stopPropagation(); toggleRoiDetails()">Keep Saving</button>
-                            </div>
+                <!-- Usage / Credits (Gamified - Strategy #3) -->
+                <div id="efficiency-card"
+                    class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm cursor-pointer hover:border-emerald-400 hover:shadow-md transition-all group relative overflow-hidden"
+                    onclick="toggleRoiDetails()">
 
-                            <h3
-                                class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                                Cache Efficiency
-                                <span
-                                    class="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full group-hover:bg-emerald-500 group-hover:text-white transition-colors">TAP
-                                    ME</span>
-                            </h3>
-                            <div class="flex items-end gap-2 mb-2">
-                                <span id="efficiency-metric" class="text-3xl font-semibold text-gray-900">--%</span>
-                                <span class="text-xs text-emerald-600 font-medium mb-1.5 flex items-center">
-                                    <iconify-icon icon="solar:arrow-right-up-linear"></iconify-icon> 4.2%
-                                </span>
+                    <!-- ROI Popup / Overlay (Hidden by default) -->
+                    <div id="roi-overlay"
+                        class="absolute inset-0 bg-emerald-900/95 z-20 hidden flex flex-col justify-center items-center text-center p-6 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]">
+                        <h4 class="text-white font-bold text-lg mb-2">🎉 ROI Confirmed</h4>
+                        <p class="text-emerald-100/80 text-sm mb-4">You avoided <span
+                                class="text-white font-mono">12,402</span> expensive API calls today.</p>
+                        <div class="bg-white/10 rounded-lg p-3 w-full mb-4 backdrop-blur-sm">
+                            <div class="flex justify-between text-xs text-emerald-200 mb-1">
+                                <span>OpenAI Cost</span>
+                                <span class="line-through opacity-50">$12.40</span>
                             </div>
-                            <p class="text-xs text-gray-500 mb-4 group-hover:text-emerald-600 transition-colors">
-                                Operations served from OpticalCache this week.</p>
-                            <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                                <div id="efficiency-bar"
-                                    class="bg-gray-900 h-2 rounded-full transition-all duration-1000" style="width: 0%">
-                                </div>
-                            </div>
-                            <div class="mt-4 flex justify-between text-xs text-gray-500">
-                                <span id="ops-used">Used: --</span>
-                                <span id="ops-total">Total: --</span>
+                            <div class="flex justify-between text-sm text-white font-medium">
+                                <span>AgentCache Cost</span>
+                                <span>$0.12</span>
                             </div>
                         </div>
-                        <script>
-                            function toggleRoiDetails() {
-                                const overlay = document.getElementById('roi-overlay');
-                                overlay.classList.toggle('hidden');
-                            }
+                        <button
+                            class="text-xs bg-white text-emerald-900 px-3 py-1.5 rounded-full font-semibold hover:bg-emerald-50"
+                            onclick="event.stopPropagation(); toggleRoiDetails()">Keep Saving</button>
+                    </div>
 
-                            async function refreshUserStats() {
-                                const API_KEY = localStorage.getItem('agentcache_apikey') || 'demo-key';
-                                const headers = {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': 'Bearer ' + API_KEY
-                                };
+                    <h3
+                        class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        Cache Efficiency
+                        <span
+                            class="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full group-hover:bg-emerald-500 group-hover:text-white transition-colors">TAP
+                            ME</span>
+                    </h3>
+                    <div class="flex items-end gap-2 mb-2">
+                        <span id="efficiency-metric" class="text-3xl font-semibold text-gray-900">--%</span>
+                        <span class="text-xs text-emerald-600 font-medium mb-1.5 flex items-center">
+                            <iconify-icon icon="solar:arrow-right-up-linear"></iconify-icon> 4.2%
+                        </span>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-4 group-hover:text-emerald-600 transition-colors">
+                        Operations served from OpticalCache this week.</p>
+                    <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                        <div id="efficiency-bar" class="bg-gray-900 h-2 rounded-full transition-all duration-1000"
+                            style="width: 0%">
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-between text-xs text-gray-500">
+                        <span id="ops-used">Used: --</span>
+                        <span id="ops-total">Total: --</span>
+                    </div>
+                </div>
+                <script>
+                    function toggleRoiDetails() {
+                        const overlay = document.getElementById('roi-overlay');
+                        overlay.classList.toggle('hidden');
+                    }
 
-                                try {
-                                    const res = await fetch('/api/dashboard', { headers });
-                                    if (!res.ok) throw new Error('API Failed');
+                    async function refreshUserStats() {
+                        const API_KEY = localStorage.getItem('agentcache_apikey') || 'demo-key';
+                        const headers = {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + API_KEY
+                        };
 
-                                    const data = await res.json();
+                        try {
+                            const res = await fetch('/api/dashboard', { headers });
+                            if (!res.ok) throw new Error('API Failed');
 
-                                    // 2. Render Efficiency Metrics
-                                    const total = 10000; // Mock Quota
-                                    const used = data.usage?.requests || 0;
-                                    const hitRate = data.usage?.hitRate || 0;
-                                    const percent = Math.min(100, Math.round((used / total) * 100));
+                            const data = await res.json();
 
-                                    document.getElementById('efficiency-metric').innerText = hitRate + '%';
-                                    document.getElementById('efficiency-bar').style.width = percent + '%';
-                                    document.getElementById('ops-used').innerText = `Used: ${used.toLocaleString()} ops`;
-                                    document.getElementById('ops-total').innerText = `Quota: ${total.toLocaleString()}`;
+                            // 2. Render Efficiency Metrics
+                            const total = 10000; // Mock Quota
+                            const used = data.usage?.requests || 0;
+                            const hitRate = data.usage?.hitRate || 0;
+                            const percent = Math.min(100, Math.round((used / total) * 100));
 
-                                    // 3. Render Opportunities
-                                    const oppContainer = document.getElementById('opportunities-list');
-                                    if (oppContainer && data.opportunities?.length) {
-                                        oppContainer.innerHTML = data.opportunities.map(opp => `
+                            document.getElementById('efficiency-metric').innerText = hitRate + '%';
+                            document.getElementById('efficiency-bar').style.width = percent + '%';
+                            document.getElementById('ops-used').innerText = `Used: ${used.toLocaleString()} ops`;
+                            document.getElementById('ops-total').innerText = `Quota: ${total.toLocaleString()}`;
+
+                            // 3. Render Opportunities
+                            const oppContainer = document.getElementById('opportunities-list');
+                            if (oppContainer && data.opportunities?.length) {
+                                oppContainer.innerHTML = data.opportunities.map(opp => `
                                             <div class="p-3 bg-${opp.color}-50 border border-${opp.color}-100 rounded-lg hover:border-${opp.color}-200 transition-all cursor-pointer group">
                                                 <div class="flex items-start gap-3">
                                                     <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center border border-${opp.color}-100 text-${opp.color}-500 shrink-0 shadow-sm">
@@ -429,14 +377,14 @@
                                                 </div>
                                             </div>
                                         `).join('');
-                                    } else {
-                                        oppContainer.innerHTML = '<div class="text-xs text-slate-400 p-2">No active opportunities.</div>';
-                                    }
+                            } else {
+                                oppContainer.innerHTML = '<div class="text-xs text-slate-400 p-2">No active opportunities.</div>';
+                            }
 
-                                    // 4. Render Activity
-                                    const actContainer = document.getElementById('activity-list');
-                                    if (actContainer && data.recentActivity?.length) {
-                                        actContainer.innerHTML = data.recentActivity.map(act => `
+                            // 4. Render Activity
+                            const actContainer = document.getElementById('activity-list');
+                            if (actContainer && data.recentActivity?.length) {
+                                actContainer.innerHTML = data.recentActivity.map(act => `
                                            <div class="relative pl-6">
                                                 <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 bg-white border-2 border-${act.color}-500 rounded-full"></div>
                                                 <p class="text-xs text-gray-500 mb-0.5">${act.time}</p>
@@ -444,76 +392,76 @@
                                                 <p class="text-xs text-gray-500 truncate">${act.subtitle}</p>
                                             </div>
                                         `).join('');
-                                    } else {
-                                        actContainer.innerHTML = '<div class="text-xs text-slate-400 p-2 ml-4">No recent activity.</div>';
-                                    }
-
-                                } catch (e) {
-                                    console.error("Dashboard Sync Error", e);
-                                    // Keep existing static fallback if basic fetch fails (optional, or just show error)
-                                }
+                            } else {
+                                actContainer.innerHTML = '<div class="text-xs text-slate-400 p-2 ml-4">No recent activity.</div>';
                             }
 
-                            // Run on load
-                            refreshUserStats();
-                        </script>
+                        } catch (e) {
+                            console.error("Dashboard Sync Error", e);
+                            // Keep existing static fallback if basic fetch fails (optional, or just show error)
+                        }
+                    }
 
-                        <!-- Suggested Opportunities (Strategy #1) -->
-                        <div>
-                            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Suggested
-                                Opportunities</h3>
-                            <div id="opportunities-list" class="space-y-3">
-                                <!-- Loading State -->
-                                <div class="animate-pulse flex space-x-4">
-                                    <div class="rounded-full bg-gray-200 h-10 w-10"></div>
-                                    <div class="flex-1 space-y-2 py-1">
-                                        <div class="h-2 bg-gray-200 rounded"></div>
-                                        <div class="space-y-1">
-                                            <div class="h-2 bg-gray-200 rounded"></div>
-                                        </div>
-                                    </div>
+                    // Run on load
+                    refreshUserStats();
+                </script>
+
+                <!-- Suggested Opportunities (Strategy #1) -->
+                <div>
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Suggested
+                        Opportunities</h3>
+                    <div id="opportunities-list" class="space-y-3">
+                        <!-- Loading State -->
+                        <div class="animate-pulse flex space-x-4">
+                            <div class="rounded-full bg-gray-200 h-10 w-10"></div>
+                            <div class="flex-1 space-y-2 py-1">
+                                <div class="h-2 bg-gray-200 rounded"></div>
+                                <div class="space-y-1">
+                                    <div class="h-2 bg-gray-200 rounded"></div>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Recent Activity Feed -->
-                        <div>
-                            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Recent
-                                Activity</h3>
-                            <div id="activity-list" class="relative border-l border-gray-200 ml-2 space-y-6">
-                                <!-- Loading State -->
-                                <div class="pl-6">
-                                    <div class="h-2 bg-gray-200 rounded w-1/2"></div>
-                                </div>
-                            </div>
+                <!-- Recent Activity Feed -->
+                <div>
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Recent
+                        Activity</h3>
+                    <div id="activity-list" class="relative border-l border-gray-200 ml-2 space-y-6">
+                        <!-- Loading State -->
+                        <div class="pl-6">
+                            <div class="h-2 bg-gray-200 rounded w-1/2"></div>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Quick Context Widget -->
-                        <div
-                            class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-5 text-white shadow-md relative overflow-hidden">
-                            <!-- abstract decoration -->
-                            <div class="absolute -top-10 -right-10 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
+                <!-- Quick Context Widget -->
+                <div
+                    class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-5 text-white shadow-md relative overflow-hidden">
+                    <!-- abstract decoration -->
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
 
-                            <div class="relative z-10">
-                                <div class="flex items-center gap-2 mb-3 text-white/80">
-                                    <iconify-icon icon="solar:stars-linear" class="text-lg"></iconify-icon>
-                                    <span class="text-xs font-medium uppercase tracking-wide">Insight</span>
-                                </div>
-                                <p class="text-sm font-medium leading-relaxed mb-4 text-white/90">
-                                    Your team is querying "Regulation 4B" frequently today. Want to spin up a
-                                    specialized agent?
-                                </p>
-                                <button
-                                    class="w-full py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-xs font-medium transition-colors">
-                                    Create Agent
-                                </button>
-                            </div>
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-2 mb-3 text-white/80">
+                            <iconify-icon icon="solar:stars-linear" class="text-lg"></iconify-icon>
+                            <span class="text-xs font-medium uppercase tracking-wide">Insight</span>
                         </div>
-
+                        <p class="text-sm font-medium leading-relaxed mb-4 text-white/90">
+                            Your team is querying "Regulation 4B" frequently today. Want to spin up a
+                            specialized agent?
+                        </p>
+                        <button
+                            class="w-full py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-xs font-medium transition-colors">
+                            Create Agent
+                        </button>
                     </div>
                 </div>
 
             </div>
+        </div>
+
+        </div>
         </div>
     </main>
 
