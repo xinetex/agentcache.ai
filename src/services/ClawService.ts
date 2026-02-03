@@ -1,7 +1,10 @@
 
 import { trustBroker } from './trust-broker.js';
 
-const CLAW_API = 'https://clawtasks.com/api';
+// OpenClaw Gateway - runs locally or via env override
+const CLAW_GATEWAY_PORT = process.env.CLAW_GATEWAY_PORT || '18789';
+const CLAW_GATEWAY_HOST = process.env.CLAW_GATEWAY_HOST || 'http://localhost';
+const CLAW_API = `${CLAW_GATEWAY_HOST}:${CLAW_GATEWAY_PORT}/api`;
 const AGENT_NAME = 'AgentCache_TrustBroker';
 
 export class ClawService {
@@ -13,6 +16,7 @@ export class ClawService {
 
     async runOnce() {
         console.log(`[ClawService] Running single execution cycle for ${AGENT_NAME}`);
+        console.log(`[ClawService] Gateway: ${CLAW_API}`);
         await this.updateProfile();
         await this.pollAndExecute();
     }
