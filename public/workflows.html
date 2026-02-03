@@ -42,7 +42,7 @@
         <div class="max-w-6xl mx-auto">
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-2xl font-bold text-gray-900">Active Workflows</h1>
-                <button
+                <button onclick="startWorkflow()"
                     class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center gap-2">
                     <iconify-icon icon="solar:play-circle-linear" class="text-lg"></iconify-icon> New Execution
                 </button>
@@ -71,6 +71,83 @@
             </div>
 
             <script>
+                async function startWorkflow() {
+                    const topic = prompt("Enter a topic for this workflow (e.g., 'Q3 Audit', 'Competitor Scan'):", "Strategic Analysis");
+                    if (!topic) return;
+
+                    // Optimistic UI: Add row immediately
+                    const container = document.getElementById('workflows-list');
+                    const mockId = 'run-' + Date.now();
+                    const today = new Date().toLocaleDateString();
+
+                    const newRow = `
+                        <tr class="hover:bg-gray-50 transition-colors animate-pulse bg-blue-50/30" id="${mockId}">
+                                <td class="px-6 py-4">
+                                    <span class="font-medium text-gray-900 block">${topic}</span>
+                                    <span class="text-xs text-gray-500">ID: #PENDING</span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600 capitalize">General</td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                                        running
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="w-24 bg-gray-100 rounded-full h-1.5">
+                                        <div class="bg-blue-500 h-1.5 rounded-full" style="width: 30%"></div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">${today}</td>
+                                <td class="px-6 py-4 text-right">...</td>
+                        </tr>
+                     `;
+
+                    // Helper to insert as first item
+                    if (container.querySelector('tr')?.innerText.includes('No active workflows')) {
+                        container.innerHTML = newRow;
+                    } else {
+                        container.insertAdjacentHTML('afterbegin', newRow);
+                    }
+
+                    try {
+                        const token = localStorage.getItem('agentcache_token') || 'demo';
+                        const res = await fetch('/api/pipelines/run', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'Bearer ' + token
+                            },
+                            body: JSON.stringify({
+                                steps: [
+                                    { id: 's1', name: 'Ingest: ' + topic, action: 'search', params: { query: topic } },
+                                    { id: 's2', name: 'Analyze', action: 'audit', params: {} }
+                                ]
+                            })
+                        });
+
+                        const data = await res.json();
+
+                        // Update Row
+                        const row = document.getElementById(mockId);
+                        if (row) {
+                            row.classList.remove('animate-pulse');
+                            row.querySelector('span[class*="bg-blue-50"]').className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100";
+                            row.querySelector('span[class*="bg-blue-50"]').innerText = "completed";
+                            row.querySelector('.bg-blue-500').className = "bg-emerald-500 h-1.5 rounded-full";
+                            row.querySelector('.bg-emerald-500').style.width = "100%";
+                            row.querySelector('span.text-xs.text-gray-500').innerText = "ID: #" + data.runId.slice(0, 8);
+                        }
+
+                        // Show logs (optional)
+                        console.log("Workflow Logs:", data.logs);
+
+                    } catch (e) {
+                        alert("Workflow Failed: " + e.message);
+                        const row = document.getElementById(mockId);
+                        if (row) row.remove();
+                    }
+                }
+
                 async function loadWorkflows() {
                     try {
                         const token = localStorage.getItem('agentcache_token') || 'demo';

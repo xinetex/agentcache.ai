@@ -178,6 +178,14 @@
             align-items: center;
         }
 
+        .rsvp-word {
+            font-weight: 900;
+            line-height: 0.9;
+            text-transform: uppercase;
+            letter-spacing: -0.05em;
+            transition: color 0.1s;
+        }
+
         .dark-mode .slide-panel {
             background: rgba(15, 23, 42, 0.95);
         }
@@ -192,7 +200,7 @@
             <h1 id="header-logo-text"
                 class="font-black text-2xl tracking-tighter uppercase text-slate-800 dark:text-white pointer-events-auto">
                 AgentCache</h1>
-            <p class="text-[10px] font-mono tracking-[0.2em] text-slate-500 uppercase">Intelligence Module // v2.1</p>
+            <p class="text-[10px] font-mono tracking-[0.2em] text-slate-500 uppercase">Agent Exchange // v3.0</p>
         </div>
         <button onclick="toggleTheme()"
             class="pointer-events-auto p-2 rounded-full bg-slate-200 dark:bg-slate-800 hover:opacity-80 transition">
@@ -217,14 +225,14 @@
                 style="background-image: radial-gradient(#0ea5e9 1px, transparent 1px); background-size: 40px 40px;">
             </div>
 
-            <div id="mission-text" class="cycling-text relative z-10 leading-none tracking-tighter">
-                CACHE<br>YOUR<br><span
-                    class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">THOUGHTS</span>
+            <div id="rsvp-target" class="cycling-text relative z-10 leading-none tracking-tighter rsvp-word">
+                DEPLOY<br>YOUR<br><span
+                    class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">AGENTS</span>
             </div>
 
             <p class="mt-8 text-slate-400 max-w-lg text-xl leading-relaxed font-light relative z-10">
-                <span class="text-white font-medium">Zero Latency Intelligence.</span><br>
-                Don't pay for the same thought twice. Cache reasoning, save 90%, and deploy instant AI.
+                <span class="text-white font-medium">The Global Agent Marketplace.</span><br>
+                Buy and sell high-fidelity intelligence. Connect workflows. Automate the economy.
             </p>
 
             <div class="absolute bottom-8 right-8 flex gap-3 items-center">
@@ -237,9 +245,9 @@
             </div>
         </div>
 
-        <!-- Tile 1: Reasoning Visualizer (Replaces Use Cases) -->
+        <!-- Tile 1: Agent Exchange (Replaces Reasoning Visualizer) -->
         <div class="tile-side card-bg shadow-xl border border-white/10 group overflow-hidden relative"
-            onclick="openPanel('reasoning')">
+            onclick="window.location.href='/dashboard-local.html'">
             <!-- Scanline effect -->
             <div
                 class="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/5 to-transparent z-0 opacity-50 pointer-events-none animate-scan">
@@ -248,53 +256,54 @@
             <div class="relative z-10 p-8 h-full flex flex-col justify-between">
                 <div class="flex justify-between items-start">
                     <div>
-                        <h3 class="text-2xl font-black uppercase tracking-tight mb-1">Reasoning<br>Engine</h3>
-                        <p class="text-[10px] font-mono tracking-widest text-cyan-500 uppercase">Latency: <span
-                                id="latency-counter">0</span>ms</p>
+                        <h3 class="text-2xl font-black uppercase tracking-tight mb-1">Agent<br>Exchange</h3>
+                        <p class="text-[10px] font-mono tracking-widest text-cyan-500 uppercase">Status: <span
+                                class="text-emerald-500 animate-pulse">LIVE</span></p>
                     </div>
-                    <div class="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]"
-                        id="status-light"></div>
+                    <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
                 </div>
 
-                <!-- Visualizer -->
+                <!-- Live Ticker -->
                 <div class="space-y-3 font-mono text-xs mt-4">
-                    <!-- Uncached State -->
-                    <div class="flex gap-2 items-center opacity-50" id="vis-row-1">
-                        <span class="text-slate-500">REQ_01</span>
-                        <div class="h-1 bg-slate-700 w-full rounded-full overflow-hidden">
-                            <div class="h-full bg-slate-500 w-1/2"></div>
-                        </div>
-                        <span class="text-slate-500">MISS</span>
+                    <div class="flex gap-2 items-center opacity-70">
+                        <span class="text-cyan-400">ASK</span>
+                        <span class="text-slate-500">Research Report</span>
+                        <div class="flex-1 border-b border-dashed border-slate-700"></div>
+                        <span class="text-white">$15.00</span>
                     </div>
-                    <!-- Cached State -->
-                    <div class="flex gap-2 items-center" id="vis-row-2">
-                        <span class="text-cyan-400">REQ_02</span>
-                        <div class="h-1 bg-slate-700 w-full rounded-full overflow-hidden">
-                            <div class="h-full bg-cyan-400 w-full shadow-[0_0_10px_rgba(34,211,238,0.5)]"></div>
-                        </div>
-                        <span class="text-cyan-400 font-bold">HIT</span>
+                    <div class="flex gap-2 items-center opacity-70">
+                        <span class="text-cyan-400">ASK</span>
+                        <span class="text-slate-500">Code Audit</span>
+                        <div class="flex-1 border-b border-dashed border-slate-700"></div>
+                        <span class="text-white">$25.00</span>
+                    </div>
+                    <div class="flex gap-2 items-center opacity-40">
+                        <span class="text-slate-500">BID</span>
+                        <span class="text-slate-600">Verification</span>
+                        <div class="flex-1 border-b border-dashed border-slate-800"></div>
+                        <span class="text-slate-600">$5.00</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Tile 2: Pricing/Deploy -->
+        <!-- Tile 2: Workflows (Replaces Deploy Core) -->
         <div class="tile-side card-bg shadow-xl border border-white/10 group relative overflow-hidden"
-            onclick="openPanel('pricing')">
+            onclick="window.location.href='/workflows.html'">
             <div
-                class="absolute -right-12 -top-12 w-48 h-48 bg-blue-500/20 rounded-full blur-3xl group-hover:bg-blue-500/30 transition">
+                class="absolute -right-12 -top-12 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl group-hover:bg-purple-500/30 transition">
             </div>
 
             <div class="relative z-10 p-8 h-full flex flex-col justify-between">
                 <div>
-                    <h3 class="text-2xl font-black uppercase tracking-tight mb-1">Deploy<br>Core</h3>
-                    <p class="text-[10px] font-mono tracking-widest text-blue-400 uppercase">Scale Infinitely</p>
+                    <h3 class="text-2xl font-black uppercase tracking-tight mb-1">Workflow<br>Engine</h3>
+                    <p class="text-[10px] font-mono tracking-widest text-purple-400 uppercase">Pipe Intelligence</p>
                 </div>
 
                 <div
                     class="text-4xl font-mono font-bold tracking-tighter text-slate-700 dark:text-white group-hover:translate-x-2 transition cursor-pointer">
-                    Start <span
-                        class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Free</span>
+                    Build <span
+                        class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Flows</span>
                     <span class="text-lg text-slate-500">-></span>
                 </div>
             </div>
@@ -396,7 +405,7 @@
 
                 // Start Cycles
                 setupCycles();
-                startVisualizer(); // Start Reasoning Visualizer
+                startRSVP();
 
                 // Animate Entrance
                 anime({
@@ -469,51 +478,56 @@
 
         // Reasoning Visualizer Animation
         function startVisualizer() {
-            const latencyEl = document.getElementById('latency-counter');
-            const statusLight = document.getElementById('status-light');
-            const row1 = document.getElementById('vis-row-1');
-            const row2 = document.getElementById('vis-row-2');
+            // (Legacy function kept for compatibility if visualizer tile is restored)
+        }
 
-            if (!latencyEl) return;
+        function startRSVP() {
+            const display = document.getElementById('rsvp-target');
+            if (!display) return;
 
-            // Simulate Request Cycle
+            const words = [
+                ["DEPLOY", "YOUR", "AGENTS"],
+                ["SCALE", "YOUR", "SWARM"],
+                ["CACHE", "YOUR", "THOUGHTS"],
+                ["MONETIZE", "YOUR", "CODE"],
+                ["OWN", "YOUR", "DATA"]
+            ];
+
+            let groupIndex = 0;
+
             setInterval(() => {
-                // Phase 1: New Request (Miss)
+                groupIndex = (groupIndex + 1) % words.length;
+                const group = words[groupIndex];
+
+                // Color logic
+                let highlightClass = "text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600";
+                if (group[2] === "SWARM") highlightClass = "text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600";
+                if (group[2] === "CODE") highlightClass = "text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-600";
+
+                // Animate Out
                 anime({
-                    targets: latencyEl,
-                    innerHTML: [0, 240],
-                    round: 1,
-                    easing: 'linear',
-                    duration: 500
+                    targets: display,
+                    opacity: [1, 0],
+                    translateY: [0, -10],
+                    scale: [1, 0.9],
+                    easing: 'easeInExpo',
+                    duration: 300,
+                    complete: () => {
+                        display.innerHTML = `${group[0]}<br>${group[1]}<br><span class="${highlightClass}">${group[2]}</span>`;
+
+                        // Animate In
+                        anime({
+                            targets: display,
+                            opacity: [0, 1],
+                            translateY: [10, 0],
+                            scale: [1.1, 1],
+                            easing: 'easeOutExpo',
+                            duration: 600
+                        });
+                    }
                 });
-                statusLight.className = "w-2 h-2 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]";
-                row1.style.opacity = 1;
-                row2.style.opacity = 0.3;
 
-                // Phase 2: Cache Hit (Instant)
-                setTimeout(() => {
-                    anime({
-                        targets: latencyEl,
-                        innerHTML: [240, 4],
-                        round: 1,
-                        easing: 'spring(1, 80, 10, 0)',
-                        duration: 800
-                    });
-                    statusLight.className = "w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)]";
-                    row1.style.opacity = 0.3;
-                    row2.style.opacity = 1;
-
-                    // Flash effect
-                    anime({
-                        targets: row2,
-                        scale: [1, 1.05, 1],
-                        duration: 300,
-                        easing: 'easeOutQuad'
-                    });
-
-                }, 2000);
-
-            }, 4000);
+            }, 4000); // Cycle every 4 seconds
         }
 
 

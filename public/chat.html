@@ -257,9 +257,8 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         message: text,
-                        provider: 'moonshot', // Default provider
-                        model: 'moonshot-v1-8k',
-                        sessionId: 'demo-session-' + Date.now()
+                        agent: agent || 'default', // Pass current agent ID from URL
+                        sessionId: 'session-' + Date.now()
                     })
                 });
 

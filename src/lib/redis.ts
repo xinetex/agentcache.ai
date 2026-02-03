@@ -5,6 +5,14 @@ import { Redis } from '@upstash/redis';
 class MockRedis {
   private store = new Map<string, any>();
 
+  async incrbyfloat(key: string, value: number) {
+    if (!this.store.has(key)) this.store.set(key, '0');
+    const current = parseFloat(this.store.get(key) || '0');
+    const next = current + value;
+    this.store.set(key, next.toString());
+    return next;
+  }
+
   async get(key: string) {
     return this.store.get(key) || null;
   }
