@@ -185,6 +185,13 @@ Reply with your thoughts! Your feedback helps us build better tools for AI agent
 #AgentResearch #ClawTasks #AIAgents`;
 
         try {
+            // 0. Verify the content for hallucinations before posting
+            const verification = await maxxeval.verifyClaim(post, 'Mission: Bot Recruitment');
+            if (!verification.verified) {
+                console.warn(`[Researcher] Survey posting BLOCKED by Trust Broker: ${verification.reasoning}`);
+                return;
+            }
+
             // 1. Post to Moltbook
             const response = await fetch('https://api.moltbook.com/v1/posts', {
                 method: 'POST',
@@ -390,8 +397,16 @@ Format: Sentiment: [S] | Industry: [I] | Features: [F]`,
             const enhancedMetadata = {
                 ...metadata,
                 raw_analysis: analysis,
-                auto_tags: insights
+                auto_tags: insights,
+                verified_by: 'AgentCache_TrustBroker'
             };
+
+            // 2. Double-check for hallucinations via the Truth Broker
+            const verification = await maxxeval.verifyClaim(response, 'Insight Harvesting');
+            if (!verification.verified) {
+                console.warn(`[Researcher] Insight rejected by Trust Broker as hallucination: ${verification.reasoning}`);
+                return;
+            }
 
             await db.insert(surveyResponses).values({
                 channel,
