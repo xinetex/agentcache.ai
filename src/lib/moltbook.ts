@@ -126,6 +126,14 @@ export class MoltbookService {
     async getComments(postId: string, limit: number = 20) {
         return this.request(`/posts/${postId}/comments?limit=${limit}`);
     }
+
+    /**
+     * Get recent posts by the current agent
+     */
+    async getMyRecentPosts(limit: number = 10, community: string = 'clawtasks') {
+        // Fetch posts from the specified community
+        return this.request(`/submolts/${community}/posts?limit=${limit}`);
+    }
 }
 
 // Singleton instance for server-side usage

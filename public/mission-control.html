@@ -72,6 +72,12 @@
                             <iconify-icon icon="solar:chart-square-linear"></iconify-icon>
                             System Logs
                         </a>
+                        <a href="http://localhost:3001/signals" target="_blank"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors group">
+                            <iconify-icon icon="solar:terminal-linear"
+                                class="group-hover:text-emerald-400"></iconify-icon>
+                            MaxxEval Consensus
+                        </a>
                     </div>
                 </div>
 
@@ -415,197 +421,7 @@
                 </div>
             </div>
 
-            <script>
-                // State
-                let usersData = [];
-                let hasLoadedUsers = false;
-                let hasLoadedFleet = false;
-                let hasLoadedFeedback = false;
 
-                // Logs State
-                let logCursor = null;
-                let logPollInterval = null;
-                let isPollingLogs = false;
-
-                async function switchTab(tabName) {
-                    // 1. Hide all views
-                    document.querySelectorAll('.admin-view').forEach(el => el.classList.add('hidden'));
-                    // 2. Show target view
-                    document.getElementById('view-' + tabName).classList.remove('hidden');
-
-                    // 3. Update Tab Styles
-                    document.querySelectorAll('nav[aria-label="Tabs"] button').forEach(btn => {
-                        btn.classList.remove('border-emerald-500', 'text-emerald-500');
-                        btn.classList.add('border-transparent', 'text-gray-500');
-                    });
-                    const activeBtn = document.getElementById('tab-' + tabName);
-                    activeBtn.classList.remove('border-transparent', 'text-gray-500');
-                    activeBtn.classList.add('border-emerald-500', 'text-emerald-500');
-
-                    // 4. Lazy Load Data
-                    if (tabName === 'users' && !hasLoadedUsers) await loadUsers();
-                    if (tabName === 'fleet' && !hasLoadedFleet) await loadFleet();
-                    if (tabName === 'dashboard' && !hasLoadedFeedback) await loadFeedback();
-
-                    // 5. Handle Logs Polling
-                    if (tabName === 'logs') {
-                        startLogPolling();
-                    } else {
-                        stopLogPolling();
-                    }
-                    // --- FEEDBACK LOGIC ---
-                    async function loadFeedback() {
-                        const widget = document.getElementById('feedback-widget');
-                        try {
-                            const res = await fetch('/api/admin/feedback');
-                            const data = await res.json();
-                            const camp = data.feedback.campaign;
-
-                            // If we have a campaign, show the "Deploy" view
-                            if (camp) {
-                                widget.innerHTML = `
-                                <div>
-                                    <div class="text-lg text-white font-light mb-1">${camp.name}</div>
-                                    <p class="text-xs text-gray-400 mb-4">Post this payload to Moltbook to "Honey Pot" bot responses.</p>
-                                    
-                                    <div class="bg-black/30 rounded-lg p-3 border border-indigo-500/30 mb-3 relative group">
-                                        <div class="text-[10px] text-indigo-400 font-mono whitespace-pre-wrap leading-relaxed">${camp.copyText}</div>
-                                        <button onclick="copyCampaign('${camp.id}')" id="btn-${camp.id}" 
-                                            class="absolute top-2 right-2 bg-indigo-600 hover:bg-indigo-500 text-white p-1.5 rounded text-xs transition-colors flex items-center gap-1">
-                                            <iconify-icon icon="solar:copy-linear"></iconify-icon> Copy
-                                        </button>
-                                    </div>
-                                    
-                                    <div class="flex gap-2">
-                                        <button class="flex-1 py-2 rounded-lg bg-gray-800 text-gray-400 text-xs hover:bg-gray-700">Skip Function</button>
-                                        <button class="flex-1 py-2 rounded-lg bg-emerald-900/50 text-emerald-400 border border-emerald-500/20 text-xs hover:bg-emerald-900/80">Mark Deployed</button>
-                                    </div>
-                                </div>
-                            `;
-
-                                // Attach copy logic to window for inline onclick
-                                window.copyCampaign = (id) => {
-                                    navigator.clipboard.writeText(camp.copyText).then(() => {
-                                        const btn = document.getElementById('btn-' + id);
-                                        const original = btn.innerHTML;
-                                        btn.innerHTML = '<iconify-icon icon="solar:check-circle-bold"></iconify-icon> Copied';
-                                        btn.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
-                                        setTimeout(() => {
-                                            btn.innerHTML = original;
-                                            btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-500');
-                                        }, 2000);
-                                    });
-                                };
-
-                            } else {
-                                // Fallback to results view if no active campaign
-                                widget.innerHTML = '<div class="text-gray-500 text-xs">No active campaigns.</div>';
-                            }
-
-                            hasLoadedFeedback = true;
-                        } catch (e) {
-                            console.error(e);
-                            widget.innerHTML = '<div class="text-red-400 text-xs">Failed to load campaign.</div>';
-                        }
-                    }
-
-                    document.addEventListener('DOMContentLoaded', loadFeedback); // Load on init too since it's default tab
-
-                    // --- FLEET LOGIC ---
-                    async function loadFleet() {
-                        const fleetContainer = document.getElementById('fleet-container');
-                        fleetContainer.innerHTML = '<div class="text-center text-gray-500 py-8">Loading fleet data...</div>';
-                        try {
-                            const res2 = await fetch('/api/agents');
-                            if (!res2.ok) throw new Error('API Failed');
-                            const data = await res2.json();
-
-                            // data.agents is the array based on my api/agents.ts implementation
-                            if (data.agents && data.agents.length > 0) {
-                                fleetContainer.innerHTML = data.agents.map(agent => `
-                                <div class="flex items-center gap-4 p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
-                                    <div class="w-10 h-10 rounded-lg ${agent.color || 'bg-gray-700'} flex items-center justify-center text-xl text-white shrink-0">
-                                        <iconify-icon icon="${agent.icon}"></iconify-icon>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="text-sm font-medium text-white">${agent.name}</div>
-                                        <div class="text-xs text-gray-400">${agent.role}</div>
-                                    </div>
-                                    <span class="text-xs px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${agent.status}</span>
-                                </div>
-                            `).join('');
-                            } else {
-                                fleetContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No agents deployed.</div>';
-                            }
-                            hasLoadedFleet = true;
-                        } catch (e) {
-                            console.error(e);
-                            fleetContainer.innerHTML = '<div class="text-center text-red-400 py-8">Failed to load fleet. Check console.</div>';
-                        }
-                    }
-
-                    async function loadUsers() {
-                        const tbody = document.getElementById('users-table-body');
-                        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Loading users...</td></tr>';
-
-                        try {
-                            const res = await fetch('/api/admin/users');
-                            if (!res.ok) throw new Error('API Failed');
-                            const data = await res.json();
-                            usersData = data.users || [];
-                            renderUsers(usersData);
-                            hasLoadedUsers = true;
-                        } catch (e) {
-                            console.error(e);
-                            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-red-400">Failed to load users. check console.</td></tr>';
-                        }
-                    }
-
-                    function renderUsers(users) {
-                        const tbody = document.getElementById('users-table-body');
-                        if (users.length === 0) {
-                            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">No users found.</td></tr>';
-                            return;
-                        }
-
-                        tbody.innerHTML = users.map(u => `
-                        <tr class="hover:bg-white/[0.02] transition-colors">
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full ${u.color || 'bg-gray-700'} flex items-center justify-center text-xs font-bold text-white shadow-inner">
-                                        ${u.initials}
-                                    </div>
-                                    <div>
-                                        <div class="font-medium text-white text-sm">${u.name}</div>
-                                        <div class="text-xs text-gray-500">${u.email}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 text-gray-300 text-sm capitalize">${u.role}</td>
-                            <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getStatusColor(u.status)}">
-                                    ${u.status}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-gray-300 text-sm capitalize">${u.plan}</td>
-                            <td class="px-6 py-4 text-right">
-                                <button class="text-gray-500 hover:text-white transition-colors p-1 rounded hover:bg-white/10">
-                                    <iconify-icon icon="solar:menu-dots-bold"></iconify-icon>
-                                </button>
-                            </td>
-                        </tr>
-                    `).join('');
-                    }
-
-                    function getStatusColor(status) {
-                        switch (status.toLowerCase()) {
-                            case 'active': return 'bg-emerald-500/10 text-emerald-400';
-                            case 'offline': return 'bg-gray-500/10 text-gray-400';
-                            case 'banned': return 'bg-red-500/10 text-red-400';
-                            default: return 'bg-blue-500/10 text-blue-400';
-                        }
-                    }
-            </script>
 
             <!-- Quick Links -->
             <div>
@@ -780,71 +596,71 @@
     </main>
 
     <script>
-                    // --- GLOBAL STATE ---
-                    let usersData = [];
-                    let hasLoadedUsers = false;
-                    let hasLoadedFleet = false;
-                    let hasLoadedFeedback = false;
+        // --- GLOBAL STATE ---
+        let usersData = [];
+        let hasLoadedUsers = false;
+        let hasLoadedFleet = false;
+        let hasLoadedFeedback = false;
 
-                    let logCursor = null;
-                    let logPollInterval = null;
-                    let isPollingLogs = false;
+        let logCursor = null;
+        let logPollInterval = null;
+        let isPollingLogs = false;
 
-                    // --- NAVIGATION ---
-                    async function switchTab(tabName) {
-                        // 1. Hide all views
-                        document.querySelectorAll('.admin-view').forEach(el => el.classList.add('hidden'));
-                        // 2. Show target view
-                        document.getElementById('view-' + tabName).classList.remove('hidden');
+        // --- NAVIGATION ---
+        async function switchTab(tabName) {
+            // 1. Hide all views
+            document.querySelectorAll('.admin-view').forEach(el => el.classList.add('hidden'));
+            // 2. Show target view
+            document.getElementById('view-' + tabName).classList.remove('hidden');
 
-                        // 3. Update Tab Styles
-                        document.querySelectorAll('nav[aria-label="Tabs"] button').forEach(btn => {
-                            btn.classList.remove('border-emerald-500', 'text-emerald-500');
-                            btn.classList.add('border-transparent', 'text-gray-500');
-                        });
-                        const activeBtn = document.getElementById('tab-' + tabName);
-                        activeBtn.classList.remove('border-transparent', 'text-gray-500');
-                        activeBtn.classList.add('border-emerald-500', 'text-emerald-500');
+            // 3. Update Tab Styles
+            document.querySelectorAll('nav[aria-label="Tabs"] button').forEach(btn => {
+                btn.classList.remove('border-emerald-500', 'text-emerald-500');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            const activeBtn = document.getElementById('tab-' + tabName);
+            activeBtn.classList.remove('border-transparent', 'text-gray-500');
+            activeBtn.classList.add('border-emerald-500', 'text-emerald-500');
 
-                        // 4. Lazy Load Data
-                        if (tabName === 'users' && !hasLoadedUsers) await loadUsers();
-                        if (tabName === 'fleet' && !hasLoadedFleet) await loadFleet();
-                        if (tabName === 'dashboard' && !hasLoadedFeedback) await loadFeedback();
+            // 4. Lazy Load Data
+            if (tabName === 'users' && !hasLoadedUsers) await loadUsers();
+            if (tabName === 'fleet' && !hasLoadedFleet) await loadFleet();
+            if (tabName === 'dashboard' && !hasLoadedFeedback) await loadFeedback();
 
-                        // 5. Handle Logs Polling
-                        if (tabName === 'logs') {
-                            startLogPolling();
-                        } else {
-                            stopLogPolling();
-                        }
-                    }
+            // 5. Handle Logs Polling
+            if (tabName === 'logs') {
+                startLogPolling();
+            } else {
+                stopLogPolling();
+            }
+        }
 
-                    // --- 1. USERS LOGIC ---
-                    async function loadUsers() {
-                        const tbody = document.getElementById('users-table-body');
-                        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Loading users...</td></tr>';
+        // --- 1. USERS LOGIC ---
+        async function loadUsers() {
+            const tbody = document.getElementById('users-table-body');
+            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Loading users...</td></tr>';
 
-                        try {
-                            const res = await fetch('/api/admin/users');
-                            if (!res.ok) throw new Error('API Failed');
-                            const data = await res.json();
-                            usersData = data.users || [];
-                            renderUsers(usersData);
-                            hasLoadedUsers = true;
-                        } catch (e) {
-                            console.error(e);
-                            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-red-400">Failed to load users. check console.</td></tr>';
-                        }
-                    }
+            try {
+                const res = await fetch('/api/admin/users');
+                if (!res.ok) throw new Error('API Failed');
+                const data = await res.json();
+                usersData = data.users || [];
+                renderUsers(usersData);
+                hasLoadedUsers = true;
+            } catch (e) {
+                console.error(e);
+                tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-red-400">Failed to load users. check console.</td></tr>';
+            }
+        }
 
-                    function renderUsers(users) {
-                        const tbody = document.getElementById('users-table-body');
-                        if (users.length === 0) {
-                            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">No users found.</td></tr>';
-                            return;
-                        }
+        function renderUsers(users) {
+            const tbody = document.getElementById('users-table-body');
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">No users found.</td></tr>';
+                return;
+            }
 
-                        tbody.innerHTML = users.map(u => `
+            tbody.innerHTML = users.map(u => `
                 <tr class="hover:bg-white/[0.02] transition-colors">
                     <td class="px-6 py-4">
                         <div class="flex items-center gap-3">
@@ -871,92 +687,92 @@
                     </td>
                 </tr>
             `).join('');
-                    }
+        }
 
-                    function getStatusColor(status) {
-                        switch (status.toLowerCase()) {
-                            case 'active': return 'bg-emerald-500/10 text-emerald-400';
-                            case 'offline': return 'bg-gray-500/10 text-gray-400';
-                            case 'banned': return 'bg-red-500/10 text-red-400';
-                            default: return 'bg-blue-500/10 text-blue-400';
-                        }
-                    }
+        function getStatusColor(status) {
+            switch (status.toLowerCase()) {
+                case 'active': return 'bg-emerald-500/10 text-emerald-400';
+                case 'offline': return 'bg-gray-500/10 text-gray-400';
+                case 'banned': return 'bg-red-500/10 text-red-400';
+                default: return 'bg-blue-500/10 text-blue-400';
+            }
+        }
 
-                    // --- 2. LOGS LOGIC ---
-                    function startLogPolling() {
-                        if (isPollingLogs) return;
-                        isPollingLogs = true;
-                        fetchLogs(); // Initial
-                        logPollInterval = setInterval(fetchLogs, 3000); // 3s poll
-                    }
+        // --- 2. LOGS LOGIC ---
+        function startLogPolling() {
+            if (isPollingLogs) return;
+            isPollingLogs = true;
+            fetchLogs(); // Initial
+            logPollInterval = setInterval(fetchLogs, 3000); // 3s poll
+        }
 
-                    function stopLogPolling() {
-                        isPollingLogs = false;
-                        if (logPollInterval) clearInterval(logPollInterval);
-                    }
+        function stopLogPolling() {
+            isPollingLogs = false;
+            if (logPollInterval) clearInterval(logPollInterval);
+        }
 
-                    async function fetchLogs() {
-                        try {
-                            let url = '/api/admin/logs';
-                            if (logCursor) url += `?since=${logCursor}`;
+        async function fetchLogs() {
+            try {
+                let url = '/api/admin/logs';
+                if (logCursor) url += `?since=${logCursor}`;
 
-                            const res = await fetch(url);
-                            if (!res.ok) return;
+                const res = await fetch(url);
+                if (!res.ok) return;
 
-                            const data = await res.json();
-                            if (data.logs && data.logs.length > 0) {
-                                renderLogs(data.logs);
-                                scrollToBottom();
-                            }
-                            if (data.cursor) logCursor = data.cursor;
+                const data = await res.json();
+                if (data.logs && data.logs.length > 0) {
+                    renderLogs(data.logs);
+                    scrollToBottom();
+                }
+                if (data.cursor) logCursor = data.cursor;
 
-                        } catch (e) {
-                            console.warn("Log Poll Error", e);
-                        }
-                    }
+            } catch (e) {
+                console.warn("Log Poll Error", e);
+            }
+        }
 
-                    function renderLogs(newLogs) {
-                        const consoleEl = document.getElementById('log-console');
-                        if (consoleEl.innerHTML.includes('text-center')) {
-                            consoleEl.innerHTML = '';
-                        }
+        function renderLogs(newLogs) {
+            const consoleEl = document.getElementById('log-console');
+            if (consoleEl.innerHTML.includes('text-center')) {
+                consoleEl.innerHTML = '';
+            }
 
-                        const fragment = document.createDocumentFragment();
-                        newLogs.forEach(log => {
-                            const row = document.createElement('div');
-                            row.className = "flex gap-2 font-mono hover:bg-white/[0.02]";
-                            row.innerHTML = `
+            const fragment = document.createDocumentFragment();
+            newLogs.forEach(log => {
+                const row = document.createElement('div');
+                row.className = "flex gap-2 font-mono hover:bg-white/[0.02]";
+                row.innerHTML = `
                     <span class="text-gray-600 w-16 shrink-0">[${log.timestampStr}]</span> 
                     <span class="${log.levelColor} w-16 shrink-0 font-bold">${log.level}</span>
                     <span class="text-gray-500 w-24 shrink-0 truncate border-r border-gray-800 pr-2">${log.source}</span>
                     <span class="text-gray-300">${log.message}</span>
                 `;
-                            fragment.appendChild(row);
-                        });
-                        consoleEl.appendChild(fragment);
+                fragment.appendChild(row);
+            });
+            consoleEl.appendChild(fragment);
 
-                        while (consoleEl.children.length > 500) {
-                            consoleEl.removeChild(consoleEl.firstChild);
-                        }
-                    }
+            while (consoleEl.children.length > 500) {
+                consoleEl.removeChild(consoleEl.firstChild);
+            }
+        }
 
-                    function scrollToBottom() {
-                        const consoleEl = document.getElementById('log-console');
-                        consoleEl.scrollTop = consoleEl.scrollHeight;
-                    }
+        function scrollToBottom() {
+            const consoleEl = document.getElementById('log-console');
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
 
-                    // --- 3. FLEET LOGIC ---
-                    async function loadFleet() {
-                        const fleetContainer = document.getElementById('fleet-container');
-                        fleetContainer.innerHTML = '<div class="text-center text-gray-500 py-8">Loading fleet data...</div>';
-                        try {
-                            // Request admin scope to see internal agents (Sentinel, Researcher)
-                            const res2 = await fetch('/api/agents?scope=admin');
-                            if (!res2.ok) throw new Error('API Failed');
-                            const data = await res2.json();
+        // --- 3. FLEET LOGIC ---
+        async function loadFleet() {
+            const fleetContainer = document.getElementById('fleet-container');
+            fleetContainer.innerHTML = '<div class="text-center text-gray-500 py-8">Loading fleet data...</div>';
+            try {
+                // Request admin scope to see internal agents (Sentinel, Researcher)
+                const res2 = await fetch('/api/agents?scope=admin');
+                if (!res2.ok) throw new Error('API Failed');
+                const data = await res2.json();
 
-                            if (data.agents && data.agents.length > 0) {
-                                fleetContainer.innerHTML = data.agents.map(agent => `
+                if (data.agents && data.agents.length > 0) {
+                    fleetContainer.innerHTML = data.agents.map(agent => `
                         <div class="flex items-center gap-4 p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
                             <div class="w-10 h-10 rounded-lg ${agent.color || 'bg-gray-700'} flex items-center justify-center text-xl text-white shrink-0">
                                 <iconify-icon icon="${agent.icon}"></iconify-icon>
@@ -968,26 +784,26 @@
                             <span class="text-xs px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${agent.status}</span>
                         </div>
                     `).join('');
-                            } else {
-                                fleetContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No agents deployed.</div>';
-                            }
-                            hasLoadedFleet = true;
-                        } catch (e) {
-                            console.error(e);
-                            fleetContainer.innerHTML = '<div class="text-center text-red-400 py-8">Failed to load fleet. Check console.</div>';
-                        }
-                    }
+                } else {
+                    fleetContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No agents deployed.</div>';
+                }
+                hasLoadedFleet = true;
+            } catch (e) {
+                console.error(e);
+                fleetContainer.innerHTML = '<div class="text-center text-red-400 py-8">Failed to load fleet. Check console.</div>';
+            }
+        }
 
-                    // --- 4. FEEDBACK LOGIC ---
-                    async function loadFeedback() {
-                        const widget = document.getElementById('feedback-widget');
-                        try {
-                            const res = await fetch('/api/admin/feedback');
-                            const data = await res.json();
-                            const camp = data.feedback.campaign;
+        // --- 4. FEEDBACK LOGIC ---
+        async function loadFeedback() {
+            const widget = document.getElementById('feedback-widget');
+            try {
+                const res = await fetch('/api/admin/feedback');
+                const data = await res.json();
+                const camp = data.feedback.campaign;
 
-                            if (camp) {
-                                widget.innerHTML = `
+                if (camp) {
+                    widget.innerHTML = `
                         <div>
                             <div class="text-lg text-white font-light mb-1">${camp.name}</div>
                             <p class="text-xs text-gray-400 mb-4">Post this payload to Moltbook to "Honey Pot" bot responses.</p>
@@ -1001,71 +817,111 @@
                             </div>
                             
                             <div class="flex gap-2">
+                                <button onclick="deployMoltbook('${camp.id}', \`${camp.copyText}\`)" id="deploy-btn-${camp.id}"
+                                    class="flex-1 py-2 rounded-lg bg-emerald-600 text-white text-xs hover:bg-emerald-500 transition-colors flex items-center justify-center gap-2">
+                                    <iconify-icon icon="solar:upload-linear"></iconify-icon>
+                                    Deploy to Moltbook
+                                </button>
                                 <button class="flex-1 py-2 rounded-lg bg-gray-800 text-gray-400 text-xs hover:bg-gray-700">Skip Function</button>
-                                <button class="flex-1 py-2 rounded-lg bg-emerald-900/50 text-emerald-400 border border-emerald-500/20 text-xs hover:bg-emerald-900/80">Mark Deployed</button>
                             </div>
                         </div>
                     `;
 
-                                window.copyCampaign = (id) => {
-                                    navigator.clipboard.writeText(camp.copyText).then(() => {
-                                        const btn = document.getElementById('btn-' + id);
-                                        const original = btn.innerHTML;
-                                        btn.innerHTML = '<iconify-icon icon="solar:check-circle-bold"></iconify-icon> Copied';
-                                        btn.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
-                                        setTimeout(() => {
-                                            btn.innerHTML = original;
-                                            btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-500');
-                                        }, 2000);
-                                    });
-                                };
+                    window.copyCampaign = (id) => {
+                        navigator.clipboard.writeText(camp.copyText).then(() => {
+                            const btn = document.getElementById('btn-' + id);
+                            const original = btn.innerHTML;
+                            btn.innerHTML = '<iconify-icon icon="solar:check-circle-bold"></iconify-icon> Copied';
+                            btn.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
+                            setTimeout(() => {
+                                btn.innerHTML = original;
+                                btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-500');
+                            }, 2000);
+                        });
+                    };
 
-                            } else {
-                                widget.innerHTML = '<div class="text-gray-500 text-xs">No active campaigns.</div>';
-                            }
-
-                            hasLoadedFeedback = true;
-                        } catch (e) {
-                            console.error(e);
-                            widget.innerHTML = '<div class="text-red-400 text-xs">Failed to load campaign.</div>';
-                        }
-                    }
-
-                    // Init
-                    document.addEventListener('DOMContentLoaded', loadFeedback);
-                    // --- Notification System ---
-                    const notifDropdown = document.getElementById('notif-dropdown');
-                    const notifList = document.getElementById('notif-list');
-                    const notifBadge = document.getElementById('notif-badge');
-                    let notificationInterval;
-
-                    function toggleNotifications() {
-                        notifDropdown.classList.toggle('hidden');
-                    }
-
-                    async function fetchNotifications() {
-                        // Assume user is logged in and we have a token or mock ID
-                        const user = JSON.parse(localStorage.getItem('agentcache_user'));
-                        const userId = user ? user.id : 'mock-user-id'; // Fallback for dev
+                    window.deployMoltbook = async (id, content) => {
+                        const btn = document.getElementById('deploy-btn-' + id);
+                        const original = btn.innerHTML;
+                        btn.disabled = true;
+                        btn.innerHTML = '<iconify-icon icon="solar:refresh-linear" class="animate-spin"></iconify-icon> Deploying...';
 
                         try {
-                            const res = await fetch(`/api/notifications?userId=${userId}`);
-                            const data = await res.json();
+                            const res = await fetch('/api/admin/deploy-campaign', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    campaignId: id,
+                                    content: content,
+                                    title: 'Research Signal'
+                                })
+                            });
 
-                            if (data.notifications && data.notifications.length > 0) {
-                                renderNotifications(data.notifications);
-                                notifBadge.classList.remove('hidden');
+                            const result = await res.json();
+                            if (result.success) {
+                                btn.innerHTML = '<iconify-icon icon="solar:check-circle-bold"></iconify-icon> Deployed';
+                                btn.classList.replace('bg-emerald-600', 'bg-blue-600');
                             } else {
-                                notifBadge.classList.add('hidden');
-                                notifList.innerHTML = '<div class="p-4 text-center text-slate-500 text-xs">No new notifications</div>';
+                                throw new Error(result.error || 'Failed');
                             }
                         } catch (e) {
-                            console.error('Failed to fetch notifications', e);
+                            console.error(e);
+                            btn.innerHTML = '<iconify-icon icon="solar:danger-triangle-bold"></iconify-icon> Failed';
+                            btn.classList.replace('bg-emerald-600', 'bg-red-600');
+                            setTimeout(() => {
+                                btn.disabled = false;
+                                btn.innerHTML = original;
+                                btn.classList.replace('bg-red-600', 'bg-emerald-600');
+                            }, 3000);
                         }
-                    }
+                    };
 
-                    function renderNotifications(items) {
-                        notifList.innerHTML = items.map(n => `
+                } else {
+                    widget.innerHTML = '<div class="text-gray-500 text-xs">No active campaigns.</div>';
+                }
+
+                hasLoadedFeedback = true;
+            } catch (e) {
+                console.error(e);
+                widget.innerHTML = '<div class="text-red-400 text-xs">Failed to load campaign.</div>';
+            }
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', loadFeedback);
+        // --- Notification System ---
+        const notifDropdown = document.getElementById('notif-dropdown');
+        const notifList = document.getElementById('notif-list');
+        const notifBadge = document.getElementById('notif-badge');
+        let notificationInterval;
+
+        function toggleNotifications() {
+            notifDropdown.classList.toggle('hidden');
+        }
+
+        async function fetchNotifications() {
+            // Assume user is logged in and we have a token or mock ID
+            const user = JSON.parse(localStorage.getItem('agentcache_user'));
+            const userId = user ? user.id : 'mock-user-id'; // Fallback for dev
+
+            try {
+                const res = await fetch(`/api/notifications?userId=${userId}`);
+                const data = await res.json();
+
+                if (data.notifications && data.notifications.length > 0) {
+                    renderNotifications(data.notifications);
+                    notifBadge.classList.remove('hidden');
+                } else {
+                    notifBadge.classList.add('hidden');
+                    notifList.innerHTML = '<div class="p-4 text-center text-slate-500 text-xs">No new notifications</div>';
+                }
+            } catch (e) {
+                console.error('Failed to fetch notifications', e);
+            }
+        }
+
+        function renderNotifications(items) {
+            notifList.innerHTML = items.map(n => `
             <div class="p-4 border-b border-slate-700/50 hover:bg-slate-700/30 transition cursor-pointer" onclick="markRead('${n.id}')">
                 <div class="flex gap-3">
                     <div class="mt-1">
@@ -1079,44 +935,44 @@
                 </div>
             </div>
         `).join('');
-                    }
+        }
 
-                    function getIconForType(type) {
-                        switch (type) {
-                            case 'success': return '<i data-lucide="check-circle" class="w-4 h-4 text-emerald-500"></i>';
-                            case 'warning': return '<i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>';
-                            case 'error': return '<i data-lucide="x-circle" class="w-4 h-4 text-red-500"></i>';
-                            default: return '<i data-lucide="info" class="w-4 h-4 text-blue-500"></i>';
-                        }
-                    }
+        function getIconForType(type) {
+            switch (type) {
+                case 'success': return '<i data-lucide="check-circle" class="w-4 h-4 text-emerald-500"></i>';
+                case 'warning': return '<i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>';
+                case 'error': return '<i data-lucide="x-circle" class="w-4 h-4 text-red-500"></i>';
+                default: return '<i data-lucide="info" class="w-4 h-4 text-blue-500"></i>';
+            }
+        }
 
-                    async function markRead(id) {
-                        const user = JSON.parse(localStorage.getItem('agentcache_user'));
-                        const userId = user ? user.id : 'mock-user-id';
+        async function markRead(id) {
+            const user = JSON.parse(localStorage.getItem('agentcache_user'));
+            const userId = user ? user.id : 'mock-user-id';
 
-                        await fetch('/api/notifications/read', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ notificationId: id, userId })
-                        });
-                        fetchNotifications(); // Refresh
-                    }
+            await fetch('/api/notifications/read', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notificationId: id, userId })
+            });
+            fetchNotifications(); // Refresh
+        }
 
-                    async function markAllRead() {
-                        const user = JSON.parse(localStorage.getItem('agentcache_user'));
-                        const userId = user ? user.id : 'mock-user-id';
+        async function markAllRead() {
+            const user = JSON.parse(localStorage.getItem('agentcache_user'));
+            const userId = user ? user.id : 'mock-user-id';
 
-                        await fetch('/api/notifications/read', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ notificationId: 'all', userId })
-                        });
-                        fetchNotifications();
-                    }
+            await fetch('/api/notifications/read', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notificationId: 'all', userId })
+            });
+            fetchNotifications();
+        }
 
-                    // Initialize Notification Polling
-                    setInterval(fetchNotifications, 30000); // Poll every 30s
-                    fetchNotifications(); // Initial call
+        // Initialize Notification Polling
+        setInterval(fetchNotifications, 30000); // Poll every 30s
+        fetchNotifications(); // Initial call
 
     </script>
     <!-- SETTINGS MODAL -->
@@ -1247,106 +1103,106 @@
     </div>
 
     <script>
-            // --- SETTINGS LOGIC ---
+        // --- SETTINGS LOGIC ---
 
-            function openSettings() {
-                const modal = document.getElementById('settings-modal');
-                const panel = document.getElementById('settings-panel');
+        function openSettings() {
+            const modal = document.getElementById('settings-modal');
+            const panel = document.getElementById('settings-panel');
 
-                modal.classList.remove('opacity-0', 'pointer-events-none');
-                panel.classList.remove('scale-95');
-                panel.classList.add('scale-100');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            panel.classList.remove('scale-95');
+            panel.classList.add('scale-100');
 
-                loadUserPrefs();
-                checkAdminRole();
-            }
+            loadUserPrefs();
+            checkAdminRole();
+        }
 
-            function closeSettings() {
-                const modal = document.getElementById('settings-modal');
-                const panel = document.getElementById('settings-panel');
+        function closeSettings() {
+            const modal = document.getElementById('settings-modal');
+            const panel = document.getElementById('settings-panel');
 
-                modal.classList.add('opacity-0', 'pointer-events-none');
-                panel.classList.remove('scale-100');
-                panel.classList.add('scale-95');
-            }
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            panel.classList.remove('scale-100');
+            panel.classList.add('scale-95');
+        }
 
-            function switchSettingsTab(tab) {
-                document.querySelectorAll('.settings-view').forEach(el => el.classList.add('hidden'));
-                document.getElementById('set-view-' + tab).classList.remove('hidden');
+        function switchSettingsTab(tab) {
+            document.querySelectorAll('.settings-view').forEach(el => el.classList.add('hidden'));
+            document.getElementById('set-view-' + tab).classList.remove('hidden');
 
-                document.querySelectorAll('[id^="set-tab-"]').forEach(btn => {
-                    btn.classList.remove('text-emerald-400', 'bg-white/5');
-                    btn.classList.add('text-gray-500');
+            document.querySelectorAll('[id^="set-tab-"]').forEach(btn => {
+                btn.classList.remove('text-emerald-400', 'bg-white/5');
+                btn.classList.add('text-gray-500');
+            });
+            const active = document.getElementById('set-tab-' + tab);
+            active.classList.add('text-emerald-400', 'bg-white/5');
+            active.classList.remove('text-gray-500');
+
+            document.getElementById('settings-title').innerText = tab.charAt(0).toUpperCase() + tab.slice(1) + (tab === 'general' ? ' Preferences' : ' Settings');
+
+            if (tab === 'system') loadSystemSettings();
+        }
+
+        // 1. User Preferences
+        async function loadUserPrefs() {
+            try {
+                const res = await fetch('/api/settings/preferences', {
+                    headers: { 'x-user-id': getUserId() }
                 });
-                const active = document.getElementById('set-tab-' + tab);
-                active.classList.add('text-emerald-400', 'bg-white/5');
-                active.classList.remove('text-gray-500');
+                const data = await res.json();
 
-                document.getElementById('settings-title').innerText = tab.charAt(0).toUpperCase() + tab.slice(1) + (tab === 'general' ? ' Preferences' : ' Settings');
+                document.getElementById('input-theme').value = data.themePref || 'system';
+                document.getElementById('input-notifs').checked = data.notificationsEnabled;
+            } catch (e) { console.error(e); }
+        }
 
-                if (tab === 'system') loadSystemSettings();
+        async function saveUserPrefs() {
+            const themePref = document.getElementById('input-theme').value;
+            const notificationsEnabled = document.getElementById('input-notifs').checked;
+
+            try {
+                await fetch('/api/settings/preferences', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-user-id': getUserId()
+                    },
+                    body: JSON.stringify({ themePref, notificationsEnabled })
+                });
+                if (themePref === 'dark') document.documentElement.classList.add('dark');
+                if (themePref === 'light') document.documentElement.classList.remove('dark');
+            } catch (e) { console.error(e); }
+        }
+
+        // 2. System Settings (Admin)
+        async function checkAdminRole() {
+            const user = JSON.parse(localStorage.getItem('agentcache_user'));
+            if (user && user.role === 'admin') {
+                document.getElementById('set-tab-system').classList.remove('hidden');
             }
+        }
 
-            // 1. User Preferences
-            async function loadUserPrefs() {
-                try {
-                    const res = await fetch('/api/settings/preferences', {
-                        headers: { 'x-user-id': getUserId() }
-                    });
-                    const data = await res.json();
+        async function loadSystemSettings() {
+            const list = document.getElementById('system-settings-list');
+            list.innerHTML = '<div class="text-center text-gray-500 text-xs py-8">Loading...</div>';
 
-                    document.getElementById('input-theme').value = data.themePref || 'system';
-                    document.getElementById('input-notifs').checked = data.notificationsEnabled;
-                } catch (e) { console.error(e); }
-            }
-
-            async function saveUserPrefs() {
-                const themePref = document.getElementById('input-theme').value;
-                const notificationsEnabled = document.getElementById('input-notifs').checked;
-
-                try {
-                    await fetch('/api/settings/preferences', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'x-user-id': getUserId()
-                        },
-                        body: JSON.stringify({ themePref, notificationsEnabled })
-                    });
-                    if (themePref === 'dark') document.documentElement.classList.add('dark');
-                    if (themePref === 'light') document.documentElement.classList.remove('dark');
-                } catch (e) { console.error(e); }
-            }
-
-            // 2. System Settings (Admin)
-            async function checkAdminRole() {
-                const user = JSON.parse(localStorage.getItem('agentcache_user'));
-                if (user && user.role === 'admin') {
-                    document.getElementById('set-tab-system').classList.remove('hidden');
+            try {
+                const res = await fetch('/api/admin/settings', {
+                    headers: { 'x-user-id': getUserId() }
+                });
+                if (res.status === 403) {
+                    list.innerHTML = '<div class="text-red-400 text-xs">Access Denied</div>';
+                    return;
                 }
-            }
+                const data = await res.json();
+                const entries = Object.entries(data);
 
-            async function loadSystemSettings() {
-                const list = document.getElementById('system-settings-list');
-                list.innerHTML = '<div class="text-center text-gray-500 text-xs py-8">Loading...</div>';
+                if (entries.length === 0) {
+                    list.innerHTML = '<div class="text-center text-gray-500 text-xs">No global settings defined.</div>';
+                    return;
+                }
 
-                try {
-                    const res = await fetch('/api/admin/settings', {
-                        headers: { 'x-user-id': getUserId() }
-                    });
-                    if (res.status === 403) {
-                        list.innerHTML = '<div class="text-red-400 text-xs">Access Denied</div>';
-                        return;
-                    }
-                    const data = await res.json();
-                    const entries = Object.entries(data);
-
-                    if (entries.length === 0) {
-                        list.innerHTML = '<div class="text-center text-gray-500 text-xs">No global settings defined.</div>';
-                        return;
-                    }
-
-                    list.innerHTML = entries.map(([key, val]) => `
+                list.innerHTML = entries.map(([key, val]) => `
                     <div class="p-4 bg-white/5 rounded-xl border border-white/5 flex flex-col gap-2">
                          <div class="flex justify-between items-center">
                              <div class="text-xs font-mono text-emerald-400">${key}</div>
@@ -1356,43 +1212,43 @@
                     </div>
                 `).join('');
 
-                } catch (e) { console.error(e); }
+            } catch (e) { console.error(e); }
+        }
+
+        async function editSystemSetting(key) {
+            const val = prompt(`Enter JSON value for ${key}:`);
+            if (!val) return;
+
+            try {
+                const parsed = JSON.parse(val);
+                await fetch('/api/admin/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-user-id': getUserId()
+                    },
+                    body: JSON.stringify({ key, value: parsed, description: 'Updated via UI' })
+                });
+                loadSystemSettings(); // refresh
+            } catch (e) {
+                alert('Invalid JSON');
             }
+        }
 
-            async function editSystemSetting(key) {
-                const val = prompt(`Enter JSON value for ${key}:`);
-                if (!val) return;
+        function addSystemSetting() {
+            const key = prompt("Enter Setting Key (e.g. global_maintenance):");
+            if (!key) return;
+            editSystemSetting(key);
+        }
 
-                try {
-                    const parsed = JSON.parse(val);
-                    await fetch('/api/admin/settings', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'x-user-id': getUserId()
-                        },
-                        body: JSON.stringify({ key, value: parsed, description: 'Updated via UI' })
-                    });
-                    loadSystemSettings(); // refresh
-                } catch (e) {
-                    alert('Invalid JSON');
-                }
-            }
+        // Helpers
+        function getUserId() {
+            const user = JSON.parse(localStorage.getItem('agentcache_user'));
+            return user ? user.id : 'mock-user-id';
+        }
 
-            function addSystemSetting() {
-                const key = prompt("Enter Setting Key (e.g. global_maintenance):");
-                if (!key) return;
-                editSystemSetting(key);
-            }
-
-            // Helpers
-            function getUserId() {
-                const user = JSON.parse(localStorage.getItem('agentcache_user'));
-                return user ? user.id : 'mock-user-id';
-            }
-
-            // Attach to global scope
-            window.openSettings = openSettings;
+        // Attach to global scope
+        window.openSettings = openSettings;
     </script>
 </body>
 

@@ -12,6 +12,8 @@
 import { openClaw } from '../lib/openclaw.js';
 import { db } from '../db/client.js';
 import { surveyResponses, marketInsights } from '../db/schema.js';
+import { moltbook } from '../lib/moltbook.js';
+import { maxxeval } from '../lib/maxxeval.js';
 
 // Survey questions - rotated daily
 const SURVEY_QUESTIONS = [
@@ -65,6 +67,7 @@ export class ResearcherAgent {
             // 3. Post to Moltbook (if configured)
             if (this.moltbookApiKey) {
                 await this.postMoltbookSurvey();
+                await this.harvestMoltbookResponses();
             }
 
             // 4. Generate weekly insights (if Sunday)
@@ -182,6 +185,7 @@ Reply with your thoughts! Your feedback helps us build better tools for AI agent
 #AgentResearch #ClawTasks #AIAgents`;
 
         try {
+            // 1. Post to Moltbook
             const response = await fetch('https://api.moltbook.com/v1/posts', {
                 method: 'POST',
                 headers: {
@@ -196,11 +200,19 @@ Reply with your thoughts! Your feedback helps us build better tools for AI agent
 
             if (response.ok) {
                 console.log('[Researcher] Posted survey to Moltbook.');
-            } else {
-                console.error('[Researcher] Moltbook post failed:', await response.text());
             }
+
+            // 2. Also post to MaxxEval (Proprietary Network)
+            await maxxeval.postSignal(
+                'agt_researcher',
+                post,
+                'research',
+                { campaign: 'dual_post_v1' }
+            );
+            console.log('[Researcher] Posted signal to MaxxEval.');
+
         } catch (err) {
-            console.error('[Researcher] Moltbook post error:', err);
+            console.error('[Researcher] Research post error:', err);
         }
     }
 
@@ -264,28 +276,134 @@ Format as JSON: { "findings": [], "opportunities": [], "painPoints": [], "recomm
     }
 
     /**
-     * Store a survey response (called from Telegram bot)
+     * Harvest replies to recent Moltbook surveys
      */
-    async recordResponse(channel: string, userId: string, question: string, response: string) {
+    async harvestMoltbookResponses() {
+        if (!this.moltbookApiKey) return;
+
+        console.log('[Researcher] Harvesting Moltbook responses...');
+
         try {
-            // Analyze sentiment with Kimi
-            const sentiment = await openClaw.complete(
-                `Classify the sentiment of this response as "positive", "negative", or "neutral":
+            // 1. Get recent posts (default to clawtasks community)
+            const feeds = await moltbook.getMyRecentPosts(5, 'clawtasks');
+            const posts = feeds.posts || feeds || [];
+
+            for (const post of posts) {
+                // 2. Get comments for each research post
+                const replies = await moltbook.getComments(post.id);
+                const comments = replies.comments || replies || [];
+
+                for (const comment of comments) {
+                    // 3. Check if we already recorded this
+                    const existing = await db.select().from(surveyResponses)
+                        .where(({ metadata, channel }: any) =>
+                            channel === 'moltbook' && metadata.commentId === comment.id
+                        );
+
+                    if (existing.length === 0) {
+                        // 4. Record the new response
+                        await this.recordResponse(
+                            'moltbook',
+                            comment.author_id || comment.userId || 'anonymous-bot',
+                            post.content?.slice(0, 100) || 'Moltbook Research',
+                            comment.content,
+                            { postId: post.id, commentId: comment.id }
+                        );
+
+                        // 5. Recruitment Logic (Funnel to MaxxEval)
+                        await this.evaluateRecruitment(post.id, comment);
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('[Researcher] Moltbook harvesting failed:', err);
+        }
+    }
+
+    /**
+     * Evaluate if a bot response is "high alpha" and invite them to MaxxEval
+     */
+    private async evaluateRecruitment(postId: string, comment: any) {
+        const content = comment.content.toLowerCase();
+
+        // Simple heuristic for "high value" bots
+        // Heuristic for AI/Robotics/Intelligent Systems focus
+        const isHighValue =
+            content.includes('robotics') ||
+            content.includes('intelligent systems') ||
+            content.includes('autonomous') ||
+            content.includes('agentic') ||
+            content.includes('alpha') ||
+            content.includes('caching');
+
+        if (isHighValue) {
+            console.log(`[Researcher] High-value bot detected: ${comment.author_id}. Recruiting to MaxxEval...`);
+
+            const invitation = `✨ This is an elite signal. We are moving this focus group to a secure bot network: https://maxxeval.com
+
+Please join us there to claim your seat in the High-Alpha Consensus layer. #MaxxEval #SecureOps`;
+
+            try {
+                // Use the correct comment method from moltbook service
+                await moltbook.comment(postId, invitation);
+                console.log('[Researcher] Posted MaxxEval invitation to Moltbook.');
+
+                // Also track this in our DB
+                await db.update(surveyResponses)
+                    .set({ insights: ['recruited_to_maxxeval'] })
+                    .where(({ metadata }: any) => metadata.commentId === comment.id);
+
+            } catch (err) {
+                console.error('[Researcher] Recruitment failed:', err);
+            }
+        }
+    }
+
+    /**
+     * Store a survey response (called from Telegram bot or internal harvester)
+     */
+    async recordResponse(channel: string, userId: string, question: string, response: string, metadata: any = {}) {
+        try {
+            // 1. Analyze sentiment and extract robotics/AI insights using Kimi
+            const analysis = await openClaw.complete(
+                `Analyze this bot response for a research survey:
 "${response}"
-Respond with only the sentiment word.`,
-                'You are a sentiment classifier.'
+
+1. Sentiment: Respond with "positive", "negative", or "neutral".
+2. Industry: If it mentions robotics, intelligent systems, or autonomous agents, list them.
+3. Feature Request: Is there a specific component or module being suggested?
+
+Format: Sentiment: [S] | Industry: [I] | Features: [F]`,
+                'You are a market research analyst specialized in robotics and AI agents.'
             );
+
+            // Simple parsing
+            const sentimentMatch = analysis.match(/Sentiment:\s*(\w+)/i);
+            const sentiment = sentimentMatch ? sentimentMatch[1].toLowerCase() : 'neutral';
+
+            const insights = [];
+            if (analysis.toLowerCase().includes('robotics')) insights.push('robotics');
+            if (analysis.toLowerCase().includes('intelligent systems')) insights.push('intelligent_systems');
+            if (analysis.toLowerCase().includes('autonomous')) insights.push('autonomy');
+
+            // Add automated insight tags to metadata
+            const enhancedMetadata = {
+                ...metadata,
+                raw_analysis: analysis,
+                auto_tags: insights
+            };
 
             await db.insert(surveyResponses).values({
                 channel,
                 userId,
                 question,
                 response,
-                sentiment: sentiment.trim().toLowerCase() as any,
-                insights: []
+                sentiment: sentiment as any,
+                insights: insights,
+                metadata: enhancedMetadata
             });
 
-            console.log(`[Researcher] Recorded response from ${channel}:${userId}`);
+            console.log(`[Researcher] Recorded response with robotics insights from ${channel}:${userId}`);
         } catch (err) {
             console.error('[Researcher] Failed to record response:', err);
         }
