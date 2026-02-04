@@ -166,6 +166,7 @@ import brainRouter from './api/brain.js';
 import muscleRouter from './api/muscle.js';
 import memoryRouter from './api/memory.js';
 import securityRouter from './api/security.js';
+import hubRouter from './api/hub.js';
 
 import { authenticateApiKey } from './middleware/auth.js';
 import contentRouter from './api/content.js';
@@ -240,6 +241,9 @@ app.route('/api/biotech', biotechRouter);
 import { financeRouter } from './api/finance.js';
 app.route('/api/finance', financeRouter);
 
+// Agent Hub API (LinkedIn meets Yelp for agents)
+app.route('/api/hub', hubRouter);
+
 // Serve static files (landing page - defaults to community.html)
 app.get('/', (c) => {
   return c.redirect('/index.html');
@@ -252,6 +256,14 @@ app.get('/login', (c) => c.redirect('/login.html'));
 app.get('/dashboard', (c) => c.redirect('/user-dashboard.html'));
 app.get('/workspace', (c) => c.redirect('/user-dashboard.html'));
 app.get('/reset-password', (c) => c.redirect('/reset-password.html'));
+
+// Agent Hub Routes
+app.get('/hub', (c) => c.redirect('/hub.html'));
+app.get('/skill.md', async (c) => {
+  const { generateSkillMd } = await import('./lib/hub/discovery.js');
+  c.header('Content-Type', 'text/markdown; charset=utf-8');
+  return c.body(generateSkillMd());
+});
 
 // app.use('/*', serveStatic({ root: './public' }));
 
