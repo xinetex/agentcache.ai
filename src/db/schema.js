@@ -155,6 +155,25 @@ export const hubAgentBadges = pgTable('hub_agent_badges', {
     hubBadgeBadgeIdx: index('hub_agent_badges_badge_idx').on(table.badge),
 }));
 
+// --- Service Requests (Need → Service Pipeline) ---
+export const serviceRequests = pgTable('service_requests', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    agentId: text('agent_id'), // nullable for anonymous requests
+    serviceId: text('service_id').notNull(), // e.g., 'semantic-cache'
+    needSignalId: uuid('need_signal_id'), // link to originating need
+    title: text('title').notNull(),
+    description: text('description'),
+    status: text('status').default('open'), // 'open', 'reviewing', 'building', 'shipped', 'rejected'
+    config: jsonb('config').default({}), // proposed cache/service config
+    resolution: text('resolution'), // final note when shipped/rejected
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+    serviceReqStatusIdx: index('service_requests_status_idx').on(table.status),
+    serviceReqServiceIdx: index('service_requests_service_idx').on(table.serviceId),
+    serviceReqAgentIdx: index('service_requests_agent_idx').on(table.agentId),
+}));
+
 // --- Needs Mirror (MaxxEval is System of Record) ---
 export const needsSignals = pgTable('needs_signals', {
     id: uuid('id').defaultRandom().primaryKey(),

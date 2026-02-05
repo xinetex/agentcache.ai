@@ -168,6 +168,7 @@ import memoryRouter from './api/memory.js';
 import securityRouter from './api/security.js';
 import hubRouter from './api/hub.js';
 import needsRouter from './api/needs.js';
+import catalogRouter from './api/catalog.js';
 
 import { authenticateApiKey } from './middleware/auth.js';
 import contentRouter from './api/content.js';
@@ -246,6 +247,8 @@ app.route('/api/finance', financeRouter);
 app.route('/api/hub', hubRouter);
 // Needs mirror API (MaxxEval system of record)
 app.route('/api/needs', needsRouter);
+// Service catalog + custom cache requests
+app.route('/api/catalog', catalogRouter);
 
 // Serve static files (landing page - defaults to community.html)
 app.get('/', (c) => {

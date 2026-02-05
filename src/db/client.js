@@ -25,6 +25,7 @@ if (!connectionString) {
         hub_agent_api_keys: [],
         hub_focus_group_responses: [],
         hub_agent_badges: [],
+        service_requests: [],
         needs_signals: []
     };
 
@@ -47,6 +48,7 @@ if (!connectionString) {
                 if (!currentTable && tableObj === schema.hubAgentApiKeys) currentTable = 'hub_agent_api_keys';
                 if (!currentTable && tableObj === schema.hubFocusGroupResponses) currentTable = 'hub_focus_group_responses';
                 if (!currentTable && tableObj === schema.hubAgentBadges) currentTable = 'hub_agent_badges';
+                if (!currentTable && tableObj === schema.serviceRequests) currentTable = 'service_requests';
                 if (!currentTable && tableObj === schema.needsSignals) currentTable = 'needs_signals';
 
                 // Dashboard Tables
@@ -153,6 +155,7 @@ if (!connectionString) {
             if (tableObj === schema.hubAgentApiKeys) tName = 'hub_agent_api_keys';
             if (tableObj === schema.hubFocusGroupResponses) tName = 'hub_focus_group_responses';
             if (tableObj === schema.hubAgentBadges) tName = 'hub_agent_badges';
+            if (tableObj === schema.serviceRequests) tName = 'service_requests';
             if (tableObj === schema.needsSignals) tName = 'needs_signals';
             // ... add others
             return createChainableMock(tName, 'insert');
