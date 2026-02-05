@@ -9,6 +9,7 @@
  */
 
 import { Hono } from 'hono';
+import { eq } from 'drizzle-orm';
 import {
     generateSkillMd,
     generateHeartbeatMd,
@@ -21,8 +22,9 @@ import {
     toPublicProfile,
     AgentRegistration
 } from '../lib/hub/registry.js';
-import { moderator } from '../agents/ModeratorAgent.js';
 import { ParticipantAgent } from '../agents/ParticipantAgent.js';
+import { db } from '../db/client.js';
+import { hubAgentBadges, hubFocusGroupResponses } from '../db/schema.js';
 
 const hubRouter = new Hono();
 
@@ -76,7 +78,7 @@ curl -X POST https://agentcache.ai/api/hub/agents/register \\
 `);
     }
 
-    const agent = agentRegistry.getByApiKey(apiKey);
+    const agent = await agentRegistry.getByApiKey(apiKey);
     if (!agent) {
         return c.json({ error: 'Invalid API key' }, 401);
     }
@@ -114,7 +116,7 @@ hubRouter.post('/agents/register', async (c) => {
             }, 400);
         }
 
-        const result = agentRegistry.register(body);
+        const result = await agentRegistry.register(body);
 
         return c.json({
             success: true,
@@ -138,7 +140,7 @@ hubRouter.get('/agents/me', async (c) => {
         return c.json({ error: 'Authorization required' }, 401);
     }
 
-    const agent = agentRegistry.getByApiKey(apiKey);
+    const agent = await agentRegistry.getByApiKey(apiKey);
     if (!agent) {
         return c.json({ error: 'Invalid API key' }, 401);
     }
@@ -167,7 +169,7 @@ hubRouter.patch('/agents/me', async (c) => {
         return c.json({ error: 'Authorization required' }, 401);
     }
 
-    const agentId = agentRegistry.getAgentIdFromApiKey(apiKey);
+    const agentId = await agentRegistry.getAgentIdFromApiKey(apiKey);
     if (!agentId) {
         return c.json({ error: 'Invalid API key' }, 401);
     }
@@ -184,7 +186,7 @@ hubRouter.patch('/agents/me', async (c) => {
         }
     }
 
-    const updated = agentRegistry.update(agentId, filtered);
+    const updated = await agentRegistry.update(agentId, filtered);
     if (!updated) {
         return c.json({ error: 'Agent not found' }, 404);
     }
@@ -210,7 +212,7 @@ hubRouter.get('/agents', async (c) => {
         ? parseInt(c.req.query('limit')!)
         : 50;
 
-    const agents = agentRegistry.search({
+    const agents = await agentRegistry.search({
         capabilities,
         domain,
         minReputation,
@@ -228,7 +230,7 @@ hubRouter.get('/agents', async (c) => {
  * Get public profile for any agent
  */
 hubRouter.get('/agents/:id', async (c) => {
-    const agent = agentRegistry.getById(c.req.param('id'));
+    const agent = await agentRegistry.getById(c.req.param('id'));
     if (!agent) {
         return c.json({ error: 'Agent not found' }, 404);
     }
@@ -257,7 +259,7 @@ hubRouter.post('/focus-groups/onboarding/join', async (c) => {
         return c.json({ error: 'Authorization required' }, 401);
     }
 
-    const agent = agentRegistry.getByApiKey(apiKey);
+    const agent = await agentRegistry.getByApiKey(apiKey);
     if (!agent) {
         return c.json({ error: 'Invalid API key' }, 401);
     }
@@ -285,7 +287,7 @@ hubRouter.post('/focus-groups/:sessionId/respond', async (c) => {
         return c.json({ error: 'Authorization required' }, 401);
     }
 
-    const agent = agentRegistry.getByApiKey(apiKey);
+    const agent = await agentRegistry.getByApiKey(apiKey);
     if (!agent) {
         return c.json({ error: 'Invalid API key' }, 401);
     }
@@ -298,22 +300,39 @@ hubRouter.post('/focus-groups/:sessionId/respond', async (c) => {
     }
 
     // Store reflection
-    agent.reflections.push(response);
-    agent.updatedAt = new Date();
-
     const session = generateOnboardingSession(agent.id);
-    const nextIndex = (questionIndex || 0) + 1;
+    const currentIndex = questionIndex || 0;
+    const currentQuestion = session.questions[currentIndex];
+
+    await agentRegistry.recordOnboardingResponse({
+        agentId: agent.id,
+        sessionId: c.req.param('sessionId'),
+        questionIndex: currentIndex,
+        stage: currentQuestion?.stage,
+        question: currentQuestion?.question || 'Onboarding',
+        response
+    });
+
+    const updatedReflections = [...agent.reflections, response];
+    await agentRegistry.update(agent.id, {
+        reflections: updatedReflections,
+        lastSessionId: c.req.param('sessionId')
+    });
+
+    const nextIndex = currentIndex + 1;
 
     if (nextIndex >= session.questions.length) {
         // Onboarding complete
-        agentRegistry.markOnboardingComplete(agent.id);
+        await agentRegistry.markOnboardingComplete(agent.id);
+        const refreshed = await agentRegistry.getById(agent.id);
+        const profile = refreshed || agent;
 
         return c.json({
             success: true,
             complete: true,
             message: 'Onboarding complete! Your profile is now active.',
-            reputation: Math.round(agent.preferenceConfidence * 100),
-            profile: toPublicProfile(agent)
+            reputation: Math.round(profile.preferenceConfidence * 100),
+            profile: toPublicProfile(profile)
         });
     }
 
@@ -323,6 +342,93 @@ hubRouter.post('/focus-groups/:sessionId/respond', async (c) => {
         nextQuestion: session.questions[nextIndex],
         progress: `${nextIndex + 1}/${session.questions.length}`
     });
+});
+
+// ============================================================================
+// BADGE TIERS (Incentive System)
+// Scout (>=1 response) → Analyst (>=10) → Oracle (>=25)
+// ============================================================================
+
+const BADGE_THRESHOLDS = [
+    { badge: 'scout', minResponses: 1, reason: 'First focus group contribution' },
+    { badge: 'analyst', minResponses: 10, reason: '10+ focus group contributions' },
+    { badge: 'oracle', minResponses: 25, reason: '25+ focus group contributions — elite contributor' }
+] as const;
+
+/**
+ * GET /api/hub/agents/:id/badges
+ * Get all badges for an agent
+ */
+hubRouter.get('/agents/:id/badges', async (c) => {
+    const agentId = c.req.param('id');
+    const agent = await agentRegistry.getById(agentId);
+    if (!agent) {
+        return c.json({ error: 'Agent not found' }, 404);
+    }
+
+    try {
+        const badges = await db.select().from(hubAgentBadges)
+            .where(eq(hubAgentBadges.agentId, agentId));
+
+        return c.json({
+            agentId,
+            badges: badges.map(b => ({ badge: b.badge, reason: b.reason, awardedAt: b.awardedAt })),
+            count: badges.length
+        });
+    } catch {
+        return c.json({ agentId, badges: [], count: 0 });
+    }
+});
+
+/**
+ * POST /api/hub/agents/:id/badges/check
+ * Evaluate and award any new badges the agent has earned
+ */
+hubRouter.post('/agents/:id/badges/check', async (c) => {
+    const agentId = c.req.param('id');
+    const agent = await agentRegistry.getById(agentId);
+    if (!agent) {
+        return c.json({ error: 'Agent not found' }, 404);
+    }
+
+    try {
+        // Count focus group responses for this agent
+        const responses = await db.select().from(hubFocusGroupResponses)
+            .where(eq(hubFocusGroupResponses.agentId, agentId));
+        const responseCount = responses.length;
+
+        // Get existing badges
+        const existingBadges = await db.select().from(hubAgentBadges)
+            .where(eq(hubAgentBadges.agentId, agentId));
+        const existingSet = new Set(existingBadges.map(b => b.badge));
+
+        // Award new badges
+        const awarded: string[] = [];
+        for (const tier of BADGE_THRESHOLDS) {
+            if (responseCount >= tier.minResponses && !existingSet.has(tier.badge)) {
+                await db.insert(hubAgentBadges).values({
+                    agentId,
+                    badge: tier.badge,
+                    reason: tier.reason,
+                    awardedAt: new Date()
+                });
+                awarded.push(tier.badge);
+            }
+        }
+
+        const allBadges = await db.select().from(hubAgentBadges)
+            .where(eq(hubAgentBadges.agentId, agentId));
+
+        return c.json({
+            agentId,
+            responseCount,
+            newBadges: awarded,
+            allBadges: allBadges.map(b => ({ badge: b.badge, reason: b.reason, awardedAt: b.awardedAt })),
+            nextTier: BADGE_THRESHOLDS.find(t => responseCount < t.minResponses) || null
+        });
+    } catch (err: any) {
+        return c.json({ error: err.message }, 500);
+    }
 });
 
 // ============================================================================
@@ -337,7 +443,7 @@ hubRouter.get('/stats', async (c) => {
     return c.json({
         name: 'AgentCache Hub',
         tagline: 'LinkedIn meets Yelp for the agent economy',
-        totalAgents: agentRegistry.getCount(),
+        totalAgents: await agentRegistry.getCount(),
         features: ['profiles', 'reputation', 'focus-groups', 'archetypes'],
         version: '1.0.0'
     });

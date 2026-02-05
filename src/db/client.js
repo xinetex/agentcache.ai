@@ -20,7 +20,12 @@ if (!connectionString) {
         agents: [],
         users: [],
         decisions: [],
-        credit_usage_daily: []
+        credit_usage_daily: [],
+        hub_agents: [],
+        hub_agent_api_keys: [],
+        hub_focus_group_responses: [],
+        hub_agent_badges: [],
+        needs_signals: []
     };
 
     // Chainable Mock Helper with State
@@ -38,6 +43,11 @@ if (!connectionString) {
                 if (!currentTable && tableObj === schema.ledgerTransactions) currentTable = 'ledger_transactions';
                 if (!currentTable && tableObj === schema.marketplaceOrders) currentTable = 'marketplace_orders';
                 if (!currentTable && tableObj === schema.agents) currentTable = 'agents';
+                if (!currentTable && tableObj === schema.hubAgents) currentTable = 'hub_agents';
+                if (!currentTable && tableObj === schema.hubAgentApiKeys) currentTable = 'hub_agent_api_keys';
+                if (!currentTable && tableObj === schema.hubFocusGroupResponses) currentTable = 'hub_focus_group_responses';
+                if (!currentTable && tableObj === schema.hubAgentBadges) currentTable = 'hub_agent_badges';
+                if (!currentTable && tableObj === schema.needsSignals) currentTable = 'needs_signals';
 
                 // Dashboard Tables
                 if (!currentTable && tableObj === schema.users) currentTable = 'users';
@@ -139,6 +149,11 @@ if (!connectionString) {
             let tName = '';
             if (tableObj === schema.marketplaceListings) tName = 'marketplace_listings';
             if (tableObj === schema.ledgerAccounts) tName = 'ledger_accounts';
+            if (tableObj === schema.hubAgents) tName = 'hub_agents';
+            if (tableObj === schema.hubAgentApiKeys) tName = 'hub_agent_api_keys';
+            if (tableObj === schema.hubFocusGroupResponses) tName = 'hub_focus_group_responses';
+            if (tableObj === schema.hubAgentBadges) tName = 'hub_agent_badges';
+            if (tableObj === schema.needsSignals) tName = 'needs_signals';
             // ... add others
             return createChainableMock(tName, 'insert');
         },

@@ -216,6 +216,10 @@
     {
       "path": "/api/cron/researcher",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/needs-refresh",
+      "schedule": "30 9 * * *"
     }
   ]
 }

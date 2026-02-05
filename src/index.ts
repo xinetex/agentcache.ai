@@ -167,6 +167,7 @@ import muscleRouter from './api/muscle.js';
 import memoryRouter from './api/memory.js';
 import securityRouter from './api/security.js';
 import hubRouter from './api/hub.js';
+import needsRouter from './api/needs.js';
 
 import { authenticateApiKey } from './middleware/auth.js';
 import contentRouter from './api/content.js';
@@ -243,6 +244,8 @@ app.route('/api/finance', financeRouter);
 
 // Agent Hub API (LinkedIn meets Yelp for agents)
 app.route('/api/hub', hubRouter);
+// Needs mirror API (MaxxEval system of record)
+app.route('/api/needs', needsRouter);
 
 // Serve static files (landing page - defaults to community.html)
 app.get('/', (c) => {

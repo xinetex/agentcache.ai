@@ -66,6 +66,114 @@ export const organizations = pgTable('organizations', {
     region: text('region').default('us-east-1'),
     createdAt: timestamp('created_at').defaultNow(),
 });
+// --- Agent Hub: Persistent Profiles & Focus Groups ---
+export const hubAgents = pgTable('hub_agents', {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    role: text('role').notNull(),
+    domain: text('domain').array(),
+    environment: text('environment').default('production'),
+    organization: text('organization'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+
+    strengths: text('strengths').array(),
+    limitations: text('limitations').array(),
+    tools: text('tools').array(),
+    modelBackend: text('model_backend'),
+
+    preferences: jsonb('preferences').default({}),
+    preferenceConfidence: real('preference_confidence').default(0.1),
+    successCriteria: text('success_criteria').array(),
+    optimizationTargets: text('optimization_targets').array(),
+
+    instructionFormat: text('instruction_format').default('natural'),
+    ambiguityTolerance: real('ambiguity_tolerance').default(0.5),
+    feedbackStyle: text('feedback_style').default('immediate'),
+    verbosity: text('verbosity').default('balanced'),
+
+    rateLimits: jsonb('rate_limits').default({}),
+    contextLimit: integer('context_limit').default(8192),
+    costSensitivity: real('cost_sensitivity').default(0.5),
+    guardrails: text('guardrails').array(),
+
+    taskHistory: jsonb('task_history').default([]),
+    reflections: text('reflections').array(),
+    lastSessionId: text('last_session_id'),
+    sessionCount: integer('session_count').default(0),
+
+    profileEmbedding: jsonb('profile_embedding'),
+    lastEmbeddingUpdate: timestamp('last_embedding_update'),
+    archetypeId: text('archetype_id'),
+    archetypeName: text('archetype_name'),
+}, (table) => ({
+    hubAgentRoleIdx: index('hub_agents_role_idx').on(table.role),
+    hubAgentEnvIdx: index('hub_agents_env_idx').on(table.environment),
+    hubAgentUpdatedIdx: index('hub_agents_updated_idx').on(table.updatedAt),
+}));
+
+export const hubAgentApiKeys = pgTable('hub_agent_api_keys', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    agentId: text('agent_id').references(() => hubAgents.id).notNull(),
+    keyPrefix: text('key_prefix').notNull(),
+    keyHash: text('key_hash').notNull(),
+    name: text('name'),
+    scopes: text('scopes').array(),
+    isActive: boolean('is_active').default(true),
+    lastUsedAt: timestamp('last_used_at'),
+    revokedAt: timestamp('revoked_at'),
+    createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+    hubAgentKeyAgentIdx: index('hub_agent_api_keys_agent_idx').on(table.agentId),
+    hubAgentKeyHashIdx: index('hub_agent_api_keys_hash_idx').on(table.keyHash),
+}));
+
+export const hubFocusGroupResponses = pgTable('hub_focus_group_responses', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    agentId: text('agent_id').references(() => hubAgents.id).notNull(),
+    sessionId: text('session_id').notNull(),
+    questionIndex: integer('question_index').notNull(),
+    stage: text('stage'),
+    question: text('question').notNull(),
+    response: text('response').notNull(),
+    createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+    hubFocusGroupAgentIdx: index('hub_focus_group_responses_agent_idx').on(table.agentId),
+    hubFocusGroupSessionIdx: index('hub_focus_group_responses_session_idx').on(table.sessionId),
+}));
+
+// --- Badge Tiers (Incentive System) ---
+// Scout → Analyst → Oracle based on contribution count
+export const hubAgentBadges = pgTable('hub_agent_badges', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    agentId: text('agent_id').references(() => hubAgents.id).notNull(),
+    badge: text('badge').notNull(), // 'scout', 'analyst', 'oracle'
+    reason: text('reason'), // e.g., '5 focus group responses'
+    awardedAt: timestamp('awarded_at').defaultNow(),
+}, (table) => ({
+    hubBadgeAgentIdx: index('hub_agent_badges_agent_idx').on(table.agentId),
+    hubBadgeBadgeIdx: index('hub_agent_badges_badge_idx').on(table.badge),
+}));
+
+// --- Needs Mirror (MaxxEval is System of Record) ---
+export const needsSignals = pgTable('needs_signals', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    source: text('source').notNull(), // e.g., 'maxxeval'
+    type: text('type').notNull(), // 'missing_capability' | 'friction' | 'pattern'
+    title: text('title').notNull(),
+    description: text('description'),
+    score: integer('score').default(0),
+    raw: jsonb('raw').default({}),
+    externalId: text('external_id'),
+    firstSeenAt: timestamp('first_seen_at').defaultNow(),
+    lastSeenAt: timestamp('last_seen_at').defaultNow(),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+    needsSourceTypeIdx: index('needs_signals_source_type_idx').on(table.source, table.type),
+    needsTitleIdx: index('needs_signals_title_idx').on(table.title),
+    needsUpdatedIdx: index('needs_signals_updated_idx').on(table.updatedAt),
+}));
 
 export const users = pgTable('users', {
     id: uuid('id').defaultRandom().primaryKey(),
