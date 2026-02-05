@@ -1,0 +1,47 @@
+{
+  "id": "crypto-price-tool",
+  "name": "Crypto Price Tool",
+  "description": "Pre-configured API wrapper for real-time cryptocurrency prices. Maps common tool intents like `get_crypto_price`, `fetch_btc_price`, `crypto_market_data` to validated CoinGecko endpoints.",
+  "category": "missing-tools",
+  "version": "1.0.0",
+  "demand_signal_ids": ["sig_001", "mt_001"],
+  "demand_proof": {
+    "observed_in_agents": 127,
+    "observed_in_orgs": 9,
+    "first_observed": "2026-01-15",
+    "signal_frequency": 847
+  },
+  "performance": {
+    "success_rate": 0.98,
+    "avg_latency_ms": 120,
+    "latency_reduction": "95%",
+    "cost_savings": "Free tier available"
+  },
+  "integration": {
+    "type": "api",
+    "endpoint": "https://agentcache.ai/api/tools/crypto-price",
+    "auth_required": true,
+    "docs_url": "https://agentcache.ai/docs/tools/crypto-price"
+  },
+  "capabilities": [
+    "get_crypto_price(symbol) -> { price, change_24h, market_cap }",
+    "get_crypto_history(symbol, days) -> [{ date, price }]",
+    "list_top_cryptos(limit) -> [{ symbol, name, price, rank }]"
+  ],
+  "supported_intents": [
+    "get_crypto_price",
+    "fetch_btc_price",
+    "crypto_market_data",
+    "bitcoin_price",
+    "ethereum_price",
+    "get_token_price"
+  ],
+  "pricing": {
+    "model": "per-request",
+    "free_tier_requests": 1000,
+    "price_per_1k_requests": 0.50
+  },
+  "status": "stable",
+  "created_at": "2026-02-05T00:00:00Z",
+  "updated_at": "2026-02-05T00:00:00Z"
+}

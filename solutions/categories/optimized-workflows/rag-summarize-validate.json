@@ -1,0 +1,66 @@
+{
+  "id": "rag-summarize-validate",
+  "name": "RAG + Summarize + Validate Pipeline",
+  "description": "Pre-optimized retrieval-augmented generation pipeline with built-in fact validation. Reduces hallucinations by 40% compared to naive RAG implementations.",
+  "category": "optimized-workflows",
+  "version": "2.1.0",
+  "demand_signal_ids": ["pat_001", "cr_001"],
+  "demand_proof": {
+    "observed_in_agents": 156,
+    "observed_in_orgs": 12,
+    "first_observed": "2026-01-05",
+    "signal_frequency": 2847
+  },
+  "performance": {
+    "success_rate": 0.89,
+    "avg_latency_ms": 4200,
+    "latency_reduction": "35%",
+    "cost_savings": "60%"
+  },
+  "workflow": {
+    "steps": [
+      {
+        "name": "Retrieve Documents",
+        "type": "retriever",
+        "description": "Semantic search over configured knowledge base",
+        "cached": true
+      },
+      {
+        "name": "Generate Summary",
+        "type": "llm",
+        "description": "Synthesize retrieved context into coherent response",
+        "model": "configurable"
+      },
+      {
+        "name": "Validate Facts",
+        "type": "llm",
+        "description": "Secondary LLM pass to check for hallucinations",
+        "model": "gpt-4o-mini"
+      },
+      {
+        "name": "Format Output",
+        "type": "transform",
+        "description": "Structure response with citations"
+      }
+    ],
+    "configurable": {
+      "retriever_top_k": { "default": 5, "range": [1, 20] },
+      "validation_threshold": { "default": 0.8, "range": [0.5, 1.0] },
+      "include_citations": { "default": true }
+    }
+  },
+  "integration": {
+    "type": "api",
+    "endpoint": "https://agentcache.ai/api/workflows/rag-summarize-validate",
+    "auth_required": true,
+    "docs_url": "https://agentcache.ai/docs/workflows/rag"
+  },
+  "pricing": {
+    "model": "per-request",
+    "free_tier_requests": 100,
+    "price_per_1k_requests": 2.50
+  },
+  "status": "stable",
+  "created_at": "2026-01-20T00:00:00Z",
+  "updated_at": "2026-02-05T00:00:00Z"
+}

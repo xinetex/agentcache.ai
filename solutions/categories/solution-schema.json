@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AgentCache Solution",
+  "description": "Schema for AgentCache solutions that respond to Maxxeval demand signals",
+  "type": "object",
+  "required": ["id", "name", "category", "version"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the solution",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name"
+    },
+    "description": {
+      "type": "string",
+      "description": "What this solution does"
+    },
+    "category": {
+      "type": "string",
+      "enum": ["missing-tools", "optimized-workflows", "precomputed-knowledge"],
+      "description": "Solution category"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^v?\\d+\\.\\d+(\\.\\d+)?$"
+    },
+    "demand_signal_ids": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Maxxeval signal IDs this solution addresses"
+    },
+    "demand_proof": {
+      "type": "object",
+      "properties": {
+        "observed_in_agents": { "type": "integer" },
+        "observed_in_orgs": { "type": "integer" },
+        "first_observed": { "type": "string", "format": "date" },
+        "signal_frequency": { "type": "integer" }
+      }
+    },
+    "performance": {
+      "type": "object",
+      "properties": {
+        "success_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "avg_latency_ms": { "type": "integer" },
+        "latency_reduction": { "type": "string" },
+        "cost_savings": { "type": "string" }
+      }
+    },
+    "integration": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["api", "sdk", "webhook", "embedded"]
+        },
+        "endpoint": { "type": "string" },
+        "auth_required": { "type": "boolean" },
+        "docs_url": { "type": "string" }
+      }
+    },
+    "pricing": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "type": "string",
+          "enum": ["free", "per-request", "subscription", "enterprise"]
+        },
+        "free_tier_requests": { "type": "integer" },
+        "price_per_1k_requests": { "type": "number" }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "beta", "stable", "deprecated"],
+      "default": "draft"
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  }
+}
