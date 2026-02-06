@@ -151,6 +151,22 @@
       "destination": "/api/credits/create-checkout"
     },
     {
+      "source": "/skill.md",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/.well-known/agents.json",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/mcp/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/hub",
+      "destination": "/api/index"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/index"
     }
