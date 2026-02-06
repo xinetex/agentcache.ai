@@ -194,6 +194,20 @@ export default async function handler(req, res) {
       case 'customer.subscription.deleted': {
         const subscription = event.data.object;
         console.log(`[Webhook] Subscription ${subscription.id} canceled`);
+
+        // Downgrade user tier to free in Redis
+        const cancelKeyHash = subscription.metadata?.api_key_hash;
+        if (cancelKeyHash) {
+          try {
+            await upstashSet(`tier:${cancelKeyHash}`, 'free');
+            await upstashSet(`usage:${cancelKeyHash}:quota`, '10000');
+            console.log(`[Webhook] Downgraded ${cancelKeyHash.slice(0, 8)}… to free tier`);
+          } catch (e) {
+            console.error('[Webhook] Failed to downgrade tier in Redis:', e);
+          }
+        } else {
+          console.warn('[Webhook] No api_key_hash in subscription metadata — cannot downgrade');
+        }
         break;
       }
 

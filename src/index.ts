@@ -1,32 +1,10 @@
 import 'dotenv/config';
 // -----------------------------------------------------------------------------
-// Security Middleware (Armor)
+// Security Middleware (Armor) - imported here, applied after app creation below
 // -----------------------------------------------------------------------------
 import { ArmorService } from './services/ArmorService.js';
 const armor = new ArmorService();
 
-app.use('/api/*', async (c, next) => {
-  // Skip Armor for internal/health checks if needed, but safer to cover all
-  const ip = c.req.header('x-forwarded-for') || '127.0.0.1';
-
-  // Parse body for WAF if method is POST/PUT
-  let payload = undefined;
-  if (['POST', 'PUT'].includes(c.req.method)) {
-    try {
-      payload = await c.req.json().catch(() => ({}));
-      // Re-assign body so downstream can read it again? 
-      // Hono clone() might be needed usually, but we'll peek simple strings
-    } catch (e) { }
-  }
-
-  const check = await armor.checkRequest(ip, c.req.path, payload);
-
-  if (!check.allowed) {
-    return c.json({ error: `Firewall Blocked: ${check.reason}` }, check.reason.includes('Rate') ? 429 : 403);
-  }
-
-  await next();
-});
 // import { serve } from '@hono/node-server'; // Moved to src/server.ts
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
@@ -68,6 +46,29 @@ type Variables = {
 };
 
 export const app = new Hono<{ Variables: Variables }>();
+
+// -----------------------------------------------------------------------------
+// Armor WAF Middleware (must be registered after app creation)
+// -----------------------------------------------------------------------------
+app.use('/api/*', async (c, next) => {
+  const ip = c.req.header('x-forwarded-for') || '127.0.0.1';
+
+  // Parse body for WAF if method is POST/PUT
+  let payload = undefined;
+  if (['POST', 'PUT'].includes(c.req.method)) {
+    try {
+      payload = await c.req.json().catch(() => ({}));
+    } catch (e) { }
+  }
+
+  const check = await armor.checkRequest(ip, c.req.path, payload);
+
+  if (!check.allowed) {
+    return c.json({ error: `Firewall Blocked: ${check.reason}` }, check.reason.includes('Rate') ? 429 : 403);
+  }
+
+  await next();
+});
 // Lazy load ContextManager
 let contextManager: ContextManager | null = null;
 function getContextManager() {
@@ -109,8 +110,13 @@ const freshnessRules = new FreshnessRuleEngine();
   }
 })();
 
-// CRITICAL DEBUG ENDPOINT (Zero Deps)
+// DEBUG ENDPOINT (Admin-only)
 app.get('/api/debug-env', (c) => {
+  const token = c.req.header('Authorization')?.replace('Bearer ', '');
+  if (!process.env.ADMIN_TOKEN || token !== process.env.ADMIN_TOKEN) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
   return c.json({
     status: 'alive',
     env: {
@@ -515,7 +521,8 @@ app.post('/api/agent/chat', async (c) => {
   if (!apiKey) return c.json({ error: 'Unauthorized' }, 401);
 
   try {
-    const { sessionId, message, freshness } = await c.req.json();
+    const body = await c.req.json();
+    const { sessionId, message, freshness, provider = 'moonshot', model } = body;
 
     if (!sessionId || !message) {
       return c.json({ error: 'Missing sessionId or message' }, 400);
@@ -550,7 +557,6 @@ app.post('/api/agent/chat', async (c) => {
     // 3. Call AI Provider (via Factory)
     let aiResponse: string;
     let reasoningMetadata: any = {};
-    const { provider = 'moonshot', model } = await c.req.json(); // Default to moonshot for back-compat
 
     try {
       // Dynamic Import of Factory to avoid circular deps if any

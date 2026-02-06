@@ -73,7 +73,7 @@ export default async function handler(req, res) {
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
-      success_url: `${publicUrl}/dashboard.html?key=${apiKey}&upgraded=true`,
+      success_url: `${publicUrl}/dashboard.html?upgraded=true`,
       cancel_url: `${publicUrl}/pricing.html`,
       metadata: {
         api_key_hash: keyHash,

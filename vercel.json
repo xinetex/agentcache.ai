@@ -107,10 +107,6 @@
       "destination": "/admin.html"
     },
     {
-      "source": "/login",
-      "destination": "/login.html"
-    },
-    {
       "source": "/mission-control",
       "destination": "/mission-control.html"
     },

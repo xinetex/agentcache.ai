@@ -75,6 +75,47 @@ class MockRedis {
     return Array.isArray(list) ? list.length : 0;
   }
 
+  async expire(key: string, seconds: number) {
+    // No-op for mock (TTL not tracked in-memory)
+    return this.store.has(key) ? 1 : 0;
+  }
+
+  async exists(key: string) {
+    return this.store.has(key) ? 1 : 0;
+  }
+
+  async ttl(key: string) {
+    return this.store.has(key) ? -1 : -2; // -1 = no expiry, -2 = key missing
+  }
+
+  async del(key: string) {
+    const existed = this.store.has(key);
+    this.store.delete(key);
+    return existed ? 1 : 0;
+  }
+
+  async hgetall(key: string) {
+    const hash = this.store.get(key);
+    return (hash && typeof hash === 'object' && !Array.isArray(hash)) ? hash : {};
+  }
+
+  async hincrby(key: string, field: string, increment: number) {
+    if (!this.store.has(key) || typeof this.store.get(key) !== 'object') {
+      this.store.set(key, {});
+    }
+    const hash = this.store.get(key);
+    const current = parseInt(hash[field] || '0');
+    hash[field] = (current + increment).toString();
+    return current + increment;
+  }
+
+  async hget(key: string, field: string) {
+    const hash = this.store.get(key);
+    if (hash && typeof hash === 'object' && !Array.isArray(hash)) {
+      return hash[field] || null;
+    }
+    return null;
+  }
 
   pipeline() {
     // Return a mock pipeline that just executes immediately or buffers

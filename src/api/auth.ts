@@ -10,6 +10,9 @@ type Variables = {
 };
 
 const app = new Hono<{ Variables: Variables }>();
+if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
+    throw new Error('[Auth] FATAL: JWT_SECRET environment variable is required in production');
+}
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_do_not_use_in_prod';
 
 // --- Middleware: Protect Routes ---
@@ -128,8 +131,11 @@ app.post('/login', async (c) => {
     }
 });
 
-// --- Endpoint: Dev Login (Testing Only) ---
+// --- Endpoint: Dev Login (Testing Only - disabled in production) ---
 app.post('/dev-login', async (c) => {
+    if (process.env.NODE_ENV === 'production') {
+        return c.json({ error: 'Dev login is disabled in production' }, 403);
+    }
     const { email } = await c.req.json();
 
     // Find user

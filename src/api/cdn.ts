@@ -23,7 +23,7 @@ function initSmartCache(process: any) {
     return getVideoCache({
         l1MaxSize: parseInt(process.env.CDN_L1_MAX_SIZE || '') || 100 * 1024 * 1024,
         l1MaxAge: parseInt(process.env.CDN_L1_TTL || '') || 5 * 60 * 1000,
-        redisUrl: process.env.REDIS_URL || process.env.KV_URL || 'redis://localhost:6379',
+    redisUrl: process.env.REDIS_URL || process.env.KV_URL || undefined,
         l2TTL: parseInt(process.env.CDN_L2_TTL || '') || 3600,
         s3Endpoint: process.env.JETTYTHUNDER_S3_ENDPOINT || process.env.S3_ENDPOINT,
         s3AccessKey: process.env.JETTYTHUNDER_ACCESS_KEY || process.env.S3_ACCESS_KEY,
@@ -189,9 +189,9 @@ function isMissingContentGenerateable(path: string): boolean {
 
 async function generateMissingContent(targetPath: string) {
     try {
-        // Dynamic require to avoid TS error
-        const colodaGenerator = require('../../services/coloda-preview.js').default;
-        const generator = colodaGenerator;
+        // Dynamic import for ESM compatibility
+        const colodaModule = await import('../../services/coloda-preview.js');
+        const generator = colodaModule.default;
 
         // Generate content based on target path
         const generated = await generator.createSmartPreview(targetPath, {
@@ -225,7 +225,7 @@ function detectContentType(path: string): string {
 }
 
 async function generateFallbackPoster(path: string) {
-    // Simple fallback generator for basic content
+    // Simple fallback generator - returns SVG placeholder
     const svg = `<svg width="640" height="360" xmlns="http://www.w3.org/2000/svg">
         <rect width="100%" height="100%" fill="#f0f0f0"/>
         <text x="50%" y="50%" text-anchor="middle" dy=".3em" font-family="Arial" font-size="24" fill="#333">
@@ -235,22 +235,11 @@ async function generateFallbackPoster(path: string) {
 
     const buffer = Buffer.from(svg);
 
-    // Convert to JPEG equivalent for better compatibility
-    // This would typically call an image processing service
-    const jpegBuffer = await convertSVGToJPG(svg);
-
     return {
-        content: jpegBuffer,
-        contentType: 'image/jpeg',
-        contentLength: jpegBuffer.length
+        content: buffer,
+        contentType: 'image/svg+xml',
+        contentLength: buffer.length
     };
-}
-
-async function convertSVGToJPG(svgContent: string): Promise<Buffer> {
-    // In a real implementation, this would use ImageMagick or similar
-    // For now, return the SVG buffer with proper MIME handling
-    const buffer = Buffer.from(svgContent);
-    return buffer; // SVG content handled as-is
 }
 
 export default cdn;
