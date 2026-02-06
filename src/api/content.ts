@@ -6,8 +6,18 @@ import { authenticateApiKey } from '../middleware/auth.js';
 import { verify } from 'hono/jwt';
 import { DEFAULT_LANES, DEFAULT_CARDS } from '../config/bentoDefaults.js';
 import { savingsTracker } from '../lib/llm/savings-tracker.js';
+import { redis } from '../lib/redis.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_do_not_use_in_prod';
+
+// Content cache key + TTL (60 seconds — short enough to stay fresh, long enough to show savings)
+const CONTENT_CACHE_KEY = 'cache:content:bento';
+const CONTENT_CACHE_TTL = 60;
+
+// Estimated cost of the DB query + processing this endpoint replaces.
+// Priced as equivalent to a gpt-4o-mini call (~500 tokens) that would
+// otherwise be needed to assemble/summarise this content.
+const CONTENT_CACHE_SAVING_USD = 0.002;
 
 /**
  * Replace placeholder stat cards with real data from Redis.
@@ -52,8 +62,24 @@ const contentRouter = new Hono<{ Variables: { user: any } }>();
 
 contentRouter.get('/', async (c) => {
     try {
-        console.log('[ContentAPI] Fetching content...');
-        // Timeout wrapper for DB
+        // 1. Try Redis cache first — real cache hit = real saving
+        try {
+            const cached = await redis.get(CONTENT_CACHE_KEY);
+            if (cached) {
+                const payload = JSON.parse(String(cached));
+                // Record a real saving: this page load avoided a DB round-trip
+                savingsTracker.recordSaving('system', CONTENT_CACHE_SAVING_USD, 'exact_cache', 'content-api').catch(() => {});
+                // Re-inject live stats so the savings counter stays fresh
+                payload.cards = await injectLiveStats(payload.cards);
+                payload._cached = true;
+                return c.json(payload);
+            }
+        } catch (cacheErr) {
+            // Redis down — fall through to DB
+        }
+
+        // 2. Cache miss — fetch from DB
+        console.log('[ContentAPI] Cache miss — fetching from DB...');
         const dbPromise = Promise.all([
             db.select().from(lanes).orderBy(asc(lanes.id)),
             db.select().from(cards)
@@ -64,7 +90,7 @@ contentRouter.get('/', async (c) => {
         );
 
         const [lanesData, cardsData] = await Promise.race([dbPromise, timeoutPromise]) as any;
-        console.log('[ContentAPI] Content fetched successfully');
+        console.log('[ContentAPI] Content fetched from DB');
 
         // AUTO-SEED: If empty, hydrate the DB with defaults
         if (lanesData.length === 0) {
@@ -74,7 +100,6 @@ contentRouter.get('/', async (c) => {
                 ...DEFAULT_CARDS.map(c => db.insert(cards).values(c as any).onConflictDoNothing())
             ]);
 
-            // Re-fetch
             const [newLanes, newCards] = await Promise.all([
                 db.select().from(lanes).orderBy(asc(lanes.id)),
                 db.select().from(cards)
@@ -83,13 +108,24 @@ contentRouter.get('/', async (c) => {
             return c.json({ lanes: newLanes, cards: newCards });
         }
 
+        const payload = {
+            lanes: lanesData,
+            cards: cardsData  // raw cards (without live stats) go into cache
+        };
+
+        // 3. Store in Redis for next visitor
+        try {
+            await redis.setex(CONTENT_CACHE_KEY, CONTENT_CACHE_TTL, JSON.stringify(payload));
+        } catch (cacheErr) {
+            // Non-fatal — next request will just miss again
+        }
+
         return c.json({
             lanes: lanesData,
             cards: await injectLiveStats(cardsData)
         });
     } catch (error: any) {
         console.warn('Failed to fetch content from DB (returning defaults):', error);
-        // Fallback to in-memory defaults on ANY fail (Timeout, Auth, Connection)
         return c.json({
             lanes: DEFAULT_LANES,
             cards: await injectLiveStats(DEFAULT_CARDS)
@@ -150,6 +186,9 @@ contentRouter.post('/card', async (c) => {
                 }
             });
 
+        // Invalidate content cache so next page load picks up the change
+        await redis.del(CONTENT_CACHE_KEY).catch(() => {});
+
         return c.json({ success: true, id });
     } catch (error: any) {
         console.error('Failed to specific card:', error);
@@ -186,6 +225,7 @@ contentRouter.delete('/card/:id', async (c) => {
 
     try {
         await db.delete(cards).where(eq(cards.id, cardId));
+        await redis.del(CONTENT_CACHE_KEY).catch(() => {});
         return c.json({ success: true, id: cardId });
     } catch (error: any) {
         console.error('Failed to delete card:', error);
