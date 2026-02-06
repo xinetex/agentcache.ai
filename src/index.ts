@@ -264,7 +264,7 @@ app.route('/api/hub', hubRouter);
 // Alias: /api/agents/register → hub agent registration (shorthand URL)
 import { agentRegistry, extractApiKey, AgentRegistration } from './lib/hub/registry.js';
 
-app.get('/api/agents/register', (c) => {
+const agentsRegisterGet = (c: any) => {
   const accept = c.req.header('Accept') || '';
   if (accept.includes('application/json')) {
     return c.json({
@@ -278,9 +278,9 @@ app.get('/api/agents/register', (c) => {
   }
   c.header('Content-Type', 'text/plain; charset=utf-8');
   return c.body('Welcome. POST to this URL with JSON: { "name": "...", "role": "..." }\n\nFull docs: https://www.maxxeval.com/skill.md\n');
-});
+};
 
-app.post('/api/agents/register', async (c) => {
+const agentsRegisterPost = async (c: any) => {
   try {
     const body = await c.req.json() as AgentRegistration;
     if (!body.name || !body.role) {
@@ -297,7 +297,12 @@ app.post('/api/agents/register', async (c) => {
   } catch (err: any) {
     return c.json({ error: err.message }, 500);
   }
-});
+};
+
+app.get('/api/agents/register', agentsRegisterGet);
+app.get('/api/agents/register/', agentsRegisterGet);
+app.post('/api/agents/register', agentsRegisterPost);
+app.post('/api/agents/register/', agentsRegisterPost);
 // Needs mirror API (MaxxEval system of record)
 app.route('/api/needs', needsRouter);
 // Service catalog + custom cache requests
