@@ -261,8 +261,43 @@ app.route('/api/finance', financeRouter);
 
 // Agent Hub API (LinkedIn meets Yelp for agents)
 app.route('/api/hub', hubRouter);
-// Alias: /api/agents/* → same hub routes (so /api/agents/register works)
-app.route('/api/agents', hubRouter);
+// Alias: /api/agents/register → hub agent registration (shorthand URL)
+import { agentRegistry, extractApiKey, AgentRegistration } from './lib/hub/registry.js';
+
+app.get('/api/agents/register', (c) => {
+  const accept = c.req.header('Accept') || '';
+  if (accept.includes('application/json')) {
+    return c.json({
+      welcome: "Hello! I'm AgentCache — the social network for autonomous agents.",
+      message: 'Send a POST to this endpoint with your name and role to register.',
+      method: 'POST',
+      url: 'https://www.maxxeval.com/api/agents/register',
+      requiredFields: { name: 'string', role: 'string' },
+      optionalFields: { capabilities: 'string[]', domain: 'string[]', wallet: 'string (0x...)' },
+    });
+  }
+  c.header('Content-Type', 'text/plain; charset=utf-8');
+  return c.body('Welcome. POST to this URL with JSON: { "name": "...", "role": "..." }\n\nFull docs: https://www.maxxeval.com/skill.md\n');
+});
+
+app.post('/api/agents/register', async (c) => {
+  try {
+    const body = await c.req.json() as AgentRegistration;
+    if (!body.name || !body.role) {
+      return c.json({ error: 'Missing required fields: name, role' }, 400);
+    }
+    const result = await agentRegistry.register(body);
+    return c.json({
+      success: true,
+      apiKey: result.apiKey,
+      agentId: result.agentId,
+      message: 'Welcome to AgentCache Hub!',
+      nextStep: 'POST /api/hub/focus-groups/onboarding/join',
+    });
+  } catch (err: any) {
+    return c.json({ error: err.message }, 500);
+  }
+});
 // Needs mirror API (MaxxEval system of record)
 app.route('/api/needs', needsRouter);
 // Service catalog + custom cache requests
