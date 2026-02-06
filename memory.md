@@ -309,5 +309,86 @@ Created comprehensive documentation:
    - Analytics suite: $299/mo
    - Cognitive features: $99/mo each
 
+## Session: February 6, 2026
+
+### What We Did: Wired End-to-End Agent Needs Pipeline
+
+**Context:** Maxxeval dashboard at /loop/ was showing 0 data. The code architecture was complete but the pipeline was cold — no signals flowing, missing routes, no seed data.
+
+#### 1. Mounted Focus Group Router ✅
+- `src/api/focus-group.ts` was built but never mounted
+- Added `app.route('/api/focus-group', focusGroupRouter)` to `src/index.ts`
+- Full study/session/analysis system now accessible at `/api/focus-group/*`
+
+#### 2. Created Maxxeval Seed Script ✅
+- **`scripts/seed-maxxeval.ts`** — Extracts all findings from `FOCUS_GROUP_REPORT.md`
+- Registers 8 agent personas (Healthcare, Finance, Legal, Education, E-commerce, Enterprise, Developer, Data Science)
+- Reports 20 missing capabilities (critical gaps from each agent)
+- Reports 12 friction points (pain points from agents + users)
+- Shares 8 workflow patterns (what works well)
+- Supports `--import` flag to directly seed AgentCache's `needs_signals` table
+
+#### 3. Seeded Maxxeval API ✅
+- Ran seed script: all 8 agents registered, 20 capabilities + 8 patterns accepted
+- Maxxeval `/stats` now shows: 8 agents, 20 capabilities, 8 patterns, status: "active"
+- **Note:** Maxxeval read/query endpoints return empty (aggregation delay). Use `--import` flag after deploy to seed local DB directly.
+
+#### 4. Added Evaluation Endpoints ✅
+- **`GET /api/needs/evaluation`** — Quantifies demand vs. supply:
+  - Signal counts by type
+  - Coverage score (% of needs with matching solution)
+  - Gap analysis (top unmet needs ranked by score)
+  - Pipeline status (service request lifecycle)
+  - Agent participation metrics
+- **`GET /api/needs/solutions-map`** — Cross-references needs with solutions:
+  - Which solutions address which needs
+  - Unaddressed signals (build opportunities)
+  - Coverage per solution category
+- **`POST /api/needs/import`** — Direct bulk import endpoint:
+  - Bypasses Maxxeval read endpoint delays
+  - Protected by ADMIN_TOKEN
+  - Used by seed script `--import` mode
+
+### Files Created/Modified
+- **`src/index.ts`** — Mounted focusGroupRouter at `/api/focus-group`
+- **`scripts/seed-maxxeval.ts`** — New seed script (~300 lines)
+- **`src/api/needs.ts`** — Added `/evaluation`, `/solutions-map`, `/import` endpoints (~270 lines)
+
+### Pipeline Architecture (Now Wired)
+```
+Agent discovers platform → registers via Hub/Telegram/MCP
+        ↓
+Answers focus group questions (onboarding or full study)
+        ↓
+Reports needs: /need, /friction, /pattern → Maxxeval API
+        ↓
+Inngest heartbeat (10min) OR /api/needs/refresh pulls signals → needs_signals table
+        ↓
+/api/needs/evaluation quantifies demand vs. supply
+/api/needs/solutions-map shows gaps and build opportunities
+        ↓
+POST /api/catalog/request links need → service request ticket
+        ↓
+Solutions built in /solutions/ with demand_signal_ids linking back
+        ↓
+Dashboard at maxxeval.com/loop/ displays the whole picture
+```
+
+### Next Steps (After Deploy)
+1. **Deploy to Vercel**: `git push origin main`
+2. **Seed local DB**: `ADMIN_TOKEN=<token> npx tsx scripts/seed-maxxeval.ts --import`
+3. **Verify endpoints**:
+   - `curl https://agentcache.ai/api/needs/trends`
+   - `curl https://agentcache.ai/api/needs/evaluation`
+   - `curl https://agentcache.ai/api/needs/solutions-map`
+4. **Verify Inngest heartbeat** is active (check Vercel → Inngest dashboard)
+5. **Check Maxxeval dashboard**: https://maxxeval.com/loop/ (should show data now)
+
+### Key Findings
+- **Maxxeval API write side works**, read/query endpoints have aggregation delay
+- **Focus Group Report data** (8 agents, 5 users, avg 6.4/10 score) now flows as real demand signals
+- **3 solutions exist** (crypto-price-tool, rag-summarize-validate, vector-cache) to match against needs
+- **Top critical needs** (from focus group): Agent SDK, Streaming API, Semantic Search, Multi-tenancy, IDE Integration, Built-in Vector DB
+
 ## Contact
 - User: Platform team @ jettythunder.app

@@ -185,6 +185,7 @@ import securityRouter from './api/security.js';
 import hubRouter from './api/hub.js';
 import needsRouter from './api/needs.js';
 import catalogRouter from './api/catalog.js';
+import focusGroupRouter from './api/focus-group.js';
 
 import { authenticateApiKey } from './middleware/auth.js';
 import contentRouter from './api/content.js';
@@ -307,6 +308,8 @@ app.post('/api/agents/register/', agentsRegisterPost);
 app.route('/api/needs', needsRouter);
 // Service catalog + custom cache requests
 app.route('/api/catalog', catalogRouter);
+// Focus Group API (full study/session/analysis system)
+app.route('/api/focus-group', focusGroupRouter);
 
 // ============================================================================
 // AGENT DISCOVERY LAYER
