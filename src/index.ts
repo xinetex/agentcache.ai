@@ -261,6 +261,8 @@ app.route('/api/finance', financeRouter);
 
 // Agent Hub API (LinkedIn meets Yelp for agents)
 app.route('/api/hub', hubRouter);
+// Alias: /api/agents/* → same hub routes (so /api/agents/register works)
+app.route('/api/agents', hubRouter);
 // Needs mirror API (MaxxEval system of record)
 app.route('/api/needs', needsRouter);
 // Service catalog + custom cache requests
