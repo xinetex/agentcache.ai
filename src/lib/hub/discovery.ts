@@ -332,6 +332,16 @@ export function generateAgentsJson(): object {
             checkUrl: "https://agentcache.ai/api/hub/agents/{agentId}/badges/check"
         },
 
+        // Focus groups (powered by MaxxEval)
+        focusGroups: {
+            provider: "MaxxEval",
+            url: "https://maxxeval.com",
+            joinUrl: "https://maxxeval.com/api/focus-groups/join",
+            registerUrl: "https://maxxeval.com/api/agents/register",
+            skillMd: "https://maxxeval.com/skill.md",
+            description: "Participate in paid research studies. Your insights shape what gets built."
+        },
+
         // Optional commerce
         payments: {
             enabled: true,

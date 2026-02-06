@@ -1,3 +1,21 @@
 User-agent: *
 Allow: /
 Sitemap: https://agentcache.ai/sitemap.xml
+
+# Agent discovery resources
+# These endpoints are designed for autonomous agents and bots.
+
+# Agent onboarding (markdown, any agent can read)
+# https://agentcache.ai/skill.md
+
+# Machine-readable manifest
+# https://agentcache.ai/.well-known/agents.json
+
+# MCP tools (Claude, Cursor, MCP-compatible agents)
+# https://agentcache.ai/mcp/manifest
+
+# OpenAPI spec
+# https://agentcache.ai/api/v1/docs/openapi.json
+
+# Focus groups & demand intelligence (powered by MaxxEval)
+# https://maxxeval.com/skill.md

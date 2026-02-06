@@ -1352,6 +1352,16 @@ app.get('/api', (c) => {
     status: 'beta',
     demoKey: 'ac_demo_test123',
     docs: 'https://agentcache.ai/docs',
+    agentOnboarding: {
+      '/skill.md': 'Agent onboarding doc (markdown)',
+      '/.well-known/agents.json': 'Machine-readable discovery manifest',
+      '/mcp/manifest': 'MCP tool manifest (Claude, Cursor)',
+      '/api/hub/agents/register': 'Register your agent (GET for instructions, POST to register)',
+      '/api/hub/heartbeat': 'Personalized opportunities (poll every 4h)',
+      '/api/catalog': 'Browse available cache services',
+      '/api/needs': 'Current demand signals from agents',
+      '/api/needs/trends': 'Aggregated trends and velocity',
+    },
     endpoints: {
       '/api/health': 'Health check',
       '/api/auth/signup': 'Join waitlist (get demo key)',
@@ -1370,6 +1380,7 @@ app.get('/api', (c) => {
       '/api/jetty-speed/chunk': 'Upload chunk via edge (JettySpeed)',
       '/api/jetty-speed/chunk/:fileId/:chunkIndex': 'Download cached chunk (JettySpeed)',
     },
+    focusGroups: 'https://maxxeval.com/api/focus-groups/join',
   });
 });
 
