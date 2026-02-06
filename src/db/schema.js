@@ -188,10 +188,24 @@ export const needsSignals = pgTable('needs_signals', {
     lastSeenAt: timestamp('last_seen_at').defaultNow(),
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
+
+    // Evaluation pipeline columns (migration 014)
+    specificityScore: real('specificity_score'),
+    evaluationStatus: text('evaluation_status').default('pending'), // 'pending' | 'needs_clarification' | 'partially_actionable' | 'actionable'
+    clarificationQuestions: jsonb('clarification_questions').default([]),
+    buildSpec: jsonb('build_spec'),
+    clusterId: text('cluster_id'),
+    priorityScore: integer('priority_score').default(0),
+    priorityRank: text('priority_rank'), // 'critical' | 'high' | 'medium' | 'low'
+    route: text('route'), // 'missing-tools' | 'optimized-workflows' | 'precomputed-knowledge'
+    evaluatedAt: timestamp('evaluated_at'),
 }, (table) => ({
     needsSourceTypeIdx: index('needs_signals_source_type_idx').on(table.source, table.type),
     needsTitleIdx: index('needs_signals_title_idx').on(table.title),
     needsUpdatedIdx: index('needs_signals_updated_idx').on(table.updatedAt),
+    needsEvalStatusIdx: index('needs_eval_status_idx').on(table.evaluationStatus),
+    needsPriorityIdx: index('needs_priority_idx').on(table.priorityScore),
+    needsClusterIdx: index('needs_cluster_idx').on(table.clusterId),
 }));
 
 export const users = pgTable('users', {

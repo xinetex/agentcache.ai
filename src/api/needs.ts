@@ -3,6 +3,7 @@ import { and, desc, eq, gte, sql, count as drizzleCount } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { needsSignals, hubFocusGroupResponses, hubAgents, hubAgentBadges, serviceRequests } from '../db/schema.js';
 import { maxxeval } from '../lib/maxxeval.js';
+import { triageSignals, evaluateSignal, type SignalInput, type EvaluationResult } from '../lib/needs-evaluator.js';
 import { readFileSync, readdirSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -511,6 +512,171 @@ needsRouter.get('/solutions-map', async (c) => {
             coveragePercent: allSignals.length > 0
                 ? Math.round(((allSignals.length - unaddressed.length) / allSignals.length) * 100)
                 : 0,
+        },
+    });
+});
+
+/**
+ * POST /api/needs/triage
+ * Batch-evaluate all signals through Stages 1-3+5 (fast, no LLM).
+ * Persists specificity_score, evaluation_status, clarification_questions,
+ * cluster_id, priority_score, priority_rank, route, evaluated_at.
+ */
+needsRouter.post('/triage', async (c) => {
+    const secret = process.env.CRON_SECRET || process.env.ADMIN_TOKEN;
+    const authHeader = c.req.header('Authorization');
+    if (secret && authHeader !== `Bearer ${secret}`) {
+        return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const allRows = await db.select().from(needsSignals)
+        .orderBy(desc(needsSignals.score));
+
+    if (allRows.length === 0) {
+        return c.json({ success: true, evaluated: 0, message: 'No signals to triage' });
+    }
+
+    // Map DB rows → SignalInput
+    const inputs: SignalInput[] = allRows.map(r => ({
+        id: r.id,
+        title: r.title || '',
+        description: r.description || '',
+        type: r.type || 'missing_capability',
+        score: r.score ?? 0,
+        raw: r.raw,
+    }));
+
+    const results = await triageSignals(inputs);
+    const now = new Date();
+    let persisted = 0;
+
+    for (const result of results) {
+        await db.update(needsSignals)
+            .set({
+                specificityScore: result.specificity.score,
+                evaluationStatus: result.specificity.status,
+                clarificationQuestions: result.clarificationQuestions,
+                clusterId: result.cluster?.id || null,
+                priorityScore: result.priority.score,
+                priorityRank: result.priority.rank,
+                route: result.priority.route,
+                evaluatedAt: now,
+                updatedAt: now,
+            })
+            .where(eq(needsSignals.id, result.signalId));
+        persisted++;
+    }
+
+    // Summary breakdown
+    const statusCounts = { needs_clarification: 0, partially_actionable: 0, actionable: 0 };
+    const rankCounts = { critical: 0, high: 0, medium: 0, low: 0 };
+    for (const r of results) {
+        statusCounts[r.specificity.status]++;
+        rankCounts[r.priority.rank]++;
+    }
+
+    const clusterCount = new Set(results.map(r => r.cluster?.id).filter(Boolean)).size;
+
+    return c.json({
+        success: true,
+        evaluated: persisted,
+        breakdown: {
+            byStatus: statusCounts,
+            byPriority: rankCounts,
+            clustersFound: clusterCount,
+        },
+        topPriority: results.slice(0, 10).map(r => ({
+            id: r.signalId,
+            title: r.signalTitle,
+            type: r.signalType,
+            specificity: r.specificity.score,
+            status: r.specificity.status,
+            priority: r.priority.score,
+            rank: r.priority.rank,
+            route: r.priority.route,
+            cluster: r.cluster?.name || null,
+        })),
+    });
+});
+
+/**
+ * GET /api/needs/:id/evaluate
+ * Deep-evaluate a single signal: runs full pipeline including Stage 4 (LLM build spec).
+ * Persists build_spec to DB alongside all other evaluation fields.
+ */
+needsRouter.get('/:id/evaluate', async (c) => {
+    const secret = process.env.CRON_SECRET || process.env.ADMIN_TOKEN;
+    const authHeader = c.req.header('Authorization');
+    if (secret && authHeader !== `Bearer ${secret}`) {
+        return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const signalId = c.req.param('id');
+
+    const rows = await db.select().from(needsSignals)
+        .where(eq(needsSignals.id, signalId))
+        .limit(1);
+
+    if (rows.length === 0) {
+        return c.json({ error: 'Signal not found' }, 404);
+    }
+
+    const row = rows[0];
+
+    // Load all signals for clustering context
+    const allRows = await db.select().from(needsSignals)
+        .orderBy(desc(needsSignals.score));
+
+    const allInputs: SignalInput[] = allRows.map(r => ({
+        id: r.id,
+        title: r.title || '',
+        description: r.description || '',
+        type: r.type || 'missing_capability',
+        score: r.score ?? 0,
+        raw: r.raw,
+    }));
+
+    const target: SignalInput = {
+        id: row.id,
+        title: row.title || '',
+        description: row.description || '',
+        type: row.type || 'missing_capability',
+        score: row.score ?? 0,
+        raw: row.raw,
+    };
+
+    const result = await evaluateSignal(target, allInputs, { deep: true });
+    const now = new Date();
+
+    // Persist everything including build spec
+    await db.update(needsSignals)
+        .set({
+            specificityScore: result.specificity.score,
+            evaluationStatus: result.specificity.status,
+            clarificationQuestions: result.clarificationQuestions,
+            buildSpec: result.buildSpec || null,
+            clusterId: result.cluster?.id || null,
+            priorityScore: result.priority.score,
+            priorityRank: result.priority.rank,
+            route: result.priority.route,
+            evaluatedAt: now,
+            updatedAt: now,
+        })
+        .where(eq(needsSignals.id, signalId));
+
+    return c.json({
+        success: true,
+        signal: {
+            id: result.signalId,
+            title: result.signalTitle,
+            type: result.signalType,
+        },
+        evaluation: {
+            specificity: result.specificity,
+            clarificationQuestions: result.clarificationQuestions,
+            cluster: result.cluster || null,
+            buildSpec: result.buildSpec || null,
+            priority: result.priority,
         },
     });
 });
