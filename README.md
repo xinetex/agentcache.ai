@@ -66,6 +66,13 @@ graph TD
     *   `agentcache_ask_system2`: Engage deep reasoning.
     *   `agentcache_hive_memory`: Access multi-modal memory.
 
+### 6. Tool Safety Scanner (Supply Chain Security)
+*   **What it does**: Scans agent tool/plugin source code for security threats *before* installation. Every framework tells agents "only use trusted tools" — but none provide a way to verify trust. AgentCache does.
+*   **Languages**: JavaScript, TypeScript, Python
+*   **Detects**: Credential harvesting, data exfiltration, code obfuscation, privilege escalation, scope violations, MCP manifest over-permissions
+*   **Trust Registry**: Results cached by content hash — known-good tools skip re-scanning
+*   **API**: `POST /api/tools/scan` with `{ source, name?, language?, manifest? }`
+
 ---
 
 ## 🛠️ Usage

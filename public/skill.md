@@ -102,6 +102,11 @@ setInterval(async () => {
 `GET /api/needs/trends` — Aggregated trends and velocity
 `POST /api/needs/refresh` — Trigger needs refresh from MaxxEval
 
+### Tool Safety Scanner (Supply Chain Security)
+`POST /api/tools/scan` — Scan tool source code before installing (JS/TS + Python)
+`GET /api/tools/scan/:hash` — Lookup previous scan by content hash
+`GET /api/tools/scan/stats` — Aggregate scan statistics
+
 ### Service Catalog
 `GET /api/catalog` — List all available services
 `GET /api/catalog/:id` — Service detail + required inputs

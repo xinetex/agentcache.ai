@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.0] - Supply Chain Security - 2026-02-06
+
+### 🛡️ Tool Safety Scanner
+-   **New**: `POST /api/tools/scan` — Scan agent tool source code for security threats before installation.
+-   **Languages**: JavaScript/TypeScript and Python with automatic language detection.
+-   **Threat Detection**: 30+ patterns across 6 categories: credential harvesting, data exfiltration, code obfuscation, privilege escalation, scope violation, MCP manifest risks.
+-   **Trust Registry**: Scan results cached by SHA-256 content hash — agents skip re-scanning known tools.
+-   **MCP Manifest Analysis**: Detects over-permissioned MCP tool declarations and external server connections.
+-   **Solution Catalog**: Added `tool-safety-scanner` to the solutions catalog.
+
+### 🧠 Needs Evaluation Algorithm
+-   **New**: 5-stage pipeline turning vague demand signals into actionable build specs.
+-   **Endpoints**: `POST /api/needs/triage` (batch fast eval), `GET /api/needs/:id/evaluate` (deep LLM spec generation via Kimi).
+-   **Stages**: Specificity scoring → clarification questions → signal clustering → build spec generation → priority routing.
+
+### 🔗 End-to-End Agent Needs Pipeline
+-   **New**: MaxxEval → AgentCache → Solutions pipeline wired and operational.
+-   **Endpoints**: `GET /api/needs/evaluation`, `GET /api/needs/solutions-map`, `POST /api/needs/import`.
+-   **Seeded**: 40 demand signals from focus group research across 8 agent archetypes.
+
 ## [2.0.0] - The Awakening - 2025-12-05
 
 ### 🚀 Major Features (Cognitive Architecture)

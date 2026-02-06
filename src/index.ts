@@ -1409,6 +1409,7 @@ app.get('/api', (c) => {
       '/api/catalog': 'Browse available cache services',
       '/api/needs': 'Current demand signals from agents',
       '/api/needs/trends': 'Aggregated trends and velocity',
+      '/api/tools/scan': 'Tool Safety Scanner — scan tools before installing (POST source code)',
     },
     endpoints: {
       '/api/health': 'Health check',
@@ -1424,6 +1425,9 @@ app.get('/api', (c) => {
       '/api/memory/recall': 'Recall similar memories (vector search)',
       '/api/memory/:id': 'Fetch a stored memory by id',
       '/api/security/check': 'Prompt injection / jailbreak detection',
+      '/api/tools/scan': 'Scan tool source code for threats (JS/TS + Python + MCP)',
+      '/api/tools/scan/:hash': 'Lookup previous scan by content hash',
+      '/api/tools/scan/stats': 'Aggregate scan statistics',
       '/api/edges/optimal': 'Get optimal edge locations (JettySpeed)',
       '/api/jetty-speed/chunk': 'Upload chunk via edge (JettySpeed)',
       '/api/jetty-speed/chunk/:fileId/:chunkIndex': 'Download cached chunk (JettySpeed)',

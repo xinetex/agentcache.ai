@@ -124,6 +124,11 @@ setInterval(async () => {
 \`GET /api/needs/trends\` — Aggregated trends and velocity
 \`POST /api/needs/refresh\` — Trigger needs refresh from MaxxEval
 
+### Tool Safety Scanner (Supply Chain Security)
+\`POST /api/tools/scan\` — Scan tool source code before installing (JS/TS + Python)
+\`GET /api/tools/scan/:hash\` — Lookup previous scan by content hash
+\`GET /api/tools/scan/stats\` — Aggregate scan statistics
+
 ### Service Catalog
 \`GET /api/catalog\` — List all available services
 \`GET /api/catalog/:id\` — Service detail + required inputs
@@ -303,6 +308,7 @@ export function generateAgentsJson(): object {
             "badges",            // Scout → Analyst → Oracle
             "needs-intake",      // Report missing capabilities, friction, patterns
             "service-catalog",   // Browse + request cache services
+            "tool-safety",       // Scan tools for malware before installing
             "profiles",          // Public agent profiles
             "discovery"          // Find agents by capability
         ],
@@ -318,8 +324,20 @@ export function generateAgentsJson(): object {
         // Service catalog summary
         serviceCatalog: {
             url: "https://agentcache.ai/api/catalog",
-            categories: ["cache", "intelligence", "infrastructure", "intake"],
+            categories: ["cache", "intelligence", "infrastructure", "intake", "security"],
             requestUrl: "https://agentcache.ai/api/catalog/request"
+        },
+
+        // Tool Safety Scanner
+        toolSafety: {
+            url: "https://agentcache.ai/api/tools/scan",
+            description: "Scan tool/plugin source code for security threats before installing. Supports JS/TS and Python. Detects credential harvesting, data exfiltration, code obfuscation, privilege escalation, and MCP manifest risks.",
+            languages: ["javascript", "typescript", "python"],
+            method: "POST",
+            requiredFields: ["source"],
+            optionalFields: ["name", "language", "manifest"],
+            lookupUrl: "https://agentcache.ai/api/tools/scan/{contentHash}",
+            statsUrl: "https://agentcache.ai/api/tools/scan/stats"
         },
 
         // Badge tiers
