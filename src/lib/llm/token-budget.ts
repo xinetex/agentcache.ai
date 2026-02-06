@@ -58,11 +58,19 @@ class TokenBudget {
     private spendLog: TokenSpend[] = [];
     private lastResetDate: Date;
     private maxDailySpend: number;
+    private redisSpendKey: string = '';
 
     constructor() {
         this.maxDailySpend = parseFloat(process.env.MAX_DAILY_SPEND_USD || '10');
         this.lastResetDate = new Date();
         this.resetIfNewDay();
+    }
+
+    /** Get today's Redis key for persistent spend tracking */
+    private getTodayKey(): string {
+        const now = new Date();
+        const date = now.toISOString().slice(0, 10); // YYYY-MM-DD
+        return `budget:daily:${date}`;
     }
 
     /**
@@ -111,11 +119,41 @@ class TokenBudget {
     }
 
     /**
-     * Record a completed LLM call
+     * Record a completed LLM call (persists to Redis for cross-invocation tracking)
      */
     recordSpend(spend: TokenSpend): void {
         this.spendLog.push(spend);
+
+        // Persist to Redis (fire-and-forget for speed)
+        this.persistSpend(spend.costUsd).catch(err =>
+            console.warn('[TokenBudget] Redis persist failed:', err)
+        );
+
         console.log(`[TokenBudget] Recorded: ${spend.provider}/${spend.model} | ${spend.taskType} | $${spend.costUsd.toFixed(4)} | Total: $${this.getDailySpend().toFixed(4)}/${this.maxDailySpend}`);
+    }
+
+    /** Atomically increment daily spend in Redis */
+    private async persistSpend(costUsd: number): Promise<void> {
+        try {
+            const { redis } = await import('../redis.js');
+            const key = this.getTodayKey();
+            await redis.incrbyfloat(key, costUsd);
+            // Auto-expire after 48 hours to avoid unbounded key growth
+            await redis.expire(key, 172800);
+        } catch (e) {
+            // Silently fail — in-memory log is the fallback
+        }
+    }
+
+    /** Get persistent daily spend from Redis (for cold starts) */
+    async getPersistedDailySpend(): Promise<number> {
+        try {
+            const { redis } = await import('../redis.js');
+            const raw = await redis.get(this.getTodayKey());
+            return parseFloat(String(raw ?? '0')) || 0;
+        } catch {
+            return 0;
+        }
     }
 
     /**

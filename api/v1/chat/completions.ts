@@ -1,7 +1,15 @@
 
 import { LidarCacheService } from '../../../src/services/LidarCacheService.js';
 import { LLMFactory } from '../../../src/lib/llm/factory.js';
-import { LogService } from '../../../src/services/LogService.js'; // Assuming we have or will create this for Mission Control
+import { LogService } from '../../../src/services/LogService.js';
+import { router as modelRouter } from '../../../src/lib/llm/router.js';
+import { tokenBudget } from '../../../src/lib/llm/token-budget.js';
+import { savingsTracker } from '../../../src/lib/llm/savings-tracker.js';
+
+// Semantic cache similarity threshold (0.0 = exact match, 1.0 = anything matches)
+// 0.92 is the standard for production semantic caching — tight enough to avoid false
+// positives but loose enough to catch rephrased versions of the same question.
+const SEMANTIC_THRESHOLD = parseFloat(process.env.SEMANTIC_CACHE_THRESHOLD || '0.92');
 
 export default async function handler(req, res) {
     // 1. Method Check
@@ -15,12 +23,11 @@ export default async function handler(req, res) {
     }
 
     const lastMessage = messages[messages.length - 1].content;
+    const requestStart = Date.now();
 
     try {
         // --- LAYER 0: COMPLIANCE (PII Redaction) ---
-        // Use Case 21: Redact PII
-        // Stub: Check for credit card or SSN patterns
-        const piiPattern = /\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b/; // Simple CC regex
+        const piiPattern = /\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b/;
         if (piiPattern.test(lastMessage)) {
             LogService.log('gateway', 'warn', 'PII Detected. Request blocked by Compliance Policy.');
             return res.status(400).json({
@@ -33,11 +40,16 @@ export default async function handler(req, res) {
         }
 
         // --- LAYER 1: GATEWAY CACHE (Semantic) ---
-        // Only cache user queries, system prompts complicate semantic match without more logic
         if (messages.length > 0) {
-            const cachedResponse = await LidarCacheService.getSemantic(lastMessage, 0.1);
+            const cachedResponse = await LidarCacheService.getSemantic(lastMessage, SEMANTIC_THRESHOLD);
             if (cachedResponse) {
-                // Formatting response to look like OpenAI
+                const latency = Date.now() - requestStart;
+
+                // Calculate savings: this cache hit avoided an LLM call
+                const estimatedTokens = Math.ceil(lastMessage.length / 4); // ~4 chars per token
+                const estimatedSaved = tokenBudget.estimateCost('openai', model, estimatedTokens, estimatedTokens);
+                await savingsTracker.recordSaving(apiKey || 'anonymous', estimatedSaved, 'semantic_cache', model);
+
                 const response = {
                     id: `chatcmpl-cache-${Date.now()}`,
                     object: 'chat.completion',
@@ -48,47 +60,92 @@ export default async function handler(req, res) {
                         message: { role: 'assistant', content: cachedResponse },
                         finish_reason: 'stop'
                     }],
-                    usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 } // Cache is free
+                    usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
                 };
 
-                // Log Hit
-                LogService.log('gateway', 'success', `Cache HIT for: ${lastMessage.substring(0, 30)}...`, { latency: 10 });
+                res.setHeader('X-Cache', 'HIT');
+                res.setHeader('X-Cache-Type', 'semantic');
+                res.setHeader('X-Cache-Latency', String(latency));
+                res.setHeader('X-Cost-Saved', estimatedSaved.toFixed(6));
 
+                LogService.log('gateway', 'success', `Cache HIT for: ${lastMessage.substring(0, 30)}...`, { latency, saved: estimatedSaved });
                 return res.status(200).json(response);
             }
         }
 
-        // --- LAYER 2: LLM FORWARDING (The Miss) ---
-        // Log Miss
-        LogService.log('gateway', 'info', `Cache MISS for: ${lastMessage.substring(0, 30)}... forwarding to ${model}`);
+        // --- LAYER 2: INTELLIGENT MODEL ROUTING ---
+        // Use ModelRouter to potentially downgrade to a cheaper model
+        const routeResult = modelRouter.route(lastMessage);
+        let effectiveProvider = routeResult.provider;
+        let effectiveModel = routeResult.model;
+        let routed = false;
 
-        // Decide Provider based on model name or default to OpenAI
-        // Ideally we map 'gpt-4' -> openai, 'claude' -> anthropic
-        let providerType = 'openai';
-        if (model.includes('claude')) providerType = 'anthropic';
-        if (model.includes('gemini')) providerType = 'gemini';
+        // Only route if budget allows and the router suggests a cheaper tier
+        if (routeResult.budgetStatus.canProceed && routeResult.tier !== 'reasoning') {
+            // Check if we can use a cheaper model than what was requested
+            const requestedCost = tokenBudget.estimateCost('openai', model, 2000, 1000);
+            const routedCost = tokenBudget.estimateCost(routeResult.provider, routeResult.model, 2000, 1000);
 
-        // Pass user's key if they provided one, else use ours (Platform vs BYOK mode)
-        // For this implementation, we assume Platform Key (ours) unless header mimics Bearer sk-...
-        // Fix: Explicitly cast or check valid type to satisfy TypeScript
+            if (routedCost < requestedCost * 0.7) {
+                // Router found a significantly cheaper option (>30% savings)
+                routed = true;
+                LogService.log('gateway', 'info', `Router: ${model} → ${effectiveModel} (${routeResult.reason})`);
+            } else {
+                // Use the originally requested model
+                effectiveProvider = 'openai';
+                if (model.includes('claude')) effectiveProvider = 'anthropic';
+                if (model.includes('gemini')) effectiveProvider = 'gemini';
+                effectiveModel = model;
+            }
+        } else {
+            // Budget blocked or complex query — use requested model
+            effectiveProvider = 'openai';
+            if (model.includes('claude')) effectiveProvider = 'anthropic';
+            if (model.includes('gemini')) effectiveProvider = 'gemini';
+            effectiveModel = model;
+        }
+
         const validTypes = ['openai', 'anthropic', 'gemini', 'moonshot', 'grok', 'perplexity'];
-        if (!validTypes.includes(providerType)) providerType = 'openai';
+        if (!validTypes.includes(effectiveProvider)) effectiveProvider = 'openai';
 
-        const provider = LLMFactory.createProvider(providerType as any);
+        LogService.log('gateway', 'info', `Cache MISS: forwarding to ${effectiveProvider}/${effectiveModel}`);
 
-        const result = await provider.chat(messages, { model, temperature });
+        const provider = LLMFactory.createProvider(effectiveProvider as any);
+        const result = await provider.chat(messages, { model: effectiveModel, temperature });
 
-        // --- LAYER 3: HARVEST (Async Cache) ---
-        // We catch the result and store it for next time
-        // Note: For now we only cache the exact answer. In future, we cache the "Thought Process" too.
+        // Record spend
+        if (result.usage) {
+            tokenBudget.recordSpend({
+                timestamp: new Date(),
+                provider: effectiveProvider,
+                model: effectiveModel,
+                inputTokens: result.usage.inputTokens || 0,
+                outputTokens: result.usage.outputTokens || 0,
+                costUsd: tokenBudget.estimateCost(effectiveProvider, effectiveModel, result.usage.inputTokens || 0, result.usage.outputTokens || 0),
+                taskType: 'proxy'
+            });
+        }
+
+        // If we routed to a cheaper model, calculate the savings
+        let routingSavings = 0;
+        if (routed && result.usage) {
+            const originalCost = tokenBudget.estimateCost('openai', model, result.usage.inputTokens || 0, result.usage.outputTokens || 0);
+            const actualCost = tokenBudget.estimateCost(effectiveProvider, effectiveModel, result.usage.inputTokens || 0, result.usage.outputTokens || 0);
+            routingSavings = Math.max(0, originalCost - actualCost);
+            if (routingSavings > 0) {
+                await savingsTracker.recordSaving(apiKey || 'anonymous', routingSavings, 'model_routing', effectiveModel);
+            }
+        }
+
+        // --- LAYER 3: HARVEST (Async Cache for next time) ---
         await LidarCacheService.cacheSemantic(lastMessage, result.content);
 
-        // Transform back to OpenAI format if provider didn't (Factory usually returns normalized, but let's ensure)
+        // Transform to OpenAI format
         const openAIResponse = {
             id: `chatcmpl-${Date.now()}`,
             object: 'chat.completion',
             created: Date.now(),
-            model: result.model || model,
+            model: result.model || effectiveModel,
             choices: [{
                 index: 0,
                 message: { role: 'assistant', content: result.content },
@@ -96,6 +153,14 @@ export default async function handler(req, res) {
             }],
             usage: result.usage
         };
+
+        // Inform caller about routing decisions
+        res.setHeader('X-Cache', 'MISS');
+        if (routed) {
+            res.setHeader('X-Model-Routed', `${model} → ${effectiveModel}`);
+            res.setHeader('X-Routing-Tier', routeResult.tier);
+            res.setHeader('X-Cost-Saved', routingSavings.toFixed(6));
+        }
 
         return res.status(200).json(openAIResponse);
 

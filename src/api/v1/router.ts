@@ -71,4 +71,44 @@ v1.get('/status', (c) => {
 import { docsRouter } from './docs.js';
 v1.route('/docs', docsRouter);
 
+// --- Savings API ---
+import { savingsTracker } from '../../lib/llm/savings-tracker.js';
+import { tokenBudget } from '../../lib/llm/token-budget.js';
+
+/**
+ * GET /v1/savings
+ * Returns real-time cost savings data — the core metric for AgentCache
+ */
+v1.get('/savings', async (c) => {
+    const apiKey = c.get('apiKey');
+    const date = c.req.query('date'); // Optional: ?date=2026-02-06
+
+    const [daily, userSavings, monthly, budget] = await Promise.all([
+        savingsTracker.getDailySavings(date),
+        savingsTracker.getUserSavings(apiKey, date),
+        savingsTracker.getMonthlySavings(),
+        tokenBudget.getPersistedDailySpend(),
+    ]);
+
+    return c.json({
+        savings: {
+            today: {
+                totalSavedUsd: daily.totalSavedUsd,
+                yourSavedUsd: userSavings,
+                cacheHits: daily.cacheHits,
+                avgSavingPerHit: daily.avgSavingPerHit,
+                breakdown: daily.breakdown,
+            },
+            month: {
+                totalSavedUsd: monthly,
+            },
+        },
+        spend: {
+            todayUsd: budget,
+            dailyLimitUsd: parseFloat(process.env.MAX_DAILY_SPEND_USD || '10'),
+        },
+        message: 'Real-time savings from cache hits and intelligent model routing.',
+    });
+});
+
 export const v1Router = v1;

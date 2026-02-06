@@ -1,13 +1,27 @@
 
+/**
+ * FNV-1a hash for deterministic content-based seeding.
+ * Produces a unique numeric seed from the actual text content,
+ * not just its length. This ensures different texts produce
+ * different mock embeddings for meaningful semantic comparisons.
+ */
+function fnv1a(str: string): number {
+    let hash = 2166136261;
+    for (let i = 0; i < str.length; i++) {
+        hash ^= str.charCodeAt(i);
+        hash = (hash * 16777619) >>> 0;
+    }
+    return hash;
+}
+
 export async function generateEmbedding(text: string): Promise<number[]> {
     const openaiKey = process.env.OPENAI_API_KEY;
     if (!openaiKey) {
         console.warn('⚠️ No OPENAI_API_KEY. Using deterministic mock embedding.');
-        // Generate a pseudo-random deterministic vector based on text length/content
-        // This ensures the same text gets the same vector for testing
+        // Content-based deterministic vector: different texts → different vectors
         const dim = 1536;
-        const seed = text.length;
-        return Array.from({ length: dim }, (_, i) => Math.sin(seed * i));
+        const seed = fnv1a(text);
+        return Array.from({ length: dim }, (_, i) => Math.sin(seed * (i + 1) * 0.001));
     }
 
     try {
@@ -34,7 +48,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     } catch (e) {
         console.warn('⚠️ Embedding generation failed. Using deterministic mock fallback.');
         const dim = 1536;
-        const seed = text.length; // Simple deterministic seed
-        return Array.from({ length: dim }, (_, i) => Math.sin(seed * i));
+        const seed = fnv1a(text);
+        return Array.from({ length: dim }, (_, i) => Math.sin(seed * (i + 1) * 0.001));
     }
 }

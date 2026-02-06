@@ -118,27 +118,19 @@ class MockRedis {
   }
 
   pipeline() {
-    // Return a mock pipeline that just executes immediately or buffers
     const self = this;
     const operations: Function[] = [];
-    return {
-      incr: (k: string) => operations.push(() => {
-        const v = parseInt(self.store.get(k) || '0');
-        self.store.set(k, v + 1);
-      }),
-      incrby: (k: string, n: number) => operations.push(() => {
-        const v = parseInt(self.store.get(k) || '0');
-        self.store.set(k, v + n);
-      }),
-      incrbyfloat: (k: string, n: number) => operations.push(() => {
-        const v = parseFloat(self.store.get(k) || '0.0');
-        self.store.set(k, v + n);
-      }),
-      exec: async () => {
-        for (const op of operations) op();
-        return [];
-      }
+    const chain = {
+      incr: (k: string) => { operations.push(() => { const v = parseInt(self.store.get(k) || '0'); self.store.set(k, v + 1); }); return chain; },
+      incrby: (k: string, n: number) => { operations.push(() => { const v = parseInt(self.store.get(k) || '0'); self.store.set(k, v + n); }); return chain; },
+      incrbyfloat: (k: string, n: number) => { operations.push(() => { const v = parseFloat(self.store.get(k) || '0.0'); self.store.set(k, v + n); }); return chain; },
+      expire: (k: string, s: number) => { operations.push(() => {}); return chain; },
+      lpush: (k: string, ...vals: any[]) => { operations.push(() => { if (!self.store.has(k)) self.store.set(k, []); const l = self.store.get(k); if (Array.isArray(l)) l.unshift(...vals); }); return chain; },
+      ltrim: (k: string, start: number, stop: number) => { operations.push(() => { const l = self.store.get(k); if (Array.isArray(l)) self.store.set(k, l.slice(start, stop + 1)); }); return chain; },
+      zadd: (k: string, ...args: any[]) => { operations.push(() => { self.zadd(k, ...args); }); return chain; },
+      exec: async () => { for (const op of operations) op(); return []; }
     };
+    return chain;
   }
 }
 

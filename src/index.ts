@@ -20,6 +20,8 @@ import { canUseNamespace, isTTLAllowed, getFeatureLimit } from './lib/tierChecke
 import { stableStringify, stableHash } from './lib/stable-json.js';
 import { generateEmbedding } from './lib/llm/embeddings.js';
 import { upsertMemory, queryMemory } from './lib/vector.js';
+import { savingsTracker } from './lib/llm/savings-tracker.js';
+import { tokenBudget } from './lib/llm/token-budget.js';
 import * as bcrypt from 'bcryptjs';
 import { neon } from '@neondatabase/serverless';
 
@@ -416,11 +418,21 @@ app.post('/api/cache/get', async (c) => {
       }
     }
 
+    // Estimate savings: what this LLM call would have cost
+    const estimatedTokens = Math.ceil(JSON.stringify(req.messages).length / 4);
+    const estimatedCost = tokenBudget.estimateCost(req.provider, req.model, estimatedTokens, estimatedTokens);
+    const savedUsd = Math.max(estimatedCost, 0.001); // floor at $0.001
+
+    // Record the saving (fire-and-forget)
+    const apiKey = c.req.header('X-API-Key') || 'anonymous';
+    savingsTracker.recordSaving(apiKey, savedUsd, 'exact_cache', req.model).catch(() => {});
+
     return c.json({
       hit: true,
       response: cached,
       latency,
-      saved: '~$0.01-$1.00',
+      saved: `$${savedUsd.toFixed(4)}`,
+      savedUsd,
       freshness
     });
   } catch (error: any) {
