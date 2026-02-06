@@ -60,21 +60,21 @@ export const DEFAULT_CARDS = [
         data: { title: 'Enterprise', subtitle: 'CUSTOM', content: 'Unlimited requests. Dedicated infrastructure. SLA guarantees. White-label options with 24/7 support.', image: '/assets/console-preview.jpg' }
     },
 
-    // --- STATS LANE ---
+    // --- STATS LANE (placeholder values — overridden by live Redis data in content API) ---
     {
         id: 'stat-requests', laneId: 'stats', template: 'stat',
-        data: { title: '427,319', subtitle: 'REQUESTS CACHED', content: 'Requests served instantly from the edge today.' }
+        data: { title: '—', subtitle: 'REQUESTS CACHED', content: 'Requests served from the edge today.' }
     },
     {
         id: 'stat-savings', laneId: 'stats', template: 'stat',
-        data: { title: '$8,546', subtitle: 'MONEY SAVED', content: 'Total user savings today based on average token costs.' }
+        data: { title: '$0', subtitle: 'MONEY SAVED', content: 'Total user savings today from cache hits.' }
     },
     {
         id: 'stat-latency', laneId: 'stats', template: 'stat',
-        data: { title: '42ms', subtitle: 'AVG LATENCY', content: 'Global average response time for cached hits.' }
+        data: { title: '<50ms', subtitle: 'EDGE LATENCY', content: 'Target response time for cached hits.' }
     },
     {
         id: 'stat-hitrate', laneId: 'stats', template: 'stat',
-        data: { title: '92%', subtitle: 'CACHE HIT RATE', content: 'Average cache hit rate across all community apps.' }
+        data: { title: 'LIVE', subtitle: 'SYSTEM STATUS', content: 'All services operational.' }
     }
 ];

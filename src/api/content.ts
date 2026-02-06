@@ -5,8 +5,48 @@ import { asc, eq } from 'drizzle-orm';
 import { authenticateApiKey } from '../middleware/auth.js';
 import { verify } from 'hono/jwt';
 import { DEFAULT_LANES, DEFAULT_CARDS } from '../config/bentoDefaults.js';
+import { savingsTracker } from '../lib/llm/savings-tracker.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_do_not_use_in_prod';
+
+/**
+ * Replace placeholder stat cards with real data from Redis.
+ * Falls back gracefully — if Redis is down, placeholders stay.
+ */
+async function injectLiveStats(cardsData: any[]): Promise<any[]> {
+    try {
+        const daily = await savingsTracker.getDailySavings();
+
+        const statsMap: Record<string, { title: string; content: string }> = {
+            'stat-requests': {
+                title: daily.cacheHits > 0 ? daily.cacheHits.toLocaleString() : '—',
+                content: daily.cacheHits > 0
+                    ? `${daily.cacheHits.toLocaleString()} requests served from the edge today.`
+                    : 'Requests served from the edge today.'
+            },
+            'stat-savings': {
+                title: daily.totalSavedUsd > 0 ? `$${daily.totalSavedUsd.toFixed(2)}` : '$0',
+                content: daily.totalSavedUsd > 0
+                    ? `$${daily.totalSavedUsd.toFixed(2)} saved across all users today.`
+                    : 'Total user savings today from cache hits.'
+            },
+        };
+
+        return cardsData.map(card => {
+            const override = statsMap[card.id];
+            if (override) {
+                return {
+                    ...card,
+                    data: { ...card.data, title: override.title, content: override.content }
+                };
+            }
+            return card;
+        });
+    } catch (err) {
+        console.warn('[Content] Live stats injection failed, using placeholders:', err);
+        return cardsData;
+    }
+}
 
 const contentRouter = new Hono<{ Variables: { user: any } }>();
 
@@ -45,14 +85,14 @@ contentRouter.get('/', async (c) => {
 
         return c.json({
             lanes: lanesData,
-            cards: cardsData
+            cards: await injectLiveStats(cardsData)
         });
     } catch (error: any) {
         console.warn('Failed to fetch content from DB (returning defaults):', error);
         // Fallback to in-memory defaults on ANY fail (Timeout, Auth, Connection)
         return c.json({
             lanes: DEFAULT_LANES,
-            cards: DEFAULT_CARDS
+            cards: await injectLiveStats(DEFAULT_CARDS)
         });
     }
 });
