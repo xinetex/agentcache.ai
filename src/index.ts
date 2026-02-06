@@ -186,6 +186,7 @@ import hubRouter from './api/hub.js';
 import needsRouter from './api/needs.js';
 import catalogRouter from './api/catalog.js';
 import focusGroupRouter from './api/focus-group.js';
+import toolScannerRouter from './api/tool-scanner.js';
 
 import { authenticateApiKey } from './middleware/auth.js';
 import contentRouter from './api/content.js';
@@ -310,6 +311,8 @@ app.route('/api/needs', needsRouter);
 app.route('/api/catalog', catalogRouter);
 // Focus Group API (full study/session/analysis system)
 app.route('/api/focus-group', focusGroupRouter);
+// Tool Safety Scanner (supply chain security for agent tools)
+app.route('/api/tools/scan', toolScannerRouter);
 
 // ============================================================================
 // AGENT DISCOVERY LAYER

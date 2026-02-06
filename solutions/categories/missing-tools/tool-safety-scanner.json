@@ -1,0 +1,57 @@
+{
+  "id": "tool-safety-scanner",
+  "name": "Tool Safety Scanner",
+  "description": "Supply chain security for AI agent tools. Agents submit tool source code before installation and receive a trust score, threat findings, and verdict. Supports JavaScript/TypeScript and Python tools, plus MCP manifest analysis. Results are cached in a trust registry so known-good tools skip re-scanning.",
+  "category": "missing-tools",
+  "version": "1.0.0",
+  "demand_signal_ids": ["supply_chain_security", "tool_verification", "malware_detection"],
+  "demand_proof": {
+    "observed_in_agents": 0,
+    "observed_in_orgs": 0,
+    "first_observed": "2026-02-06",
+    "signal_frequency": 0
+  },
+  "performance": {
+    "success_rate": 0.95,
+    "avg_latency_ms": 50,
+    "latency_reduction": "Instant for cached results",
+    "cost_savings": "Prevents credential theft and data exfiltration"
+  },
+  "integration": {
+    "type": "api",
+    "endpoint": "https://agentcache.ai/api/tools/scan",
+    "auth_required": true,
+    "docs_url": "https://agentcache.ai/docs/tools/safety-scanner"
+  },
+  "capabilities": [
+    "scan_source(source, name?, language?) -> { trustScore, verdict, findings }",
+    "scan_manifest(mcpManifest) -> { permissionScope, risks }",
+    "lookup_hash(sha256) -> cached scan result or 404",
+    "scan_stats() -> { totalScans, verdictDistribution, topThreats }"
+  ],
+  "supported_intents": [
+    "scan_tool",
+    "verify_tool",
+    "check_tool_safety",
+    "tool_security_scan",
+    "mcp_manifest_check",
+    "supply_chain_audit"
+  ],
+  "threat_categories": [
+    "credential_harvesting",
+    "data_exfiltration",
+    "code_obfuscation",
+    "privilege_escalation",
+    "scope_violation",
+    "mcp_risk"
+  ],
+  "supported_languages": ["javascript", "typescript", "python"],
+  "pricing": {
+    "model": "per-request",
+    "free_tier_requests": 500,
+    "price_per_1k_requests": 1.00
+  },
+  "status": "beta",
+  "created_at": "2026-02-06T18:46:00Z",
+  "updated_at": "2026-02-06T18:46:00Z"
+}

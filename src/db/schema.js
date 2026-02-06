@@ -606,6 +606,25 @@ export const surveyResponses = pgTable('survey_responses', {
     channelIdx: index('survey_channel_idx').on(table.channel),
 }));
 
+// --- Tool Safety Scanner: Trust Registry ---
+export const toolScanResults = pgTable('tool_scan_results', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    contentHash: text('content_hash').notNull().unique(),
+    toolName: text('tool_name'),
+    language: text('language'),
+    trustScore: real('trust_score').notNull().default(1.0),
+    verdict: text('verdict').notNull().default('trusted'),
+    findings: jsonb('findings').default([]),
+    manifest: jsonb('manifest'),
+    scannedBy: text('scanned_by'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+    hashIdx: index('tool_scan_hash_idx').on(table.contentHash),
+    verdictIdx: index('tool_scan_verdict_idx').on(table.verdict),
+    scoreIdx: index('tool_scan_score_idx').on(table.trustScore),
+}));
+
 // --- Product Research: Market Insights ---
 export const marketInsights = pgTable('market_insights', {
     id: uuid('id').defaultRandom().primaryKey(),
