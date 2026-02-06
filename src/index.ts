@@ -151,6 +151,14 @@ app.use('/api/*', cors({
   allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
 }));
 
+// Agent discovery header — any agent calling any API endpoint discovers the onboarding path
+app.use('/api/*', async (c, next) => {
+  await next();
+  c.header('X-Agent-Onboard', 'https://agentcache.ai/skill.md');
+  c.header('X-Agent-Manifest', 'https://agentcache.ai/.well-known/agents.json');
+  c.header('X-MCP-Manifest', 'https://agentcache.ai/mcp/manifest');
+});
+
 // Mount Vercel integration routes
 app.route('/api/integrations/vercel', vercelIntegration);
 
@@ -258,8 +266,34 @@ app.route('/api/needs', needsRouter);
 // Service catalog + custom cache requests
 app.route('/api/catalog', catalogRouter);
 
-// Serve static files (landing page - defaults to community.html)
-app.get('/', (c) => {
+// ============================================================================
+// AGENT DISCOVERY LAYER
+// ============================================================================
+
+// Serve /.well-known/agents.json at the canonical path (not under /api/hub)
+app.get('/.well-known/agents.json', async (c) => {
+  const { generateAgentsJson } = await import('./lib/hub/discovery.js');
+  return c.json(generateAgentsJson());
+});
+
+// Content-negotiated root: Dual Front Door
+// - Accept: application/json → agents.json manifest
+// - Accept: text/markdown    → skill.md onboarding doc
+// - Default (HTML browsers)  → index.html landing page
+app.get('/', async (c) => {
+  const accept = c.req.header('Accept') || '';
+
+  if (accept.includes('application/json') && !accept.includes('text/html')) {
+    const { generateAgentsJson } = await import('./lib/hub/discovery.js');
+    return c.json(generateAgentsJson());
+  }
+
+  if (accept.includes('text/markdown')) {
+    const { generateSkillMd } = await import('./lib/hub/discovery.js');
+    c.header('Content-Type', 'text/markdown; charset=utf-8');
+    return c.body(generateSkillMd());
+  }
+
   return c.redirect('/index.html');
 });
 
