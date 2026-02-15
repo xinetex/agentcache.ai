@@ -164,7 +164,7 @@ app.route('/api/integrations/vercel', vercelIntegration);
 
 // Provision API endpoints
 import { provisionClient, getApiKeyInfo, provisionJettyThunder } from './api/provision-hono.js';
-import { clawAgent, clawStorage, clawProvision, clawHealth } from './api/clawsave.js';
+import { clawAgent, clawStorage, clawProvision, clawHealth, clawMemoryStore, clawMemoryRecall, clawMemoryForget, clawMemoryShare } from './api/clawsave.js';
 import decisionsRouter from './api/decisions.js';
 import galaxyRouter from './api/galaxy.js';
 import explorerRouter from './api/explorer.js';
@@ -204,6 +204,12 @@ app.get('/api/clawsave', clawHealth);
 app.post('/api/claw/agent', clawAgent);
 app.post('/api/claw/storage', clawStorage);
 app.post('/api/claw/provision', clawProvision);
+
+// ClawSave Unified Memory API (4-layer agent storage)
+app.post('/api/claw/memory/store', clawMemoryStore);
+app.post('/api/claw/memory/recall', clawMemoryRecall);
+app.post('/api/claw/memory/forget', clawMemoryForget);
+app.post('/api/claw/memory/share', clawMemoryShare);
 
 // Mount Auth API
 app.route('/api/auth', authRouter);

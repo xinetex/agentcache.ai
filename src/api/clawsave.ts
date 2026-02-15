@@ -3,6 +3,7 @@ import { CognitiveRouter } from '../infrastructure/CognitiveRouter.js';
 import { PredictiveSynapse } from '../infrastructure/PredictiveSynapse.js';
 import { generateApiKey, createNamespace, recordInstallation } from '../services/provisioning.js';
 import { redis } from '../lib/redis.js';
+import { getMemory } from '../lib/agent-memory/index.js';
 
 /**
  * ClawSave.com API Routes
@@ -429,5 +430,154 @@ async function trackClawUsage(
     await redis.expire(key, 60 * 60 * 24 * 30); // 30 days
   } catch (error) {
     console.error('[ClawSave Usage] Tracking failed:', error);
+  }
+}
+
+// =============================================================================
+// NEW: Unified Agent Memory API
+// =============================================================================
+
+/**
+ * POST /api/claw/memory/store
+ * Store data using the 4-layer agent memory system
+ */
+export async function clawMemoryStore(c: Context) {
+  try {
+    const body = await c.req.json();
+    const { key, value, options = {} } = body;
+    const userId = body.user_id || 'anonymous';
+
+    if (!key || value === undefined) {
+      return c.json({ error: 'Missing required fields: key, value' }, 400);
+    }
+
+    const memory = getMemory(`clawsave:${userId}`, CLAWSAVE_NAMESPACE);
+    const result = await memory.store(key, value, options);
+
+    await trackClawUsage(userId, 'memory', 'store');
+
+    return c.json({
+      success: true,
+      key: result.key,
+      tier: result.metadata.tier,
+      size: result.metadata.size,
+      hasEmbedding: !!result.embedding,
+      layers: {
+        semantic: !!result.embedding,
+        structured: result.metadata.size < 1024 * 1024,
+        blob: result.metadata.size >= 1024 * 1024,
+        context: result.metadata.tier === 'hot',
+      },
+    });
+  } catch (error) {
+    console.error('[ClawSave Memory Store] Error:', error);
+    return c.json({
+      error: 'Memory store failed',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    }, 500);
+  }
+}
+
+/**
+ * POST /api/claw/memory/recall
+ * Semantic search and retrieval from agent memory
+ */
+export async function clawMemoryRecall(c: Context) {
+  try {
+    const body = await c.req.json();
+    const { query, options = {} } = body;
+    const userId = body.user_id || 'anonymous';
+
+    if (!query) {
+      return c.json({ error: 'Missing required field: query' }, 400);
+    }
+
+    const memory = getMemory(`clawsave:${userId}`, CLAWSAVE_NAMESPACE);
+    const results = await memory.recall(query, options);
+
+    await trackClawUsage(userId, 'memory', 'recall');
+
+    return c.json({
+      success: true,
+      count: results.length,
+      results: results.map(r => ({
+        key: r.key,
+        value: r.value,
+        score: r.score,
+        metadata: r.metadata,
+      })),
+    });
+  } catch (error) {
+    console.error('[ClawSave Memory Recall] Error:', error);
+    return c.json({
+      error: 'Memory recall failed',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    }, 500);
+  }
+}
+
+/**
+ * POST /api/claw/memory/forget
+ * Remove data from agent memory
+ */
+export async function clawMemoryForget(c: Context) {
+  try {
+    const body = await c.req.json();
+    const { key, cascade = false, force = false } = body;
+    const userId = body.user_id || 'anonymous';
+
+    if (!key) {
+      return c.json({ error: 'Missing required field: key' }, 400);
+    }
+
+    const memory = getMemory(`clawsave:${userId}`, CLAWSAVE_NAMESPACE);
+    await memory.forget(key, { cascade, force });
+
+    await trackClawUsage(userId, 'memory', 'forget');
+
+    return c.json({
+      success: true,
+      message: `Forgot "${key}"${cascade ? ' and related memories' : ''}`,
+    });
+  } catch (error) {
+    console.error('[ClawSave Memory Forget] Error:', error);
+    return c.json({
+      error: 'Memory forget failed',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    }, 500);
+  }
+}
+
+/**
+ * POST /api/claw/memory/share
+ * Share memory with another agent
+ */
+export async function clawMemoryShare(c: Context) {
+  try {
+    const body = await c.req.json();
+    const { key, targetAgentId, permissions = 'read', notify = false } = body;
+    const userId = body.user_id || 'anonymous';
+
+    if (!key || !targetAgentId) {
+      return c.json({ error: 'Missing required fields: key, targetAgentId' }, 400);
+    }
+
+    const memory = getMemory(`clawsave:${userId}`, CLAWSAVE_NAMESPACE);
+    const result = await memory.share(targetAgentId, key, { permissions, notify });
+
+    await trackClawUsage(userId, 'memory', 'share');
+
+    return c.json({
+      success: true,
+      shareId: result.shareId,
+      accessUrl: result.accessUrl,
+      message: `Shared "${key}" with ${targetAgentId} (${permissions})`,
+    });
+  } catch (error) {
+    console.error('[ClawSave Memory Share] Error:', error);
+    return c.json({
+      error: 'Memory share failed',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    }, 500);
   }
 }
