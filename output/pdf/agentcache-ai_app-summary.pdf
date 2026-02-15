@@ -1,0 +1,252 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 3748 >>
+stream
+1 g
+0 0 612 792 re f
+0.85 G
+1.00 w
+54 698 m 558 698 l S
+0 g
+BT
+0 g
+/F2 18 Tf
+1 0 0 1 54 738 Tm
+(AgentCache.ai - App Summary) Tj
+ET
+BT
+0.35 g
+/F1 9 Tf
+1 0 0 1 54 714 Tm
+(Repo: agentcache-ai   Generated: 2026-02-05) Tj
+ET
+BT
+0 g
+/F2 11 Tf
+1 0 0 1 54 686 Tm
+(WHAT IT IS) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 672 Tm
+(AgentCache is a Node/TypeScript platform that provides caching and long-term memory primitives for AI) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 661 Tm
+(agents.) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 650 Tm
+(This repo includes a web Studio UI, API endpoints, and an MCP \(Model Context Protocol\) server to expose) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 633 Tm
+(tools to external agents.) Tj
+ET
+BT
+0 g
+/F2 11 Tf
+1 0 0 1 54 622 Tm
+(WHO IT'S FOR) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 608 Tm
+(AI-agent developers and platform engineers building agent workflows that need shared cache/memory plus an) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 591 Tm
+(operator-friendly UI.) Tj
+ET
+BT
+0 g
+/F2 11 Tf
+1 0 0 1 54 580 Tm
+(WHAT IT DOES) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 566 Tm
+(- Runs an MCP server \(stdio\) with tools like agentcache_get/set/check/stats and intent + memory utilities.) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 555 Tm
+(- Provides multi-layer LLM response caching: L1 in-memory + L2 Upstash Redis \(REST\), with namespaces and) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 66 544 Tm
+(TTL.) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 533 Tm
+(- Caches tool results via dedicated endpoints for repeatable tool calls \(tool-cache\).) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 522 Tm
+(- Exposes Brain Memory REST endpoints \(store/recall/graph\) via an AutoMem client.) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 511 Tm
+(- Includes a Pipeline Studio \(Vite + ReactFlow\) with sector wizard templates that generate pipeline graphs.) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 500 Tm
+(- Ships optional services: ffmpeg thumbnail microservice and a .NET/FAISS VectorService microservice.) Tj
+ET
+BT
+0 g
+/F2 11 Tf
+1 0 0 1 54 483 Tm
+(HOW IT WORKS \(REPO-BASED\)) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 469 Tm
+(- Web UI: Vite+React \(port 3000\) in src/; proxies /api to localhost:3001 in dev \(vite.config.js\).) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 458 Tm
+(- Dev API: Hono server \(src/server.ts -> src/index.ts\) mounts /api routers; uses Redis and optional Neon) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 66 447 Tm
+(Postgres \(DATABASE_URL\).) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 436 Tm
+(- Prod/Docker: Express server.js serves public/ and wraps Vercel-style handlers in api/ \(Dockerfile\).) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 425 Tm
+(- Cache layer: api/cache.js \(L1 Map + Upstash Redis\) and api/tool-cache.js; stats stored in Redis keys.) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 414 Tm
+(- MCP: src/mcp/server.ts registers tools; api/mcp-bridge.js can spawn it per request.) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 403 Tm
+(- Supporting services: docker-compose.yml includes Redis + services/thumbnail; optional) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 66 392 Tm
+(services/VectorService for FAISS search.) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 66 381 Tm
+(Typical flow: UI or MCP client -> /api -> cache/DB/services -> JSON \(or SSE for cached streaming) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 66 364 Tm
+(responses\).) Tj
+ET
+BT
+0 g
+/F2 11 Tf
+1 0 0 1 54 353 Tm
+(HOW TO RUN \(MINIMAL\)) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 339 Tm
+(- Install: npm install) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 328 Tm
+(- Start API \(dev\): npx tsx src/server.ts   \(http://localhost:3001\)) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 317 Tm
+(- Start Studio: npm run dev   \(http://localhost:3000, proxies /api -> :3001\)) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 306 Tm
+(- Optional MCP: npm run mcp:dev   \(stdio MCP server\)) Tj
+ET
+BT
+0 g
+/F1 9 Tf
+1 0 0 1 54 295 Tm
+(- Alt \(Docker\): docker compose up --build   \(app + redis + thumbnail\)) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000121 00000 n 
+0000000257 00000 n 
+0000004056 00000 n 
+0000004126 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+4201
+%%EOF

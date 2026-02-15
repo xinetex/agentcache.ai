@@ -164,6 +164,7 @@ app.route('/api/integrations/vercel', vercelIntegration);
 
 // Provision API endpoints
 import { provisionClient, getApiKeyInfo, provisionJettyThunder } from './api/provision-hono.js';
+import { clawAgent, clawStorage, clawProvision, clawHealth } from './api/clawsave.js';
 import decisionsRouter from './api/decisions.js';
 import galaxyRouter from './api/galaxy.js';
 import explorerRouter from './api/explorer.js';
@@ -197,6 +198,12 @@ app.post('/api/provision', provisionClient);
 app.route('/api/content', contentRouter);
 app.get('/api/provision/:api_key', getApiKeyInfo);
 app.post('/api/provision/jettythunder', provisionJettyThunder);
+
+// ClawSave.com API (Brain + Memory via AgentCache, Storage via JettyThunder)
+app.get('/api/clawsave', clawHealth);
+app.post('/api/claw/agent', clawAgent);
+app.post('/api/claw/storage', clawStorage);
+app.post('/api/claw/provision', clawProvision);
 
 // Mount Auth API
 app.route('/api/auth', authRouter);

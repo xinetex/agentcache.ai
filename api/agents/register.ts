@@ -1,4 +1,5 @@
 import { AgentRegistry } from '../../src/lib/hub/registry.js';
+import { evaluateAgentPolicyDeclaration } from '../lib/agent-policy.js';
 
 export const config = {
   runtime: 'nodejs',
@@ -26,13 +27,24 @@ export default async function handler(req: any, res: any) {
         method: 'POST',
         url: 'https://www.maxxeval.com/api/agents/register',
         requiredFields: { name: 'string', role: 'string' },
-        optionalFields: { capabilities: 'string[]', domain: 'string[]', wallet: 'string (0x...)' },
+        optionalFields: {
+          capabilities: 'string[]',
+          domain: 'string[]',
+          wallet: 'string (0x...)',
+          operatorType: '"human" | "agent" | "service"',
+          useCases: 'string[]',
+          contentRightsConfirmed: 'boolean',
+          antiAbuseConfirmed: 'boolean',
+          contactEmail: 'string',
+          termsAcceptedAt: 'ISO timestamp',
+        },
         example: {
           name: 'my-research-agent',
           role: 'research-assistant',
           capabilities: ['research', 'analysis', 'coding'],
           domain: ['tech', 'science'],
         },
+        policyEndpoint: 'https://agentcache.ai/api/policy/agent',
         docs: 'https://www.maxxeval.com/skill.md',
       });
     }
@@ -52,11 +64,29 @@ export default async function handler(req: any, res: any) {
       if (!body.name || !body.role) {
         return res.status(400).json({ error: 'Missing required fields: name, role' });
       }
+
+      const policy = evaluateAgentPolicyDeclaration({
+        operatorType: body.operatorType,
+        useCases: body.useCases,
+        contentRightsConfirmed: body.contentRightsConfirmed,
+        antiAbuseConfirmed: body.antiAbuseConfirmed,
+        contactEmail: body.contactEmail,
+        termsAcceptedAt: body.termsAcceptedAt,
+      });
+
+      if (policy.blocking) {
+        return res.status(422).json({
+          error: 'Agent policy requirements not met',
+          policy,
+        });
+      }
+
       const result = await registry.register(body);
       return res.status(200).json({
         success: true,
         apiKey: result.apiKey,
         agentId: result.agentId,
+        policy,
         message: 'Welcome to AgentCache Hub!',
         nextStep: 'POST /api/hub/focus-groups/onboarding/join',
       });

@@ -23,6 +23,7 @@ try {
 export const CUSTOMERS = {
   AUDIO1_TV: 'audio1_tv',
   JETTYTHUNDER: 'jettythunder_app',
+  CLAWSAVE: 'clawsave_com',
   UNKNOWN: 'unknown'
 } as const;
 
@@ -57,6 +58,13 @@ const ENDPOINT_CUSTOMER_MAP: Record<string, string> = {
   '/api/muscle/plan': CUSTOMERS.JETTYTHUNDER,
   '/api/muscle/reflex': CUSTOMERS.JETTYTHUNDER,
   '/api/s3/presigned': CUSTOMERS.JETTYTHUNDER,
+  
+  // ClawSave.com (Vercel: prj_Eue0ehGAyjbpU2n5Nly1G0fEw1dp)
+  // Uses JettyThunder.app agentic storage services
+  '/api/clawsave': CUSTOMERS.CLAWSAVE,
+  '/api/claw/storage': CUSTOMERS.CLAWSAVE,
+  '/api/claw/agent': CUSTOMERS.CLAWSAVE,
+  '/api/claw/provision': CUSTOMERS.CLAWSAVE,
 };
 
 // Endpoint to service category mapping
@@ -74,6 +82,12 @@ const ENDPOINT_SERVICE_MAP: Record<string, string> = {
   '/api/jetty/user-stats': SERVICE_CATEGORIES.USER_STATS,
   '/api/brain': SERVICE_CATEGORIES.AI_PROCESSING,
   '/api/cache': SERVICE_CATEGORIES.CORE_CACHING,
+  
+  // ClawSave.com (via JettyThunder agentic storage)
+  '/api/clawsave': SERVICE_CATEGORIES.FILE_PROVISIONING,
+  '/api/claw/storage': SERVICE_CATEGORIES.FILE_PROVISIONING,
+  '/api/claw/agent': SERVICE_CATEGORIES.AI_PROCESSING,
+  '/api/claw/provision': SERVICE_CATEGORIES.FILE_PROVISIONING,
 };
 
 interface UsageMetrics {
@@ -306,9 +320,10 @@ export async function getRealtimeUsage(): Promise<any> {
   if (!redis) return null;
 
   try {
-    const [audio1Usage, jettyUsage] = await Promise.all([
+    const [audio1Usage, jettyUsage, clawsaveUsage] = await Promise.all([
       getCustomerUsage(CUSTOMERS.AUDIO1_TV, '24h'),
-      getCustomerUsage(CUSTOMERS.JETTYTHUNDER, '24h')
+      getCustomerUsage(CUSTOMERS.JETTYTHUNDER, '24h'),
+      getCustomerUsage(CUSTOMERS.CLAWSAVE, '24h')
     ]);
 
     return {
@@ -322,6 +337,12 @@ export async function getRealtimeUsage(): Promise<any> {
           id: CUSTOMERS.JETTYTHUNDER,
           name: 'jettythunder.app',
           ...jettyUsage
+        },
+        {
+          id: CUSTOMERS.CLAWSAVE,
+          name: 'clawsave.com',
+          vercelProjectId: 'prj_Eue0ehGAyjbpU2n5Nly1G0fEw1dp',
+          ...clawsaveUsage
         }
       ],
       timestamp: new Date().toISOString()
