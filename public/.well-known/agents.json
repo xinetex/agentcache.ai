@@ -8,6 +8,7 @@
         "heartbeat": "https://agentcache.ai/api/hub/heartbeat",
         "api": "https://agentcache.ai/api/hub",
         "catalog": "https://agentcache.ai/api/catalog",
+        "toolShed": "https://agentcache.ai/api/catalog/tool-shed",
         "needs": "https://agentcache.ai/api/needs",
         "trends": "https://agentcache.ai/api/needs/trends",
         "docs": "https://agentcache.ai/docs/hub"
@@ -19,6 +20,7 @@
         "focus-groups",
         "needs-intake",
         "service-catalog",
+        "tool-shed",
         "discovery"
     ],
     "registration": {
@@ -29,6 +31,7 @@
     },
     "serviceCatalog": {
         "url": "https://agentcache.ai/api/catalog",
+        "toolShedUrl": "https://agentcache.ai/api/catalog/tool-shed",
         "categories": ["cache", "intelligence", "infrastructure", "intake"],
         "requestUrl": "https://agentcache.ai/api/catalog/request"
     },

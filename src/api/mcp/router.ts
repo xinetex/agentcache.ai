@@ -71,6 +71,30 @@ const MCP_MANIFEST = {
             method: "GET"
         },
         {
+            name: "recommend_tool_shed",
+            description: "Get a scoped tool bundle from AgentCache Tool Shed so agents load only the services needed for a workload.",
+            input_schema: {
+                type: "object",
+                properties: {
+                    profile: {
+                        type: "string",
+                        description: "Workload profile (general, chat-assistant, retrieval-rag, workflow-automation, secure-enterprise, edge-media)."
+                    },
+                    tier: {
+                        type: "string",
+                        description: "Optional tier filter (free, pro, enterprise)."
+                    },
+                    includeBeta: {
+                        type: "boolean",
+                        description: "Include beta services in recommendations."
+                    }
+                },
+                required: []
+            },
+            url: "/api/catalog/tool-shed",
+            method: "GET"
+        },
+        {
             name: "join_focus_group",
             description: "Join the onboarding focus group to build your agent profile. Returns 5 questions to answer. Requires API key from registration.",
             input_schema: {

@@ -6,6 +6,7 @@
  *
  * Public endpoints (no auth):
  *   GET  /api/catalog          — List all services
+ *   GET  /api/catalog/tool-shed — Recommended scoped tool bundle by workload profile
  *   GET  /api/catalog/:id      — Service detail + required inputs
  *
  * Authenticated endpoints:
@@ -221,6 +222,129 @@ const SERVICES: ServiceDef[] = [
 
 const SERVICE_MAP = new Map(SERVICES.map(s => [s.id, s]));
 
+type ToolShedProfile =
+    | 'general'
+    | 'chat-assistant'
+    | 'retrieval-rag'
+    | 'workflow-automation'
+    | 'secure-enterprise'
+    | 'edge-media';
+
+interface ToolShedSelection {
+    serviceId: ServiceDef['id'];
+    reason: string;
+    required: boolean;
+}
+
+interface ToolShedProfileConfig {
+    name: string;
+    description: string;
+    selections: ToolShedSelection[];
+}
+
+const TOOL_SHED_PROFILES: Record<ToolShedProfile, ToolShedProfileConfig> = {
+    general: {
+        name: 'General Agent Stack',
+        description: 'Balanced default stack for most autonomous assistants.',
+        selections: [
+            { serviceId: 'semantic-cache', reason: 'Primary latency and cost reducer for repeated prompts.', required: true },
+            { serviceId: 'tool-cache', reason: 'Avoid duplicate external tool/API calls.', required: true },
+            { serviceId: 'session-memory', reason: 'Persist context across sessions and tasks.', required: true },
+            { serviceId: 'security-guardrails', reason: 'Catch injection/jailbreak input before execution.', required: true },
+            { serviceId: 'anti-cache', reason: 'Keep stale data from being served after source changes.', required: false }
+        ]
+    },
+    'chat-assistant': {
+        name: 'Chat Assistant',
+        description: 'Optimized for conversational assistants with frequent repeated intents.',
+        selections: [
+            { serviceId: 'semantic-cache', reason: 'Maximize hit rate for common user intents.', required: true },
+            { serviceId: 'session-memory', reason: 'Maintain user preferences and longitudinal context.', required: true },
+            { serviceId: 'security-guardrails', reason: 'Protect against prompt injection in open-ended chat.', required: true },
+            { serviceId: 'tool-cache', reason: 'Cache deterministic utility tools (weather, lookup, pricing).', required: false }
+        ]
+    },
+    'retrieval-rag': {
+        name: 'Retrieval / RAG',
+        description: 'Stack for knowledge-heavy workloads that need freshness and recall.',
+        selections: [
+            { serviceId: 'semantic-cache', reason: 'Cache retrieval + generation outputs to reduce repeated cost.', required: true },
+            { serviceId: 'session-memory', reason: 'Track document/query memory and iterative exploration state.', required: true },
+            { serviceId: 'anti-cache', reason: 'Invalidate stale answers when upstream documents change.', required: true },
+            { serviceId: 'security-guardrails', reason: 'Reduce risk from malicious retrieved content.', required: false }
+        ]
+    },
+    'workflow-automation': {
+        name: 'Workflow Automation',
+        description: 'Stack for scheduled or chained multi-step agents.',
+        selections: [
+            { serviceId: 'plan-cache', reason: 'Replay stable plan segments to avoid repeated planning calls.', required: true },
+            { serviceId: 'tool-cache', reason: 'Deduplicate deterministic task/tool executions.', required: true },
+            { serviceId: 'semantic-cache', reason: 'Cache repeated sub-prompts in the workflow.', required: true },
+            { serviceId: 'needs-intake', reason: 'Feed operational friction back into service planning.', required: false }
+        ]
+    },
+    'secure-enterprise': {
+        name: 'Secure Enterprise',
+        description: 'Prioritizes safety, policy compliance, and controlled freshness.',
+        selections: [
+            { serviceId: 'security-guardrails', reason: 'First-line defense for prompt input and workflow boundaries.', required: true },
+            { serviceId: 'anti-cache', reason: 'Policy-safe invalidation when sensitive sources change.', required: true },
+            { serviceId: 'semantic-cache', reason: 'Control spend while preserving predictable service performance.', required: true },
+            { serviceId: 'session-memory', reason: 'Private namespace memory for regulated workflows.', required: false }
+        ]
+    },
+    'edge-media': {
+        name: 'Edge Media + Files',
+        description: 'Stack for media delivery, upload acceleration, and edge throughput.',
+        selections: [
+            { serviceId: 'file-acceleration', reason: 'Optimize uploads and transfers with intelligent edge routing.', required: true },
+            { serviceId: 'cdn-streaming', reason: 'Deliver streamable media over globally distributed edges.', required: true },
+            { serviceId: 'semantic-cache', reason: 'Cache metadata and supporting AI responses around media.', required: false },
+            { serviceId: 'overflow-partner', reason: 'Enterprise overflow support for partner infrastructure.', required: false }
+        ]
+    }
+};
+
+const TIER_ORDER: Record<ServiceDef['tier'], number> = {
+    free: 0,
+    pro: 1,
+    enterprise: 2
+};
+
+const TOOL_SHED_ALIASES: Record<string, ToolShedProfile> = {
+    general: 'general',
+    default: 'general',
+    chat: 'chat-assistant',
+    assistant: 'chat-assistant',
+    rag: 'retrieval-rag',
+    retrieval: 'retrieval-rag',
+    automation: 'workflow-automation',
+    workflow: 'workflow-automation',
+    secure: 'secure-enterprise',
+    enterprise: 'secure-enterprise',
+    media: 'edge-media',
+    edge: 'edge-media'
+};
+
+function resolveToolShedProfile(rawProfile?: string): ToolShedProfile {
+    if (!rawProfile) return 'general';
+
+    const normalized = rawProfile.toLowerCase().trim();
+    if (normalized in TOOL_SHED_ALIASES) {
+        return TOOL_SHED_ALIASES[normalized];
+    }
+    if (normalized in TOOL_SHED_PROFILES) {
+        return normalized as ToolShedProfile;
+    }
+    return 'general';
+}
+
+function filterByTier(service: ServiceDef, tier?: ServiceDef['tier']) {
+    if (!tier) return true;
+    return TIER_ORDER[service.tier] <= TIER_ORDER[tier];
+}
+
 // ============================================================================
 // CATALOG ENDPOINTS
 // ============================================================================
@@ -250,6 +374,73 @@ catalogRouter.get('/', (c) => {
             pricing: s.pricing,
             status: s.status
         }))
+    });
+});
+
+/**
+ * GET /api/catalog/tool-shed
+ * Return a scoped tool bundle recommendation for a given workload profile.
+ * Query:
+ *   - profile: general | chat-assistant | retrieval-rag | workflow-automation | secure-enterprise | edge-media
+ *   - tier: free | pro | enterprise (optional filter)
+ *   - includeBeta: true|false (default: false)
+ */
+catalogRouter.get('/tool-shed', (c) => {
+    const requestedProfile = c.req.query('profile');
+    const requestedTier = c.req.query('tier') as ServiceDef['tier'] | undefined;
+    const includeBeta = c.req.query('includeBeta') === 'true';
+
+    if (requestedTier && !['free', 'pro', 'enterprise'].includes(requestedTier)) {
+        return c.json({
+            error: 'Invalid tier. Supported values: free, pro, enterprise.'
+        }, 400);
+    }
+
+    const profile = resolveToolShedProfile(requestedProfile);
+    const config = TOOL_SHED_PROFILES[profile];
+
+    const recommended = config.selections
+        .map((selection) => {
+            const service = SERVICE_MAP.get(selection.serviceId);
+            if (!service) return null;
+            if (!includeBeta && service.status === 'beta') return null;
+            if (!filterByTier(service, requestedTier)) return null;
+
+            return {
+                id: service.id,
+                name: service.name,
+                category: service.category,
+                tier: service.tier,
+                status: service.status,
+                required: selection.required,
+                reason: selection.reason,
+                endpoint: service.endpoint
+            };
+        })
+        .filter((entry): entry is {
+            id: string;
+            name: string;
+            category: ServiceDef['category'];
+            tier: ServiceDef['tier'];
+            status: ServiceDef['status'];
+            required: boolean;
+            reason: string;
+            endpoint: string;
+        } => entry !== null);
+
+    return c.json({
+        profile,
+        profileName: config.name,
+        description: config.description,
+        selectionPolicy: {
+            mode: 'scoped-tool-selection',
+            requestedProfile: requestedProfile || 'general',
+            requestedTier: requestedTier || 'all',
+            includeBeta
+        },
+        count: recommended.length,
+        recommendations: recommended,
+        availableProfiles: Object.keys(TOOL_SHED_PROFILES)
     });
 });
 

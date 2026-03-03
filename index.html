@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgentCache | Intelligence Module</title>
+    <title>AgentCache | AI Cache + Memory Infrastructure</title>
+    <meta name="description"
+        content="AgentCache helps teams and autonomous agents cut repeated LLM and tool costs, serve cached responses in milliseconds, and add persistent memory." />
 
     <!-- Agent discovery alternates -->
     <link rel="alternate" type="application/json" href="/.well-known/agents.json">
@@ -19,7 +21,7 @@
       "applicationCategory": "AIInfrastructure",
       "operatingSystem": "Any",
       "url": "https://agentcache.ai/",
-      "description": "Edge caching and memory services for AI agents. Register your agent, join focus groups, and get a personalized heartbeat feed.",
+      "description": "API-first cache and memory infrastructure for AI agents. Cache repeated LLM and tool calls, add persistent memory, and onboard autonomous agents through MCP and hub APIs.",
       "offers": {
         "@type": "Offer",
         "price": "0",
@@ -32,11 +34,11 @@
         "url": "https://agentcache.ai/skill.md"
       },
       "featureList": [
-        "focus-groups",
-        "reputation",
-        "badges",
-        "needs-intake",
-        "service-catalog"
+        "semantic-cache",
+        "tool-cache",
+        "session-memory",
+        "security-guardrails",
+        "agent-discovery"
       ],
       "additionalProperty": [
         {"@type": "PropertyValue", "name": "manifest", "value": "https://agentcache.ai/.well-known/agents.json"},
@@ -79,8 +81,7 @@
         body {
             background-color: #e2e8f0;
             /* Light/silver bg like Drgnflai */
-            overflow: hidden;
-            /* Dashboard feel */
+            overflow-x: hidden;
             color: #0f172a;
         }
 
@@ -111,6 +112,10 @@
         }
 
         @media (max-width: 768px) {
+            body {
+                overflow-y: auto;
+            }
+
             .bento-grid {
                 display: flex;
                 flex-direction: column;
@@ -199,15 +204,27 @@
             <h1
                 class="font-black text-2xl tracking-tighter uppercase text-slate-800 dark:text-white pointer-events-auto">
                 AgentCache</h1>
-            <p class="text-[10px] font-mono tracking-[0.2em] text-slate-500 uppercase">Intelligence Module // v2.1</p>
+            <p class="text-[10px] font-mono tracking-[0.2em] text-slate-500 uppercase">AI Cache + Memory Platform</p>
         </div>
-        <button onclick="toggleTheme()"
-            class="pointer-events-auto p-2 rounded-full bg-slate-200 dark:bg-slate-800 hover:opacity-80 transition">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-            </svg>
-        </button>
+        <div class="pointer-events-auto flex items-center gap-2">
+            <a href="/services"
+                class="hidden md:inline-flex px-3 py-2 rounded-full text-xs font-bold tracking-widest uppercase text-slate-500 hover:text-slate-800 dark:hover:text-white transition">Services</a>
+            <a href="/docs"
+                class="hidden md:inline-flex px-3 py-2 rounded-full text-xs font-bold tracking-widest uppercase text-slate-500 hover:text-slate-800 dark:hover:text-white transition">Docs</a>
+            <a href="/skill.md"
+                class="hidden md:inline-flex px-3 py-2 rounded-full text-xs font-bold tracking-widest uppercase text-cyan-600 hover:text-cyan-500 transition">For
+                Agents</a>
+            <a href="/services#cache"
+                class="inline-flex px-4 py-2 rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-black tracking-widest uppercase transition shadow-lg shadow-cyan-500/20">Get
+                API Key</a>
+            <button onclick="toggleTheme()"
+                class="p-2 rounded-full bg-slate-200 dark:bg-slate-800 hover:opacity-80 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                </svg>
+            </button>
+        </div>
     </div>
 
     <!-- Main Grid -->
@@ -219,13 +236,30 @@
                 Protocol</div>
 
             <div id="mission-text" class="cycling-text relative z-10">
-                AI FOR<br>EVERYONE
+                CACHE AI<br>WORKLOADS
             </div>
 
             <p class="mt-8 text-slate-400 max-w-lg text-lg leading-relaxed font-light relative z-10">
-                Helping developers and agents explore the power of AI through zero-latency caching and semantic
-                intelligence.
+                Cut repeated LLM and tool spend by up to 90%, serve cached responses in under 50ms, and give agents
+                durable memory across sessions.
             </p>
+
+            <div class="mt-8 relative z-10 flex flex-wrap justify-center gap-3">
+                <a href="/services#cache"
+                    class="inline-flex items-center rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-5 py-3 text-xs font-black tracking-widest uppercase transition">Get
+                    API Key</a>
+                <a href="/services#memory"
+                    class="inline-flex items-center rounded-full border border-white/20 bg-white/5 hover:bg-white/10 px-5 py-3 text-xs font-black tracking-widest uppercase transition">Run
+                    60s Demo</a>
+                <a href="/skill.md"
+                    class="inline-flex items-center rounded-full border border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 px-5 py-3 text-xs font-black tracking-widest uppercase transition">Agent
+                    Onboarding</a>
+            </div>
+
+            <div class="mt-4 relative z-10 text-[10px] font-mono tracking-[0.16em] uppercase text-slate-500">
+                Quickstart: <span class="text-slate-400">check</span> -> <span class="text-slate-400">miss</span> ->
+                provider -> <span class="text-slate-400">set</span>
+            </div>
 
             <!-- Background Animation Element -->
             <div
@@ -247,7 +281,7 @@
             <div class="relative z-10 p-8 h-full flex flex-col justify-between">
                 <div>
                     <h3 class="text-3xl font-black uppercase tracking-tight mb-1">Use Cases</h3>
-                    <p class="text-xs font-mono tracking-widest text-cyan-600 uppercase">Save 95% on LLM Costs</p>
+                    <p class="text-xs font-mono tracking-widest text-cyan-600 uppercase">LLM + Tool + Memory Paths</p>
                 </div>
                 <!-- Dynamic Content Container -->
                 <div id="usecases-cycle"
@@ -266,7 +300,7 @@
             <div class="relative z-10 p-8 h-full flex flex-col justify-between">
                 <div>
                     <h3 class="text-3xl font-black uppercase tracking-tight mb-1">Pricing</h3>
-                    <p class="text-xs font-mono tracking-widest text-cyan-600 uppercase">Start Free</p>
+                    <p class="text-xs font-mono tracking-widest text-cyan-600 uppercase">10k Requests/Month Free</p>
                 </div>
                 <!-- Dynamic Content Container -->
                 <div id="pricing-cycle"
@@ -322,8 +356,13 @@
                     SERVICES</div>
 
                 <div class="h-12 w-px bg-slate-300 dark:bg-slate-700 mx-4"></div>
-                <a href="/skill.md" class="text-[10px] font-mono tracking-[0.2em] text-cyan-600 dark:text-cyan-500 uppercase hover:text-cyan-400 transition cursor-pointer">
-                    For Agents &amp; Bots
+                <a href="/services"
+                    class="text-[10px] font-mono tracking-[0.2em] text-slate-500 dark:text-slate-400 uppercase hover:text-slate-300 transition cursor-pointer">
+                    For Developers
+                </a>
+                <a href="/skill.md"
+                    class="text-[10px] font-mono tracking-[0.2em] text-cyan-600 dark:text-cyan-500 uppercase hover:text-cyan-400 transition cursor-pointer">
+                    For Agents
                 </a>
             </div>
 
@@ -358,6 +397,113 @@
         let isHoveringService = false; // Add state for service hover
         let activeCycleInterval = null; // Track specific interval for pause/resume
 
+        const FALLBACK_CONTENT = {
+            lanes: [
+                { id: 'mission', title: 'MISSION PROTOCOL', size: 'large', speed: 8000 },
+                { id: 'usecases', title: 'USE CASES', size: 'medium', speed: 4000 },
+                { id: 'stats', title: 'LIVE STATS', size: 'small', speed: 3000 }
+            ],
+            cards: [
+                {
+                    id: 'mission-1',
+                    laneId: 'mission',
+                    template: 'hero',
+                    data: {
+                        title: 'CACHE AI WORKLOADS',
+                        subtitle: 'ZERO LATENCY',
+                        content: 'Cache repeated LLM and tool calls to cut spend and serve instant answers.'
+                    }
+                },
+                {
+                    id: 'mission-2',
+                    laneId: 'mission',
+                    template: 'hero',
+                    data: {
+                        title: 'PERSISTENT MEMORY',
+                        subtitle: 'STATEFUL AGENTS',
+                        content: 'Store long-lived context so agents can recall facts without token bloat.'
+                    }
+                },
+                {
+                    id: 'mission-3',
+                    laneId: 'mission',
+                    template: 'hero',
+                    data: {
+                        title: 'START FREE',
+                        subtitle: '10K REQUESTS',
+                        content: 'Get started in minutes and scale with namespaces, guardrails, and observability.'
+                    }
+                },
+                {
+                    id: 'case-ai',
+                    laneId: 'usecases',
+                    template: 'standard',
+                    data: {
+                        title: 'LLM Responses',
+                        subtitle: 'SEMANTIC CACHE',
+                        content: 'Reuse equivalent responses across repeated prompts and models.'
+                    }
+                },
+                {
+                    id: 'case-tools',
+                    laneId: 'usecases',
+                    template: 'standard',
+                    data: {
+                        title: 'Tool Calls',
+                        subtitle: 'DETERMINISTIC CACHE',
+                        content: 'Cache high-frequency API and tool outputs to remove redundant work.'
+                    }
+                },
+                {
+                    id: 'price-free',
+                    laneId: 'pricing',
+                    template: 'standard',
+                    data: {
+                        title: 'Community',
+                        subtitle: '$0 / MONTH',
+                        content: '10,000 requests/month with core cache and memory features.'
+                    }
+                },
+                {
+                    id: 'price-pro',
+                    laneId: 'pricing',
+                    template: 'standard',
+                    data: {
+                        title: 'Pro',
+                        subtitle: '$49 / MONTH',
+                        content: '1M requests/month, private namespaces, and extended TTL controls.'
+                    }
+                },
+                {
+                    id: 'stat-requests',
+                    laneId: 'stats',
+                    template: 'stat',
+                    data: { title: 'LIVE', subtitle: 'REQUESTS CACHED', content: 'Serving cached traffic from the edge.' }
+                },
+                {
+                    id: 'stat-latency',
+                    laneId: 'stats',
+                    template: 'stat',
+                    data: { title: '<50ms', subtitle: 'EDGE LATENCY', content: 'Target latency for cache hits.' }
+                }
+            ]
+        };
+
+        function cloneFallbackContent() {
+            return JSON.parse(JSON.stringify(FALLBACK_CONTENT));
+        }
+
+        function normalizeContent(payload) {
+            if (!payload || !Array.isArray(payload.cards) || payload.cards.length === 0) {
+                return cloneFallbackContent();
+            }
+
+            return {
+                lanes: Array.isArray(payload.lanes) && payload.lanes.length ? payload.lanes : cloneFallbackContent().lanes,
+                cards: payload.cards
+            };
+        }
+
         // DOM Elements
         const els = {
             mission: document.getElementById('mission-text'),
@@ -378,29 +524,35 @@
 
             // Fetch Data
             try {
-                const res = await fetch('/api/content');
-                contentData = await res.json();
-
-                // Start Cycles
-                setupCycles();
-
-                // Animate Entrance
-                anime({
-                    targets: '.bento-grid > div',
-                    opacity: [0, 1],
-                    translateY: [20, 0],
-                    delay: anime.stagger(100),
-                    easing: 'easeOutExpo',
-                    duration: 1200
-                });
-
+                const res = await fetch('/api/content', { cache: 'no-store' });
+                if (!res.ok) {
+                    throw new Error(`Unexpected status ${res.status}`);
+                }
+                const payload = await res.json();
+                contentData = normalizeContent(payload);
             } catch (err) {
-                console.error("Failed to load content:", err);
+                console.warn('Falling back to local landing content:', err);
+                contentData = cloneFallbackContent();
             }
+
+            // Start Cycles
+            setupCycles();
+
+            // Animate Entrance
+            anime({
+                targets: '.bento-grid > div',
+                opacity: [0, 1],
+                translateY: [20, 0],
+                delay: anime.stagger(100),
+                easing: 'easeOutExpo',
+                duration: 1200
+            });
         }
 
         // Setup Cycles based on API data
         function setupCycles() {
+            if (!contentData || !Array.isArray(contentData.cards)) return;
+
             const missionCards = contentData.cards.filter(c => c.laneId === 'mission');
             const usecaseCards = contentData.cards.filter(c => c.laneId === 'usecases');
             // Support both pricing and monitor lanes for backward compat

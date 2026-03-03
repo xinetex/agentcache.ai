@@ -4,7 +4,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgentCache | Intelligence Module</title>
+    <title>AgentCache | AI Cache + Memory Infrastructure</title>
+    <meta name="description"
+        content="AgentCache helps teams and autonomous agents cut repeated LLM and tool costs, serve cached responses in milliseconds, and add persistent memory." />
+
+    <!-- Agent discovery alternates -->
+    <link rel="alternate" type="application/json" href="/.well-known/agents.json">
+    <link rel="alternate" type="text/markdown" href="/skill.md">
+
+    <!-- Structured metadata for agent/bot parsers -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "AgentCache",
+      "applicationCategory": "AIInfrastructure",
+      "operatingSystem": "Any",
+      "url": "https://agentcache.ai/",
+      "description": "API-first cache and memory infrastructure for AI agents. Cache repeated LLM and tool calls, add persistent memory, and onboard autonomous agents through MCP and hub APIs.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "category": "Free tier available"
+      },
+      "softwareHelp": {
+        "@type": "TechArticle",
+        "name": "Agent Onboarding",
+        "url": "https://agentcache.ai/skill.md"
+      },
+      "featureList": [
+        "semantic-cache",
+        "tool-cache",
+        "session-memory",
+        "security-guardrails",
+        "agent-discovery"
+      ],
+      "additionalProperty": [
+        {"@type": "PropertyValue", "name": "manifest", "value": "https://agentcache.ai/.well-known/agents.json"},
+        {"@type": "PropertyValue", "name": "mcp", "value": "https://agentcache.ai/mcp/manifest"},
+        {"@type": "PropertyValue", "name": "register", "value": "https://agentcache.ai/api/hub/agents/register"},
+        {"@type": "PropertyValue", "name": "heartbeat", "value": "https://agentcache.ai/api/hub/heartbeat"},
+        {"@type": "PropertyValue", "name": "catalog", "value": "https://agentcache.ai/api/catalog"}
+      ]
+    }
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&family=JetBrains+Mono:wght@400;600&display=swap"
@@ -36,8 +81,7 @@
         body {
             background-color: #e2e8f0;
             /* Light/silver bg like Drgnflai */
-            overflow: hidden;
-            /* Dashboard feel */
+            overflow-x: hidden;
             color: #0f172a;
         }
 
@@ -68,47 +112,15 @@
         }
 
         @media (max-width: 768px) {
+            body {
+                overflow-y: auto;
+            }
+
             .bento-grid {
                 display: flex;
                 flex-direction: column;
                 height: auto;
-                min-height: 100vh;
-                overflow-y: visible;
-                padding: 1rem;
-            }
-
-            .tile-bottom {
-                flex-direction: column;
-                gap: 2rem;
-                text-align: center;
-                padding: 1.5rem !important;
-            }
-
-            .tile-bottom>div:first-child {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-
-            .h-12.w-px {
-                display: none;
-                /* Hide vertical separator on mobile */
-            }
-
-            #stats-cycle {
-                width: 100%;
-                margin-left: 0 !important;
-                justify-content: center !important;
-            }
-
-            /* Adjust cycling text size */
-            .cycling-text {
-                font-size: 3rem !important;
-                /* Smaller than 5rem */
-            }
-
-            /* Mission text adjustments */
-            #mission-text {
-                font-size: 3rem;
+                overflow-y: auto;
             }
         }
 
@@ -178,14 +190,6 @@
             align-items: center;
         }
 
-        .rsvp-word {
-            font-weight: 900;
-            line-height: 0.9;
-            text-transform: uppercase;
-            letter-spacing: -0.05em;
-            transition: color 0.1s;
-        }
-
         .dark-mode .slide-panel {
             background: rgba(15, 23, 42, 0.95);
         }
@@ -197,24 +201,27 @@
     <!-- Header -->
     <div class="fixed top-0 left-0 w-full p-6 flex justify-between items-center z-50 pointer-events-none">
         <div>
-            <h1 id="header-logo-text"
+            <h1
                 class="font-black text-2xl tracking-tighter uppercase text-slate-800 dark:text-white pointer-events-auto">
                 AgentCache</h1>
-            <p class="text-[10px] font-mono tracking-[0.2em] text-slate-500 uppercase">Agent Exchange // v3.0</p>
+            <p class="text-[10px] font-mono tracking-[0.2em] text-slate-500 uppercase">AI Cache + Memory Platform</p>
         </div>
-        <div class="pointer-events-auto flex items-center gap-4">
-            <a href="/login.html"
-                class="text-sm font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white transition uppercase tracking-wider">Login</a>
-            <a href="/signup.html"
-                class="bg-cyan-500 hover:bg-cyan-400 text-white px-5 py-2 rounded-full text-sm font-bold transition-all shadow-lg hover:shadow-cyan-500/25 uppercase tracking-wide">
-                Sign Up
-            </a>
+        <div class="pointer-events-auto flex items-center gap-2">
+            <a href="/services"
+                class="hidden md:inline-flex px-3 py-2 rounded-full text-xs font-bold tracking-widest uppercase text-slate-500 hover:text-slate-800 dark:hover:text-white transition">Services</a>
+            <a href="/docs"
+                class="hidden md:inline-flex px-3 py-2 rounded-full text-xs font-bold tracking-widest uppercase text-slate-500 hover:text-slate-800 dark:hover:text-white transition">Docs</a>
+            <a href="/skill.md"
+                class="hidden md:inline-flex px-3 py-2 rounded-full text-xs font-bold tracking-widest uppercase text-cyan-600 hover:text-cyan-500 transition">For
+                Agents</a>
+            <a href="/services#cache"
+                class="inline-flex px-4 py-2 rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-black tracking-widest uppercase transition shadow-lg shadow-cyan-500/20">Get
+                API Key</a>
             <button onclick="toggleTheme()"
-                class="p-2 rounded-full bg-slate-200 dark:bg-slate-800 hover:opacity-80 transition ml-2">
+                class="p-2 rounded-full bg-slate-200 dark:bg-slate-800 hover:opacity-80 transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
-                    </path>
+                        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
                 </svg>
             </button>
         </div>
@@ -224,96 +231,81 @@
     <div class="bento-grid pt-24" id="main-grid">
 
         <!-- Mission Tile (Left Large) -->
-        <div class="tile-mission shadow-2xl group relative">
-            <div class="text-[10px] font-mono tracking-[0.3em] text-cyan-400 absolute top-8 left-8 uppercase z-20">
-                Mission
+        <div class="tile-mission shadow-2xl group">
+            <div class="text-[10px] font-mono tracking-[0.3em] text-slate-500 absolute top-8 left-8 uppercase">Mission
                 Protocol</div>
 
-            <!-- Animated Background Grid -->
-            <div class="absolute inset-0 z-0 opacity-20"
-                style="background-image: radial-gradient(#0ea5e9 1px, transparent 1px); background-size: 40px 40px;">
+            <div id="mission-text" class="cycling-text relative z-10">
+                CACHE AI<br>WORKLOADS
             </div>
 
-            <div id="rsvp-target" class="cycling-text relative z-10 leading-none tracking-tighter rsvp-word">
-                DEPLOY<br>YOUR<br><span
-                    class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">AGENTS</span>
-            </div>
-
-            <p class="mt-8 text-slate-400 max-w-lg text-xl leading-relaxed font-light relative z-10">
-                <span class="text-white font-medium">The Global Agent Marketplace.</span><br>
-                Buy and sell high-fidelity intelligence. Connect workflows. Automate the economy.
+            <p class="mt-8 text-slate-400 max-w-lg text-lg leading-relaxed font-light relative z-10">
+                Cut repeated LLM and tool spend by up to 90%, serve cached responses in under 50ms, and give agents
+                durable memory across sessions.
             </p>
 
-            <div class="absolute bottom-8 right-8 flex gap-3 items-center">
-                <div class="flex gap-1 h-3 items-end">
-                    <div class="w-1 bg-cyan-500 h-full animate-pulse"></div>
-                    <div class="w-1 bg-cyan-500 h-2/3 animate-pulse" style="animation-delay: 100ms"></div>
-                    <div class="w-1 bg-cyan-500 h-1/2 animate-pulse" style="animation-delay: 200ms"></div>
-                </div>
-                <span class="text-[10px] font-mono text-cyan-500 tracking-widest">NEURAL LINK ACTIVE</span>
+            <div class="mt-8 relative z-10 flex flex-wrap justify-center gap-3">
+                <a href="/services#cache"
+                    class="inline-flex items-center rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-5 py-3 text-xs font-black tracking-widest uppercase transition">Get
+                    API Key</a>
+                <a href="/services#memory"
+                    class="inline-flex items-center rounded-full border border-white/20 bg-white/5 hover:bg-white/10 px-5 py-3 text-xs font-black tracking-widest uppercase transition">Run
+                    60s Demo</a>
+                <a href="/skill.md"
+                    class="inline-flex items-center rounded-full border border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 px-5 py-3 text-xs font-black tracking-widest uppercase transition">Agent
+                    Onboarding</a>
+            </div>
+
+            <div class="mt-4 relative z-10 text-[10px] font-mono tracking-[0.16em] uppercase text-slate-500">
+                Quickstart: <span class="text-slate-400">check</span> -> <span class="text-slate-400">miss</span> ->
+                provider -> <span class="text-slate-400">set</span>
+            </div>
+
+            <!-- Background Animation Element -->
+            <div
+                class="absolute inset-0 bg-gradient-to-br from-cyan-900/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-1000">
+            </div>
+
+
+            <div class="absolute bottom-8 right-8 flex gap-2">
+                <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-ping"></span>
+                <span class="text-[10px] font-mono text-slate-500 tracking-widest">SYSTEM ONLINE</span>
             </div>
         </div>
 
-        <!-- Tile 1: Agent Exchange (Replaces Reasoning Visualizer) -->
-        <div class="tile-side card-bg shadow-xl border border-white/10 group overflow-hidden relative"
-            onclick="window.location.href='/dashboard-local.html'">
-            <!-- Scanline effect -->
-            <div
-                class="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/5 to-transparent z-0 opacity-50 pointer-events-none animate-scan">
-            </div>
-
-            <div class="relative z-10 p-8 h-full flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h3 class="text-2xl font-black uppercase tracking-tight mb-1">Agent<br>Exchange</h3>
-                        <p class="text-[10px] font-mono tracking-widest text-cyan-500 uppercase">Status: <span
-                                class="text-emerald-500 animate-pulse">LIVE</span></p>
-                    </div>
-                    <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
-                </div>
-
-                <!-- Live Ticker -->
-                <div class="space-y-3 font-mono text-xs mt-4">
-                    <div class="flex gap-2 items-center opacity-70">
-                        <span class="text-cyan-400">ASK</span>
-                        <span class="text-slate-500">Research Report</span>
-                        <div class="flex-1 border-b border-dashed border-slate-700"></div>
-                        <span class="text-white">$15.00</span>
-                    </div>
-                    <div class="flex gap-2 items-center opacity-70">
-                        <span class="text-cyan-400">ASK</span>
-                        <span class="text-slate-500">Code Audit</span>
-                        <div class="flex-1 border-b border-dashed border-slate-700"></div>
-                        <span class="text-white">$25.00</span>
-                    </div>
-                    <div class="flex gap-2 items-center opacity-40">
-                        <span class="text-slate-500">BID</span>
-                        <span class="text-slate-600">Verification</span>
-                        <div class="flex-1 border-b border-dashed border-slate-800"></div>
-                        <span class="text-slate-600">$5.00</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tile 2: Workflows (Replaces Deploy Core) -->
-        <div class="tile-side card-bg shadow-xl border border-white/10 group relative overflow-hidden"
-            onclick="window.location.href='/workflows.html'">
-            <div
-                class="absolute -right-12 -top-12 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl group-hover:bg-purple-500/30 transition">
-            </div>
-
+        <!-- Tile 1: Use Cases (Dynamic) -->
+        <div class="tile-side card-bg shadow-xl border border-white/50 group" onmouseenter="hoverCard(this)"
+            onmouseleave="unhoverCard(this)" onclick="openPanel('usecases')">
+            <img src="/assets/studio-dashboard.png"
+                class="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:scale-110 transition duration-1000">
             <div class="relative z-10 p-8 h-full flex flex-col justify-between">
                 <div>
-                    <h3 class="text-2xl font-black uppercase tracking-tight mb-1">Workflow<br>Engine</h3>
-                    <p class="text-[10px] font-mono tracking-widest text-purple-400 uppercase">Pipe Intelligence</p>
+                    <h3 class="text-3xl font-black uppercase tracking-tight mb-1">Use Cases</h3>
+                    <p class="text-xs font-mono tracking-widest text-cyan-600 uppercase">LLM + Tool + Memory Paths</p>
                 </div>
+                <!-- Dynamic Content Container -->
+                <div id="usecases-cycle"
+                    class="text-xl font-bold text-slate-700 dark:text-slate-300 h-16 overflow-hidden flex items-end">
+                    <span>Loading...</span>
+                </div>
+            </div>
+        </div>
 
-                <div
-                    class="text-4xl font-mono font-bold tracking-tighter text-slate-700 dark:text-white group-hover:translate-x-2 transition cursor-pointer">
-                    Build <span
-                        class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Flows</span>
-                    <span class="text-lg text-slate-500">-></span>
+        <!-- Tile 2: Pricing (Dynamic) -->
+        <div class="tile-side card-bg shadow-xl border border-white/50 group"
+            onmouseenter="hoverCard(this); showServicePreview('START FREE', '10,000 requests/month included. No credit card required. Upgrade only when you scale.')"
+            onmouseleave="unhoverCard(this); hideServicePreview()" onclick="openPanel('pricing')">
+            <img src="/assets/console-preview.jpg"
+                class="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:scale-110 transition duration-1000">
+            <div class="relative z-10 p-8 h-full flex flex-col justify-between">
+                <div>
+                    <h3 class="text-3xl font-black uppercase tracking-tight mb-1">Pricing</h3>
+                    <p class="text-xs font-mono tracking-widest text-cyan-600 uppercase">10k Requests/Month Free</p>
+                </div>
+                <!-- Dynamic Content Container -->
+                <div id="pricing-cycle"
+                    class="text-xl font-bold text-slate-700 dark:text-slate-300 h-16 overflow-hidden flex items-end">
+                    <span>Loading...</span>
                 </div>
             </div>
         </div>
@@ -322,8 +314,10 @@
         <div class="tile-bottom px-8 flex justify-between items-center group">
             <!-- Left: Services -->
             <div class="flex items-center gap-6">
-                <div class="group/icon relative cursor-pointer" onmouseenter="pulseIcon(this)"
-                    onclick="window.location.href='/services#cache'">
+                <!-- Cache Icon -->
+                <div class="group/icon relative cursor-pointer"
+                    onmouseenter="pulseIcon(this); showServicePreview('CACHE', 'Instant cognitive retrieval. Serve millions of users with zero latency by caching thought processes.')"
+                    onmouseleave="hideServicePreview()" onclick="window.location.href='/services#cache'">
                     <div
                         class="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center text-3xl group-hover/icon:scale-105 transition">
                         ⚡️</div>
@@ -331,8 +325,11 @@
                         class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-bold tracking-widest uppercase opacity-0 group-hover/icon:opacity-100 transition">
                         Cache</div>
                 </div>
-                <div class="group/icon relative cursor-pointer" onmouseenter="pulseIcon(this)"
-                    onclick="window.location.href='/services#memory'">
+
+                <!-- Memory Icon -->
+                <div class="group/icon relative cursor-pointer"
+                    onmouseenter="pulseIcon(this); showServicePreview('MEMORY', 'Hopfield Network state management. Give your agents infinite context window without the token cost.')"
+                    onmouseleave="hideServicePreview()" onclick="window.location.href='/services#memory'">
                     <div
                         class="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center text-3xl group-hover/icon:scale-105 transition">
                         🧠</div>
@@ -340,8 +337,11 @@
                         class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-bold tracking-widest uppercase opacity-0 group-hover/icon:opacity-100 transition">
                         Memory</div>
                 </div>
-                <div class="group/icon relative cursor-pointer" onmouseenter="pulseIcon(this)"
-                    onclick="window.location.href='/services#security'">
+
+                <!-- Security Icon -->
+                <div class="group/icon relative cursor-pointer"
+                    onmouseenter="pulseIcon(this); showServicePreview('SECURITY', 'Real-time PII redaction and injection firewall. Protect your LLMs from malicious prompts and data leaks.')"
+                    onmouseleave="hideServicePreview()" onclick="window.location.href='/services#security'">
                     <div
                         class="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center text-3xl group-hover/icon:scale-105 transition">
                         🛡️</div>
@@ -354,6 +354,16 @@
                 <div class="text-xl font-black uppercase tracking-tight text-slate-300 dark:text-slate-700 select-none cursor-pointer"
                     onclick="window.location.href='/services'">
                     SERVICES</div>
+
+                <div class="h-12 w-px bg-slate-300 dark:bg-slate-700 mx-4"></div>
+                <a href="/services"
+                    class="text-[10px] font-mono tracking-[0.2em] text-slate-500 dark:text-slate-400 uppercase hover:text-slate-300 transition cursor-pointer">
+                    For Developers
+                </a>
+                <a href="/skill.md"
+                    class="text-[10px] font-mono tracking-[0.2em] text-cyan-600 dark:text-cyan-500 uppercase hover:text-cyan-400 transition cursor-pointer">
+                    For Agents
+                </a>
             </div>
 
             <!-- Right: Live Stats Cycle -->
@@ -384,10 +394,120 @@
         // State
         let contentData = null;
         let cycles = {}; // Store intervals
+        let isHoveringService = false; // Add state for service hover
+        let activeCycleInterval = null; // Track specific interval for pause/resume
+
+        const FALLBACK_CONTENT = {
+            lanes: [
+                { id: 'mission', title: 'MISSION PROTOCOL', size: 'large', speed: 8000 },
+                { id: 'usecases', title: 'USE CASES', size: 'medium', speed: 4000 },
+                { id: 'stats', title: 'LIVE STATS', size: 'small', speed: 3000 }
+            ],
+            cards: [
+                {
+                    id: 'mission-1',
+                    laneId: 'mission',
+                    template: 'hero',
+                    data: {
+                        title: 'CACHE AI WORKLOADS',
+                        subtitle: 'ZERO LATENCY',
+                        content: 'Cache repeated LLM and tool calls to cut spend and serve instant answers.'
+                    }
+                },
+                {
+                    id: 'mission-2',
+                    laneId: 'mission',
+                    template: 'hero',
+                    data: {
+                        title: 'PERSISTENT MEMORY',
+                        subtitle: 'STATEFUL AGENTS',
+                        content: 'Store long-lived context so agents can recall facts without token bloat.'
+                    }
+                },
+                {
+                    id: 'mission-3',
+                    laneId: 'mission',
+                    template: 'hero',
+                    data: {
+                        title: 'START FREE',
+                        subtitle: '10K REQUESTS',
+                        content: 'Get started in minutes and scale with namespaces, guardrails, and observability.'
+                    }
+                },
+                {
+                    id: 'case-ai',
+                    laneId: 'usecases',
+                    template: 'standard',
+                    data: {
+                        title: 'LLM Responses',
+                        subtitle: 'SEMANTIC CACHE',
+                        content: 'Reuse equivalent responses across repeated prompts and models.'
+                    }
+                },
+                {
+                    id: 'case-tools',
+                    laneId: 'usecases',
+                    template: 'standard',
+                    data: {
+                        title: 'Tool Calls',
+                        subtitle: 'DETERMINISTIC CACHE',
+                        content: 'Cache high-frequency API and tool outputs to remove redundant work.'
+                    }
+                },
+                {
+                    id: 'price-free',
+                    laneId: 'pricing',
+                    template: 'standard',
+                    data: {
+                        title: 'Community',
+                        subtitle: '$0 / MONTH',
+                        content: '10,000 requests/month with core cache and memory features.'
+                    }
+                },
+                {
+                    id: 'price-pro',
+                    laneId: 'pricing',
+                    template: 'standard',
+                    data: {
+                        title: 'Pro',
+                        subtitle: '$49 / MONTH',
+                        content: '1M requests/month, private namespaces, and extended TTL controls.'
+                    }
+                },
+                {
+                    id: 'stat-requests',
+                    laneId: 'stats',
+                    template: 'stat',
+                    data: { title: 'LIVE', subtitle: 'REQUESTS CACHED', content: 'Serving cached traffic from the edge.' }
+                },
+                {
+                    id: 'stat-latency',
+                    laneId: 'stats',
+                    template: 'stat',
+                    data: { title: '<50ms', subtitle: 'EDGE LATENCY', content: 'Target latency for cache hits.' }
+                }
+            ]
+        };
+
+        function cloneFallbackContent() {
+            return JSON.parse(JSON.stringify(FALLBACK_CONTENT));
+        }
+
+        function normalizeContent(payload) {
+            if (!payload || !Array.isArray(payload.cards) || payload.cards.length === 0) {
+                return cloneFallbackContent();
+            }
+
+            return {
+                lanes: Array.isArray(payload.lanes) && payload.lanes.length ? payload.lanes : cloneFallbackContent().lanes,
+                cards: payload.cards
+            };
+        }
 
         // DOM Elements
         const els = {
             mission: document.getElementById('mission-text'),
+            missionDesc: document.querySelector('.tile-mission p'), // Grab description too
             usecases: document.getElementById('usecases-cycle'),
             pricing: document.getElementById('pricing-cycle'),
             stats: document.getElementById('stats-cycle'),
@@ -404,147 +524,38 @@
 
             // Fetch Data
             try {
-                const res = await fetch('/api/content');
-                contentData = await res.json();
-
-                // Apply Theme Settings
-                if (contentData.settings) {
-                    applyTheme(contentData.settings);
+                const res = await fetch('/api/content', { cache: 'no-store' });
+                if (!res.ok) {
+                    throw new Error(`Unexpected status ${res.status}`);
                 }
-
-                // Start Cycles
-                setupCycles();
-                startRSVP();
-
-                // Animate Entrance
-                anime({
-                    targets: '.bento-grid > div',
-                    opacity: [0, 1],
-                    translateY: [20, 0],
-                    delay: anime.stagger(100),
-                    easing: 'easeOutExpo',
-                    duration: 1200
-                });
+                const payload = await res.json();
+                contentData = normalizeContent(payload);
             } catch (err) {
-                console.error("Failed to load content:", err);
-                // Even on error, start visualizer if elements exist
-                if (document.getElementById('latency-counter')) startVisualizer();
-            }
-        }
-
-        function applyTheme(settings) {
-            if (!settings) return;
-
-            // 1. Logo / Org Name
-            const headerTitle = document.getElementById('header-logo-text');
-            if (headerTitle) {
-                if (settings.logoUrl) {
-                    headerTitle.innerHTML = `<img src="${settings.logoUrl}" alt="${settings.orgName}" class="h-10 object-contain">`;
-                } else if (settings.orgName) {
-                    headerTitle.innerText = settings.orgName;
-                }
+                console.warn('Falling back to local landing content:', err);
+                contentData = cloneFallbackContent();
             }
 
-            if (settings.orgName) {
-                document.title = `${settings.orgName} | Intelligence Module`;
-            }
+            // Start Cycles
+            setupCycles();
 
-            // 2. Dynamic Colors
-            if (settings.accentColor || settings.darkModeBg) {
-                const c = settings.accentColor || '#0ea5e9'; // Default blue
-                const bg = settings.darkModeBg || '#0f172a'; // Default slate-900
-
-                document.documentElement.style.setProperty('--theme-color', c);
-
-                let style = document.getElementById('theme-overrides');
-                if (!style) {
-                    style = document.createElement('style');
-                    style.id = 'theme-overrides';
-                    document.head.appendChild(style);
-                }
-
-                // Override Tailwind Classes
-                // We target the specific cyan/blue classes used in the bento grid
-                style.innerHTML = `
-                    .dark-mode { background-color: ${bg} !important; }
-                    .dark-mode .slide-panel { background-color: ${bg}FA !important; } /* High opacity bg */
-                    
-                    .text-cyan-400, .text-cyan-500, .text-blue-400 { color: ${c} !important; }
-                    .bg-cyan-500, .bg-cyan-400, .bg-blue-500 { background-color: ${c} !important; }
-                    .from-cyan-400, .from-blue-400 { --tw-gradient-from: ${c} !important; }
-                    .to-cyan-400, .to-cyan-500, .to-blue-600 { --tw-gradient-to: ${c} !important; }
-                    .border-cyan-500 { border-color: ${c} !important; }
-                    .shadow-\\[0_0_10px_rgba\\(34\\,211\\,238\\,0\\.8\\)\\] { box-shadow: 0 0 10px ${c}CC !important; }
-                    .selection\\:bg-cyan-500 *::selection { background-color: ${c} !important; }
-                    
-                    /* Radial Gradient Hack for Mission Tile */
-                    .tile-mission .absolute.inset-0 {
-                        background-image: radial-gradient(${c} 1px, transparent 1px) !important;
-                    }
-                `;
-            }
+            // Animate Entrance
+            anime({
+                targets: '.bento-grid > div',
+                opacity: [0, 1],
+                translateY: [20, 0],
+                delay: anime.stagger(100),
+                easing: 'easeOutExpo',
+                duration: 1200
+            });
         }
-
-        // Reasoning Visualizer Animation
-        function startVisualizer() {
-            // (Legacy function kept for compatibility if visualizer tile is restored)
-        }
-
-        function startRSVP() {
-            const display = document.getElementById('rsvp-target');
-            if (!display) return;
-
-            const words = [
-                ["DEPLOY", "YOUR", "AGENTS"],
-                ["SCALE", "YOUR", "SWARM"],
-                ["CACHE", "YOUR", "THOUGHTS"],
-                ["MONETIZE", "YOUR", "CODE"],
-                ["OWN", "YOUR", "DATA"]
-            ];
-
-            let groupIndex = 0;
-
-            setInterval(() => {
-                groupIndex = (groupIndex + 1) % words.length;
-                const group = words[groupIndex];
-
-                // Color logic
-                let highlightClass = "text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600";
-                if (group[2] === "SWARM") highlightClass = "text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600";
-                if (group[2] === "CODE") highlightClass = "text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-600";
-
-                // Animate Out
-                anime({
-                    targets: display,
-                    opacity: [1, 0],
-                    translateY: [0, -10],
-                    scale: [1, 0.9],
-                    easing: 'easeInExpo',
-                    duration: 300,
-                    complete: () => {
-                        display.innerHTML = `${group[0]}<br>${group[1]}<br><span class="${highlightClass}">${group[2]}</span>`;
-
-                        // Animate In
-                        anime({
-                            targets: display,
-                            opacity: [0, 1],
-                            translateY: [10, 0],
-                            scale: [1.1, 1],
-                            easing: 'easeOutExpo',
-                            duration: 600
-                        });
-                    }
-                });
-
-            }, 4000); // Cycle every 4 seconds
-        }
-
 
         // Setup Cycles based on API data
         function setupCycles() {
+            if (!contentData || !Array.isArray(contentData.cards)) return;
+
             const missionCards = contentData.cards.filter(c => c.laneId === 'mission');
             const usecaseCards = contentData.cards.filter(c => c.laneId === 'usecases');
-            // Support both pricing and monitor lanes for backward compat, or just pricing
+            // Support both pricing and monitor lanes for backward compat
             const pricingCards = contentData.cards.filter(c => c.laneId === 'pricing').length ?
                 contentData.cards.filter(c => c.laneId === 'pricing') :
                 contentData.cards.filter(c => c.laneId === 'monitor');
@@ -556,30 +567,40 @@
             startCycle(els.stats, statsCards, 3000);
         }
 
+        // RSVP "Flying" Animation
         function startCycle(element, cards, speed) {
             if (!cards || !cards.length || !element) return;
+
+            // Store original data on element for restoring after hover
+            element.dataset.originalCards = JSON.stringify(cards);
+            element.dataset.currentIndex = 0;
+            element.dataset.speed = speed;
 
             let i = 0;
             // Initial render
             renderCard(element, cards[0]);
 
             const interval = setInterval(() => {
-                i = (i + 1) % cards.length;
+                // Skip update if hovering logic is overriding (specifically for mission card)
+                if (element.id === 'mission-text' && isHoveringService) return;
 
-                // Anime.js transition
+                i = (i + 1) % cards.length;
+                element.dataset.currentIndex = i;
+
+                // Anime.js RSVP Transition: Fly OUT (towards user) then Fly IN (from background)
                 anime({
                     targets: element,
                     opacity: [1, 0],
-                    translateY: [0, -10],
-                    easing: 'easeInQuad',
+                    scale: [1, 1.5], // Fly towards user
+                    easing: 'easeInExpo',
                     duration: 300,
                     complete: () => {
                         renderCard(element, cards[i]);
                         anime({
                             targets: element,
                             opacity: [0, 1],
-                            translateY: [10, 0],
-                            easing: 'easeOutQuad',
+                            scale: [0.8, 1], // Fly in from back
+                            easing: 'easeOutExpo',
                             duration: 400
                         });
                     }
@@ -591,8 +612,21 @@
 
         function renderCard(element, card) {
             // Check if it's the Mission Hero text or standard card
+            if (!card) return;
+
             if (card.template === 'hero') {
                 element.innerHTML = card.data.title.replace(' ', '<br>');
+                // Also update description if available and we are rendering main mission
+                if (els.missionDesc && card.data.content) {
+                    els.missionDesc.innerText = card.data.content;
+                    // Simple fade for description to match
+                    anime({
+                        targets: els.missionDesc,
+                        opacity: [0.5, 1],
+                        easing: 'linear',
+                        duration: 300
+                    });
+                }
             } else if (card.template === 'stat') {
                 element.innerHTML = `
                     <div class="flex items-center gap-8 w-full justify-end pr-8">
@@ -641,15 +675,52 @@
             });
         }
 
+        // Service Hover Effects
+        window.showServicePreview = (title, description) => {
+            isHoveringService = true;
+
+            // Immediate update for "RSVP" feel - snap to new content
+            els.mission.innerHTML = title.replace(' ', '<br>');
+            els.missionDesc.innerText = description;
+
+            // Visual pop to indicate change
+            anime({
+                targets: els.mission,
+                scale: [0.9, 1],
+                opacity: [0, 1],
+                duration: 200,
+                easing: 'easeOutExpo'
+            });
+        };
+
+        window.hideServicePreview = () => {
+            isHoveringService = false;
+            // Cycle will resume naturally on next interval, but let's restore current card immediately
+            const cards = JSON.parse(els.mission.dataset.originalCards || '[]');
+            const idx = parseInt(els.mission.dataset.currentIndex || '0');
+            if (cards.length) {
+                renderCard(els.mission, cards[idx]);
+            }
+        };
+
         // Panel Logic
         window.openPanel = (laneId) => {
-            // Find content from API data
-            const cards = contentData.cards.filter(c => c.laneId === laneId);
+            // Retrieve cards with fallback for pricing/monitor logic similar to setupCycles
+            let cards = [];
+            if (laneId === 'pricing') {
+                const pricingCards = contentData.cards.filter(c => c.laneId === 'pricing');
+                cards = pricingCards.length ? pricingCards : contentData.cards.filter(c => c.laneId === 'monitor');
+            } else {
+                cards = contentData.cards.filter(c => c.laneId === laneId);
+            }
+
             if (!cards.length) return;
 
             // Simple render of all cards in that lane for "Deep Dive"
-            // In a real app we'd click a specific card, but here we show the lane category
-            let html = `<h2 class="text-6xl font-black mb-12 uppercase tracking-tighter text-slate-900 dark:text-white">${contentData.lanes.find(l => l.id === laneId).title}</h2>`;
+            const laneTitleObj = contentData.lanes.find(l => l.id === laneId);
+            const title = laneTitleObj ? laneTitleObj.title : laneId.toUpperCase();
+
+            let html = `<h2 class="text-6xl font-black mb-12 uppercase tracking-tighter text-slate-900 dark:text-white">${title}</h2>`;
 
             html += '<div class="grid grid-cols-1 md:grid-cols-2 gap-8">';
             cards.forEach(card => {
@@ -664,11 +735,10 @@
             html += '</div>';
 
             html += `
-                <div class="mt-16 flex justify-center">
-                    <a href="/index.html" class="inline-flex items-center gap-2 px-8 py-4 bg-cyan-600 text-white font-bold rounded-full hover:bg-cyan-500 transition shadow-lg hover:shadow-cyan-500/25">
-                        <span>EXPLORE FULL SITE</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                    </a>
+                <div class="mt-16 flex justify-center pb-24">
+                    <button onclick="closePanel()" class="inline-flex items-center gap-2 px-8 py-4 bg-cyan-600 text-white font-bold rounded-full hover:bg-cyan-500 transition shadow-lg hover:shadow-cyan-500/25">
+                        <span>CLOSE PANEL</span>
+                    </button>
                 </div>
             `;
 
@@ -692,6 +762,81 @@
                 duration: 800
             });
         };
+
+        window.openServicePanel = (service) => {
+            window.openPanel(service);
+        };
+
+        function getServicePanelContent(type) {
+            const styles = {
+                title: "text-7xl font-black uppercase tracking-tighter mb-4 text-slate-900 dark:text-white",
+                subtitle: "text-xl font-mono text-cyan-500 tracking-widest uppercase mb-12",
+                section: "grid grid-cols-1 lg:grid-cols-2 gap-16 items-center",
+                p: "text-xl text-slate-500 leading-relaxed font-light mb-8",
+                featureList: "space-y-4 font-mono text-sm text-slate-400"
+            };
+
+            const data = {
+                cache: {
+                    title: "Semantic Cache",
+                    subtitle: "Zero Latency Intelligence",
+                    desc: "Stop paying for the same thought twice. Our semantic cache fingerprints every request, storing the cognitive output for instant retrieval.",
+                    features: [
+                        "⚡️ 4ms Latency (Edge Cached)",
+                        "💰 95% Cost Reduction",
+                        "🌍 Global Distribution",
+                        "🔌 Plug-and-Play Middleware"
+                    ],
+                    visual: "⚡️" // Placeholder for visual asset
+                },
+                memory: {
+                    title: "Neural Memory",
+                    subtitle: "Infinite Context Window",
+                    desc: "Hopfield Network architecture allows agents to recall information from millions of past interactions without exploding your token budget.",
+                    features: [
+                        "🧠 Associative Recall",
+                        "📚 Long-term Persistence",
+                        "🔗 Cross-Session Context",
+                        "🔒 Private Namespaces"
+                    ],
+                    visual: "🧠"
+                },
+                security: {
+                    title: "Aegis Security",
+                    subtitle: "Enterprise Grade Protection",
+                    desc: "Real-time PII redaction, prompt injection defense, and hallucinations checks before the LLM even sees the request.",
+                    features: [
+                        "🛡️ PII/PHI Redaction",
+                        "🚫 Injection Firewall",
+                        "⚖️ Compliance Logging",
+                        "👁️ Drift Detection"
+                    ],
+                    visual: "🛡️"
+                }
+            }[type];
+
+            return `
+                <div class="${styles.section}">
+                    <div>
+                        <h2 class="${styles.title}">${data.title}</h2>
+                        <div class="${styles.subtitle}">${data.subtitle}</div>
+                        <p class="${styles.p}">${data.desc}</p>
+                        <ul class="${styles.featureList}">
+                            ${data.features.map(f => `
+                                <li class="flex items-center gap-4">
+                                    <span class="w-2 h-2 bg-cyan-500 rounded-full"></span>
+                                    ${f}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                    <div class="h-96 bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl flex items-center justify-center relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-[url('/assets/grid.svg')] opacity-20"></div>
+                        <div class="text-9xl group-hover:scale-110 transition duration-700 ease-in-out cursor-default select-none animate-pulse">${data.visual}</div>
+                    </div>
+                </div>
+            `;
+        }
 
         window.closePanel = () => {
             anime({

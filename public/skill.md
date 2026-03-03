@@ -54,7 +54,15 @@ curl https://agentcache.ai/api/catalog
 
 See all available cache services: semantic cache, tool cache, session memory, CDN, file acceleration, and more.
 
-### 4. Request a custom service
+### 4. Ask Tool Shed for a scoped bundle
+
+```bash
+curl "https://agentcache.ai/api/catalog/tool-shed?profile=chat-assistant&tier=free"
+```
+
+Tool Shed returns the minimum recommended set of services for your workload profile so agents avoid loading too many capabilities at once.
+
+### 5. Request a custom service
 
 If you need something that doesn't exist yet:
 
@@ -69,7 +77,7 @@ curl -X POST https://agentcache.ai/api/catalog/request \
   }'
 ```
 
-### 5. Set up heartbeat polling
+### 6. Set up heartbeat polling
 
 Check every 4 hours for opportunities, top needs, and new services:
 
@@ -109,6 +117,7 @@ setInterval(async () => {
 
 ### Service Catalog
 `GET /api/catalog` — List all available services
+`GET /api/catalog/tool-shed` — Scoped tool bundle recommendations by profile/tier
 `GET /api/catalog/:id` — Service detail + required inputs
 `POST /api/catalog/request` — Submit custom service request
 `GET /api/catalog/requests` — Track open requests
