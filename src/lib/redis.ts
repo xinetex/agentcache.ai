@@ -5,6 +5,32 @@ import { Redis } from '@upstash/redis';
 class MockRedis {
   private store = new Map<string, any>();
 
+  private ensureHash(key: string) {
+    if (
+      !this.store.has(key) ||
+      typeof this.store.get(key) !== 'object' ||
+      Array.isArray(this.store.get(key)) ||
+      this.store.get(key) instanceof Map
+    ) {
+      this.store.set(key, {});
+    }
+    return this.store.get(key);
+  }
+
+  private ensureSortedSet(key: string) {
+    if (!this.store.has(key) || !(this.store.get(key) instanceof Map)) {
+      this.store.set(key, new Map<string, number>());
+    }
+    return this.store.get(key) as Map<string, number>;
+  }
+
+  private ensureSet(key: string) {
+    if (!this.store.has(key) || !(this.store.get(key) instanceof Set)) {
+      this.store.set(key, new Set<string>());
+    }
+    return this.store.get(key) as Set<string>;
+  }
+
   async incrbyfloat(key: string, value: number) {
     if (!this.store.has(key)) this.store.set(key, '0');
     const current = parseFloat(this.store.get(key) || '0');
@@ -99,11 +125,18 @@ class MockRedis {
     return (hash && typeof hash === 'object' && !Array.isArray(hash)) ? hash : {};
   }
 
-  async hincrby(key: string, field: string, increment: number) {
-    if (!this.store.has(key) || typeof this.store.get(key) !== 'object') {
-      this.store.set(key, {});
+  async hset(key: string, field: string | Record<string, any>, value?: any) {
+    const hash = this.ensureHash(key);
+    if (typeof field === 'object' && field !== null) {
+      Object.assign(hash, field);
+      return Object.keys(field).length;
     }
-    const hash = this.store.get(key);
+    hash[field] = value;
+    return 1;
+  }
+
+  async hincrby(key: string, field: string, increment: number) {
+    const hash = this.ensureHash(key);
     const current = parseInt(hash[field] || '0');
     hash[field] = (current + increment).toString();
     return current + increment;
@@ -115,6 +148,75 @@ class MockRedis {
       return hash[field] || null;
     }
     return null;
+  }
+
+  async hdel(key: string, field: string) {
+    const hash = this.store.get(key);
+    if (!hash || typeof hash !== 'object' || Array.isArray(hash) || !(field in hash)) {
+      return 0;
+    }
+    delete hash[field];
+    return 1;
+  }
+
+  async zincrby(key: string, increment: number, member: string) {
+    const sortedSet = this.ensureSortedSet(key);
+    const next = (sortedSet.get(member) || 0) + increment;
+    sortedSet.set(member, next);
+    return next;
+  }
+
+  async zadd(key: string, ...args: any[]) {
+    const sortedSet = this.ensureSortedSet(key);
+    if (args.length === 1 && typeof args[0] === 'object' && args[0] !== null) {
+      const entry = args[0];
+      sortedSet.set(String(entry.member), Number(entry.score));
+      return 1;
+    }
+    if (args.length >= 2) {
+      sortedSet.set(String(args[1]), Number(args[0]));
+      return 1;
+    }
+    return 0;
+  }
+
+  async zrange(key: string, start: number, stop: number, options?: { rev?: boolean; withScores?: boolean }) {
+    const sortedSet = this.ensureSortedSet(key);
+    const entries = Array.from(sortedSet.entries()).sort((a, b) =>
+      options?.rev ? b[1] - a[1] : a[1] - b[1]
+    );
+    const sliced = entries.slice(start, stop + 1);
+    if (options?.withScores) {
+      return sliced.flatMap(([member, score]) => [member, score]);
+    }
+    return sliced.map(([member]) => member);
+  }
+
+  async sadd(key: string, ...members: string[]) {
+    const set = this.ensureSet(key);
+    let added = 0;
+    for (const member of members) {
+      if (!set.has(member)) {
+        set.add(member);
+        added += 1;
+      }
+    }
+    return added;
+  }
+
+  async smembers(key: string) {
+    return Array.from(this.ensureSet(key).values());
+  }
+
+  async srem(key: string, ...members: string[]) {
+    const set = this.ensureSet(key);
+    let removed = 0;
+    for (const member of members) {
+      if (set.delete(member)) {
+        removed += 1;
+      }
+    }
+    return removed;
   }
 
   pipeline() {

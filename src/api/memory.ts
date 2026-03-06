@@ -4,6 +4,7 @@ import { createHash } from 'crypto';
 
 import { authenticateApiKey } from '../middleware/auth.js';
 import { queryMemory, upsertMemory, vectorIndex } from '../lib/vector.js';
+import { cognitiveMemory } from '../services/cognitive-memory.js';
 
 const memoryRouter = new Hono();
 
@@ -78,8 +79,11 @@ memoryRouter.post('/recall', async (c) => {
 
   const limitRaw = Number(body.limit);
   const limit = Number.isFinite(limitRaw) ? Math.min(10, Math.max(1, Math.floor(limitRaw))) : 5;
+  const previousQuery = safeString(body.previous_query);
 
   const results = await queryMemory(query, limit);
+  await cognitiveMemory.observeTransition(previousQuery || undefined, query);
+  const predictions = await cognitiveMemory.predictNext(query, 1);
 
   return c.json({
     success: true,
@@ -89,8 +93,10 @@ memoryRouter.post('/recall', async (c) => {
       id: r.id,
       score: r.score,
       preview: safeString(r.data).slice(0, 240),
+      content: safeString(r.data),
       metadata: r.metadata,
     })),
+    predictive_prefetch: predictions,
   });
 });
 

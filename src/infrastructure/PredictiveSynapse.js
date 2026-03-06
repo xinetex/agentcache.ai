@@ -1,93 +1,57 @@
 
-/**
- * Predictive Synapse (The Oracle)
- * 
- * Implements a lightweight Markov Chain / Graph engine to predict user intent.
- * Enables "Negative Latency" by anticipating the next request based on global history.
- */
+import { redis as defaultRedis } from '../lib/redis.js';
 
 export class PredictiveSynapse {
-    constructor() {
-        // In a real implementation, this would be backed by Redis Graph or a Vector DB.
-        // For this version, we use an in-memory Map to simulate the "Hive Mind".
-        this.transitionMatrix = new Map(); // Key: CurrentQueryHash, Value: Map<NextQueryHash, Count>
-        this.queryMap = new Map(); // Key: Hash, Value: QueryString
+    constructor(client) {
+        this.PREFIX = 'synapse:transitions:';
+        this.redis = client || defaultRedis;
     }
 
-    /**
-     * Hash a query to a stable identifier
-     */
-    hash(query) {
-        // Simple distinct normalization
-        return query.toLowerCase().trim().replace(/[?.!]$/, '');
+    async observe(prevHash, currHash) {
+        if (!prevHash || !currHash || prevHash === currHash) return;
+
+        const key = `${this.PREFIX}${prevHash}`;
+        await this.redis.zincrby(key, 1, currHash);
     }
 
-    /**
-     * Learn from a user's sequence of actions.
-     * @param {string} previousQuery - The query the user just asked
-     * @param {string} currentQuery - The query the user is asking now
-     */
-    observe(previousQuery, currentQuery) {
-        if (!previousQuery || !currentQuery) return;
+    async predict(currHash, depth = 1) {
+        if (depth < 0) return [];
 
-        const prevHash = this.hash(previousQuery);
-        const currHash = this.hash(currentQuery);
+        const key = `${this.PREFIX}${currHash}`;
+        const results = await this.redis.zrange(key, 0, 2, { rev: true, withScores: true });
 
-        // Store actual text for retrieval
-        this.queryMap.set(prevHash, previousQuery);
-        this.queryMap.set(currHash, currentQuery);
+        if (!results || results.length === 0) return [];
 
-        if (!this.transitionMatrix.has(prevHash)) {
-            this.transitionMatrix.set(prevHash, new Map());
+        let totalScore = 0;
+        for (let i = 1; i < results.length; i += 2) {
+            totalScore += Number(results[i]);
         }
 
-        const transitions = this.transitionMatrix.get(prevHash);
-        const count = transitions.get(currHash) || 0;
-        transitions.set(currHash, count + 1);
-    }
-
-    /**
-     * Predict the likely next queries based on the current one.
-     * @param {string} currentQuery 
-     * @param {number} depth - Recursion depth (not fully used in v1)
-     * @returns {Array} List of predictions with probabilities
-     */
-    async predict(currentQuery, depth = 1) {
-        const hash = this.hash(currentQuery);
-
-        if (!this.transitionMatrix.has(hash)) {
-            // Cold start or unknown query
-            return this.getGlobalTrending();
-        }
-
-        const transitions = this.transitionMatrix.get(hash);
-        let total = 0;
         const candidates = [];
 
-        // Calculate total interactions from this node
-        for (const count of transitions.values()) total += count;
+        for (let i = 0; i < results.length; i += 2) {
+            const hash = String(results[i]);
+            const score = Number(results[i + 1]);
+            const probability = score / totalScore;
 
-        // Calculate probabilities
-        for (const [nextHash, count] of transitions.entries()) {
-            candidates.push({
-                query: this.queryMap.get(nextHash),
-                probability: count / total,
-                type: 'markov_chain'
-            });
+            if (probability < 0.1) continue;
+
+            const candidate = {
+                hash,
+                probability,
+                depth
+            };
+
+            if (depth > 1 && probability > 0.5) {
+                const nextPredictions = await this.predict(hash, depth - 1);
+                if (nextPredictions.length > 0) {
+                    candidate.next = nextPredictions;
+                }
+            }
+
+            candidates.push(candidate);
         }
 
-        // Sort by probability descending
-        return candidates.sort((a, b) => b.probability - a.probability).slice(0, 3);
-    }
-
-    /**
-     * Fallback: Return global trending queries (Mocked)
-     */
-    getGlobalTrending() {
-        return [
-            { query: "How to optimize RAG performance?", probability: 0.15, type: 'global_trend' },
-            { query: "Explain CLaRa-7B compression", probability: 0.12, type: 'global_trend' },
-            { query: "Latest AgentCache API Limits", probability: 0.08, type: 'global_trend' }
-        ];
+        return candidates;
     }
 }

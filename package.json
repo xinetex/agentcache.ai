@@ -13,7 +13,8 @@
     "mcp:dev": "tsx src/mcp/server.ts",
     "mcp:start": "node dist/mcp/server.js",
     "sigil": "tsx src/cli/sigil.ts",
-    "test": "vitest"
+    "test": "vitest",
+    "test:verification": "vitest --run tests/unit/cognitive-memory.test.ts tests/claims/cognitive-claims.test.ts tests/contracts/public-api.contract.test.ts"
   },
   "dependencies": {
     "@cfworker/json-schema": "^4.1.1",

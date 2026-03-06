@@ -182,6 +182,7 @@ import transcodeRouter from './api/transcode.js';
 import brainRouter from './api/brain.js';
 import muscleRouter from './api/muscle.js';
 import memoryRouter from './api/memory.js';
+import cognitiveRouter from './api/cognitive.js';
 import securityRouter from './api/security.js';
 import hubRouter from './api/hub.js';
 import needsRouter from './api/needs.js';
@@ -191,6 +192,7 @@ import toolScannerRouter from './api/tool-scanner.js';
 
 import { authenticateApiKey } from './middleware/auth.js';
 import contentRouter from './api/content.js';
+import { cognitiveMemory } from './services/cognitive-memory.js';
 
 app.post('/api/provision', provisionClient);
 // ...
@@ -224,6 +226,7 @@ app.route('/api/brain', brainRouter);
 
 // Mount Services
 app.route('/api/memory', memoryRouter);
+app.route('/api/cognitive', cognitiveRouter);
 app.route('/api/security', securityRouter);
 
 // Mount Decisions & Galaxy API
@@ -430,6 +433,12 @@ app.post('/api/cache/check', async (c) => {
 
     const exists = await redis.exists(key);
     const ttl = exists ? await redis.ttl(key) : 0;
+    const latestQuery = req.messages[req.messages.length - 1]?.content || '';
+    const previousQuery = typeof body.previous_query === 'string' ? body.previous_query : undefined;
+
+    if (latestQuery) {
+      await cognitiveMemory.observeTransition(previousQuery, latestQuery);
+    }
 
     let semanticHit = false;
     let similarity = 0;
@@ -439,7 +448,7 @@ app.post('/api/cache/check', async (c) => {
     if (!exists && req.semantic) {
       try {
         // Flatten last user message for query
-        const lastMsg = req.messages[req.messages.length - 1]?.content || '';
+        const lastMsg = latestQuery;
         if (lastMsg) {
           // Search vector store
           const results = await queryMemory(lastMsg, 1);
@@ -457,12 +466,17 @@ app.post('/api/cache/check', async (c) => {
       }
     } // semantic check
 
+    const predictivePrefetch = latestQuery
+      ? await cognitiveMemory.predictNext(latestQuery, 1)
+      : [];
+
     return c.json({
       cached: exists === 1 || semanticHit,
       key: semanticHit ? semanticKey : key.slice(-16),
       ttl: semanticHit ? 3600 : ttl, // Mock TTL for semantic
       type: semanticHit ? 'semantic' : 'exact',
-      similarity: semanticHit ? similarity : 1.0
+      similarity: semanticHit ? similarity : 1.0,
+      predictive_prefetch: predictivePrefetch,
     });
   } catch (error: any) {
     return c.json({ error: error.message }, 400);
@@ -483,12 +497,24 @@ app.post('/api/cache/get', async (c) => {
 
     const startTime = Date.now();
     const cached = await redis.get(key);
+    const latestQuery = req.messages[req.messages.length - 1]?.content || '';
+    const previousQuery = typeof body.previous_query === 'string' ? body.previous_query : undefined;
+
+    if (latestQuery) {
+      await cognitiveMemory.observeTransition(previousQuery, latestQuery);
+    }
     const latency = Date.now() - startTime;
 
+    const predictivePrefetch = latestQuery
+      ? await cognitiveMemory.predictNext(latestQuery, 1)
+      : [];
+
     if (!cached) {
+      await cognitiveMemory.recordCacheOutcome(false);
       return c.json({
         hit: false,
         message: 'Cache miss - call your LLM provider',
+        predictive_prefetch: predictivePrefetch,
       }, 404);
     }
 
@@ -521,6 +547,7 @@ app.post('/api/cache/get', async (c) => {
     // Record the saving (fire-and-forget)
     const apiKey = c.req.header('X-API-Key') || 'anonymous';
     savingsTracker.recordSaving(apiKey, savedUsd, 'exact_cache', req.model).catch(() => {});
+    await cognitiveMemory.recordCacheOutcome(true);
 
     return c.json({
       hit: true,
@@ -528,7 +555,8 @@ app.post('/api/cache/get', async (c) => {
       latency,
       saved: `$${savedUsd.toFixed(4)}`,
       savedUsd,
-      freshness
+      freshness,
+      predictive_prefetch: predictivePrefetch,
     });
   } catch (error: any) {
     return c.json({ error: error.message }, 400);
@@ -890,6 +918,7 @@ app.get('/api/stats', async (c) => {
     percentUsed: usage.quota === -1 ? 0 : Math.round((usage.used / usage.quota) * 100),
     resetDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString(),
     features: tierFeatures,
+    cognitive: await cognitiveMemory.getStatus(),
   });
 });
 

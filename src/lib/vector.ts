@@ -129,6 +129,34 @@ export const vectorIndex = {
         }));
     },
 
+    async upsert(record: { id: string; vector: number[]; metadata?: Record<string, any>; data?: string }) {
+        const metaKey = `${PREFIX_META}${record.id}`;
+        const existingRaw = await redis.get(metaKey);
+        const existing = existingRaw ? JSON.parse(existingRaw) : null;
+
+        let longIdString = await redis.hget(MAP_UUID_TO_LONG, record.id);
+        let longId: number;
+
+        if (!longIdString) {
+            longId = await redis.incr(SEQ_KEY);
+            await redis.hset(MAP_UUID_TO_LONG, record.id, longId);
+            await redis.hset(MAP_LONG_TO_UUID, longId, record.id);
+        } else {
+            longId = Number(longIdString);
+        }
+
+        await vectorClient.addVectors([longId], record.vector);
+
+        await redis.set(metaKey, JSON.stringify({
+            id: record.id,
+            data: record.data ?? existing?.data ?? record.metadata?.query ?? '',
+            metadata: {
+                ...(existing?.metadata || {}),
+                ...(record.metadata || {}),
+            },
+        }));
+    },
+
     // Support delete
     async delete(id: string) {
         // We can't easily delete from FAISS without rebuilding or using specific ID selectors 
