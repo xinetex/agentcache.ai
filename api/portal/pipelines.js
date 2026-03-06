@@ -1,4 +1,4 @@
-import { requireAuth } from '../../lib/auth-middleware.js';
+import { getAuthErrorStatus, requireAuth } from '../../lib/auth-middleware.js';
 import { query } from '../../lib/db.js';
 
 export default async function handler(req, res) {
@@ -8,6 +8,14 @@ export default async function handler(req, res) {
     if (!user) return;
 
     const organizationId = user.organizationId;
+
+    if (!organizationId) {
+      return res.status(409).json({
+        error: 'Organization setup required',
+        onboardingRequired: true,
+        onboardingUrl: '/onboarding.html'
+      });
+    }
 
     // GET - List all pipelines for organization
     if (req.method === 'GET') {
@@ -135,6 +143,11 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
 
   } catch (error) {
+    const authStatus = getAuthErrorStatus(error);
+    if (authStatus) {
+      return res.status(authStatus).json({ error: error.message });
+    }
+
     console.error('Pipelines API error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }

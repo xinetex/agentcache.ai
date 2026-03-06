@@ -1,4 +1,4 @@
-import { requireAuth } from '../../lib/auth-middleware.js';
+import { getAuthErrorStatus, requireAuth } from '../../lib/auth-middleware.js';
 import { query } from '../../lib/db.js';
 import { Redis } from '@upstash/redis';
 
@@ -151,6 +151,11 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
+    const authStatus = getAuthErrorStatus(error);
+    if (authStatus) {
+      return res.status(authStatus).json({ error: error.message });
+    }
+
     console.error('Dashboard API error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }

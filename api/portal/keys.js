@@ -1,4 +1,4 @@
-import { requireAuth } from '../../lib/auth-middleware.js';
+import { getAuthErrorStatus, requireAuth } from '../../lib/auth-middleware.js';
 import { query } from '../../lib/db.js';
 import {
   generateApiKey,
@@ -117,6 +117,11 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
 
   } catch (error) {
+    const authStatus = getAuthErrorStatus(error);
+    if (authStatus) {
+      return res.status(authStatus).json({ error: error.message });
+    }
+
     console.error('API keys error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
