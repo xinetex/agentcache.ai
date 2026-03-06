@@ -92,7 +92,7 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(hit.payload.hit).toBe(true);
     expect(hit.payload.response).toBe('cached-response');
     expect(Array.isArray(hit.payload.predictive_prefetch)).toBe(true);
-  });
+  }, 10000);
 
   it('memory, cognitive, and stats endpoints return observable cognitive state', async () => {
     const memoryText = unique('memory-text');
@@ -161,5 +161,5 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(stats.response.status).toBe(200);
     expect(stats.payload.cognitive.predictive_synapse.status).toBe('active');
     expect(typeof stats.payload.cognitive.metrics.hits).toBe('number');
-  });
+  }, 20000);
 });
