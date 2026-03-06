@@ -1,5 +1,3 @@
-import { UrlMonitor } from '../../src/mcp/anticache.js';
-
 export const config = {
     runtime: 'nodejs',
 };
@@ -18,7 +16,22 @@ export default async function handler(req: Request) {
         return new Response('Unauthorized', { status: 401 });
     }
 
+    if (process.env.ENABLE_LISTENER_MONITOR !== '1') {
+        return new Response(JSON.stringify({
+            success: true,
+            checked: 0,
+            invalidated: 0,
+            errors: 0,
+            skipped: true,
+            reason: 'Listener monitor disabled',
+            timestamp: Date.now(),
+        }), {
+            headers: { 'content-type': 'application/json' }
+        });
+    }
+
     try {
+        const { UrlMonitor } = await import('../../src/mcp/anticache.js');
         const monitor = new UrlMonitor();
         const listeners = await monitor.getAllListeners();
 

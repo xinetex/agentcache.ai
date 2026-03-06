@@ -13,6 +13,10 @@ export default async function handler(req: any, res: any) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    if (process.env.ENABLE_NEEDS_REFRESH_CRON !== '1') {
+        return res.status(200).json({ status: 'Needs refresh cron disabled' });
+    }
+
     try {
         const baseUrl = process.env.VERCEL_URL
             ? `https://${process.env.VERCEL_URL}`

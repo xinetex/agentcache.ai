@@ -1,6 +1,3 @@
-
-import { ClawTasksService } from '../../src/services/ClawTasksService.js';
-
 export default async function handler(req, res) {
     // 1. Security Check (Vercel Cron)
     // Vercel automatically injects CRON_SECRET header
@@ -16,7 +13,12 @@ export default async function handler(req, res) {
         return res.status(200).json({ status: 'Skipped - no API key' });
     }
 
+    if (process.env.ENABLE_CLAW_WORKER !== '1') {
+        return res.status(200).json({ status: 'Skipped - claw worker disabled' });
+    }
+
     try {
+        const { ClawTasksService } = await import('../../src/services/ClawTasksService.js');
         const service = new ClawTasksService(apiToken);
         await service.runOnce();
         res.status(200).json({ status: 'Job Completed' });

@@ -4,6 +4,10 @@
     "sfo1"
   ],
   "functions": {
+    "api/cron/**/*.{js,ts}": {
+      "memory": 256,
+      "maxDuration": 10
+    },
     "api/**/*.{js,ts}": {
       "memory": 1024,
       "maxDuration": 25
@@ -207,15 +211,15 @@
   "crons": [
     {
       "path": "/api/cron/check-listeners",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 */6 * * *"
     },
     {
       "path": "/api/cron/claw-worker",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 */12 * * *"
     },
     {
       "path": "/api/cron/worker",
-      "schedule": "* * * * *"
+      "schedule": "*/15 * * * *"
     },
     {
       "path": "/api/cron/researcher",

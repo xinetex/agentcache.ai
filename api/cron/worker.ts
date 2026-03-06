@@ -1,20 +1,32 @@
-
-import { LaneService } from '../../src/lib/workflow/LaneService.js';
-import { TranscriptLogger } from '../../src/lib/workflow/TranscriptLogger.js';
-import { PRAgent } from '../../src/agents/suite/PRAgent.js';
-import { TriageAgent } from '../../src/agents/suite/TriageAgent.js';
-
 export const config = {
     runtime: 'nodejs',
 };
 
-const lanes = new LaneService();
-
 /**
  * Vercel Cron Handler: Drain the software-quality queue
- * Schedule this in vercel.json: { "path": "/api/cron/worker", "schedule": "* * * * *" }
+ * Schedule this in vercel.json: { "path": "/api/cron/worker", "schedule": "*/15 * * * *" }
  */
 export default async function handler(req, res) {
+    if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    if (process.env.ENABLE_SOFTWARE_QUALITY_WORKER !== '1') {
+        return res.status(200).json({
+            success: true,
+            processed: 0,
+            message: 'Software-quality worker disabled',
+        });
+    }
+
+    const [{ LaneService }, { TranscriptLogger }, { PRAgent }, { TriageAgent }] = await Promise.all([
+        import('../../src/lib/workflow/LaneService.js'),
+        import('../../src/lib/workflow/TranscriptLogger.js'),
+        import('../../src/agents/suite/PRAgent.js'),
+        import('../../src/agents/suite/TriageAgent.js'),
+    ]);
+    const lanes = new LaneService();
+
     const MAX_JOBS = 5;
     let processed = 0;
 

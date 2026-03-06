@@ -1,6 +1,3 @@
-
-import { growthAgent } from '../../src/agents/GrowthAgent.js';
-
 export default async function handler(req, res) {
     // 1. Security Check
     const authHeader = req.headers.authorization;
@@ -11,8 +8,13 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'Unauthorized Pulse' });
     }
 
+    if (process.env.ENABLE_GROWTH_FLYWHEEL !== '1') {
+        return res.status(200).json({ success: true, message: 'Growth flywheel disabled' });
+    }
+
     try {
         console.log("[Cron] Activating Growth Flywheel...");
+        const { growthAgent } = await import('../../src/agents/GrowthAgent.js');
 
         // 2. Run the Autonomous Cycle
         // (Scan Moltbook -> Buy Service -> Post Result)
