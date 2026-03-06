@@ -23,7 +23,7 @@
         
         <div class="mb-12">
             <h2 class="text-2xl font-bold mb-4">1. Get Your API Key</h2>
-            <p class="text-slate-400 mb-4">Create an account at <a href="/signup.html" class="text-cyan-500 hover:underline">agentcache.ai/signup</a> and finish onboarding to receive your API key.</p>
+            <p class="text-slate-400 mb-4">Create an account at <a href="/signup.html" class="text-cyan-500 hover:underline">agentcache.ai/signup</a>, finish onboarding, then open your <a href="/portal-dashboard.html" class="text-cyan-500 hover:underline">workspace dashboard</a> to generate an API key and copy your default namespace.</p>
         </div>
 
         <div class="mb-12">
@@ -40,6 +40,20 @@ const cache = new AgentCache({
   baseUrl: 'https://agentcache.ai',
   namespace: 'default'
 });</code></pre>
+        </div>
+
+        <div class="mb-12">
+            <h2 class="text-2xl font-bold mb-4">Optional: Test The API Directly</h2>
+            <pre class="bg-slate-900 rounded-xl p-4 overflow-x-auto border border-slate-700"><code class="text-sm">curl -X POST https://agentcache.ai/api/cache/set \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -H "X-Cache-Namespace: default" \
+  -d '{
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "messages": [{"role":"user","content":"What is 2+2?"}],
+    "response": "4"
+  }'</code></pre>
         </div>
 
         <div class="mb-12">
