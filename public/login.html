@@ -78,12 +78,13 @@
 
     <!-- Error Message -->
     <div id="error-msg" class="auth-message auth-message-error auth-hidden"></div>
+    <div id="success-msg" class="auth-message auth-message-success auth-hidden"></div>
 
     <!-- Footer -->
     <div class="auth-footer">
       <p class="auth-footer-text">
         Don't have an account?
-        <a href="/signup.html" class="auth-link">Sign up</a>
+        <a id="signup-link" href="/signup.html" class="auth-link">Sign up</a>
       </p>
     </div>
   </div>
@@ -92,13 +93,33 @@
     // Unified authentication handling
     const form = document.getElementById('login-form');
     const errorMsg = document.getElementById('error-msg');
-    const REDIRECT_URL = '/dashboard.html'; // Primary workspace
+    const successMsg = document.getElementById('success-msg');
 
-    // Handle OAuth redirect with token
     const urlParams = new URLSearchParams(window.location.search);
+    const requestedNext = urlParams.get('next');
+    const REDIRECT_URL = requestedNext && requestedNext.startsWith('/') && !requestedNext.startsWith('//')
+      ? requestedNext
+      : '/portal-dashboard.html';
     const token = urlParams.get('token');
     const authSuccess = urlParams.get('auth');
     const error = urlParams.get('error');
+    const signupLink = document.getElementById('signup-link');
+
+    if (signupLink && REDIRECT_URL !== '/portal-dashboard.html') {
+      signupLink.href = `/signup.html?next=${encodeURIComponent(REDIRECT_URL)}`;
+    }
+
+    function resolvePostLoginRedirect(userData, onboarding) {
+      if (onboarding && onboarding.required) {
+        return onboarding.url || '/onboarding.html';
+      }
+
+      if (userData && userData.organization) {
+        localStorage.setItem('agentcache_workspace', JSON.stringify(userData.organization));
+      }
+
+      return REDIRECT_URL;
+    }
 
     if (token && authSuccess === 'success') {
       localStorage.setItem('agentcache_token', token);
@@ -110,7 +131,10 @@
           if (data.user) {
             localStorage.setItem('agentcache_user', JSON.stringify(data.user));
           }
-          window.location.href = REDIRECT_URL;
+          window.location.href = resolvePostLoginRedirect(
+            data.user,
+            { required: !data.user?.organization, url: '/onboarding.html' }
+          );
         })
         .catch(err => {
           console.error('Failed to fetch user:', err);
@@ -160,7 +184,7 @@
         if (res.ok) {
           localStorage.setItem('agentcache_token', data.token);
           localStorage.setItem('agentcache_user', JSON.stringify(data.user));
-          window.location.href = REDIRECT_URL;
+          window.location.href = resolvePostLoginRedirect(data.user, data.onboarding);
         } else {
           showError(data.error || data.message || 'Invalid email or password');
           submitBtn.innerHTML = originalText;
@@ -177,6 +201,7 @@
 
     // Helper functions
     function showError(msg) {
+      hideSuccess();
       errorMsg.textContent = msg;
       errorMsg.classList.remove('auth-hidden');
       setTimeout(() => hideError(), 5000);
@@ -188,6 +213,12 @@
 
     function hideSuccess() {
       successMsg.classList.add('auth-hidden');
+    }
+
+    function showSuccess(msg) {
+      hideError();
+      successMsg.textContent = msg;
+      successMsg.classList.remove('auth-hidden');
     }
 
     // Mock Wallet Connection

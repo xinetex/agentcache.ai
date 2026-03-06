@@ -1,5 +1,5 @@
 import { generateToken } from '../../../lib/jwt.js';
-import { query, transaction } from '../../../lib/db.js';
+import { transaction } from '../../../lib/db.js';
 
 export default async function handler(req, res) {
   const { code, state } = req.query;
@@ -99,9 +99,9 @@ export default async function handler(req, res) {
 
     // Generate JWT
     const token = generateToken({
-      userId: result.id,
+      id: result.id,
       email: result.email,
-      organizationId: result.organization_id,
+      organization_id: result.organization_id,
       role: result.role || 'member'
     });
 
