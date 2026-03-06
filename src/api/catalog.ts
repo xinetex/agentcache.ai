@@ -57,7 +57,7 @@ const SERVICES: ServiceDef[] = [
             { field: 'semantic', type: 'boolean', description: 'Enable semantic similarity matching' },
             { field: 'namespace', type: 'string', description: 'Cache namespace (Pro+ only)' }
         ],
-        pricing: 'Free: 10K req/mo | Pro: 1M req/mo ($49/mo) | Enterprise: unlimited',
+        pricing: 'Free: 10K req/mo | Pro: 1M req/mo ($99/mo) | Enterprise: 10M req/mo ($299/mo)',
         status: 'available'
     },
     {
@@ -95,6 +95,24 @@ const SERVICES: ServiceDef[] = [
             { field: 'tags', type: 'array', description: 'Tags for categorization' }
         ],
         pricing: 'Free: 1K memories | Pro: 100K | Enterprise: unlimited',
+        status: 'available'
+    },
+    {
+        id: 'knowledge-memory',
+        name: 'Knowledge Memory',
+        category: 'intelligence',
+        description: 'Ingest docs, chunk them, and serve retrieval-ready context through semantic search and memory APIs.',
+        tier: 'pro',
+        endpoint: 'POST /api/docs/ingest, POST /api/docs/search, POST /api/memory/store, POST /api/memory/recall',
+        requiredInputs: [
+            { field: 'url', type: 'string', description: 'Public documentation URL to ingest' }
+        ],
+        optionalInputs: [
+            { field: 'query', type: 'string', description: 'Search query for retrieved context' },
+            { field: 'limit', type: 'number', description: 'Number of chunks to return' },
+            { field: 'namespace', type: 'string', description: 'Workspace namespace for isolation' }
+        ],
+        pricing: 'Add-on: Knowledge ($99/mo) | Included in Enterprise',
         status: 'available'
     },
     {
@@ -179,7 +197,7 @@ const SERVICES: ServiceDef[] = [
         optionalInputs: [
             { field: 'context', type: 'string', description: 'Additional context for classification' }
         ],
-        pricing: 'Free: 1K checks/mo | Pro: 100K',
+        pricing: 'Add-on: Guardrails ($99/mo) | Included in Enterprise',
         status: 'available'
     },
     {

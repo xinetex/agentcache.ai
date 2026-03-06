@@ -33,7 +33,7 @@ export interface Tier {
 export const TIERS: Record<string, Tier> = {
   FREE: {
     id: 'free',
-    name: 'Community',
+    name: 'Free',
     price: 0,
     quota: 10_000, // 10K requests/month
     features: {
@@ -52,7 +52,7 @@ export const TIERS: Record<string, Tier> = {
   PRO: {
     id: 'pro',
     name: 'Pro',
-    price: 49, // $49/month
+    price: 99, // $99/month
     quota: 1_000_000, // 1M requests/month
     stripeMonthlyPriceId: process.env.STRIPE_PRICE_PRO_MONTHLY || 'price_pro_monthly',
     stripeYearlyPriceId: process.env.STRIPE_PRICE_PRO_YEARLY || 'price_pro_yearly',
@@ -72,8 +72,8 @@ export const TIERS: Record<string, Tier> = {
   ENTERPRISE: {
     id: 'enterprise',
     name: 'Enterprise',
-    price: null, // Custom pricing
-    quota: -1, // Unlimited
+    price: 299, // $299/month
+    quota: 10_000_000, // 10M requests/month
     features: {
       cacheTypes: 'all',
       namespaces: -1, // Unlimited

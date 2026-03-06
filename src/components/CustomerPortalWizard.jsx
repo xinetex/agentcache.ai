@@ -57,8 +57,19 @@ function CustomerPortalWizard({ onClose, onComplete }) {
                 body: JSON.stringify({
                     sector: orgProfile.sector,
                     useCase: `${orgProfile.name} - ${orgProfile.sector} organization`,
-                    priority: 'balanced', // Can be derived from planTier
-                    wizardPrompt: `Setup for ${orgProfile.name} in ${orgProfile.sector} sector`
+                    priority: 'balanced',
+                    wizardPrompt: `Setup for ${orgProfile.name} in ${orgProfile.sector} sector`,
+                    organization: {
+                        name: orgProfile.name,
+                        sector: orgProfile.sector,
+                        contact_email: orgProfile.contact_email,
+                        contact_name: orgProfile.contact_name,
+                        plan_tier: planTier
+                    },
+                    scale,
+                    namespaceStrategy,
+                    customNamespaces,
+                    planTier
                 })
             });
 
@@ -72,7 +83,7 @@ function CustomerPortalWizard({ onClose, onComplete }) {
                         pipeline: data.pipeline,
                         apiKey: data.apiKey,
                         projectedSavings: data.projectedSavings,
-                        dashboard_url: `/studio.html`
+                        dashboard_url: data.dashboard_url || '/portal-dashboard.html'
                     });
                 }
             } else {

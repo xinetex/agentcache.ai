@@ -1,14 +1,10 @@
 import { requireAuth } from '../../lib/auth-middleware.js';
 import { query } from '../../lib/db.js';
-import crypto from 'crypto';
-
-function generateApiKey() {
-  return 'ac_' + crypto.randomBytes(32).toString('hex');
-}
-
-function hashApiKey(apiKey) {
-  return crypto.createHash('sha256').update(apiKey).digest('hex');
-}
+import {
+  generateApiKey,
+  getKeyPrefix,
+  hashApiKey,
+} from '../../lib/workspace-provisioning.js';
 
 export default async function handler(req, res) {
   try {
@@ -18,17 +14,35 @@ export default async function handler(req, res) {
 
     const organizationId = user.organizationId;
 
+    if (!organizationId) {
+      return res.status(409).json({
+        error: 'Organization setup required',
+        onboardingRequired: true,
+        onboardingUrl: '/onboarding.html'
+      });
+    }
+
     // GET - List all API keys for organization
     if (req.method === 'GET') {
       const result = await query(
-        `SELECT id, key, created_at, last_used_at 
+        `SELECT id, name, key_prefix, created_at, last_used_at, request_count, is_active
          FROM api_keys 
          WHERE organization_id = $1 
          ORDER BY created_at DESC`,
         [organizationId]
       );
 
-      return res.status(200).json({ apiKeys: result.rows });
+      return res.status(200).json({
+        apiKeys: result.rows.map((key) => ({
+          id: key.id,
+          name: key.name || 'API Key',
+          preview: key.key_prefix ? `${key.key_prefix}...` : 'hidden',
+          createdAt: key.created_at,
+          lastUsedAt: key.last_used_at,
+          requestCount: parseInt(key.request_count) || 0,
+          isActive: key.is_active
+        }))
+      });
     }
 
     // POST - Generate new API key
@@ -55,16 +69,26 @@ export default async function handler(req, res) {
       // Generate new API key
       const apiKey = generateApiKey();
       const hashedKey = hashApiKey(apiKey);
+      const keyPrefix = getKeyPrefix(apiKey);
+      const allowedNamespaces = JSON.stringify(['*']);
+      const scopes = JSON.stringify(['cache:read', 'cache:write']);
 
       const result = await query(
-        `INSERT INTO api_keys (organization_id, key, key_hash) 
-         VALUES ($1, $2, $3) 
-         RETURNING id, key, created_at`,
-        [organizationId, apiKey, hashedKey]
+        `INSERT INTO api_keys (
+           organization_id, key_hash, key_prefix, name, allowed_namespaces, scopes, is_active
+         ) VALUES ($1, $2, $3, $4, $5::jsonb, $6::jsonb, $7)
+         RETURNING id, name, key_prefix, created_at`,
+        [organizationId, hashedKey, keyPrefix, 'Portal API Key', allowedNamespaces, scopes, true]
       );
 
       return res.status(201).json({ 
-        apiKey: result.rows[0],
+        apiKey: {
+          id: result.rows[0].id,
+          name: result.rows[0].name,
+          preview: `${result.rows[0].key_prefix}...`,
+          createdAt: result.rows[0].created_at
+        },
+        secret: apiKey,
         message: 'API key generated successfully. Please store it securely as it will not be shown again.'
       });
     }

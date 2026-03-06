@@ -20,6 +20,14 @@ export default async function handler(req, res) {
 
     const organizationId = user.organizationId;
 
+    if (!organizationId) {
+      return res.status(409).json({
+        error: 'Organization setup required',
+        onboardingRequired: true,
+        onboardingUrl: '/onboarding.html'
+      });
+    }
+
     // Fetch organization details
     const orgResult = await query(
       'SELECT id, name, slug, sector, plan_tier, created_at FROM organizations WHERE id = $1',
@@ -40,21 +48,21 @@ export default async function handler(req, res) {
 
     // Fetch API keys
     const apiKeysResult = await query(
-      'SELECT id, key, created_at, last_used_at FROM api_keys WHERE organization_id = $1 ORDER BY created_at DESC',
+      `SELECT id, name, key_prefix, created_at, last_used_at, request_count, is_active
+       FROM api_keys
+       WHERE organization_id = $1
+       ORDER BY created_at DESC`,
       [organizationId]
     );
 
-    // Calculate cache metrics from Redis
-    const now = Date.now();
-    const dayAgo = now - 24 * 60 * 60 * 1000;
-    
     // Get usage metrics from database (last 24h)
     const metricsResult = await query(
       `SELECT 
-        SUM(total_requests) as total_requests,
+        SUM(cache_requests) as total_requests,
         SUM(cache_hits) as cache_hits,
         SUM(cache_misses) as cache_misses,
-        SUM(bandwidth_saved_bytes) as bandwidth_saved
+        SUM(tokens_processed) as tokens_processed,
+        SUM(cost_saved) as cost_saved
        FROM organization_usage_metrics 
        WHERE organization_id = $1 
        AND date >= CURRENT_DATE - INTERVAL '1 day'`,
@@ -65,13 +73,11 @@ export default async function handler(req, res) {
     const totalRequests = parseInt(metricsRow.total_requests) || 0;
     const cacheHits = parseInt(metricsRow.cache_hits) || 0;
     const cacheMisses = parseInt(metricsRow.cache_misses) || 0;
-    const bandwidthSavedBytes = parseInt(metricsRow.bandwidth_saved) || 0;
+    const tokensProcessed = parseInt(metricsRow.tokens_processed) || 0;
+    const costSavings = Math.round(parseFloat(metricsRow.cost_saved) || 0);
 
     const hitRate = totalRequests > 0 ? Math.round((cacheHits / totalRequests) * 100) : 0;
-    const bandwidthSavedGB = (bandwidthSavedBytes / (1024 * 1024 * 1024)).toFixed(2);
-
-    // Calculate cost savings (example: $0.09/GB egress)
-    const costSavings = Math.round(bandwidthSavedBytes / (1024 * 1024 * 1024) * 0.09);
+    const bandwidthSavedGB = ((tokensProcessed * 4) / (1024 * 1024 * 1024)).toFixed(2);
 
     // Fetch dedup metrics for filestorage sector
     let dedupMetrics = null;
@@ -132,7 +138,15 @@ export default async function handler(req, res) {
         costSavings
       },
       namespaces: namespacesResult.rows,
-      apiKeys: apiKeysResult.rows,
+      apiKeys: apiKeysResult.rows.map((key) => ({
+        id: key.id,
+        name: key.name || 'API Key',
+        preview: key.key_prefix ? `${key.key_prefix}...` : 'hidden',
+        createdAt: key.created_at,
+        lastUsedAt: key.last_used_at,
+        requestCount: parseInt(key.request_count) || 0,
+        isActive: key.is_active
+      })),
       dedupMetrics
     });
 

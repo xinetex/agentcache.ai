@@ -11,7 +11,7 @@ export const config = {
 const TIERS = {
   FREE: {
     id: 'free',
-    name: 'Community',
+    name: 'Free',
     price: 0,
     quota: 10_000,
     features: {
@@ -26,7 +26,7 @@ const TIERS = {
   PRO: {
     id: 'pro',
     name: 'Pro',
-    price: 49,
+    price: 99,
     quota: 1_000_000,
     features: {
       namespaces: 10,
@@ -40,8 +40,8 @@ const TIERS = {
   ENTERPRISE: {
     id: 'enterprise',
     name: 'Enterprise',
-    price: null,
-    quota: -1,
+    price: 299,
+    quota: 10_000_000,
     features: {
       namespaces: -1,
       ttlMaxDays: 'unlimited',

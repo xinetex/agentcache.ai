@@ -1,118 +1,98 @@
-# AgentCache 2.0: Autonomous Cognitive Infrastructure
+# AgentCache.ai
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Trust Center](https://img.shields.io/badge/Trust-Verified-green)](https://agentcache.ai/trust)
 
-**The Brain for your AI Agents.**
-AgentCache is no longer just a semantic cache. It is a distributed, self-healing, evolutionary cognitive infrastructure designed to give your AI agents "Systems Thinking" capabilities.
+AgentCache is AI middleware for caching, memory, and policy-safe execution.
 
----
+It does three practical things:
+- Caches repeated LLM and tool requests so agents return faster and cost less.
+- Stores reusable session and document memory for retrieval-backed workflows.
+- Adds guardrails around agent inputs, outputs, and third-party tools.
 
-## 🧠 Cognitive Architecture
+## Product Surface
 
-AgentCache implements a **Dual-Process Theory** engine (System 1 vs System 2), giving your agents reflexes *and* reasoning.
+### 1. AgentCache Core
+- Semantic cache for LLM calls
+- Tool result cache
+- Session memory
+- Active invalidation / anti-cache
 
-```mermaid
-graph TD
-    User[User Query] --> Router{Cognitive Router}
-    
-    subgraph System 1 [Fast Path < 50ms]
-        Router -->|Low Entropy| Synapse[Predictive Synapse]
-        Synapse --> Cache[Vector L1 Cache]
-        Cache -->|Hit| Response
-    end
-    
-    subgraph System 2 [Slow Path ~10s]
-        Router -->|High Entropy| Reasoner[Deep Reasoning]
-        Reasoner -->|Chain of Thought| Response
-        Reasoner -.->|Skill Compilation| Cache
-    end
-    
-    subgraph Immune System
-        Drift[DriftWalker] -->|Heals| Cache
-    end
-    
-    subgraph Hive Mind
-        Edge[RosNode Robot] <-->|Federated Sync| Cache
-    end
-```
+### 2. AgentCache Guardrails
+- PII and secret redaction
+- Prompt and topic validation
+- Tool safety scanning
+- Policy-aware workflow enforcement
 
-## 🚀 Key Capabilities
+### 3. AgentCache Knowledge
+- Documentation ingest
+- Semantic search
+- Persistent workspace memory
+- Retrieval-ready context APIs
 
-### 1. Predictive Synapse (Pre-Cognition)
-*   **What it does**: Predicts the user's *next* query before they type it.
-*   **Math**: First-Order Markov Chain with Nucleus Sampling.
-*   **Impact**: Enables **Negative Latency** by pre-fetching probable futures.
+### Enterprise Packages
+- CDN and streaming acceleration
+- File acceleration and dedup workflows
+- Ontology and compliance pilots
 
-### 2. The Immune System (DriftWalker)
-*   **What it does**: Detects "Semantic Rot" in your vector database caused by model updates capabilities drifting.
-*   **Math**: Cosine Shift Detection ($1 - Similarity$).
-*   **Impact**: Automatically re-embeds and heals decayed memories.
+## Quick Start
 
-### 3. Neural Evolution
-*   **What it does**: Optimizes your caching strategy (TTL, Eviction, Model routing) using Genetic Algorithms.
-*   **Math**: Survival of the Fittest (Fitness = HitRate - Latency).
-*   **Impact**: The system "evolves" to fit your specific traffic pattern over generations.
-
-### 4. The Hive Mind (Federated Robotics)
-*   **What it does**: Enables **Fleet Learning** for edge devices.
-*   **Math**: Multi-Modal Vector Embeddings (CLIP/ViT).
-*   **Impact**: If Robot A learns to avoid an obstacle, Robot B knows it instantly (Zero-Shot Transfer).
-
-### 5. Universal Connector (MCP)
-*   **What it does**: Exposes the "Brain" to external agents (Cursor, Claude, AutoGPT) via the Model Context Protocol.
-*   **Tools**:
-    *   `agentcache_predict_intent`: Foresee user intent.
-    *   `agentcache_ask_system2`: Engage deep reasoning.
-    *   `agentcache_hive_memory`: Access multi-modal memory.
-
-### 6. Tool Safety Scanner (Supply Chain Security)
-*   **What it does**: Scans agent tool/plugin source code for security threats *before* installation. Every framework tells agents "only use trusted tools" — but none provide a way to verify trust. AgentCache does.
-*   **Languages**: JavaScript, TypeScript, Python
-*   **Detects**: Credential harvesting, data exfiltration, code obfuscation, privilege escalation, scope violations, MCP manifest over-permissions
-*   **Trust Registry**: Results cached by content hash — known-good tools skip re-scanning
-*   **API**: `POST /api/tools/scan` with `{ source, name?, language?, manifest? }`
-
----
-
-## 🛠️ Usage
-
-### Quick Start (MCP Server)
+### JavaScript / TypeScript
 ```bash
-# Run the MCP Server to expose tools (Standard IO)
-npm run mcp:start
+npm install agentcache-client
 ```
 
-### Edge Node (Robotics)
-```typescript
-import { RosNode } from 'agentcache-ai/edge';
-const robot = new RosNode('worker-01');
-// Sensation -> Perception -> Action
-const action = await robot.process(sensorData);
+```ts
+import { AgentCache } from 'agentcache-client';
+
+const cache = new AgentCache({
+  apiKey: process.env.AGENTCACHE_API_KEY!,
+  namespace: 'default',
+});
+
+const cached = await cache.get({
+  provider: 'openai',
+  model: 'gpt-4o-mini',
+  messages: [{ role: 'user', content: 'Summarize AgentCache in one sentence.' }],
+});
+
+if (!cached.hit) {
+  await cache.set(
+    {
+      provider: 'openai',
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: 'Summarize AgentCache in one sentence.' }],
+    },
+    'AgentCache is the control layer between LLM intent and repeatable execution.'
+  );
+}
 ```
 
-### Cognitive Router
-```typescript
-import { CognitiveRouter } from 'agentcache-ai';
-const route = await new CognitiveRouter().route("Design a nuclear reactor");
-// Output: 'system_2'
+### MCP Server
+```bash
+npm run mcp:dev
 ```
 
----
+## Pricing Model
 
-## 📦 Installation
+Public packaging is now:
+- Free: 10K requests/month
+- Pro: $99/month, 1M requests/month
+- Enterprise: $299/month, 10M requests/month
+
+Add-ons:
+- Guardrails
+- Knowledge
+
+## Verification
 
 ```bash
-npm install agentcache-ai
+npm run test:verification
 ```
 
-## 🧪 Verification
+## Repo Notes
 
-Current System Status: **HEALTHY**
-Run the full verification suite to confirm cognitive integrity:
-```bash
-npm run test:verify
-```
-
----
-*Built with ❤️ by the Neural Engineering Team at AgentCache.*
+This repo contains multiple generations of SDKs, billing flows, and UI surfaces. The active product direction is being consolidated around:
+- `agentcache-client` for JavaScript/TypeScript
+- org-scoped portal APIs
+- self-serve onboarding that provisions a real workspace

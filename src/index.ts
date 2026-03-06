@@ -1455,7 +1455,7 @@ app.get('/api', (c) => {
     },
     endpoints: {
       '/api/health': 'Health check',
-      '/api/auth/signup': 'Join waitlist (get demo key)',
+      '/api/auth/signup': 'Create account and start workspace onboarding',
       '/api/cache/check': 'Check if response is cached',
       '/api/cache/get': 'Get cached response',
       '/api/cache/set': 'Store response in cache',
@@ -1477,5 +1477,4 @@ app.get('/api', (c) => {
     focusGroups: 'https://maxxeval.com/api/focus-groups/join',
   });
 });
-
 
