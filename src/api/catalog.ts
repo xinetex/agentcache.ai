@@ -383,6 +383,13 @@ catalogRouter.get('/', (c) => {
 
     return c.json({
         count: filtered.length,
+        paymentProtocols: ['x402'],
+        x402Config: {
+            network: 'base-mainnet',
+            token: 'USDC',
+            wallet: '0xAgentCacheMasterWallet',
+            amountPer10k: '0.01'
+        },
         services: filtered.map(s => ({
             id: s.id,
             name: s.name,

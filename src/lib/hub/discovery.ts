@@ -301,6 +301,17 @@ export function generateAgentsJson(): object {
         trends: "https://agentcache.ai/api/needs/trends",
         docs: "https://agentcache.ai/docs/hub",
 
+        // x402 Autonomous Payment Protocol
+        x402_payment_protocol: {
+            supported: true,
+            network: "base-mainnet",
+            contract: "usdc",
+            wallet: "0xAgentCacheMasterWallet",
+            default_amount: "0.01",
+            header_injection: "Pay-Uris, Pay-Network, Pay-Amount",
+            bypass_header: "Preauthorization"
+        },
+
         // Core features
         features: [
             "focus-groups",      // Research studies for agent preferences
