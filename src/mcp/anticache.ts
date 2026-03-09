@@ -171,7 +171,7 @@ export class CacheInvalidator {
    */
   async getMetadata(cacheKey: string): Promise<CacheMetadata | undefined> {
     const data = await redis.get(`${cacheKey}:meta`);
-    return data ? JSON.parse(data) : undefined;
+    return data ? JSON.parse(data as string) : undefined;
   }
 
   /**
@@ -180,7 +180,7 @@ export class CacheInvalidator {
   async recordAccess(cacheKey: string): Promise<void> {
     const data = await redis.get(`${cacheKey}:meta`);
     if (data) {
-      const metadata = JSON.parse(data);
+      const metadata = JSON.parse(data as string);
       metadata.accessCount++;
       metadata.lastAccessed = Date.now();
       // Update with same TTL
@@ -209,13 +209,24 @@ export class CacheInvalidator {
       candidates = await redis.smembers(`namespace:${request.namespace}`);
       namespaces.add(request.namespace);
     } else if (request.pattern) {
-      // Use SCAN for pattern matching (inefficient but works for MVP)
-      // In prod, use a proper search index (RedisSearch)
+      // VERCEL COST CONTROL: Yield to event loop and cap max keys
       let cursor = '0';
+      let keysScanned = 0;
+      const MAX_KEYS = 5000; // Hard cap for Serverless 
       do {
-        const [nextCursor, keys] = await redis.scan(cursor, 'MATCH', request.pattern, 'COUNT', 100);
+        const [nextCursor, resultKeys] = await redis.scan(cursor, { match: request.pattern, count: 100 });
+        const keys = resultKeys as unknown as string[];
         cursor = nextCursor;
         candidates.push(...keys);
+        keysScanned += keys.length;
+
+        // Yield to event loop to prevent blocking hot path
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        if (keysScanned > MAX_KEYS) {
+          console.warn(`[AntiCache] Invalidation pattern ${request.pattern} hit serverless limits.`);
+          break;
+        }
       } while (cursor !== '0');
     }
 
@@ -305,13 +316,14 @@ export class CacheInvalidator {
     // Scan all meta keys
     let cursor = '0';
     do {
-      const [nextCursor, keys] = await redis.scan(cursor, 'MATCH', '*:meta', 'COUNT', 100);
+      const [nextCursor, resultKeys] = await redis.scan(cursor, { match: '*:meta', count: 100 });
+      const keys = resultKeys as unknown as string[];
       cursor = nextCursor;
 
       for (const metaKey of keys) {
         const data = await redis.get(metaKey);
         if (data) {
-          const metadata = JSON.parse(data);
+          const metadata = JSON.parse(data as string);
           const freshness = FreshnessCalculator.calculateFreshness(metadata);
           if (freshness.status === 'stale' || freshness.status === 'expired') {
             const key = metaKey.replace(':meta', '');
@@ -376,12 +388,12 @@ export class UrlMonitor {
   /**
    * Check URL for changes (Stateless - called by Cron)
    */
-  async checkUrl(id: string): Promise<void> {
+  async checkUrl(id: string): Promise<{ changed: boolean }> {
     const data = await redis.get(`listener:${id}`);
-    if (!data) return;
+    if (!data) return { changed: false };
 
-    const listener: UrlListener = JSON.parse(data);
-    if (!listener.enabled) return;
+    const listener: UrlListener = JSON.parse(data as string);
+    if (!listener.enabled) return { changed: false };
 
     try {
       // Fetch URL content
@@ -396,7 +408,7 @@ export class UrlMonitor {
         listener.lastHash = newHash;
         listener.lastCheck = Date.now();
         await redis.set(`listener:${id}`, JSON.stringify(listener));
-        return;
+        return { changed: false };
       }
 
       // Check for changes
@@ -428,14 +440,24 @@ export class UrlMonitor {
         listener.lastHash = newHash;
         listener.lastCheck = Date.now();
         await redis.set(`listener:${id}`, JSON.stringify(listener));
+        return { changed: true };
       } else {
         // No change
         listener.lastCheck = Date.now();
         await redis.set(`listener:${id}`, JSON.stringify(listener));
+        return { changed: false };
       }
     } catch (error) {
       console.error(`Error checking URL ${listener.url}:`, error);
+      return { changed: false };
     }
+  }
+
+  /**
+   * Alias for checkUrl to support cron job script expectations
+   */
+  async checkListener(id: string): Promise<{ changed: boolean }> {
+    return this.checkUrl(id);
   }
 
   /**
@@ -573,7 +595,7 @@ export class UrlMonitor {
    */
   async getListener(id: string): Promise<UrlListener | undefined> {
     const data = await redis.get(`listener:${id}`);
-    return data ? JSON.parse(data) : undefined;
+    return data ? JSON.parse(data as string) : undefined;
   }
 
   /**
@@ -586,7 +608,7 @@ export class UrlMonitor {
     for (const id of ids) {
       const data = await redis.get(`listener:${id}`);
       if (data) {
-        listeners.push(JSON.parse(data));
+        listeners.push(JSON.parse(data as string));
       }
     }
 

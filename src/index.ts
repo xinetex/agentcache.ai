@@ -440,46 +440,52 @@ app.post('/api/cache/check', async (c) => {
     const previousQuery = typeof body.previous_query === 'string' ? body.previous_query : undefined;
 
     if (latestQuery) {
-      await cognitiveMemory.observeTransition(previousQuery, latestQuery);
+      // Fire and forget observation
+      cognitiveMemory.observeTransition(previousQuery, latestQuery).catch(err => console.error("[Cognitive] Observe failed:", err));
     }
 
-    let semanticHit = false;
-    let similarity = 0;
-    let semanticKey = null;
+    // Exact Match Strategy (Fast-fail)
+    if (exists) {
+      const predictivePrefetch = latestQuery
+        ? await cognitiveMemory.predictNext(latestQuery, 1)
+        : [];
+      return c.json({
+        cached: true,
+        key: key.slice(-16),
+        ttl,
+        type: 'exact',
+        similarity: 1.0,
+        predictive_prefetch: predictivePrefetch,
+      });
+    }
 
-    // Semantic Caching Layer (Prototype)
+    // Semantic Caching Layer (Asynchronous/Non-blocking)
     if (!exists && req.semantic) {
-      try {
-        // Flatten last user message for query
-        const lastMsg = latestQuery;
-        if (lastMsg) {
-          // Search vector store
-          const results = await queryMemory(lastMsg, 1);
+      const lastMsg = latestQuery;
+      if (lastMsg) {
+        // Kick off semantic search in background. 
+        // We do NOT block the request waiting for this. If they query again soon, it will be in the Redis Exact cache.
+        queryMemory(lastMsg, 1).then(results => {
           if (results && results.length > 0) {
             const match = results[0];
-            if (match.score > 0.95) { // Strict threshold
-              semanticHit = true;
-              similarity = match.score;
-              semanticKey = match.metadata?.cacheKey;
+            if (match.score > 0.95 && match.metadata?.responsePreview) {
+              // Pre-warm the Exact cache for this key so the next request hits instantly
+              redis.setex(key, req.ttl, match.metadata.responsePreview).catch(() => { });
             }
           }
-        }
-      } catch (err) {
-        console.warn("[Semantic] Lookup failed:", err);
+        }).catch(err => console.warn("[Semantic] Background lookup failed:", err));
       }
     } // semantic check
 
-    const predictivePrefetch = latestQuery
-      ? await cognitiveMemory.predictNext(latestQuery, 1)
-      : [];
-
+    // If it wasn't an exact match, we return false immediately to keep latency low.
+    // The background semantic check above will pre-warm the cache for similar future queries.
     return c.json({
-      cached: exists === 1 || semanticHit,
-      key: semanticHit ? semanticKey : key.slice(-16),
-      ttl: semanticHit ? 3600 : ttl, // Mock TTL for semantic
-      type: semanticHit ? 'semantic' : 'exact',
-      similarity: semanticHit ? similarity : 1.0,
-      predictive_prefetch: predictivePrefetch,
+      cached: false,
+      key: key.slice(-16),
+      ttl: 0,
+      type: 'miss',
+      similarity: 0,
+      predictive_prefetch: [],
     });
   } catch (error: any) {
     return c.json({ error: error.message }, 400);

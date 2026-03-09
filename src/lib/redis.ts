@@ -5,7 +5,16 @@ import { Redis } from '@upstash/redis';
 class MockRedis {
   private store = new Map<string, any>();
 
+  private ensureStoreLimit() {
+    if (this.store.size > 5000) {
+      // Very naive LRU: delete the first 1000 keys to prevent node OOM
+      const keysToDelete = Array.from(this.store.keys()).slice(0, 1000);
+      for (const k of keysToDelete) this.store.delete(k);
+    }
+  }
+
   private ensureHash(key: string) {
+    this.ensureStoreLimit();
     if (
       !this.store.has(key) ||
       typeof this.store.get(key) !== 'object' ||
@@ -131,7 +140,7 @@ class MockRedis {
       Object.assign(hash, field);
       return Object.keys(field).length;
     }
-    hash[field] = value;
+    (hash as any)[field as string] = value;
     return 1;
   }
 
@@ -226,13 +235,25 @@ class MockRedis {
       incr: (k: string) => { operations.push(() => { const v = parseInt(self.store.get(k) || '0'); self.store.set(k, v + 1); }); return chain; },
       incrby: (k: string, n: number) => { operations.push(() => { const v = parseInt(self.store.get(k) || '0'); self.store.set(k, v + n); }); return chain; },
       incrbyfloat: (k: string, n: number) => { operations.push(() => { const v = parseFloat(self.store.get(k) || '0.0'); self.store.set(k, v + n); }); return chain; },
-      expire: (k: string, s: number) => { operations.push(() => {}); return chain; },
+      expire: (k: string, s: number) => { operations.push(() => { }); return chain; },
       lpush: (k: string, ...vals: any[]) => { operations.push(() => { if (!self.store.has(k)) self.store.set(k, []); const l = self.store.get(k); if (Array.isArray(l)) l.unshift(...vals); }); return chain; },
       ltrim: (k: string, start: number, stop: number) => { operations.push(() => { const l = self.store.get(k); if (Array.isArray(l)) self.store.set(k, l.slice(start, stop + 1)); }); return chain; },
       zadd: (k: string, ...args: any[]) => { operations.push(() => { self.zadd(k, ...args); }); return chain; },
       exec: async () => { for (const op of operations) op(); return []; }
     };
     return chain;
+  }
+  async appendToSession(sessionId: string, data: any) {
+    const key = `session:${sessionId}:history`;
+    await this.lpush(key, JSON.stringify(data));
+    await this.ltrim(key, 0, 99); // Keep last 100
+    return true;
+  }
+
+  async getSessionHistory(sessionId: string) {
+    const key = `session:${sessionId}:history`;
+    const items = await this.lrange(key, 0, -1);
+    return items.map(item => JSON.parse(item as string));
   }
 }
 
@@ -259,6 +280,26 @@ try {
 // Proxy to catch runtime Auth failures and switch to mock
 export const redis = new Proxy({}, {
   get: (target, prop) => {
+    // Special methods not in Upstash Redis
+    if (prop === 'appendToSession') {
+      return async (sessionId: string, data: any) => {
+        const key = `session:${sessionId}:history`;
+        // Use raw client methods
+        const self = (isMock ? redisClient : redisClient);
+        await self.lpush(key, JSON.stringify(data));
+        await self.ltrim(key, 0, 99);
+        return true;
+      };
+    }
+    if (prop === 'getSessionHistory') {
+      return async (sessionId: string) => {
+        const key = `session:${sessionId}:history`;
+        const self = (isMock ? redisClient : redisClient);
+        const items = await self.lrange(key, 0, -1);
+        return items.map((item: any) => typeof item === 'string' ? JSON.parse(item) : item);
+      };
+    }
+
     if (isMock) return (redisClient as any)[prop];
 
     return async (...args: any[]) => {
@@ -278,4 +319,4 @@ export const redis = new Proxy({}, {
       }
     };
   }
-}) as unknown as Redis;
+}) as any;

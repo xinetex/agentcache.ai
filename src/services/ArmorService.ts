@@ -43,19 +43,15 @@ export class ArmorService {
 
             for (const threat of threats) {
                 if (str.includes(threat)) {
-                    // Log Attack to Cortex
-                    try {
-                        await this.cortex.synapse({
+                    // Log Attack to Cortex (Fire-and-forget to prevent blocking hot path)
+                    Promise.all([
+                        this.cortex.synapse({
                             sector: 'FINANCE', // Using Finance/Risk channel for Security for now
                             type: 'WARNING',
                             message: `🛡️ ARMOR BLOCKED: Malicious Payload detected from ${ip}`
-                        });
-
-                        // Ban IP temporarily
-                        await redis.setex(`armor:ban:${ip}`, 300, 'banned');
-                    } catch (e) {
-                        console.error("[Armor] Failed to log threat:", e);
-                    }
+                        }),
+                        redis.setex(`armor:ban:${ip}`, 300, 'banned')
+                    ]).catch(e => console.error("[Armor] Failed to log threat async:", e));
 
                     return { allowed: false, reason: `Threat Detected: ${threat}` };
                 }
