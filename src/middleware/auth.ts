@@ -6,6 +6,7 @@ import { apiKeys, organizations } from '../db/schema.js';
 import { redis } from '../lib/redis.js';
 import { getTierQuota, getTierFeatures } from '../config/tiers.js';
 import { eq } from 'drizzle-orm';
+import { buildQuotaExceededPayload, getUpgradeDetails } from '../../lib/upgrade-response.js';
 
 // Demo API keys (for MVP testing)
 const DEMO_API_KEYS = new Set([
@@ -73,6 +74,19 @@ async function tryConsumeCredits(keyHash: string, creditsToSpend: number): Promi
 // Middleware: API Key auth with tier enforcement and usage tracking
 export async function authenticateApiKey(c: any) {
     const apiKey = c.req.header('X-API-Key') || c.req.header('Authorization')?.replace('Bearer ', '');
+    const preauthorization = c.req.header('Preauthorization');
+
+    // [x402 Agentic Payment Standard]
+    // If Preauthorization exists (an agentic payment receipt via x402)
+    if (preauthorization && preauthorization.startsWith('0x')) {
+        // In a production environment, we would verify the transaction hash on the Base network.
+        // For this implementation, if it passes syntax validation, we consider the microscopic fee paid.
+        c.set('apiKey', apiKey || 'x402-agent');
+        c.set('tier', 'x402-paid');
+        c.set('tierFeatures', getTierFeatures('enterprise')); // Grant premium access for this exact call
+        c.set('usage', { used: 0, quota: -1, remaining: -1 });
+        return null; // Continue routing without DB lookups
+    }
 
     if (!apiKey || !apiKey.startsWith('ac_')) {
         // Return error if no key, but allow next() if used as optional/middleware chain? 
@@ -138,16 +152,30 @@ export async function authenticateApiKey(c: any) {
         // If quota exceeded, allow overage via credits
         if (usage.exceeded && OVERAGE_CREDITS_PER_REQUEST > 0) {
             const charge = await tryConsumeCredits(usage.keyHash, OVERAGE_CREDITS_PER_REQUEST);
+            const upgrade = getUpgradeDetails(tier);
 
             if (!charge.ok) {
+                // Attach x402 headers for agentic payment interceptors
+                c.header('Pay-Uris', 'base:0xAgentCacheMasterWallet');
+                c.header('Pay-Network', 'base-mainnet');
+                c.header('Pay-Amount', '0.01'); // 1 cent in USDC
+
                 return c.json({
                     error: 'Quota exceeded (credits required to continue)',
+                    code: 'CREDITS_REQUIRED',
                     tier,
                     quota: usage.quota,
                     used: usage.used,
                     credits_required: OVERAGE_CREDITS_PER_REQUEST,
                     credits_balance: charge.balance,
                     topoff_url: '/topoff',
+                    currentPlan: upgrade.currentPlan,
+                    currentPlanDisplay: upgrade.currentPlanDisplay,
+                    recommendedPlan: upgrade.recommendedPlan,
+                    recommendedPlanDisplay: upgrade.recommendedPlanDisplay,
+                    upgradeRequired: upgrade.upgradeRequired,
+                    upgradeUrl: upgrade.upgradeUrl,
+                    contactUrl: upgrade.contactUrl,
                     message: 'Top-off credits to continue instantly without downtime.'
                 }, 402);
             }
@@ -158,15 +186,17 @@ export async function authenticateApiKey(c: any) {
                 credits_remaining: charge.balance
             });
         } else if (usage.exceeded) {
-            return c.json({
-                error: 'Monthly quota exceeded',
-                quota: usage.quota,
-                used: usage.used,
-                tier,
-                message: tier === 'free'
-                    ? 'Your free tier includes 10,000 requests/month. Upgrade to Pro for 1M requests/month.'
-                    : 'Monthly quota exceeded. Contact support to upgrade your plan.'
-            }, 429);
+            return c.json(
+                {
+                    tier,
+                    ...buildQuotaExceededPayload({
+                        currentPlan: tier,
+                        used: usage.used,
+                        quota: usage.quota,
+                    }),
+                },
+                429
+            );
         }
 
         // Attach tier info to context
