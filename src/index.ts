@@ -280,6 +280,9 @@ app.route('/api/finance', financeRouter);
 import ontologyRouter from './api/ontology.js';
 app.route('/api/ontology', ontologyRouter);
 
+import lemmaRouter from './api/lemma.js';
+app.route('/api/lemma', lemmaRouter);
+
 // Agent Hub API (LinkedIn meets Yelp for agents)
 app.route('/api/hub', hubRouter);
 // Alias: /api/agents/register → hub agent registration (shorthand URL)
