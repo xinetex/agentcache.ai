@@ -6,7 +6,7 @@ import { apiKeys, organizations } from '../db/schema.js';
 import { redis } from '../lib/redis.js';
 import { getTierQuota, getTierFeatures } from '../config/tiers.js';
 import { eq } from 'drizzle-orm';
-import { buildQuotaExceededPayload, getUpgradeDetails } from '../../lib/upgrade-response.js';
+import { buildQuotaExceededPayload, getUpgradeDetails } from '../lib/upgrade-response.js';
 
 // Demo API keys (for MVP testing)
 const DEMO_API_KEYS = new Set([
