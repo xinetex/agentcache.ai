@@ -15,6 +15,12 @@
 
 export const config = { runtime: 'nodejs' };
 
+import {
+  buildQuotaExceededPayload,
+  getDefaultQuotaForPlan,
+  normalizePublicPlanId,
+} from '../../src/lib/upgrade-response.js';
+
 const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
 const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
@@ -42,7 +48,7 @@ async function redis(command, ...args) {
 // Helper: Generate cache key (deterministic hash)
 async function generateCacheKey(request) {
   const { model, messages, temperature = 1.0, top_p, top_k } = request;
-  
+
   const cacheInput = {
     model,
     messages,
@@ -50,13 +56,13 @@ async function generateCacheKey(request) {
     top_p,
     top_k
   };
-  
+
   const msgString = JSON.stringify(cacheInput);
   const msgBuffer = new TextEncoder().encode(msgString);
   const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  
+
   return `agentcache:v1:anthropic:${model}:${hashHex}`;
 }
 
@@ -64,47 +70,66 @@ async function generateCacheKey(request) {
 async function authenticate(req) {
   // Get API key from header (Anthropic format or AgentCache format)
   let apiKey = req.headers.get('x-api-key');
-  
+
   if (!apiKey) {
     const authHeader = req.headers.get('authorization');
     if (authHeader?.startsWith('Bearer ')) {
       apiKey = authHeader.replace('Bearer ', '');
     }
   }
-  
+
   if (!apiKey) {
     return { ok: false, error: 'Missing API key' };
   }
-  
+
   // Demo keys (unlimited for testing)
   if (apiKey.startsWith('ac_demo_')) {
     return { ok: true, kind: 'demo', apiKey };
   }
-  
+
   // Live keys (validate via Redis)
   if (!apiKey.startsWith('ac_live_')) {
     return { ok: false, error: 'Invalid API key format' };
   }
-  
+
   const hash = await hashApiKey(apiKey);
   const email = await redis('HGET', `key:${hash}`, 'email');
-  
+
   if (!email) {
     return { ok: false, error: 'Invalid API key' };
   }
-  
+
   // Check quota
   const now = new Date();
   const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   const usageKey = `usage:${hash}:m:${monthKey}`;
   const usage = parseInt(await redis('GET', usageKey) || '0');
-  const quota = parseInt(await redis('HGET', `usage:${hash}`, 'monthlyQuota') || '10000');
-  
+  const plan = normalizePublicPlanId(
+    (await redis('GET', `tier:${hash}`)) ||
+    (await redis('HGET', `usage:${hash}`, 'plan')) ||
+    'free'
+  );
+  const quota = parseInt(
+    (await redis('HGET', `usage:${hash}`, 'monthlyQuota')) ||
+    (await redis('GET', `usage:${hash}/monthlyQuota`)) ||
+    (await redis('GET', `usage:${hash}:quota`)) ||
+    String(getDefaultQuotaForPlan(plan)),
+    10
+  );
+
   if (usage >= quota) {
-    return { ok: false, error: 'Monthly quota exceeded', quota: { used: usage, limit: quota } };
+    return {
+      ok: false,
+      status: 429,
+      ...buildQuotaExceededPayload({
+        currentPlan: plan,
+        used: usage,
+        quota,
+      }),
+    };
   }
-  
-  return { ok: true, kind: 'live', apiKey, hash, email, usage, quota };
+
+  return { ok: true, kind: 'live', apiKey, hash, email, usage, quota, plan };
 }
 
 // Helper: Hash API key
@@ -120,10 +145,10 @@ async function incrementUsage(hash) {
   const now = new Date();
   const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   const usageKey = `usage:${hash}:m:${monthKey}`;
-  
+
   // Increment monthly usage
   await redis('INCR', usageKey);
-  
+
   // Set expiry to end of next month
   const nextMonth = new Date(now.getFullYear(), now.getMonth() + 2, 1);
   const ttl = Math.floor((nextMonth - now) / 1000);
@@ -145,46 +170,59 @@ export default async function handler(req) {
   if (req.method !== 'POST') {
     return json({ error: 'Method not allowed' }, 405);
   }
-  
+
   // Authenticate
   const auth = await authenticate(req);
   if (!auth.ok) {
-    return json({ error: auth.error, quota: auth.quota }, 401);
+    return json({
+      error: auth.error,
+      code: auth.code,
+      quota: auth.quota,
+      used: auth.used,
+      currentPlan: auth.currentPlan,
+      currentPlanDisplay: auth.currentPlanDisplay,
+      recommendedPlan: auth.recommendedPlan,
+      recommendedPlanDisplay: auth.recommendedPlanDisplay,
+      upgradeRequired: auth.upgradeRequired,
+      upgradeUrl: auth.upgradeUrl,
+      contactUrl: auth.contactUrl,
+      message: auth.message,
+    }, auth.status || 401);
   }
-  
+
   try {
     // Parse request body
     const body = await req.json();
-    
+
     // Validate required fields
     if (!body.model || !body.messages) {
       return json({ error: 'Missing required fields: model, messages' }, 400);
     }
-    
+
     // Ensure max_tokens is set (required by Anthropic)
     if (!body.max_tokens) {
       body.max_tokens = 4096; // Default
     }
-    
+
     // Generate cache key
     const cacheKey = await generateCacheKey(body);
-    
+
     // Check cache
     const startTime = Date.now();
     const cached = await redis('GET', cacheKey);
-    
+
     if (cached) {
       // Cache HIT
       const latency = Date.now() - startTime;
-      
+
       // Track metrics
       if (auth.kind === 'live') {
         await trackCacheMetrics(auth.hash, true);
         await incrementUsage(auth.hash);
       }
-      
+
       const response = JSON.parse(cached);
-      
+
       // Return cached response with Anthropic format + cache headers
       return json(response, 200, {
         'X-Cache': 'HIT',
@@ -192,18 +230,18 @@ export default async function handler(req) {
         'X-AgentCache-Savings': '90%'
       });
     }
-    
+
     // Cache MISS - proxy to Anthropic
-    
+
     // Get user's Anthropic API key from headers
     const anthropicKey = req.headers.get('x-anthropic-key');
     if (!anthropicKey) {
-      return json({ 
-        error: 'Missing X-Anthropic-Key header', 
+      return json({
+        error: 'Missing X-Anthropic-Key header',
         message: 'Include your Anthropic API key as: X-Anthropic-Key: sk-ant-...'
       }, 400);
     }
-    
+
     // Proxy request to Anthropic
     const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -214,40 +252,40 @@ export default async function handler(req) {
       },
       body: JSON.stringify(body)
     });
-    
+
     if (!anthropicResponse.ok) {
       const errorData = await anthropicResponse.json();
-      return json({ 
-        error: 'Anthropic API error', 
-        details: errorData 
+      return json({
+        error: 'Anthropic API error',
+        details: errorData
       }, anthropicResponse.status);
     }
-    
+
     const anthropicData = await anthropicResponse.json();
     const totalLatency = Date.now() - startTime;
-    
+
     // Store in cache (7 days TTL)
     const ttl = 7 * 24 * 60 * 60; // 7 days
     await redis('SETEX', cacheKey, ttl, JSON.stringify(anthropicData));
-    
+
     // Track metrics
     if (auth.kind === 'live') {
       await trackCacheMetrics(auth.hash, false);
       await incrementUsage(auth.hash);
     }
-    
+
     // Return Anthropic response with cache headers
     return json(anthropicData, 200, {
       'X-Cache': 'MISS',
       'X-Cache-Latency': `${totalLatency}ms`,
       'X-AgentCache-Provider': 'anthropic'
     });
-    
+
   } catch (err) {
     console.error('Proxy error:', err);
-    return json({ 
-      error: 'Internal server error', 
-      details: err.message 
+    return json({
+      error: 'Internal server error',
+      details: err.message
     }, 500);
   }
 }

@@ -1,6 +1,12 @@
 export const config = { runtime: 'edge' };
 
 import { Tracer } from '../src/lib/observability/tracer.js';
+import {
+  buildQuotaExceededPayload,
+  buildRateLimitPayload,
+  getDefaultQuotaForPlan,
+  normalizePublicPlanId,
+} from '../src/lib/upgrade-response.js';
 
 // Inline audit logging (simplified to avoid import issues)
 async function logAuditEvent(redis, event) {
@@ -125,14 +131,33 @@ async function sha256Hex(text) {
 async function auth(req) {
   const apiKey = req.headers.get('x-api-key') || req.headers.get('authorization')?.replace('Bearer ', '');
   if (!apiKey || !apiKey.startsWith('ac_')) return { ok: false };
-  if (apiKey.startsWith('ac_demo_')) return { ok: true, kind: 'demo', hash: null, quota: 200 };
+  if (apiKey.startsWith('ac_demo_')) {
+    return {
+      ok: true,
+      kind: 'demo',
+      hash: null,
+      email: null,
+      plan: 'enterprise',
+      quota: Infinity,
+    };
+  }
   // verify live key via hash lookup
   const hash = await sha256Hex(apiKey);
-  const res = await fetch(`${getEnv().url}/hget/key:${hash}/email`, { headers: { Authorization: `Bearer ${getEnv().token}` }, cache: 'no-store' });
-  if (!res.ok) return { ok: false };
-  const email = await res.text();
+  const email = await redis('HGET', `key:${hash}`, 'email');
   if (!email) return { ok: false };
-  return { ok: true, kind: 'live', hash, email };
+  const plan = normalizePublicPlanId(
+    (await redis('GET', `tier:${hash}`)) ||
+    (await redis('HGET', `usage:${hash}`, 'plan')) ||
+    'free'
+  );
+  const quota = Number(
+    (await redis('GET', `usage:${hash}/monthlyQuota`)) ||
+    (await redis('GET', `usage:${hash}:quota`)) ||
+    (await redis('HGET', `usage:${hash}`, 'monthlyQuota')) ||
+    getDefaultQuotaForPlan(plan)
+  );
+
+  return { ok: true, kind: 'live', hash, email, plan, quota };
 }
 
 // Provider compliance database
@@ -265,7 +290,14 @@ export default async function handler(req, ctx) {
       const reqCount = await redis('INCR', rateLimitKey);
       await redis('EXPIRE', rateLimitKey, 120);
       if (Number(reqCount) > rateLimit) {
-        return json({ error: 'Rate limit exceeded', limit: rateLimit, window: '1 minute' }, 429);
+        return json(
+          buildRateLimitPayload({
+            currentPlan: authn.plan || 'free',
+            limit: rateLimit,
+            window: 'minute',
+          }),
+          429
+        );
       }
     }
 
@@ -324,14 +356,20 @@ export default async function handler(req, ctx) {
     if (authn.kind === 'live') {
       const month = new Date().toISOString().slice(0, 7);
       const usageKey = `usage:${authn.hash}:m:${month}`;
-      const quotaKey = `usage:${authn.hash}/monthlyQuota`;
-      const quota = await redis('GET', quotaKey) || '10000';
       const count = await redis('INCR', usageKey);
       await redis('EXPIRE', usageKey, 60 * 60 * 24 * 40);
+      const quota = Number(authn.quota || getDefaultQuotaForPlan(authn.plan || 'free'));
 
       // Check quota exceeded
-      if (Number(count) > Number(quota)) {
-        return json({ error: 'Monthly quota exceeded', quota: Number(quota), used: Number(count) }, 429);
+      if (Number(count) > quota) {
+        return json(
+          buildQuotaExceededPayload({
+            currentPlan: authn.plan || 'free',
+            used: Number(count),
+            quota,
+          }),
+          429
+        );
       }
     }
 
