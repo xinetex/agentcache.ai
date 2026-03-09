@@ -65,3 +65,5 @@ export class BillingService {
         return logs.map(s => JSON.parse(s));
     }
 }
+
+export const billingService = new BillingService();

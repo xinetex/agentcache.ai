@@ -138,23 +138,36 @@ DO NOT explicitly mention that you are stitching parts together or reference "St
      * Orchestrator
      */
     async chat(prompt: string, provider: string = 'openai', model: string = 'gpt-4o-mini') {
+        const { missionTracer } = await import('./MissionTracer.js');
         const startTime = Date.now();
 
+        // Start high-level observability mission
+        await missionTracer.startMission(prompt);
+
         // 1. Decompose
+        const decompStep = await missionTracer.trackStep({ id: 'decompose', type: 'decomposition' });
         const subtasks = await this.decompose(prompt);
+        await missionTracer.completeStep(decompStep, { subtaskCount: subtasks.length });
         const decomposeTime = Date.now();
 
         // 2. Resolve (Parallel cache/LLM hits)
+        const resolveStep = await missionTracer.trackStep({ id: 'resolve', type: 'resolution' });
         const { results, metrics } = await this.resolve(subtasks, provider, model);
+        await missionTracer.completeStep(resolveStep, metrics);
         const resolveTime = Date.now();
 
         // 3. Synthesize
+        const synthStep = await missionTracer.trackStep({ id: 'synthesize', type: 'synthesis' });
         const finalAnswer = await this.synthesize(prompt, results, provider, model);
+        await missionTracer.completeStep(synthStep);
         const finishTime = Date.now();
+
+        await missionTracer.endMission("Synthesis fluidly woven.");
 
         return {
             response: finalAnswer,
             subtasks: subtasks,
+            missionId: missionTracer.getMissionId(),
             metrics: {
                 ...metrics,
                 timing: {

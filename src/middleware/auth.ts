@@ -79,13 +79,25 @@ export async function authenticateApiKey(c: any) {
     // [x402 Agentic Payment Standard]
     // If Preauthorization exists (an agentic payment receipt via x402)
     if (preauthorization && preauthorization.startsWith('0x')) {
-        // In a production environment, we would verify the transaction hash on the Base network.
-        // For this implementation, if it passes syntax validation, we consider the microscopic fee paid.
-        c.set('apiKey', apiKey || 'x402-agent');
-        c.set('tier', 'x402-paid');
-        c.set('tierFeatures', getTierFeatures('enterprise')); // Grant premium access for this exact call
-        c.set('usage', { used: 0, quota: -1, remaining: -1 });
-        return null; // Continue routing without DB lookups
+        const { agentSettlementService } = await import('../services/AgentSettlementService.js');
+        const agentId = apiKey || 'x402-agent';
+
+        // Settle a larger amount (10.0) to avoid any potential sub-cent rounding issues/misunderstandings in real-type
+        const settlement = await agentSettlementService.settle(preauthorization, agentId, 10.0);
+
+        if (settlement.success) {
+            c.set('apiKey', agentId);
+            c.set('tier', 'x402-paid');
+            c.set('tierFeatures', getTierFeatures('enterprise'));
+            c.set('usage', { used: 0, quota: -1, remaining: -1 });
+            return null;
+        } else {
+            console.error(`[Auth] x402 Settlement Failed for ${agentId}: ${settlement.error}`);
+            return c.json({
+                error: `x402 Settlement Failed: ${settlement.error}`,
+                details: settlement.error
+            }, 402);
+        }
     }
 
     if (!apiKey || !apiKey.startsWith('ac_')) {

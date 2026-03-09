@@ -38,6 +38,16 @@ export class LedgerService {
     }
 
     /**
+     * Look up a transaction by its description/reference.
+     */
+    async getTransactionByReference(reference: string) {
+        const result = await db.select().from(ledgerTransactions)
+            .where(eq(ledgerTransactions.description, reference))
+            .limit(1);
+        return result[0] || null;
+    }
+
+    /**
      * Execute a transfer between two accounts.
      * Uses a transaction to ensure atomicity.
      */
@@ -45,33 +55,29 @@ export class LedgerService {
         if (amount <= 0) throw new Error("Transfer amount must be positive");
 
         return await db.transaction(async (tx) => {
-            // 1. Get Sender
+            // 1. Get Sender with PESSIMISTIC LOCK (Prevent concurrency race)
             const senderAcc = await tx.select().from(ledgerAccounts)
                 .where(eq(ledgerAccounts.ownerId, fromOwnerId))
-                .limit(1);
+                .limit(1)
+                .for('update');
 
             if (!senderAcc.length || (senderAcc[0].balance || 0) < amount) {
                 throw new Error("Insufficient funds or invalid sender");
             }
 
-            // 2. Get Recipient
+            // 2. Get Recipient with PESSIMISTIC LOCK
             const recipientAcc = await tx.select().from(ledgerAccounts)
                 .where(eq(ledgerAccounts.ownerId, toOwnerId))
-                .limit(1);
+                .limit(1)
+                .for('update');
 
             if (!recipientAcc.length) {
                 throw new Error("Recipient account not found");
             }
 
-            // 3. Deduct from Sender
-            await tx.update(ledgerAccounts)
-                .set({ balance: sql`${ledgerAccounts.balance} - ${amount}`, updatedAt: new Date() })
-                .where(eq(ledgerAccounts.id, senderAcc[0].id));
-
-            // 4. Add to Recipient
-            await tx.update(ledgerAccounts)
-                .set({ balance: sql`${ledgerAccounts.balance} + ${amount}`, updatedAt: new Date() })
-                .where(eq(ledgerAccounts.id, recipientAcc[0].id));
+            // 3 & 4. Updates via Raw SQL to ensure atomicity and precision
+            await tx.execute(sql`UPDATE ledger_accounts SET balance = balance - ${amount}, updated_at = NOW() WHERE owner_id = ${fromOwnerId}`);
+            await tx.execute(sql`UPDATE ledger_accounts SET balance = balance + ${amount}, updated_at = NOW() WHERE owner_id = ${toOwnerId}`);
 
             // 5. Record Transaction
             await tx.insert(ledgerTransactions).values({
@@ -103,18 +109,20 @@ export class LedgerService {
 
     /**
      * Check and Auto-Top-Off an account if it falls below threshold.
-     * This ensures "Consistent Payments" and uninterrupted service.
+     * 
+     * ⚠️ MVP ONLY: This currently simulates a top-off by minting credits directly.
+     * In production, this MUST be wired to Stripe's PaymentIntent API to charge
+     * the agent operator's saved payment method before minting.
+     * 
+     * TODO: Wire to BillingService.chargePaymentMethod() before GA launch.
      */
     async checkAutoTopOff(ownerId: string, threshold: number = 10.0, amount: number = 50.0) {
         const acc = await this.getAccount(ownerId);
         if (!acc) return false;
 
-        if (acc.balance < threshold) {
-            console.log(`[Ledger] Account ${ownerId} balance ($${acc.balance}) below threshold ($${threshold}). Triggering Top-Off...`);
-            // In a real app, this would charge the User's linked Stripe card.
-            // Here, we simulate a successful charge and mint.
-            await this.deposit(ownerId, amount, 'auto_topoff');
-            console.log(`[Ledger] Successfully topped off $${amount}. New Balance: $${acc.balance + amount}`);
+        if ((acc.balance ?? 0) < threshold) {
+            console.warn(`[Ledger] ⚠️ Auto-topoff triggered for ${ownerId} (balance: ${acc.balance}). MVP: Simulated charge.`);
+            await this.deposit(ownerId, amount, 'auto_topoff_simulated');
             return true;
         }
         return false;
