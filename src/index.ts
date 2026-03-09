@@ -277,6 +277,9 @@ app.route('/api/biotech', biotechRouter);
 import { financeRouter } from './api/finance.js';
 app.route('/api/finance', financeRouter);
 
+import ontologyRouter from './api/ontology.js';
+app.route('/api/ontology', ontologyRouter);
+
 // Agent Hub API (LinkedIn meets Yelp for agents)
 app.route('/api/hub', hubRouter);
 // Alias: /api/agents/register → hub agent registration (shorthand URL)
@@ -525,7 +528,7 @@ app.post('/api/cache/get', async (c) => {
 
     if (metaData) {
       try {
-        const metadata = JSON.parse(metaData);
+        const metadata = JSON.parse(metaData as string);
         getCacheInvalidator().recordAccess(key);
         const freshnessStatus = freshnessCalculator.calculateFreshness(metadata);
         freshness = {
@@ -546,7 +549,7 @@ app.post('/api/cache/get', async (c) => {
 
     // Record the saving (fire-and-forget)
     const apiKey = c.req.header('X-API-Key') || 'anonymous';
-    savingsTracker.recordSaving(apiKey, savedUsd, 'exact_cache', req.model).catch(() => {});
+    savingsTracker.recordSaving(apiKey, savedUsd, 'exact_cache', req.model).catch(() => { });
     await cognitiveMemory.recordCacheOutcome(true);
 
     return c.json({
@@ -1062,7 +1065,7 @@ app.get('/api/jetty-speed/chunk/:fileId/:chunkIndex', async (c) => {
       const latency = Date.now() - startTime;
       const chunkBuffer = Buffer.from(cached, 'base64');
 
-      return new Response(chunkBuffer, {
+      return new Response(chunkBuffer as any, {
         status: 200,
         headers: {
           'Content-Type': 'application/octet-stream',
@@ -1087,7 +1090,7 @@ app.get('/api/jetty-speed/chunk/:fileId/:chunkIndex', async (c) => {
       const base64Chunk = chunkBuffer.toString('base64');
       await redis.setex(cacheKey, 86400, base64Chunk);
 
-      return new Response(chunkBuffer, {
+      return new Response(chunkBuffer as any, {
         status: 200,
         headers: {
           'Content-Type': 'application/octet-stream',
@@ -1184,7 +1187,7 @@ app.post('/api/overflow', async (c) => {
 
       return c.json({
         hit: true,
-        response: JSON.parse(cached),
+        response: JSON.parse(cached as string),
         latency,
         source: 'agentcache-overflow',
         billing: {

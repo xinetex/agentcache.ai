@@ -5,9 +5,10 @@ import { GeminiProvider } from './providers/gemini.js';
 import { MoonshotProvider } from './providers/moonshot.js';
 import { GrokProvider } from './providers/grok.js';
 import { PerplexityProvider } from './providers/perplexity.js';
+import { InceptionLabsProvider } from './providers/inception.js';
 import { withToolCache } from '../cache/tool.js';
 
-export type ProviderType = 'openai' | 'anthropic' | 'gemini' | 'moonshot' | 'grok' | 'perplexity';
+export type ProviderType = 'openai' | 'anthropic' | 'gemini' | 'moonshot' | 'grok' | 'perplexity' | 'inception';
 
 export class LLMFactory {
     static createProvider(type: ProviderType, apiKey?: string): LLMProvider {
@@ -30,6 +31,9 @@ export class LLMFactory {
                 break;
             case 'perplexity':
                 provider = new PerplexityProvider(apiKey || process.env.PERPLEXITY_API_KEY);
+                break;
+            case 'inception':
+                provider = new InceptionLabsProvider(apiKey || process.env.INCEPTION_API_KEY);
                 break;
             default:
                 throw new Error(`Unknown provider type: ${type}`);
