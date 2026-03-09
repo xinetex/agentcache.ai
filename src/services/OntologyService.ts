@@ -49,7 +49,7 @@ Rules:
                 { role: 'user', content: prompt }
             ], {
                 // temperature is handled by the Inception provider defaults (0.1)
-                model: 'inception-base'
+                model: 'mercury'
             });
 
             // Parse result

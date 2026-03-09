@@ -38,7 +38,7 @@ ontologyRouter.post('/map', async (c) => {
             success: true,
             mappedData,
             latencyMs: latency,
-            engine: 'inception-base'
+            engine: 'mercury'
         });
     } catch (error: any) {
         console.error('[Ontology API Error]', error);

@@ -46,7 +46,7 @@ Return ONLY a valid JSON object matching this schema:
         const response = await this.decompositionLlm.chat([
             { role: 'system', content: systemPrompt },
             { role: 'user', content: prompt }
-        ], { model: 'inception-base' });
+        ], { model: 'mercury' });
 
         const jsonMatch = response.content.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
         if (!jsonMatch) {
