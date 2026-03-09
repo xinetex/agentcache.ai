@@ -17,6 +17,7 @@
     "test:verification": "vitest --run tests/unit/cognitive-memory.test.ts tests/claims/cognitive-claims.test.ts tests/contracts/public-api.contract.test.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1004.0",
     "@cfworker/json-schema": "^4.1.1",
     "@hono/node-server": "^1.19.6",
     "@langchain/core": "^1.0.6",
@@ -58,7 +59,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@types/node": "^24.10.1",
+    "@types/node": "^24.12.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@types/uuid": "^10.0.0",
