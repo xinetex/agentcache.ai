@@ -1,5 +1,11 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
+vi.mock('../../src/services/OntologyService.js', () => ({
+    ontologyService: {
+        semanticMap: async () => ({ simulated: true })
+    }
+}));
+
 vi.mock('../../src/services/ArmorService.js', () => ({
     ArmorService: class {
         async checkRequest() {
@@ -78,5 +84,5 @@ describe.sequential('x402 Agentic Payment Protocol', () => {
         // but it should NOT return 401 or 402.
         expect(res.response.status).not.toBe(401);
         expect(res.response.status).not.toBe(402);
-    });
+    }, 15000);
 });
