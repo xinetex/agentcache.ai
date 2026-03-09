@@ -479,13 +479,19 @@ app.post('/api/cache/check', async (c) => {
 
     // If it wasn't an exact match, we return false immediately to keep latency low.
     // The background semantic check above will pre-warm the cache for similar future queries.
+
+    // Test requirement: We must return predictive predictions even on cache misses
+    const predictivePrefetch = latestQuery
+      ? await cognitiveMemory.predictNext(latestQuery, 1).catch(() => [])
+      : [];
+
     return c.json({
       cached: false,
       key: key.slice(-16),
       ttl: 0,
       type: 'miss',
       similarity: 0,
-      predictive_prefetch: [],
+      predictive_prefetch: predictivePrefetch,
     });
   } catch (error: any) {
     return c.json({ error: error.message }, 400);
