@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useSector } from '../context/SectorContext';
-import { PipelineStorageService } from '../services/storageService';
+import { useSector } from '../context/SectorContext.jsx';
+import { PipelineStorageService } from '../services/storageService.js';
 import './WorkspaceDashboard.css';
 
 /**

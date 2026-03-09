@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Hexagon, Trophy, Radio, Zap, MessageSquare } from 'lucide-react';
-import CyberCard from '../components/CyberCard';
-import DataGrid from '../components/DataGrid';
-import NeuralGalaxy from '../components/NeuralGalaxy';
-import { useAuth } from '../auth/AuthContext';
-import CommsPanel from '../components/CommsPanel';
+import CyberCard from '../components/CyberCard.jsx';
+import DataGrid from '../components/DataGrid.jsx';
+import NeuralGalaxy from '../components/NeuralGalaxy.jsx';
+import { useAuth } from '../auth/AuthContext.jsx';
+import CommsPanel from '../components/CommsPanel.jsx';
 
 export default function Swarm() {
     const { token } = useAuth();

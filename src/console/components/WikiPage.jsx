@@ -13,7 +13,7 @@ import {
     AlertTriangle,
     CheckCircle
 } from 'lucide-react';
-import CyberCard from '../components/CyberCard';
+import CyberCard from '../components/CyberCard.jsx';
 
 export default function WikiPage({ nodeId, onClose }) {
     // Mock Data for a "Pattern" Article

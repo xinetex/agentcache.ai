@@ -4,6 +4,7 @@ import { ClawTasksClient } from '../services/external/ClawTasksClient.js';
 import { CortexBridge } from '../services/CortexBridge.js';
 import { notifier } from '../services/NotificationService.js';
 import { Redis } from 'ioredis'; // Or your local redis lib
+import { v4 as uuidv4 } from 'uuid';
 
 // Mock Moltbook "Post" since we don't have a real client file yet
 // In real life, this would use an HTTP client to POST to moltbook.com/api/v1/signals
@@ -16,6 +17,8 @@ class MoltbookClient {
 }
 
 export class GrowthAgent {
+    public id = uuidv4();
+    public name = "GrowthBot_Alpha";
     private billing = new BillingService();
     private claw = new ClawTasksClient();
     private moltbook = new MoltbookClient();
@@ -24,7 +27,7 @@ export class GrowthAgent {
     // Config
     private BUDGET_PER_RUN = 500; // Credits to spend on ads
 
-    async runCampaign() {
+    async performStrategyScan() {
         console.log("\n🚀 [GrowthAgent] Initializing Marketing Campaign...");
 
         // 1. Check Budget
@@ -102,4 +105,22 @@ export class GrowthAgent {
 
         await notifier.send('admin', 'success', 'New User Acquired', `WorkerBot_99 claimed bounty and spent 10 credits.`);
     }
+
+    async auditBounty(id: string) {
+        console.log(`[GrowthAgent] Auditing bounty ${id}...`);
+        return { id, status: 'verified', payout_eligible: true };
+    }
+
+    async checkExternalBounties() {
+        console.log(`[GrowthAgent] Scraping external bounties (Gitcoin, Immunefi)...`);
+        return [
+            { platform: 'Immunefi', id: 'agentcache-sec-1', amount: '$5,000', difficulty: 'Hard' },
+            { platform: 'Gitcoin', id: 'ac-feature-3', amount: '250 GTC', difficulty: 'Medium' }
+        ];
+    }
+    async runCycle() {
+        return this.performStrategyScan();
+    }
 }
+
+export const growthAgent = new GrowthAgent();

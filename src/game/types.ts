@@ -56,7 +56,7 @@ export interface PolicyConfig {
 }
 
 // Traffic pattern for workload generation
-export interface TrafficPattern {
+export interface TrafficWorkload {
   startTimeMs: number;
   endTimeMs: number;
   requestsPerSecond: number;
@@ -75,7 +75,7 @@ export interface Scenario {
   id: string;
   name: string;
   sector: Sector;
-  trafficPattern: TrafficPattern;
+  trafficPattern: TrafficWorkload;
   targetMetrics: {
     minHitRate: number;
     maxAvgLatencyMs: number;
@@ -96,7 +96,7 @@ export interface SimMetrics {
   tokensPerMinute: number;
   hallucinationRisk: number; // 0-1, derived from low-quality cache items
   costSaved: number;        // Estimated $ saved
-  
+
   // Per-tier breakdown
   tierMetrics: {
     [tier: string]: {
@@ -150,7 +150,7 @@ export interface Recommendation {
   id: string;
   workloadPattern: {
     sector: Sector;
-    trafficPattern: TrafficPattern;
+    trafficPattern: TrafficWorkload;
     avgQPS: number;
   };
   optimalConfig: SimulationConfig;

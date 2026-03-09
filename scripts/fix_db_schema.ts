@@ -1,5 +1,5 @@
 
-import { db } from '../src/db/client';
+import { db } from '../src/db/client.js';
 import { sql } from 'drizzle-orm';
 
 async function fixSchema() {

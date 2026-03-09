@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { getSectorConfig } from '../config/sectors';
+import { getSectorConfig } from '../config/sectors.js';
 
 const SectorContext = createContext();
 

@@ -1,7 +1,7 @@
 
-import { inngest } from "../client";
+import { inngest } from "../client.js";
 import { growthAgent } from "../../agents/GrowthAgent.js";
-import { researcher } from "../../agents/ResearcherAgent.js";
+import { researcherAgent } from "../../agents/ResearcherAgent.js";
 import { maxxeval } from "../../lib/maxxeval.js";
 import { db } from "../../db/client.js";
 import { needsSignals } from "../../db/schema.js";
@@ -40,11 +40,11 @@ export const runAgentLoop = inngest.createFunction(
             try {
                 // Analyze existing Telegram responses + ClawTasks feed
                 const [bountyPatterns, telegramInsights] = await Promise.all([
-                    researcher.analyzeClawTasksFeed(),
-                    researcher.analyzeTelegramResponses()
+                    researcherAgent.analyzeClawTasksFeed(),
+                    researcherAgent.analyzeTelegramResponses()
                 ]);
                 // Harvest Moltbook replies (non-posting, just collection)
-                await researcher.harvestMoltbookResponses();
+                await researcherAgent.harvestMoltbookResponses();
 
                 return {
                     status: "success",

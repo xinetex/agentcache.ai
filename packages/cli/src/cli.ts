@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-import prompts from 'prompts';
-import chalk from 'chalk';
-import ora from 'ora';
-import fs from 'fs-extra';
-import path from 'path';
-import { execaCommand } from 'execa';
+const prompts = require('prompts');
+const chalk = require('chalk');
+const ora = require('ora');
+const fs = require('fs-extra');
+const path = require('path');
+const execa = require('execa');
 
 interface ProjectConfig {
   framework: 'nextjs' | 'express' | 'hono' | 'vercel' | 'generic';
@@ -17,7 +17,7 @@ interface ProjectConfig {
 // Detect project type
 async function detectFramework(cwd: string): Promise<ProjectConfig['framework']> {
   const packageJsonPath = path.join(cwd, 'package.json');
-  
+
   if (!await fs.pathExists(packageJsonPath)) {
     return 'generic';
   }
@@ -29,7 +29,7 @@ async function detectFramework(cwd: string): Promise<ProjectConfig['framework']>
   if (deps['express']) return 'express';
   if (deps['hono']) return 'hono';
   if (deps['@vercel/node']) return 'vercel';
-  
+
   return 'generic';
 }
 
@@ -45,7 +45,7 @@ async function detectPackageManager(cwd: string): Promise<ProjectConfig['package
 async function detectAIProviders(cwd: string): Promise<string[]> {
   const providers: string[] = [];
   const packageJsonPath = path.join(cwd, 'package.json');
-  
+
   if (await fs.pathExists(packageJsonPath)) {
     const packageJson = await fs.readJSON(packageJsonPath);
     const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
@@ -62,7 +62,7 @@ async function detectAIProviders(cwd: string): Promise<string[]> {
 // Install agentcache-client
 async function installPackage(config: ProjectConfig, cwd: string): Promise<void> {
   const spinner = ora('Installing agentcache-client...').start();
-  
+
   try {
     const commands = {
       npm: 'npm install agentcache-client',
@@ -71,7 +71,7 @@ async function installPackage(config: ProjectConfig, cwd: string): Promise<void>
       bun: 'bun add agentcache-client'
     };
 
-    await execaCommand(commands[config.packageManager], { cwd });
+    await execa.command(commands[config.packageManager], { cwd });
     spinner.succeed('Installed agentcache-client');
   } catch (error) {
     spinner.fail('Failed to install package');
@@ -82,7 +82,7 @@ async function installPackage(config: ProjectConfig, cwd: string): Promise<void>
 // Create config file
 async function createConfigFile(config: ProjectConfig, cwd: string): Promise<void> {
   const spinner = ora('Creating agentcache.config.js...').start();
-  
+
   const configContent = `// AgentCache Configuration
 // Learn more: https://agentcache.ai/docs
 
@@ -113,15 +113,15 @@ module.exports = {
 // Update .env file
 async function updateEnvFile(config: ProjectConfig, cwd: string): Promise<void> {
   const spinner = ora('Updating .env file...').start();
-  
+
   const envPath = path.join(cwd, '.env');
   const envLocalPath = path.join(cwd, '.env.local');
-  
+
   const envLine = `\n# AgentCache API Key\nAGENTCACHE_API_KEY=${config.apiKey}\n`;
-  
+
   // Prefer .env.local for Next.js projects
-  const targetPath = config.framework === 'nextjs' && await fs.pathExists(envLocalPath) 
-    ? envLocalPath 
+  const targetPath = config.framework === 'nextjs' && await fs.pathExists(envLocalPath)
+    ? envLocalPath
     : envPath;
 
   if (await fs.pathExists(targetPath)) {
@@ -141,7 +141,7 @@ async function updateEnvFile(config: ProjectConfig, cwd: string): Promise<void> 
 // Create example integration file
 async function createExampleFile(config: ProjectConfig, cwd: string): Promise<void> {
   const spinner = ora('Creating example integration...').start();
-  
+
   const examples = {
     nextjs: {
       path: 'app/api/chat/route.ts',
@@ -260,13 +260,13 @@ module.exports = { cachedLLMCall };
     }
   };
 
-  const example = examples[config.framework] || examples.generic;
+  const example = (examples as any)[config.framework] || examples.generic;
   const examplePath = path.join(cwd, example.path);
 
   // Create directory if it doesn't exist
   await fs.ensureDir(path.dirname(examplePath));
   await fs.writeFile(examplePath, example.content);
-  
+
   spinner.succeed(`Created example: ${example.path}`);
 }
 
@@ -277,7 +277,7 @@ async function main() {
   console.log(chalk.cyan.bold('╚═══════════════════════════════════╝') + '\n');
 
   const cwd = process.cwd();
-  
+
   // Detect project
   const detectedFramework = await detectFramework(cwd);
   const detectedPm = await detectPackageManager(cwd);

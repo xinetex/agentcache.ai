@@ -10,18 +10,23 @@
  * - Server running: `ollama serve` (default port 11434)
  */
 
-import { LLMProvider, Message, CompletionResponse } from '../types.js';
+import { Message, CompletionResponse } from '../types.js';
+import { AbstractLLMProvider } from '../AbstractLLMProvider.js';
+import { LLMRegistry } from '../Registry.js';
 
-export class OllamaProvider implements LLMProvider {
-    private baseUrl: string;
+export class OllamaProvider extends AbstractLLMProvider {
     private defaultModel: string;
 
     constructor(baseUrl: string = 'http://localhost:11434', model: string = 'llama3:latest') {
-        this.baseUrl = baseUrl;
+        super('ollama', undefined, baseUrl);
         this.defaultModel = model;
     }
 
-    async chat(messages: Message[], options?: {
+    protected requiresApiKey(): boolean {
+        return false;
+    }
+
+    protected async executeChat(messages: Message[], options?: {
         model?: string;
         temperature?: number;
         maxTokens?: number;
@@ -117,4 +122,5 @@ export class OllamaProvider implements LLMProvider {
     }
 }
 
+LLMRegistry.register('ollama', OllamaProvider);
 export const ollama = new OllamaProvider();

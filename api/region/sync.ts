@@ -1,4 +1,4 @@
-import { replicator } from '../../src/lib/replicator';
+import { replicator } from '../../src/lib/replicator.js';
 
 export default async function handler(req, res) {
     // CORS

@@ -4,28 +4,36 @@ import 'dotenv/config';
 
 // Mock Request/Response
 class MockResponse {
+    statusCode: number;
+    headers: Record<string, string>;
+    body: any;
+
     constructor() {
         this.statusCode = 200;
         this.headers = {};
         this.body = null;
     }
-    status(code) {
+    status(code: number) {
         this.statusCode = code;
         return this;
     }
-    json(data) {
+    json(data: any) {
         this.body = JSON.stringify(data);
         return this;
     }
-    setHeader(key, value) {
+    setHeader(key: string, value: string) {
         this.headers[key] = value;
         return this;
     }
 }
 
 // Next.js Edge/App Router Polyfill for Response
-global.Response = class Response {
-    constructor(body, init) {
+(global as any).Response = class Response {
+    body: any;
+    status: number;
+    headers: any;
+
+    constructor(body: any, init?: any) {
         this.body = body;
         this.status = init?.status || 200;
         this.headers = init?.headers || {};
@@ -48,7 +56,7 @@ async function testLogin() {
     };
 
     try {
-        const res = await handler(req);
+        const res = await handler(req as any, new MockResponse() as any) as any;
         console.log(`\n📄 Status: ${res.status}`);
 
         if (res.status === 200) {

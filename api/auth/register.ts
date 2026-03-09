@@ -10,7 +10,7 @@ const BCRYPT_ROUNDS = 10;
 
 export const config = { runtime: 'nodejs' };
 
-export default async function handler(req, res) {
+export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return new Response('Method Not Allowed', { status: 405 });
   }
@@ -89,7 +89,7 @@ export default async function handler(req, res) {
       headers: { 'Content-Type': 'application/json' }
     });
 
-  } catch (err) {
+  } catch (err: any) {
     console.error('Register error:', err);
     return new Response(JSON.stringify({ error: err.message }), { status: 500 });
   }

@@ -1,12 +1,12 @@
-import InputNode from './InputNode';
-import CacheL1Node from './CacheL1Node';
-import CacheL2Node from './CacheL2Node';
-import CacheL3Node from './CacheL3Node';
-import OpenAINode from './OpenAINode';
-import AnthropicNode from './AnthropicNode';
-import GeminiNode from './GeminiNode';
-import SemanticDedupNode from './SemanticDedupNode';
-import OutputNode from './OutputNode';
+import InputNode from './InputNode.js';
+import CacheL1Node from './CacheL1Node.js';
+import CacheL2Node from './CacheL2Node.js';
+import CacheL3Node from './CacheL3Node.js';
+import OpenAINode from './OpenAINode.js';
+import AnthropicNode from './AnthropicNode.js';
+import GeminiNode from './GeminiNode.js';
+import SemanticDedupNode from './SemanticDedupNode.js';
+import OutputNode from './OutputNode.js';
 
 export const nodeTypes = {
   input: InputNode,

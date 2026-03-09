@@ -4,7 +4,7 @@
 async function main() {
     console.log("⚙️  Verifying Workflow Engine...");
 
-    const runHandler = (await import('../api/pipelines/run.ts')).default;
+    const runHandler = (await import('../api/pipelines/run.js')).default;
 
     // Mock Request
     const req = {

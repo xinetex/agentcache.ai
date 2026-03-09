@@ -1,32 +1,22 @@
-import { LLMProvider, Message, CompletionResponse } from '../types.js';
+import { Message, CompletionResponse } from '../types.js';
+import { AbstractLLMProvider } from '../AbstractLLMProvider.js';
+import { LLMRegistry } from '../Registry.js';
 
-export class GeminiProvider implements LLMProvider {
-    private apiKey: string;
-    private baseUrl: string;
-
+export class GeminiProvider extends AbstractLLMProvider {
     constructor(apiKey?: string) {
-        this.apiKey = apiKey || '';
-        this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
+        super('gemini', apiKey, 'https://generativelanguage.googleapis.com/v1beta/models');
     }
 
-    async chat(messages: Message[], options?: { model?: string; temperature?: number; maxTokens?: number }): Promise<CompletionResponse> {
-        if (!this.apiKey) throw new Error('Gemini API key missing');
-
+    protected async executeChat(messages: Message[], options?: { model?: string; temperature?: number; maxTokens?: number }): Promise<CompletionResponse> {
         const model = options?.model || 'gemini-1.5-flash';
 
         // Convert messages to Gemini format
-        const contents = messages.map(m => ({
-            role: m.role === 'assistant' ? 'model' : 'user',
-            parts: [{ text: m.content }]
-        }));
-
-        // Handle system instruction if present (Gemini 1.5 supports system instructions)
-        // For simplicity in this v1, we might just prepend to first user message or use system_instruction API field
-        const systemMessage = messages.find(m => m.role === 'system');
         const chatContents = messages.filter(m => m.role !== 'system').map(m => ({
             role: m.role === 'assistant' ? 'model' : 'user',
             parts: [{ text: m.content }]
         }));
+
+        const systemMessage = messages.find(m => m.role === 'system');
 
         const body: any = {
             contents: chatContents,
@@ -68,3 +58,5 @@ export class GeminiProvider implements LLMProvider {
         };
     }
 }
+
+LLMRegistry.register('gemini', GeminiProvider);

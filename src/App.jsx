@@ -7,26 +7,26 @@ import ReactFlow, {
   useEdgesState,
   addEdge,
 } from 'reactflow';
-import Sidebar from './components/Sidebar';
-import WizardModal from './components/WizardModalNew';
-import SectorModal from './components/SectorModal';
-import MetricsPanel from './components/MetricsPanel';
-import WorkspaceGallery from './components/WorkspaceGallery';
-import CommandCenter from './components/CommandCenter';
-import { useSector } from './context/SectorContext';
-import { useAuth } from './context/AuthContext';
-import AuthModal from './components/AuthModal';
-import { nodeTypes } from './nodes';
-import { initDemoMode } from './config/demoData';
-import { PipelineStorageService, StorageService } from './services/storageService';
-import TrafficEdge from './components/TrafficEdge';
-import NeuralGalaxy from './components/NeuralGalaxy';
-import { useTrafficSimulation } from './hooks/useTrafficSimulation';
+import Sidebar from './components/Sidebar.jsx';
+import WizardModal from './components/WizardModalNew.jsx';
+import SectorModal from './components/SectorModal.jsx';
+import MetricsPanel from './components/MetricsPanel.jsx';
+import WorkspaceGallery from './components/WorkspaceGallery.jsx';
+import CommandCenter from './components/CommandCenter.jsx';
+import { useSector } from './context/SectorContext.jsx';
+import { useAuth } from './context/AuthContext.jsx';
+import AuthModal from './components/AuthModal.jsx';
+import { nodeTypes } from './nodes.js';
+import { initDemoMode } from './config/demoData.js';
+import { PipelineStorageService, StorageService } from './services/storageService.js';
+import TrafficEdge from './components/TrafficEdge.jsx';
+import NeuralGalaxy from './components/NeuralGalaxy.jsx';
+import { useTrafficSimulation } from './hooks/useTrafficSimulation.js';
 import './App.css';
-import TraceViewer from './components/TraceViewer';
-import TraceViewer from './components/TraceViewer';
-import StreamInterface from './integral/StreamInterface';
-import IntelligenceDashboard from './components/IntelligenceDashboard';
+import TraceViewer from './components/TraceViewer.jsx';
+import TraceViewer from './components/TraceViewer.jsx';
+import StreamInterface from './integral/StreamInterface.jsx';
+import IntelligenceDashboard from './components/IntelligenceDashboard.jsx';
 
 const edgeTypes = {
   traffic: TrafficEdge,

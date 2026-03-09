@@ -1,7 +1,7 @@
-import { db } from '../../src/db/client';
-import { knowledgeNodes } from '../../src/db/schema';
+import { db } from '../../src/db/client.js';
+import { knowledgeNodes } from '../../src/db/schema.js';
 import { eq } from 'drizzle-orm';
-import { Policy } from '../../src/lib/policy-engine';
+import { Policy } from '../../src/lib/policy-engine.js';
 
 const GLOBAL_POLICIES_KEY = 'global_policies';
 

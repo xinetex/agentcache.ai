@@ -36,7 +36,7 @@ export class StructuredLayer {
         const { neon } = await import('@neondatabase/serverless');
         this.db = neon(process.env.DATABASE_URL);
         console.log('[StructuredLayer] Connected to Neon PostgreSQL');
-        
+
         // Ensure table exists
         await this.ensureTable();
       } catch (error) {
@@ -232,7 +232,7 @@ export class StructuredLayer {
 
     // Local fallback
     const results: StructuredRecord[] = [];
-    for (const record of this.localStore.values()) {
+    for (const record of Array.from(this.localStore.values())) {
       if (record.metadata.namespace === namespace) {
         const hasTag = tags.some(t => record.metadata.tags.includes(t));
         if (hasTag) {

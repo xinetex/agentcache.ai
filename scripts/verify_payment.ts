@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import dotenv from 'dotenv';
+import { redis } from '../src/lib/redis.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -10,7 +11,7 @@ const API_URL = process.env.API_URL || 'http://localhost:3000';
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
 // Mock Stripe instance for signature generation
-const stripe = new Stripe('sk_test_mock', { apiVersion: '2024-11-20.acacia' });
+const stripe = new Stripe('sk_test_mock', { apiVersion: '2025-02-24.acacia' });
 
 async function runVerification() {
     console.log('💳 Starting Payment Flow Verification...');

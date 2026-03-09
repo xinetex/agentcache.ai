@@ -1,14 +1,10 @@
 import { notifier } from '../../src/services/NotificationService.js';
-import { verifyToken } from '../../src/lib/auth'; // Hypothetical auth helper
+import { verifyToken } from '../../src/lib/auth.js'; // Hypothetical auth helper
 
 export async function GET(req) {
     // 1. Auth Check (Simplified for this context, assuming req has user or we parse token)
     // In a real generic handler we'd pull the token. 
     // For this codebase's style (often raw handlers), I'll try to extract user from header/mock.
-
-    // Mocking auth extraction for speed, or using a known helper if available.
-    // Let's assume the request comes with a user_id header or similar for now if auth middleware isn't global.
-    // Or better, let's parse the Authorization header.
 
     const authHeader = req.headers.get('Authorization');
     let userId = null;

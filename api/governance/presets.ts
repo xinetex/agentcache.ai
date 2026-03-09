@@ -1,5 +1,5 @@
-import { db } from '../../src/db/client';
-import { knowledgeNodes } from '../../src/db/schema';
+import { db } from '../../src/db/client.js';
+import { knowledgeNodes } from '../../src/db/schema.js';
 import { eq } from 'drizzle-orm';
 
 export default async function handler(req, res) {

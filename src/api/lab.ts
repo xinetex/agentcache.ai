@@ -14,7 +14,7 @@ labRouter.get('/genomes', async (c) => {
 
         // Get Top Genomes by Fitness from Sorted Set
         // Assuming 'lab:genomes:index' stores IDs scored by fitness
-        const genomeIds = await redis.zrevrange('lab:genomes:index', 0, limit - 1);
+        const genomeIds = await redis.zrange('lab:genomes:index', 0, limit - 1, { rev: true });
 
         if (genomeIds.length === 0) {
             // Mock data if empty for visualization testing
@@ -25,6 +25,7 @@ labRouter.get('/genomes', async (c) => {
         }
 
         // Fetch actual genome data
+        const apiKey = (c as any).get('apiKey');
         const pipeline = redis.pipeline();
         genomeIds.forEach((id) => {
             pipeline.get(`lab:genomes:${id}`);

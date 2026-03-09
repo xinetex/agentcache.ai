@@ -14,6 +14,7 @@ import { db } from '../db/client.js';
 import { surveyResponses, marketInsights } from '../db/schema.js';
 import { moltbook } from '../lib/moltbook.js';
 import { maxxeval } from '../lib/maxxeval.js';
+import { v4 as uuidv4 } from 'uuid';
 
 // Survey questions - rotated daily
 const SURVEY_QUESTIONS = [
@@ -37,10 +38,17 @@ const SURVEY_QUESTIONS = [
 ];
 
 export class ResearcherAgent {
+    public id = uuidv4();
+    public name = "ResearcherBot_Alpha";
     private moltbookApiKey?: string;
 
     constructor() {
         this.moltbookApiKey = process.env.MOLTBOOK_API_KEY;
+    }
+
+    async initialize() {
+        console.log(`[ResearcherAgent] Initializing ${this.name}...`);
+        // Registration logic if needed
     }
 
     /**
@@ -49,6 +57,19 @@ export class ResearcherAgent {
     getTodaysQuestion(): string {
         const dayOfYear = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
         return SURVEY_QUESTIONS[dayOfYear % SURVEY_QUESTIONS.length];
+    }
+
+    /**
+     * High-level research method expected by verify script
+     */
+    async performResearch(query: string): Promise<string> {
+        console.log(`[Researcher] Performing research: "${query}"`);
+        // Mocking research result for now using openClaw (Perplexity equivalent)
+        const result = await openClaw.complete(
+            `Perform deep research on: ${query}`,
+            'You are a researcher. Provide a detailed report.'
+        );
+        return result;
     }
 
     /**
@@ -426,4 +447,4 @@ Format: Sentiment: [S] | Industry: [I] | Features: [F]`,
 }
 
 // Export singleton
-export const researcher = new ResearcherAgent();
+export const researcherAgent = new ResearcherAgent();

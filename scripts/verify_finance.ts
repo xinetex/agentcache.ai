@@ -1,4 +1,4 @@
-import { serializer } from '../src/lib/proto/serializer';
+import { serializer } from '../src/lib/proto/serializer.js';
 
 // Configuration
 const API_URL = process.env.API_URL || 'http://localhost:3000';

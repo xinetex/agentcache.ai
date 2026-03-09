@@ -1,5 +1,5 @@
 
-import { describe, it, expect, beforeAll } from 'bun:test';
+// import { describe, it, expect, beforeAll } from 'bun:test';
 
 // Mock dependencies if needed, but we'll try to run it reasonably integrated
 // Note: We are using a script that mimics the handler call
@@ -31,7 +31,7 @@ async function main() {
 
         console.log("📝 Response Status:", response.status);
         console.log("📝 Response Data:", JSON.stringify(data, null, 2));
-        console.log("📝 Headers:", Object.fromEntries(response.headers.entries()));
+        console.log("📝 Headers:", Object.fromEntries((response.headers as any).entries()));
 
         if (response.status === 200 && data.message) {
             console.log("\n✅ SUCCESS: Chat API responded correctly.");

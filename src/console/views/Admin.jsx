@@ -4,7 +4,7 @@ import {
     Search, Filter, Trash2, Key, UserCheck,
     AlertTriangle, RefreshCw
 } from 'lucide-react';
-import CyberCard from '../components/CyberCard';
+import CyberCard from '../components/CyberCard.jsx';
 
 export default function Admin() {
     // State for data

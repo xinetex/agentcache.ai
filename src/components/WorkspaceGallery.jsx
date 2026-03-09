@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useSector } from '../context/SectorContext';
-import { getPresetsBySector, getRecommendedPresets } from '../config/presets';
+import { useSector } from '../context/SectorContext.jsx';
+import { getPresetsBySector, getRecommendedPresets } from '../config/presets.js';
 import './WorkspaceGallery.css';
 
 /**

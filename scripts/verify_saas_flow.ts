@@ -6,46 +6,50 @@ console.log("VERIFY SCRIPT DB:", process.env.DATABASE_URL ? process.env.DATABASE
 import registerHandler from '../api/auth/register.js';
 import loginHandler from '../api/auth/login.js';
 import checkoutHandler from '../api/billing/checkout.js';
-import { db } from '../src/db/client';
-import { users } from '../src/db/schema';
+import { db } from '../src/db/client.js';
+import { users } from '../src/db/schema.js';
 import { eq } from 'drizzle-orm';
 
 // Mock Request/Response
 class MockResponse {
+    statusCode: number;
+    headers: Record<string, string>;
+    body: any;
+
     constructor() {
         this.statusCode = 200;
         this.headers = {};
         this.body = null;
     }
 
-    status(code) {
+    status(code: number) {
         this.statusCode = code;
         return this;
     }
 
-    setHeader(key, value) {
+    setHeader(key: string, value: string) {
         this.headers[key] = value;
         return this;
     }
 
-    json(data) {
+    json(data: any) {
         this.body = data;
         return this;
     }
 
-    send(data) {
+    send(data: any) {
         this.body = data;
         return this;
     }
 
-    end(data) {
+    end(data: any) {
         this.body = data;
         return this;
     }
 }
 
 // Helper to mimic Next.js/Vercel request
-const createReq = (method, body) => ({
+const createReq = (method: string, body: any) => ({
     method,
     headers: { 'stripe-signature': 'mock_sig' }, // for webhook if needed
     body,
@@ -60,7 +64,7 @@ async function verifySaaS() {
 
     // 1. REGISTER
     console.log(`\n📝 1. Testing Registration (${email})...`);
-    const regRes = new MockResponse(); // Note: register.js might return native Response object, we need to handle both
+    const regRes: any = new MockResponse(); // Note: register.js might return native Response object, we need to handle both
 
     let user;
     let token;

@@ -1,7 +1,7 @@
 
 // Verification script for Lidar MCP integration
-import { LidarTools } from './src/mcp/tools/lidar.ts';
-import { LidarCacheService } from './src/services/LidarCacheService.ts';
+import { LidarTools } from './src/mcp/tools/lidar.js';
+import { LidarCacheService } from './src/services/LidarCacheService.js';
 
 async function verifyLidarIntegration() {
     console.log('--- Starting Lidar Integration Verification ---');

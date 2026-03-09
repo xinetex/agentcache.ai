@@ -1,6 +1,5 @@
-
 import { Inngest } from "inngest";
-import { schemas } from "./types";
+import { schemas } from "./types.js";
 import { computeWorker } from "./functions/compute.js";
 
 /**

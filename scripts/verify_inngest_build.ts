@@ -1,7 +1,7 @@
 
 import 'dotenv/config';
-import { inngest } from '../src/inngest/client.ts';
-import { runAgentLoop } from '../src/inngest/functions/agentLoop.ts';
+import { inngest } from '../src/inngest/client.js';
+import { runAgentLoop } from '../src/inngest/functions/agentLoop.js';
 
 async function main() {
     console.log("⚡️ Verifying Inngest Architecture...");

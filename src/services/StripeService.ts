@@ -15,7 +15,7 @@ export class StripeService {
     constructor() {
         const key = process.env.STRIPE_SECRET_KEY;
         if (key) {
-            this.stripe = new Stripe(key, { apiVersion: '2024-12-18.acacia' }); // Latest or pinned version
+            this.stripe = new Stripe(key, { apiVersion: '2025-02-24.acacia' }); // Latest or pinned version
             this.isConfigured = true;
         } else {
             console.warn('[StripeService] Missing STRIPE_SECRET_KEY. Payments disabled.');

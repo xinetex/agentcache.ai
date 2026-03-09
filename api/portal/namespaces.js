@@ -1,5 +1,6 @@
 import { getAuthErrorStatus, requireAuth } from '../../lib/auth-middleware.js';
 import { query } from '../../lib/db.js';
+import { getUpgradeTargetForInternalPlan } from '../../lib/billing-plans.js';
 
 export default async function handler(req, res) {
   try {
@@ -69,8 +70,14 @@ export default async function handler(req, res) {
 
       const currentCount = parseInt(namespaceCountResult.rows[0].count);
       if (currentCount >= org.max_namespaces) {
+        const upgradeTarget = getUpgradeTargetForInternalPlan(org.plan_tier);
         return res.status(403).json({ 
-          error: `Namespace limit reached for ${org.plan_tier} plan (max: ${org.max_namespaces})` 
+          error: `Namespace limit reached for ${org.plan_tier} plan (max: ${org.max_namespaces})`,
+          upgradeRequired: Boolean(upgradeTarget),
+          currentPlan: org.plan_tier,
+          recommendedPlan: upgradeTarget?.publicId || null,
+          upgradeUrl: upgradeTarget ? `/upgrade.html?plan=${upgradeTarget.publicId}` : '/pricing.html',
+          limitType: 'namespaces',
         });
       }
 

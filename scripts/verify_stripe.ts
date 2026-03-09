@@ -32,8 +32,6 @@ async function main() {
             object: {
                 id: 'cs_test_abc123',
                 metadata: {
-                    userId: 'e2e-test-user-001', // Use a UUID-like string if DB enforces it? 
-                    // DB schema says uuid... so I should use a real uuid
                     userId: '00000000-0000-0000-0000-000000000000', // Null UUID or similar
                     credits: '100'
                 }

@@ -9,7 +9,7 @@ export const config = {
     runtime: 'nodejs',
 };
 
-import { db } from '../src/db/client';
+import { db } from '../src/db/client.js';
 
 export default async function handler(req, res) {
     // CORS headers

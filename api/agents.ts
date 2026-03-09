@@ -6,7 +6,7 @@ import { desc } from 'drizzle-orm';
 export default async function handler(req, res) {
     try {
         // 1. Fetch Agents
-        const allAgents = await db.select().from(agents).orderBy(desc(agents.createdAt)).limit(20);
+        let allAgents = await db.select().from(agents).orderBy(desc(agents.createdAt)).limit(20);
 
         // 2. SEMANTIC SEEDING (Auto-Activation)
         if (allAgents.length === 0) {

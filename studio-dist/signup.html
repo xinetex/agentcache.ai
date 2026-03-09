@@ -25,7 +25,7 @@
     <!-- Header -->
     <div class="auth-header">
       <h1 class="auth-title">Create your account</h1>
-      <p class="auth-subtitle">Start optimizing your LLM costs today</p>
+      <p class="auth-subtitle">Create your workspace and start caching in minutes</p>
     </div>
 
     <!-- Form -->
@@ -142,7 +142,11 @@
         localStorage.setItem('agentcache_user', JSON.stringify(data.user));
 
         // Show success message
-        showSuccess('Account created successfully! Redirecting...');
+        if (data.user?.organization) {
+          localStorage.setItem('agentcache_workspace', JSON.stringify(data.user.organization));
+        }
+
+        showSuccess('Account created. Finishing workspace setup...');
 
         // Redirect after brief delay
         setTimeout(() => {

@@ -4,7 +4,7 @@
 async function main() {
     console.log("💬 Verifying Chat API...");
 
-    const chatHandler = (await import('../api/agent/chat.ts')).default;
+    const chatHandler = (await import('../api/agent/chat.js')).default;
 
     // Test 1: Default Agent (OpenAI)
     console.log("\n1️⃣  Testing Default Agent...");

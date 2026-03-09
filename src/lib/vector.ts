@@ -25,8 +25,8 @@ export async function upsertMemory(id: string, text: string, metadata: Record<st
     if (!longIdString) {
         longId = await redis.incr(SEQ_KEY);
         // Store mappings
-        await redis.hset(MAP_UUID_TO_LONG, id, longId);
-        await redis.hset(MAP_LONG_TO_UUID, longId, id);
+        await redis.hset(MAP_UUID_TO_LONG, { [id]: longId });
+        await redis.hset(MAP_LONG_TO_UUID, { [String(longId)]: id });
     } else {
         longId = Number(longIdString);
     }
@@ -77,7 +77,7 @@ export async function queryMemory(query: string, topK: number = 3): Promise<any[
         const metaStr = await redis.get(`${PREFIX_META}${uuid}`);
         if (!metaStr) return null;
 
-        const record = JSON.parse(metaStr);
+        const record = JSON.parse(metaStr as string);
 
         return {
             id: uuid,
@@ -102,7 +102,7 @@ export const vectorIndex = {
             const metaStr = await redis.get(`${PREFIX_META}${id}`);
             if (!metaStr) return null; // or empty object
 
-            const record = JSON.parse(metaStr);
+            const record = JSON.parse(metaStr as string);
             let result: any = {
                 id: id,
                 metadata: record.metadata,
@@ -129,32 +129,62 @@ export const vectorIndex = {
         }));
     },
 
-    async upsert(record: { id: string; vector: number[]; metadata?: Record<string, any>; data?: string }) {
-        const metaKey = `${PREFIX_META}${record.id}`;
-        const existingRaw = await redis.get(metaKey);
-        const existing = existingRaw ? JSON.parse(existingRaw) : null;
+    async upsert(records: any | any[]) {
+        const docs = Array.isArray(records) ? records : [records];
 
-        let longIdString = await redis.hget(MAP_UUID_TO_LONG, record.id);
-        let longId: number;
+        for (const record of docs) {
+            const id = record.id;
+            const metaKey = `${PREFIX_META}${id}`;
+            const existingRaw = await redis.get(metaKey);
+            const existing = existingRaw ? JSON.parse(existingRaw as string) : null;
 
-        if (!longIdString) {
-            longId = await redis.incr(SEQ_KEY);
-            await redis.hset(MAP_UUID_TO_LONG, record.id, longId);
-            await redis.hset(MAP_LONG_TO_UUID, longId, record.id);
-        } else {
-            longId = Number(longIdString);
+            let longIdString = await redis.hget(MAP_UUID_TO_LONG, id);
+            let longId: number;
+
+            if (!longIdString) {
+                longId = await redis.incr(SEQ_KEY);
+                await redis.hset(MAP_UUID_TO_LONG, { [id]: longId });
+                await redis.hset(MAP_LONG_TO_UUID, { [String(longId)]: id });
+            } else {
+                longId = Number(longIdString);
+            }
+
+            // Generate vector if missing
+            const vector = record.vector || await generateEmbedding(record.data || record.metadata?.query || '');
+
+            await vectorClient.addVectors([longId], vector);
+
+            await redis.set(metaKey, JSON.stringify({
+                id,
+                data: record.data ?? existing?.data ?? record.metadata?.query ?? '',
+                metadata: {
+                    ...(existing?.metadata || {}),
+                    ...(record.metadata || {}),
+                },
+            }));
+        }
+    },
+
+    async query(options: { data?: string; vector?: number[]; topK?: number; includeMetadata?: boolean; includeData?: boolean }) {
+        if (options.vector) {
+            // Search by vector directly (Not implemented in top-level queryMemory but reachable)
+            const results = await vectorClient.search(options.vector, options.topK || 3);
+            return await Promise.all(results.map(async (res) => {
+                const uuid = await redis.hget(MAP_LONG_TO_UUID, String(res.id));
+                if (!uuid) return null;
+                const metaStr = await redis.get(`${PREFIX_META}${uuid}`);
+                if (!metaStr) return null;
+                const record = JSON.parse(metaStr as string);
+                return {
+                    id: uuid,
+                    score: res.distance,
+                    data: record.data,
+                    metadata: record.metadata
+                };
+            })).then(r => r.filter(x => x !== null));
         }
 
-        await vectorClient.addVectors([longId], record.vector);
-
-        await redis.set(metaKey, JSON.stringify({
-            id: record.id,
-            data: record.data ?? existing?.data ?? record.metadata?.query ?? '',
-            metadata: {
-                ...(existing?.metadata || {}),
-                ...(record.metadata || {}),
-            },
-        }));
+        return await queryMemory(options.data || '', options.topK || 3);
     },
 
     // Support delete
@@ -168,7 +198,7 @@ export const vectorIndex = {
         const longIdStr = await redis.hget(MAP_UUID_TO_LONG, id);
         if (longIdStr) {
             await redis.hdel(MAP_UUID_TO_LONG, id);
-            await redis.hdel(MAP_LONG_TO_UUID, longIdStr);
+            await redis.hdel(MAP_LONG_TO_UUID, String(longIdStr));
         }
     }
 };

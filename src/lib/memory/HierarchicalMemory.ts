@@ -96,7 +96,7 @@ export class HierarchicalMemory {
             if (res.metadata?.type === 'note') {
                 const noteStr = await redis.get(`memory:note:${res.id}`);
                 if (noteStr) {
-                    notes.push(JSON.parse(noteStr));
+                    notes.push(JSON.parse(noteStr as string));
                 }
             }
         }

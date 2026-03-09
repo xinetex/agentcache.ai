@@ -21,7 +21,7 @@ export class ComplianceService {
     async auditDocument(req: AuditRequest): Promise<AuditResult> {
         // 1. Billing
         const billing = new BillingService();
-        await billing.charge(PRICING.RISK_ANALYSIS || 5, "Compliance: Audit");
+        await billing.charge(PRICING.RISK_ASSESS || 5, "Compliance: Audit");
 
         console.log(`[ComplianceService] ⚖️ Auditing document: ${req.documentId}`);
 

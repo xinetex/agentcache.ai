@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import ShadowGraph from './ShadowGraph';
+import ShadowGraph from './ShadowGraph.jsx';
 import './WorkspaceDashboard.css'; // Reuse existing styles for consistency
-import { DiscoveryFeed } from './DiscoveryFeed';
+import { DiscoveryFeed } from './DiscoveryFeed.jsx';
 
 const IntelligenceDashboard = ({ onBack }) => {
     const [data, setData] = useState({ nodes: [], links: [] });

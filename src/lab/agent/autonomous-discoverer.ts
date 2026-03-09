@@ -11,7 +11,7 @@
  * Humans observe via real-time visualizer
  */
 
-import { inngest } from '../inngest/client.js';
+import { inngest } from '../../inngest/client.js';
 import type { StrategyConfig } from '../schemas/strategy.js';
 
 /**
@@ -19,7 +19,7 @@ import type { StrategyConfig } from '../schemas/strategy.js';
  * Runs every 5 minutes, executing 1-3 experiments per cycle
  */
 export const autonomousDiscovery = inngest.createFunction(
-  { 
+  {
     id: 'autonomous-lab-discovery',
     name: 'Autonomous Cache Strategy Discovery',
   },
@@ -42,21 +42,21 @@ export const autonomousDiscovery = inngest.createFunction(
     // Step 2: Generate new strategy candidates (genetic mutations)
     const candidates = await step.run('generate-candidates', async () => {
       const mutations = [];
-      
+
       // Mutation 1: Tweak best strategy's parameters (±20%)
       const best = topStrategies[0];
       mutations.push(mutateStrategy(best, 'parameter_tweak'));
-      
+
       // Mutation 2: Crossover top 2 strategies
       if (topStrategies.length >= 2) {
         mutations.push(crossoverStrategies(topStrategies[0], topStrategies[1]));
       }
-      
+
       // Mutation 3: Random exploration (5% chance)
       if (Math.random() < 0.05) {
         mutations.push(generateRandomStrategy());
       }
-      
+
       return mutations;
     });
 
@@ -64,12 +64,12 @@ export const autonomousDiscovery = inngest.createFunction(
     const results = [];
     for (let i = 0; i < candidates.length; i++) {
       const candidate = candidates[i];
-      
+
       const experimentResult = await step.run(`run-experiment-${i}`, async () => {
         // Create strategy in database
         const strategyResponse = await fetch(`${process.env.PUBLIC_URL}/api/lab/strategies`, {
           method: 'POST',
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${process.env.SYSTEM_TOKEN}`
           },
@@ -81,6 +81,7 @@ export const autonomousDiscovery = inngest.createFunction(
             config: candidate.config,
             status: 'testing',
             hypothesis: candidate.hypothesis,
+            version: 1
           })
         });
 
@@ -254,7 +255,7 @@ export const autonomousDiscovery = inngest.createFunction(
       success: true,
       experimentsRun: results.length,
       discoveries: discoveries.length,
-      message: discoveries.length > 0 
+      message: discoveries.length > 0
         ? `Discovered ${discoveries.length} improved strategies!`
         : 'No improvements this cycle, continuing exploration...'
     };
@@ -276,7 +277,7 @@ function mutateStrategy(strategy: any, mutationType: string): StrategyConfig {
       config.tiers.L2.ttl = Math.round(config.tiers.L2.ttl * (0.8 + Math.random() * 0.4));
     }
     if (config.tiers.L3.enabled && config.tiers.L3.similarityThreshold) {
-      config.tiers.L3.similarityThreshold = Math.max(0.7, Math.min(0.95, 
+      config.tiers.L3.similarityThreshold = Math.max(0.7, Math.min(0.95,
         config.tiers.L3.similarityThreshold + (Math.random() - 0.5) * 0.1
       ));
     }
@@ -286,10 +287,12 @@ function mutateStrategy(strategy: any, mutationType: string): StrategyConfig {
     ...strategy,
     name: `${strategy.name}-mutated-${Date.now()}`,
     slug: `${strategy.slug}-m-${Date.now()}`,
-    config,
+    tiers: config.tiers,
+    routing: config.routing,
+    validation: config.validation,
     hypothesis: `Mutation of ${strategy.name} with ${mutationType}`,
     parentId: strategy.id,
-  };
+  } as any;
 }
 
 /**
@@ -302,60 +305,56 @@ function crossoverStrategies(strategyA: any, strategyB: any): StrategyConfig {
   return {
     name: `Hybrid-${strategyA.sector}-${Date.now()}`,
     slug: `hybrid-${strategyA.sector}-${Date.now()}`,
-    sector: strategyA.sector,
+    sector: strategyA.sector as any,
     useCase: strategyA.useCase,
-    config: {
-      tiers: {
-        L1: Math.random() < 0.5 ? configA.tiers.L1 : configB.tiers.L1,
-        L2: Math.random() < 0.5 ? configA.tiers.L2 : configB.tiers.L2,
-        L3: Math.random() < 0.5 ? configA.tiers.L3 : configB.tiers.L3,
-      },
-      routing: Math.random() < 0.5 ? configA.routing : configB.routing,
-      validation: Math.random() < 0.5 ? configA.validation : configB.validation,
+    tiers: {
+      L1: Math.random() < 0.5 ? configA.tiers.L1 : configB.tiers.L1,
+      L2: Math.random() < 0.5 ? configA.tiers.L2 : configB.tiers.L2,
+      L3: Math.random() < 0.5 ? configA.tiers.L3 : configB.tiers.L3,
     },
+    routing: Math.random() < 0.5 ? configA.routing : configB.routing,
+    validation: Math.random() < 0.5 ? configA.validation : configB.validation,
     hypothesis: `Crossover of ${strategyA.name} and ${strategyB.name}`,
     parentId: strategyA.id,
-  };
+  } as any;
 }
 
 /**
  * Generate completely random strategy (exploration)
  */
 function generateRandomStrategy(): StrategyConfig {
-  const sectors = ['healthcare', 'finance', 'hpc'];
+  const sectors = ['healthcare', 'finance', 'hpc'] as const;
   const sector = sectors[Math.floor(Math.random() * sectors.length)];
 
   return {
     name: `Random-${sector}-${Date.now()}`,
     slug: `random-${sector}-${Date.now()}`,
-    sector,
+    sector: sector as any,
     useCase: `Random exploration for ${sector}`,
-    config: {
-      tiers: {
-        L1: {
-          enabled: true,
-          ttl: Math.floor(60 + Math.random() * 600),
-          maxSize: '50MB',
-          policy: 'LRU',
-        },
-        L2: {
-          enabled: Math.random() > 0.2,
-          ttl: Math.floor(3600 + Math.random() * 82800),
-          maxSize: '5GB',
-          policy: Math.random() > 0.5 ? 'LFU' : 'LRU',
-        },
-        L3: {
-          enabled: Math.random() > 0.5,
-          semantic: true,
-          similarityThreshold: 0.75 + Math.random() * 0.2,
-          ttl: 86400,
-          maxSize: '10GB',
-          policy: 'LFU',
-        },
+    tiers: {
+      L1: {
+        enabled: true,
+        ttl: Math.floor(60 + Math.random() * 600),
+        maxSize: '50MB',
+        policy: 'LRU',
+      },
+      L2: {
+        enabled: Math.random() > 0.2,
+        ttl: Math.floor(3600 + Math.random() * 82800),
+        maxSize: '5GB',
+        policy: Math.random() > 0.5 ? 'LFU' : 'LRU',
+      },
+      L3: {
+        enabled: Math.random() > 0.5,
+        semantic: true,
+        similarityThreshold: 0.75 + Math.random() * 0.2,
+        ttl: 86400,
+        maxSize: '10GB',
+        policy: 'LFU',
       },
     },
     hypothesis: 'Random exploration strategy',
-  };
+  } as any;
 }
 
 /**
@@ -368,40 +367,34 @@ async function createSeedStrategies() {
       slug: 'healthcare-balanced',
       sector: 'healthcare',
       useCase: 'General healthcare queries',
-      config: {
-        tiers: {
-          L1: { enabled: true, ttl: 300, maxSize: '50MB', policy: 'LRU' },
-          L2: { enabled: true, ttl: 3600, maxSize: '2GB', policy: 'LFU' },
-          L3: { enabled: true, semantic: true, similarityThreshold: 0.85, ttl: 86400, maxSize: '5GB', policy: 'LFU' },
-        },
-        validation: { hipaa: true, piiFilter: true },
+      tiers: {
+        L1: { enabled: true, ttl: 300, maxSize: '50MB', policy: 'LRU' },
+        L2: { enabled: true, ttl: 3600, maxSize: '2GB', policy: 'LFU' },
+        L3: { enabled: true, semantic: true, similarityThreshold: 0.85, ttl: 86400, maxSize: '5GB', policy: 'LFU' },
       },
+      validation: { hipaa: true, piiFilter: true },
     },
     {
       name: 'Finance-Performance',
       slug: 'finance-performance',
       sector: 'finance',
       useCase: 'High-frequency trading data',
-      config: {
-        tiers: {
-          L1: { enabled: true, ttl: 60, maxSize: '100MB', policy: 'LRU' },
-          L2: { enabled: true, ttl: 300, maxSize: '1GB', policy: 'LRU' },
-          L3: { enabled: false },
-        },
-        validation: { pciDss: true },
+      tiers: {
+        L1: { enabled: true, ttl: 60, maxSize: '100MB', policy: 'LRU' },
+        L2: { enabled: true, ttl: 300, maxSize: '1GB', policy: 'LRU' },
+        L3: { enabled: false, ttl: 300, maxSize: '1GB', policy: 'LRU' }, // Defaulting missing L3 for schema compliance
       },
+      validation: { pciDss: true },
     },
     {
       name: 'HPC-Throughput',
       slug: 'hpc-throughput',
       sector: 'hpc',
       useCase: 'Checkpoint caching for simulations',
-      config: {
-        tiers: {
-          L1: { enabled: true, ttl: 600, maxSize: '200MB', policy: 'LFU' },
-          L2: { enabled: true, ttl: 7200, maxSize: '10GB', policy: 'LFU' },
-          L3: { enabled: true, semantic: false, ttl: 86400, maxSize: '50GB', policy: 'LFU' },
-        },
+      tiers: {
+        L1: { enabled: true, ttl: 600, maxSize: '200MB', policy: 'LFU' },
+        L2: { enabled: true, ttl: 7200, maxSize: '10GB', policy: 'LFU' },
+        L3: { enabled: true, semantic: false, ttl: 86400, maxSize: '50GB', policy: 'LFU' },
       },
     },
   ];

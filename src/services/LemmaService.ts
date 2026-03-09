@@ -9,15 +9,29 @@ import { LLMFactory } from '../lib/llm/factory.js';
  * Mathematically factorizes a prompt into sub-components (Lemmas), caches them independently, 
  * and synthesizes the unified result. 
  */
+import { LLMProvider } from '../lib/llm/types.js';
+
+/**
+ * LemmaService: The Ontological Sub-Task Router
+ * 
+ * Mathematically factorizes a prompt into sub-components (Lemmas), caches them independently, 
+ * and synthesizes the unified result. 
+ */
 export class LemmaService {
+    private decompositionLlm: LLMProvider;
+    private defaultExecutionLlm?: LLMProvider;
+
+    constructor(decompositionLlm?: LLMProvider, defaultExecutionLlm?: LLMProvider) {
+        // Dependency Injection: Allow custom LLMs to be injected
+        this.decompositionLlm = decompositionLlm || LLMFactory.createProvider('inception');
+        this.defaultExecutionLlm = defaultExecutionLlm;
+    }
 
     /**
      * 1. Decompose the incoming prompt into logical independent tasks.
      * Uses Inception Labs for millisecond structural reasoning.
      */
     async decompose(prompt: string): Promise<Array<{ id: string, description: string }>> {
-        const llm = LLMFactory.createProvider('inception');
-
         const systemPrompt = `You are an Ontological Prompt Decomposer for an AI Caching system. 
 Break the following complex user prompt into distinct, independent logical sub-tasks (Lemmas).
 Aim for 2 to 4 distinct steps. If the prompt is too simple, return a single sub-task.
@@ -29,7 +43,7 @@ Return ONLY a valid JSON object matching this schema:
   ]
 }`;
         // We use Inception for extreme speed in categorization
-        const response = await llm.chat([
+        const response = await this.decompositionLlm.chat([
             { role: 'system', content: systemPrompt },
             { role: 'user', content: prompt }
         ], { model: 'inception-base' });
@@ -53,7 +67,12 @@ Return ONLY a valid JSON object matching this schema:
      * Parallelizes cache-misses directly to the LLM.
      */
     async resolve(subtasks: Array<{ id: string, description: string }>, executionProvider: string = 'openai', executionModel: string = 'gpt-4o-mini') {
-        const llm = LLMFactory.createProvider(executionProvider as any);
+        // If a specific provider is passed to the method, we use it (backward compat),
+        // otherwise we fall back to the injected default execution LLM.
+        const llm = executionProvider === 'openai' && this.defaultExecutionLlm
+            ? this.defaultExecutionLlm
+            : LLMFactory.createProvider(executionProvider as any);
+
         const results: Record<string, string> = {};
         const metrics = { hits: 0, misses: 0, hit_ratio: 0.0 };
 
@@ -94,7 +113,9 @@ Return ONLY a valid JSON object matching this schema:
      * 3. Synthesize the final result fluidly.
      */
     async synthesize(originalPrompt: string, resolvedLemmas: Record<string, string>, synthesisProvider: string = 'openai', synthesisModel: string = 'gpt-4o-mini') {
-        const llm = LLMFactory.createProvider(synthesisProvider as any);
+        const llm = synthesisProvider === 'openai' && this.defaultExecutionLlm
+            ? this.defaultExecutionLlm
+            : LLMFactory.createProvider(synthesisProvider as any);
 
         let context = "Here are the resolved intermediate steps (Lemmas) for the task:\n\n";
         for (const [id, content] of Object.entries(resolvedLemmas)) {

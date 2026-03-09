@@ -191,10 +191,10 @@ export class KnowledgeGraph {
     this.inEdges.delete(key);
 
     // Update remaining edge indexes
-    for (const [source, edges] of this.outEdges) {
+    for (const [source, edges] of Array.from(this.outEdges)) {
       this.outEdges.set(source, edges.filter(e => e.target !== key));
     }
-    for (const [target, edges] of this.inEdges) {
+    for (const [target, edges] of Array.from(this.inEdges)) {
       this.inEdges.set(target, edges.filter(e => e.source !== key));
     }
 
@@ -264,7 +264,7 @@ export class KnowledgeGraph {
    */
   stats(): { nodes: number; edges: number; types: string[] } {
     const types = new Set<string>();
-    for (const node of this.nodes.values()) {
+    for (const node of Array.from(this.nodes.values())) {
       types.add(node.type);
     }
 

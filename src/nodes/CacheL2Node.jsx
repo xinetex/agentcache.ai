@@ -1,4 +1,4 @@
-import BaseNode from './BaseNode';
+import BaseNode from './BaseNode.jsx';
 
 function CacheL2Node({ data }) {
   return (

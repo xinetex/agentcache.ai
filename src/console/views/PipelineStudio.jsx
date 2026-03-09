@@ -10,7 +10,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Save, Play, Plus, Wand2, X, Share2, AlertTriangle } from 'lucide-react';
-import CyberCard from '../components/CyberCard';
+import CyberCard from '../components/CyberCard.jsx';
 
 // Custom Node Components
 const CyberNode = ({ data, type }) => {

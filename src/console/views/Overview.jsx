@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, Globe, Zap, Server, Shield, Clock } from 'lucide-react';
-import CyberCard from '../components/CyberCard';
-import StatDial from '../components/StatDial';
-import DataGrid from '../components/DataGrid';
-import NeuralGalaxy from '../components/NeuralGalaxy';
+import CyberCard from '../components/CyberCard.jsx';
+import StatDial from '../components/StatDial.jsx';
+import DataGrid from '../components/DataGrid.jsx';
+import NeuralGalaxy from '../components/NeuralGalaxy.jsx';
 
 
 
-import WikiPage from '../components/WikiPage';
+import WikiPage from '../components/WikiPage.jsx';
 
 const Overview = () => {
     const [metrics, setMetrics] = useState({

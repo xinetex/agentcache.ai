@@ -4,7 +4,7 @@
  * Pre-built UI schemas for common AgentCache Studio use cases
  */
 
-import { DynamicViewSchema } from './schema';
+import { DynamicViewSchema } from './schema.js';
 
 // ========== Template 1: Pipeline Performance Dashboard ==========
 

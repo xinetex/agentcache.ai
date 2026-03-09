@@ -1,4 +1,4 @@
-import { jettySpeedDb } from '../../src/services/jettySpeedDb';
+import { jettySpeedDb } from '../../src/services/jettySpeedDb.js';
 import { v4 as uuidv4 } from 'uuid';
 import { Redis } from '@upstash/redis';
 

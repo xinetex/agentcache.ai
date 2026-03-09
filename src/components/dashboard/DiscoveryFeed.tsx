@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Lightbulb, Database, Globe, Cpu, Network } from 'lucide-react';
-import CyberCard from '../../console/components/CyberCard';
+import CyberCard from '../../console/components/CyberCard.jsx';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function DiscoveryFeed() {

@@ -165,7 +165,7 @@ export async function validateApiKey(key: string): Promise<ApiKey | null> {
   try {
     const cached = await redis.get(cacheKey);
     if (cached) {
-      return JSON.parse(cached);
+      return JSON.parse(cached as string);
     }
   } catch (error) {
     console.error('[Provisioning] Redis cache error:', error);

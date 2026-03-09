@@ -59,7 +59,7 @@ export class VectorClient {
         if (this.baseUrl === 'mock') {
             // Brute force cosine similarity for mock
             const results = [];
-            for (const [id, storedVec] of this.vectors.entries()) {
+            for (const [id, storedVec] of Array.from(this.vectors.entries())) {
                 // Cosine sim
                 let dot = 0;
                 let magA = 0;

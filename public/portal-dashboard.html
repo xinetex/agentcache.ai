@@ -251,6 +251,62 @@
                   <div id="workspace-summary-name" class="mt-3 text-lg font-semibold text-slate-50">Loading workspace...</div>
                   <div id="workspace-summary-meta" class="mt-1 text-sm text-slate-500">Fetching organization details</div>
                 </div>
+
+                <div class="rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
+                  <div class="flex items-start justify-between gap-3">
+                    <div>
+                      <div class="text-xs font-medium uppercase tracking-[0.16em] text-slate-500">Billing</div>
+                      <div id="billing-plan-name" class="mt-3 text-lg font-semibold text-slate-50">Loading plan...</div>
+                      <div id="billing-plan-copy" class="mt-1 text-sm text-slate-500">Fetching current quota and workspace limits.</div>
+                    </div>
+                    <a
+                      id="billing-upgrade-link"
+                      href="/upgrade.html?plan=pro"
+                      class="inline-flex items-center rounded-xl border border-sky-400/30 bg-sky-500/10 px-3 py-2 text-sm font-medium text-sky-100 transition hover:bg-sky-500/15"
+                    >
+                      Upgrade
+                    </a>
+                  </div>
+
+                  <div class="mt-4 h-2 overflow-hidden rounded-full bg-slate-900">
+                    <div id="billing-usage-bar" class="h-full rounded-full bg-gradient-to-r from-sky-400 via-emerald-400 to-amber-400" style="width: 0%"></div>
+                  </div>
+
+                  <div id="billing-usage-copy" class="mt-3 text-sm text-slate-400">Loading usage...</div>
+
+                  <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 p-3">
+                      <div class="text-[0.68rem] uppercase tracking-[0.16em] text-slate-500">Namespaces</div>
+                      <div id="billing-namespace-usage" class="mt-2 text-sm font-semibold text-slate-100">--</div>
+                    </div>
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 p-3">
+                      <div class="text-[0.68rem] uppercase tracking-[0.16em] text-slate-500">API keys</div>
+                      <div id="billing-api-key-usage" class="mt-2 text-sm font-semibold text-slate-100">--</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
+                  <div class="flex items-start justify-between gap-3">
+                    <div>
+                      <div class="text-xs font-medium uppercase tracking-[0.16em] text-slate-500">Add-ons</div>
+                      <div class="mt-3 text-lg font-semibold text-slate-50">Guardrails and Knowledge</div>
+                      <div class="mt-1 text-sm text-slate-500">Activate policy control or docs memory for this workspace.</div>
+                    </div>
+                    <a
+                      href="/pricing.html"
+                      class="inline-flex items-center rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm font-medium text-slate-200 transition hover:bg-slate-900"
+                    >
+                      Pricing
+                    </a>
+                  </div>
+
+                  <div id="addon-list" class="mt-4 space-y-3">
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm text-slate-400">
+                      Loading add-ons...
+                    </div>
+                  </div>
+                </div>
               </aside>
             </div>
 

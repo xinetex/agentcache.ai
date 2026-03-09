@@ -87,7 +87,7 @@ export class AgentCache {
    */
   private handleError(error: AxiosError): never {
     const response = error.response;
-    const message = response?.data?.error || error.message;
+    const message = (response?.data as any)?.error || error.message;
 
     if (!response) {
       if (error.code === 'ECONNABORTED') {

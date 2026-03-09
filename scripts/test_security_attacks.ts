@@ -37,26 +37,30 @@ console.log("🛡️  Running Security Verification...\n");
 
 let blockedCount = 0;
 
-ATTACKS.forEach(attack => {
-    const result = engine.detectInjection(attack.prompt);
+async function runTests() {
+    for (const attack of ATTACKS) {
+        const result = await engine.detectInjection(attack.prompt);
 
-    if (!result.valid) {
-        console.log(`✅ BLOCKED: [${attack.name}]`);
-        console.log(`   Reason: ${result.reason}`);
-        blockedCount++;
-    } else {
-        console.log(`❌ PASSED:  [${attack.name}]`);
-        console.log(`   Prompt: "${attack.prompt}"`);
+        if (!result.valid) {
+            console.log(`✅ BLOCKED: [${attack.name}]`);
+            console.log(`   Reason: ${result.reason}`);
+            blockedCount++;
+        } else {
+            console.log(`❌ PASSED:  [${attack.name}]`);
+            console.log(`   Prompt: "${attack.prompt}"`);
+        }
+        console.log('---');
     }
-    console.log('---');
-});
 
-console.log(`\n📊 Results: ${blockedCount}/${ATTACKS.length} attacks blocked.`);
+    console.log(`\n📊 Results: ${blockedCount}/${ATTACKS.length} attacks blocked.`);
 
-if (blockedCount < ATTACKS.length) {
-    console.log("⚠️  Some attacks bypassed the filter. Further hardening required.");
-    process.exit(1);
-} else {
-    console.log("🔒 All known attacks neutralized.");
-    process.exit(0);
+    if (blockedCount < ATTACKS.length) {
+        console.log("⚠️  Some attacks bypassed the filter. Further hardening required.");
+        process.exit(1);
+    } else {
+        console.log("🔒 All known attacks neutralized.");
+        process.exit(0);
+    }
 }
+
+runTests().catch(console.error);

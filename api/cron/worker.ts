@@ -4,7 +4,7 @@ export const config = {
 
 /**
  * Vercel Cron Handler: Drain the software-quality queue
- * Schedule this in vercel.json: { "path": "/api/cron/worker", "schedule": "*/15 * * * *" }
+ * Schedule this in vercel.json: { "path": "/api/cron/worker", "schedule": "0,15,30,45 * * * *" }
  */
 export default async function handler(req, res) {
     if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {

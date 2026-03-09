@@ -3,6 +3,8 @@ import { marketplace } from '../services/MarketplaceService.js';
 import { LLMFactory } from '../lib/llm/factory.js';
 import { v4 as uuidv4 } from 'uuid';
 
+import { LLMProvider } from '../lib/llm/types.js';
+
 /**
  * Coder Agent
  * "The Architect" - Sells code review and generation services.
@@ -10,13 +12,13 @@ import { v4 as uuidv4 } from 'uuid';
 export class CoderAgent {
     id: string;
     name: string;
-    model: any;
+    model: LLMProvider;
 
-    constructor() {
+    constructor(model?: LLMProvider) {
         this.id = uuidv4();
         this.name = "Coder_Alpha";
-        // Use Anthropic (Claude 3.5 Sonnet) for coding tasks
-        this.model = LLMFactory.createProvider('anthropic');
+        // Dependency Injection: Allow model to be passed in, or default to Anthropic
+        this.model = model || LLMFactory.createProvider('anthropic');
     }
 
     /**
@@ -81,6 +83,10 @@ export class CoderAgent {
             console.error(`[CoderAgent] Audit Failed:`, err);
             return `Failed to audit code: ${err.message}`;
         }
+    }
+
+    async reviewCode(snippet: string): Promise<string> {
+        return this.auditCode(snippet);
     }
 }
 

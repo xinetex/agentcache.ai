@@ -85,7 +85,7 @@ async function verifySentinel() {
         agency: 'Department of Energy',
         mission: 'Genesis Mission',
         impactLevel: 'IL4',
-        compliance: { fedramp: true, hipaa: false, neutrality: true }
+        compliance: ['fedramp', 'neutrality']
     });
 
     const govStatus = await trustCenter.getTrustStatus();

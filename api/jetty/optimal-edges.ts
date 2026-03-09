@@ -1,5 +1,5 @@
-import { jettySpeedDb } from '../../src/services/jettySpeedDb';
-import { edgeSelector } from '../../src/services/edgeSelector';
+import { jettySpeedDb } from '../../src/services/jettySpeedDb.js';
+import { edgeSelector } from '../../src/services/edgeSelector.js';
 import { v4 as uuidv4 } from 'uuid';
 
 export const config = {

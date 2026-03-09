@@ -1,4 +1,4 @@
-import { EdgeLocation, EdgeMetric } from './jettySpeedDb';
+import { EdgeLocation, EdgeMetric } from './jettySpeedDb.js';
 
 // Haversine distance calculation (km)
 function haversineDistance(

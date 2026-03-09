@@ -1,4 +1,4 @@
-import { serializer } from '../../src/lib/proto/serializer';
+import { serializer } from '../../src/lib/proto/serializer.js';
 
 export const config = {
     runtime: 'nodejs',

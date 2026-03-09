@@ -1,5 +1,5 @@
 
-import { moltbook } from "./moltbook";
+import { moltbook } from "./moltbook.js";
 
 /**
  * The Architect 📐

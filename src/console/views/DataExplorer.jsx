@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Database, Activity, Search, Server, ArrowRight, Layers } from 'lucide-react';
-import CyberCard from '../components/CyberCard';
-import DataGrid from '../components/DataGrid';
-import KnowledgeCloud from '../components/KnowledgeCloud';
-import StatDial from '../components/StatDial';
+import CyberCard from '../components/CyberCard.jsx';
+import DataGrid from '../components/DataGrid.jsx';
+import KnowledgeCloud from '../components/KnowledgeCloud.jsx';
+import StatDial from '../components/StatDial.jsx';
 
 export default function DataExplorer() {
     const [activeTab, setActiveTab] = useState('activity'); // 'activity', 'inspector', 'embeddings'

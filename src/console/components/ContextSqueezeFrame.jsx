@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Database, Zap, Activity, Hexagon, StopCircle, Play } from 'lucide-react';
-import { NeuralGlassLayout } from '../../components/dashboard/NeuralGlassLayout';
-import CyberCard from '../components/CyberCard';
+import { NeuralGlassLayout } from '../../components/dashboard/NeuralGlassLayout.tsx';
+import CyberCard from '../components/CyberCard.jsx';
 
 export default function ContextSqueezeFrame({ onExit }) {
     const [gameState, setGameState] = useState('IDLE'); // IDLE, CHALLENGE, PROCESSING, RESULT

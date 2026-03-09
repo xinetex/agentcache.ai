@@ -1,14 +1,17 @@
-import { LLMProvider, Message, CompletionResponse } from '../types.js';
+import { Message, CompletionResponse } from '../types.js';
 import { PerplexityClient } from '../../perplexity.js';
+import { AbstractLLMProvider } from '../AbstractLLMProvider.js';
+import { LLMRegistry } from '../Registry.js';
 
-export class PerplexityProvider implements LLMProvider {
+export class PerplexityProvider extends AbstractLLMProvider {
     private client: PerplexityClient;
 
-    constructor(apiKey?: string) {
-        this.client = new PerplexityClient(apiKey);
+    constructor(apiKey?: string, baseUrl?: string) {
+        super('perplexity', apiKey, baseUrl);
+        this.client = new PerplexityClient(this.apiKey);
     }
 
-    async chat(messages: Message[], options?: { model?: string; temperature?: number; maxTokens?: number }): Promise<CompletionResponse> {
+    protected async executeChat(messages: Message[], options?: { model?: string; temperature?: number; maxTokens?: number }): Promise<CompletionResponse> {
         // Map generic messages to Perplexity format
         const perplexityMessages = messages.map(m => ({
             role: m.role as 'system' | 'user' | 'assistant',
@@ -42,3 +45,5 @@ export class PerplexityProvider implements LLMProvider {
         };
     }
 }
+
+LLMRegistry.register('perplexity', PerplexityProvider);

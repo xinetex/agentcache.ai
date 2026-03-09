@@ -49,7 +49,7 @@ geoRouter.get('/nodes', async (c) => {
                 // Note: In a high-perf scenario we would use MGET for all IDs at start, but loop is fine for MVP.
                 try {
                     const rawMesh = await redis.get(`mesh:node:${p.id}`);
-                    if (rawMesh) cachedState = JSON.parse(rawMesh);
+                    if (rawMesh) cachedState = JSON.parse(rawMesh as string);
                 } catch (e) { }
 
             } else {
@@ -86,7 +86,7 @@ geoRouter.get('/nodes', async (c) => {
                 coordinates: [CENTER.lon + (Math.cos(i) * 0.04), CENTER.lat + (Math.sin(i) * 0.04)]
             })),
             meta: {
-                solar: parseFloat(solarState)
+                solar: parseFloat(solarState as string)
             }
         });
     } catch (error: any) {

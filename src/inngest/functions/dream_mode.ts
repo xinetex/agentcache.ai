@@ -1,4 +1,4 @@
-import { inngest } from '../client';
+import { inngest } from '../client.js';
 import { Redis } from '@upstash/redis';
 import { Index } from '@upstash/vector';
 

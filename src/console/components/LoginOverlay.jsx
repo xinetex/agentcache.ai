@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../auth/AuthContext.jsx';
 import { Lock, ArrowRight } from 'lucide-react';
-import CyberCard from './CyberCard';
+import CyberCard from './CyberCard.jsx';
 
 export default function LoginOverlay() {
     const { login } = useAuth();

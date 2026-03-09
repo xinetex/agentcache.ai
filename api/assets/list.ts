@@ -1,5 +1,5 @@
 
-import { redis } from '../../src/lib/redis';
+import { redis } from '../../src/lib/redis.js';
 import { createHash } from 'crypto';
 
 export const config = { runtime: 'nodejs' };

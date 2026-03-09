@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './WizardModalNew.css';
 import { getSectorScenarios } from '../config/sectorScenarios.js';
-import { DatasetService } from '../services/datasetService';
+import { DatasetService } from '../services/datasetService.js';
 
 function WizardModalNew({ sector, config, onClose, onComplete }) {
   // Get HPC sector scenarios (research-backed templates)

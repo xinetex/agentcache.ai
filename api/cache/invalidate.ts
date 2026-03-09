@@ -1,4 +1,4 @@
-import { antiCache } from '../../src/mcp/anticache';
+import { antiCache } from '../../src/mcp/anticache.js';
 
 // Initialize invalidator
 const cacheInvalidator = new antiCache.CacheInvalidator();

@@ -1,17 +1,13 @@
-import { LLMProvider, Message, CompletionResponse } from '../types.js';
+import { Message, CompletionResponse } from '../types.js';
+import { AbstractLLMProvider } from '../AbstractLLMProvider.js';
+import { LLMRegistry } from '../Registry.js';
 
-export class InceptionLabsProvider implements LLMProvider {
-    private apiKey: string;
-    private baseUrl: string;
-
+export class InceptionLabsProvider extends AbstractLLMProvider {
     constructor(apiKey?: string, baseUrl: string = 'https://api.inceptionlabs.ai/v1') {
-        this.apiKey = apiKey || '';
-        this.baseUrl = baseUrl;
+        super('inception', apiKey, baseUrl);
     }
 
-    async chat(messages: Message[], options?: { model?: string; temperature?: number; maxTokens?: number }): Promise<CompletionResponse> {
-        if (!this.apiKey) throw new Error('Inception Labs API key missing');
-
+    protected async executeChat(messages: Message[], options?: { model?: string; temperature?: number; maxTokens?: number }): Promise<CompletionResponse> {
         // Note: Using an aggressive default model optimized for instant response/structured outputs if one isn't provided
         const model = options?.model || 'inception-base';
 
@@ -49,3 +45,5 @@ export class InceptionLabsProvider implements LLMProvider {
         };
     }
 }
+
+LLMRegistry.register('inception', InceptionLabsProvider);

@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import CommandRail from './components/CommandRail';
-import HUD from './components/HUD';
-import Overview from './views/Overview';
-import PipelineStudio from './views/PipelineStudio';
-import Swarm from './views/Swarm';
-import Observability from './views/Observability';
-import Lab from './views/Lab';
-import DataExplorer from './views/DataExplorer';
-import Governance from './views/Governance';
-import Settings from './views/Settings';
-import Admin from './views/Admin';
-import { AuthProvider, useAuth } from './auth/AuthContext';
-import LoginOverlay from './components/LoginOverlay';
-import RegisterOverlay from './components/RegisterOverlay';
-import WelcomeTour from './components/WelcomeTour';
+import CommandRail from './components/CommandRail.jsx';
+import HUD from './components/HUD.jsx';
+import Overview from './views/Overview.jsx';
+import PipelineStudio from './views/PipelineStudio.jsx';
+import Swarm from './views/Swarm.jsx';
+import Observability from './views/Observability.jsx';
+import Lab from './views/Lab.jsx';
+import DataExplorer from './views/DataExplorer.jsx';
+import Governance from './views/Governance.jsx';
+import Settings from './views/Settings.jsx';
+import Admin from './views/Admin.jsx';
+import { AuthProvider, useAuth } from './auth/AuthContext.jsx';
+import LoginOverlay from './components/LoginOverlay.jsx';
+import RegisterOverlay from './components/RegisterOverlay.jsx';
+import WelcomeTour from './components/WelcomeTour.jsx';
 
 const AppContent = () => {
     // "Neural Ops" (swarm) is default, unless URL specifies otherwise

@@ -1,4 +1,4 @@
-import { eventBus, AgentEvent } from '../../src/lib/event-bus';
+import { eventBus, AgentEvent } from '../../src/lib/event-bus.js';
 
 export default async function handler(req, res) {
     // CORS
@@ -35,7 +35,7 @@ export default async function handler(req, res) {
     res.write(`data: ${JSON.stringify({ type: 'sys:connected', timestamp: Date.now() })}\n\n`);
 
     // REAL DATA FEED: Hacker News (Simulating "Pattern Discovery" from real world)
-    const { getTopStories } = await import('../../services/hackernews.js');
+    const { getTopStories } = await import('../../src/services/hackernews.js');
 
     getTopStories().then(stories => {
         let index = 0;

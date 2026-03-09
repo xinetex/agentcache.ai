@@ -18,7 +18,7 @@ export const config = {
   runtime: 'nodejs',
 };
 
-import { db } from '../src/db/client';
+import { db } from '../src/db/client.js';
 import { wizardMemory, complianceMemory } from '../lib/platform-memory.js';
 
 // Import sector definitions from sector.js

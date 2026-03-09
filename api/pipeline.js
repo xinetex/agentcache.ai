@@ -1,6 +1,4 @@
-export const config = {
-  runtime: 'nodejs',
-};
+import { db } from '../src/db/client.js';
 
 /**
  * Pipeline Composer API
@@ -407,7 +405,7 @@ function generatePythonCode(pipeline) {
   // This will result in a syntax error in the JavaScript file itself.
   // If the user meant to add these to the *generated* Python code, the instruction
   // should be rephrased to modify the `imports` or `config` string.
-  import { db } from '../src/db/client';
+  // import { db } from '../src/db/client.js';
   let imports = `from agentcache import AgentCache, CacheConfig\n`;
   let config = `\n# Pipeline: ${pipeline.name || 'Untitled'}\n`;
   config += `cache = AgentCache(\n`;

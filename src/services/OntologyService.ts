@@ -1,6 +1,16 @@
 import { LLMFactory } from '../lib/llm/factory.js';
 
+import { LLMProvider } from '../lib/llm/types.js';
+
 export class OntologyService {
+    private llm: LLMProvider;
+
+    constructor(llm?: LLMProvider) {
+        // Dependency Injection: Allow custom LLM to be injected (e.g. for testing)
+        // Defaults to Inception for high-speed mapping performance
+        this.llm = llm || LLMFactory.createProvider('inception');
+    }
+
     /**
      * Map unstructured or multi-domain data into a strict JSON ontology.
      * Uses Inception Labs for high-speed, structured output enforcement.
@@ -13,10 +23,6 @@ export class OntologyService {
         console.log(`[OntologyService] Initiating high-speed map via Inception...`);
 
         const strData = typeof sourceData === 'string' ? sourceData : JSON.stringify(sourceData);
-
-        // 1. Initialize Inception Labs for near-instant structured output reasoning
-        // In a production system we'd failover gracefully, but we target Inception explicitly for speed.
-        const llm = LLMFactory.createProvider('inception');
 
         const prompt = `
 You are a strict Data Ontology Mapper.
@@ -38,7 +44,7 @@ Rules:
 
         try {
             // Because Inception Labs is uniquely tuned for code/structure, we pass this directly.
-            const response = await llm.chat([
+            const response = await this.llm.chat([
                 { role: 'system', content: 'You are a machine-to-machine ontology mapper. Return ONLY JSON.' },
                 { role: 'user', content: prompt }
             ], {

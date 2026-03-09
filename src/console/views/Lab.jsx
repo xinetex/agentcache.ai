@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { FlaskConical, Zap, ArrowRight, Database, Brain, Network, Share2, Activity, Gamepad2, Play, StopCircle, ShieldAlert } from 'lucide-react';
-import { NeuralGlassLayout } from '../../components/dashboard/NeuralGlassLayout';
-import GameConsole from '../components/GameConsole';
-import CyberCard from '../components/CyberCard';
-import ContextSqueezeFrame from '../components/ContextSqueezeFrame';
-import EchoChamberFrame from '../components/EchoChamberFrame';
+import { NeuralGlassLayout } from '../../components/dashboard/NeuralGlassLayout.tsx';
+import GameConsole from '../components/GameConsole.jsx';
+import CyberCard from '../components/CyberCard.jsx';
+import ContextSqueezeFrame from '../components/ContextSqueezeFrame.jsx';
+import EchoChamberFrame from '../components/EchoChamberFrame.jsx';
 
 export default function Lab() {
     const [activeTab, setActiveTab] = useState('simulation');

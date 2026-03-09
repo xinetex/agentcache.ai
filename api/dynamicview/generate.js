@@ -10,7 +10,7 @@
  * 3. Anti-cache integration for prompt -> schema mapping
  */
 
-import { validateSchema, sanitizeComponent } from '../../src/dynamicview/schema';
+import { validateSchema, sanitizeComponent } from '../../src/dynamicview/schema.js';
 
 // ============================================================================
 // Configuration

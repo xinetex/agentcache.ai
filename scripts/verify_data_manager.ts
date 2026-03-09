@@ -1,5 +1,5 @@
 
-import { describe, it } from 'bun:test';
+// import { describe, it } from 'bun:test';
 
 async function main() {
     console.log("🔍 Verifying Data Manager Integration...");
@@ -19,7 +19,7 @@ async function main() {
         // @ts-ignore
         const uploadHandler = (await import('../api/assets/upload.js')).default;
         // @ts-ignore
-        const listHandler = (await import('../api/assets/list.ts')).default;
+        const listHandler = (await import('../api/assets/list.js')).default;
 
         // Mock Upload Request
         const mockFormData = new FormData();
@@ -54,7 +54,7 @@ async function main() {
         console.log("   (Skipping actual upload to avoid Pinata dependency in verification script)");
         console.log("   Manually seeding Redis...");
 
-        const { redis } = await import('../src/lib/redis.ts');
+        const { redis } = await import('../src/lib/redis.js');
         const { createHash } = await import('crypto');
 
         const hash = createHash('sha256').update(API_KEY).digest('hex');

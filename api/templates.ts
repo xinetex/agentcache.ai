@@ -1,5 +1,4 @@
-
-import { getTemplates, getTemplateById, validateTemplateConfig } from '../../src/config/templates.js';
+import { getTemplates, getTemplateById, validateTemplateConfig } from '../src/config/templates.js';
 
 export const config = {
     runtime: 'nodejs',

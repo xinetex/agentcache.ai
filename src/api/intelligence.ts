@@ -99,5 +99,28 @@ intelligenceRouter.get('/graph', async (c) => {
 
     return c.json(graphData);
 });
+import { desc, eq } from 'drizzle-orm';
+import { bancache as bancacheTable } from '../db/schema.js';
+
+/**
+ * GET /api/intelligence/feed
+ * Retrieve latest analyzed banners
+ */
+intelligenceRouter.get('/feed', async (c) => {
+    const limit = parseInt(c.req.query('limit') || '50', 10);
+    const results = await db.select()
+        .from(bannerAnalysis)
+        .leftJoin(bancacheTable, eq(bannerAnalysis.bannerHash, bancacheTable.hash))
+        .orderBy(desc(bannerAnalysis.analyzedAt))
+        .limit(limit);
+
+    return c.json(results.map(r => ({
+        ...r.banner_analysis,
+        bannerText: r.bancache?.bannerText,
+        seenCount: r.bancache?.seenCount,
+        firstSeenAt: r.bancache?.firstSeenAt,
+        lastSeenAt: r.bancache?.lastSeenAt
+    })));
+});
 
 export default intelligenceRouter;

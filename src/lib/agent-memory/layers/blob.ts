@@ -6,8 +6,8 @@
  */
 
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
-import fs from 'fs/promises';
-import path from 'path';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 interface BlobMetadata {
   namespace: string;
@@ -205,7 +205,7 @@ export class BlobLayer {
 
     try {
       await fs.unlink(filePath);
-      await fs.unlink(`${filePath}.meta`).catch(() => {});
+      await fs.unlink(`${filePath}.meta`).catch(() => { });
     } catch (error: any) {
       if (error.code !== 'ENOENT') {
         console.error('[BlobLayer] Local delete failed:', error);
@@ -247,7 +247,7 @@ export class BlobLayer {
 
   private inferContentType(key: string, data: any): string {
     const ext = path.extname(key).toLowerCase();
-    
+
     const mimeTypes: Record<string, string> = {
       '.json': 'application/json',
       '.txt': 'text/plain',

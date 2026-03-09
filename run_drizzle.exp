@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout -1
+spawn npx drizzle-kit generate
+expect {
+    "Is organization_id" { sleep 0.5; send "\033\[B\r"; exp_continue }
+    "Is user_id" { sleep 0.5; send "\r"; exp_continue }
+    "Is key_prefix" { sleep 0.5; send "\033\[B\r"; exp_continue }
+    "Is key_hash" { sleep 0.5; send "\033\[B\r"; exp_continue }
+    eof
+}

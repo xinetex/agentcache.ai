@@ -1,4 +1,4 @@
-import { uploadToIPFS, getGatewayUrl } from '../../src/lib/ipfs';
+import { uploadToIPFS, getGatewayUrl } from '../../src/lib/ipfs.js';
 
 export const config = {
     runtime: 'nodejs',

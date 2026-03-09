@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../auth/AuthContext';
-import { MetricFlux } from '../../components/dashboard/MetricFlux';
-import { LiquidTraceFeed } from '../../components/dashboard/LiquidTraceFeed';
-import { NeuralGlassLayout } from '../../components/dashboard/NeuralGlassLayout';
-import { CognitiveMap } from '../../components/dashboard/CognitiveMap';
-import AgentLeaderboard from '../../components/dashboard/AgentLeaderboard';
+import { useAuth } from '../auth/AuthContext.jsx';
+import { MetricFlux } from '../../components/dashboard/MetricFlux.tsx';
+import { LiquidTraceFeed } from '../../components/dashboard/LiquidTraceFeed.tsx';
+import { NeuralGlassLayout } from '../../components/dashboard/NeuralGlassLayout.tsx';
+import { CognitiveMap } from '../../components/dashboard/CognitiveMap.tsx';
+import AgentLeaderboard from '../../components/dashboard/AgentLeaderboard.tsx';
 
 export default function Observability() {
     const { token } = useAuth();

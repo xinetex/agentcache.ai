@@ -1,17 +1,13 @@
-import { LLMProvider, Message, CompletionResponse } from '../types.js';
+import { Message, CompletionResponse } from '../types.js';
+import { AbstractLLMProvider } from '../AbstractLLMProvider.js';
+import { LLMRegistry } from '../Registry.js';
 
-export class AnthropicProvider implements LLMProvider {
-    private apiKey: string;
-    private baseUrl: string;
-
+export class AnthropicProvider extends AbstractLLMProvider {
     constructor(apiKey?: string, baseUrl: string = 'https://api.anthropic.com/v1') {
-        this.apiKey = apiKey || '';
-        this.baseUrl = baseUrl;
+        super('anthropic', apiKey, baseUrl);
     }
 
-    async chat(messages: Message[], options?: { model?: string; temperature?: number; maxTokens?: number }): Promise<CompletionResponse> {
-        if (!this.apiKey) throw new Error('Anthropic API key missing');
-
+    protected async executeChat(messages: Message[], options?: { model?: string; temperature?: number; maxTokens?: number }): Promise<CompletionResponse> {
         const model = options?.model || 'claude-3-5-sonnet-20240620';
 
         // Convert 'system' role to top-level system parameter for Anthropic
@@ -53,3 +49,5 @@ export class AnthropicProvider implements LLMProvider {
         };
     }
 }
+
+LLMRegistry.register('anthropic', AnthropicProvider);

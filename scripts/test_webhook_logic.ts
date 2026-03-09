@@ -13,13 +13,13 @@ if (!process.env.STRIPE_WEBHOOK_SECRET) process.env.STRIPE_WEBHOOK_SECRET = 'whs
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
 // Mock Stripe to generate signature
-const stripe = new Stripe('sk_test_mock', { apiVersion: '2024-11-20.acacia' });
+const stripe = new Stripe('sk_test_mock', { apiVersion: '2025-02-24.acacia' });
 
 async function runTest() {
     console.log('🧪 Testing Webhook Logic (Unit Test)...');
 
     // Dynamic import to ensure env vars are loaded first
-    const { default: handler } = await import('../api/webhook');
+    const { default: handler } = await import('../api/webhook.js');
 
     // 1. Mock Payload
     const payload = {

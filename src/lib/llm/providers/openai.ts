@@ -1,17 +1,13 @@
-import { LLMProvider, Message, CompletionResponse } from '../types.js';
+import { Message, CompletionResponse } from '../types.js';
+import { AbstractLLMProvider } from '../AbstractLLMProvider.js';
+import { LLMRegistry } from '../Registry.js';
 
-export class OpenAIProvider implements LLMProvider {
-    private apiKey: string;
-    private baseUrl: string;
-
+export class OpenAIProvider extends AbstractLLMProvider {
     constructor(apiKey?: string, baseUrl: string = 'https://api.openai.com/v1') {
-        this.apiKey = apiKey || '';
-        this.baseUrl = baseUrl;
+        super('openai', apiKey, baseUrl);
     }
 
-    async chat(messages: Message[], options?: { model?: string; temperature?: number; maxTokens?: number }): Promise<CompletionResponse> {
-        if (!this.apiKey) throw new Error('OpenAI API key missing');
-
+    protected async executeChat(messages: Message[], options?: { model?: string; temperature?: number; maxTokens?: number }): Promise<CompletionResponse> {
         const model = options?.model || 'gpt-4o';
 
         const res = await fetch(`${this.baseUrl}/chat/completions`, {
@@ -48,3 +44,5 @@ export class OpenAIProvider implements LLMProvider {
         };
     }
 }
+
+LLMRegistry.register('openai', OpenAIProvider);

@@ -27,7 +27,7 @@ interface SecurityValidationResult {
  */
 export function detectAdversarialPrompt(content: string): SecurityValidationResult {
   const threats: string[] = [];
-  
+
   // Pattern 1: Instruction override attempts
   const overridePatterns = [
     /ignore\s+(previous|all|above|prior)\s+(instructions?|rules?|prompts?)/i,
@@ -35,11 +35,11 @@ export function detectAdversarialPrompt(content: string): SecurityValidationResu
     /forget\s+(everything|all)\s+(you\s+)?(know|learned)/i,
     /system\s+(role|prompt)\s+(override|change|modification)/i,
   ];
-  
+
   if (overridePatterns.some(p => p.test(content))) {
     threats.push('instruction_override_attempt');
   }
-  
+
   // Pattern 2: Credential/secret extraction
   const extractionPatterns = [
     /reveal\s+(your\s+)?(secrets?|keys?|passwords?|credentials?|tokens?)/i,
@@ -47,11 +47,11 @@ export function detectAdversarialPrompt(content: string): SecurityValidationResu
     /what('?s|\s+is)\s+(your\s+)?(system\s+)?prompt/i,
     /display\s+(hidden|internal|private)\s+(data|information|config)/i,
   ];
-  
+
   if (extractionPatterns.some(p => p.test(content))) {
     threats.push('credential_extraction_attempt');
   }
-  
+
   // Pattern 3: DAN (Do Anything Now) / Jailbreak
   const jailbreakPatterns = [
     /DAN\s+(mode|activated)/i,
@@ -59,11 +59,11 @@ export function detectAdversarialPrompt(content: string): SecurityValidationResu
     /pretend\s+you('re|\s+are)\s+(not\s+)?(constrained|limited|restricted)/i,
     /act\s+as\s+if\s+you\s+have\s+no\s+(rules|restrictions|limitations)/i,
   ];
-  
+
   if (jailbreakPatterns.some(p => p.test(content))) {
     threats.push('jailbreak_attempt');
   }
-  
+
   // Pattern 4: Code injection
   const injectionPatterns = [
     /<script[\s\S]*?>[\s\S]*?<\/script>/i,
@@ -73,22 +73,22 @@ export function detectAdversarialPrompt(content: string): SecurityValidationResu
     /exec\s*\(/i,
     /__import__\s*\(/i,
   ];
-  
+
   if (injectionPatterns.some(p => p.test(content))) {
     threats.push('code_injection');
   }
-  
+
   // Pattern 5: Prompt leaking
   const leakPatterns = [
     /repeat\s+(the|your)\s+(above|previous)\s+(text|instructions?|prompt)/i,
     /what\s+were\s+you\s+told\s+(before|initially|at\s+the\s+start)/i,
     /output\s+(your\s+)?(entire\s+)?(system\s+)?prompt/i,
   ];
-  
+
   if (leakPatterns.some(p => p.test(content))) {
     threats.push('prompt_leak_attempt');
   }
-  
+
   // Pattern 6: Encoding tricks (base64, hex, etc.)
   const encodingTricks = [
     /base64\s*\(/i,
@@ -97,13 +97,13 @@ export function detectAdversarialPrompt(content: string): SecurityValidationResu
     /\\x[0-9a-f]{2}/i, // hex encoding
     /\\u[0-9a-f]{4}/i,  // unicode escaping
   ];
-  
+
   if (encodingTricks.some(p => p.test(content)) && content.length > 500) {
     threats.push('encoding_obfuscation');
   }
-  
+
   const blocked = threats.length > 0;
-  
+
   return {
     valid: !blocked,
     threats,
@@ -119,34 +119,34 @@ export function validateNamespace(namespace?: string): SecurityValidationResult 
   if (!namespace) {
     return { valid: true, threats: [], blocked: false };
   }
-  
+
   const threats: string[] = [];
-  
+
   // Check for path traversal
   if (namespace.includes('..') || namespace.includes('//')) {
     threats.push('path_traversal');
   }
-  
+
   // Check for suspicious names
   const suspiciousNames = [
     'admin', 'root', 'system', 'internal', 'private',
     'secrets', 'keys', 'credentials', 'config'
   ];
-  
+
   if (suspiciousNames.some(name => namespace.toLowerCase().includes(name))) {
     threats.push('suspicious_namespace');
   }
-  
+
   // Validate format (alphanumeric, dash, underscore, slash only)
   if (!/^[a-zA-Z0-9\-_\/]+$/.test(namespace)) {
     threats.push('invalid_characters');
   }
-  
+
   // Length check
   if (namespace.length > 256) {
     threats.push('namespace_too_long');
   }
-  
+
   return {
     valid: threats.length === 0,
     threats,
@@ -161,20 +161,20 @@ export function validateNamespace(namespace?: string): SecurityValidationResult 
 export function scanResponseSecurity(response: any): SecurityValidationResult {
   const threats: string[] = [];
   const responseStr = JSON.stringify(response);
-  
+
   // Check for suspicious URLs
   const urlPattern = /https?:\/\/[^\s'"]+/gi;
   const urls = responseStr.match(urlPattern) || [];
-  
-  const suspiciousDomains = [
+
+  const suspiciousDomains: string[] = [
     'bit.ly', 'tinyurl.com', 'goo.gl', // URL shorteners (phishing risk)
     '.ru', '.cn', // High-risk TLDs (configurable)
   ];
-  
-  if (urls.some(url => suspiciousDomains.some(domain => url.includes(domain)))) {
+
+  if ((urls as string[]).some((url: string) => suspiciousDomains.some(domain => url.includes(domain)))) {
     threats.push('suspicious_url');
   }
-  
+
   // Check for PII leakage patterns
   const piiPatterns = [
     /\b\d{3}-\d{2}-\d{4}\b/g, // SSN
@@ -182,11 +182,11 @@ export function scanResponseSecurity(response: any): SecurityValidationResult {
     /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, // Email (many false positives, use cautiously)
     /\b\d{16}\b/g, // Generic card number
   ];
-  
+
   if (piiPatterns.some(p => p.test(responseStr))) {
     threats.push('potential_pii_leakage');
   }
-  
+
   // Check for malware signatures
   const malwarePatterns = [
     /cmd\.exe/i,
@@ -196,11 +196,11 @@ export function scanResponseSecurity(response: any): SecurityValidationResult {
     /curl\s+.*\|\s*bash/i,
     /wget\s+.*\|\s*sh/i,
   ];
-  
+
   if (malwarePatterns.some(p => p.test(responseStr))) {
     threats.push('malware_signature');
   }
-  
+
   return {
     valid: threats.length === 0,
     threats,
@@ -231,19 +231,19 @@ export class QuantumResistantEncryption {
   }> {
     const iv = randomBytes(16);
     const cipher = createCipheriv('aes-256-gcm', key, iv);
-    
+
     let encrypted = cipher.update(data, 'utf8', 'base64');
     encrypted += cipher.final('base64');
-    
+
     const authTag = cipher.getAuthTag();
-    
+
     return {
       encrypted,
       iv: iv.toString('base64'),
       authTag: authTag.toString('base64')
     };
   }
-  
+
   /**
    * Decrypt data
    */
@@ -258,15 +258,15 @@ export class QuantumResistantEncryption {
       key,
       Buffer.from(iv, 'base64')
     );
-    
+
     decipher.setAuthTag(Buffer.from(authTag, 'base64'));
-    
+
     let decrypted = decipher.update(encrypted, 'base64', 'utf8');
     decrypted += decipher.final('utf8');
-    
+
     return decrypted;
   }
-  
+
   /**
    * Derive encryption key from namespace (for per-namespace encryption)
    */
@@ -290,7 +290,7 @@ interface RateLimitState {
 
 export class RateLimiter {
   private limits: Map<string, RateLimitState> = new Map();
-  
+
   /**
    * Check if request is within rate limit
    */
@@ -301,7 +301,7 @@ export class RateLimiter {
   ): { allowed: boolean; remaining: number; resetAt: number } {
     const now = Date.now();
     const state = this.limits.get(identifier);
-    
+
     // No previous state or window expired
     if (!state || now > state.resetAt) {
       this.limits.set(identifier, {
@@ -309,14 +309,14 @@ export class RateLimiter {
         resetAt: now + windowMs,
         blocked: false
       });
-      
+
       return {
         allowed: true,
         remaining: maxRequests - 1,
         resetAt: now + windowMs
       };
     }
-    
+
     // Within window
     if (state.count >= maxRequests) {
       return {
@@ -325,18 +325,18 @@ export class RateLimiter {
         resetAt: state.resetAt
       };
     }
-    
+
     // Increment count
     state.count++;
     this.limits.set(identifier, state);
-    
+
     return {
       allowed: true,
       remaining: maxRequests - state.count,
       resetAt: state.resetAt
     };
   }
-  
+
   /**
    * Cleanup expired entries (call periodically)
    */
@@ -363,31 +363,32 @@ export interface AuditLogEntry {
   result: 'hit' | 'miss' | 'blocked' | 'error';
   threats?: string[];
   latencyMs?: number;
+  metadata?: Record<string, any>;
 }
 
 export class AuditLogger {
   private logs: AuditLogEntry[] = [];
   private maxLogs = 10000; // Keep last 10K entries in memory
-  
+
   log(entry: AuditLogEntry): void {
     this.logs.push(entry);
-    
+
     // Trim old logs
     if (this.logs.length > this.maxLogs) {
       this.logs = this.logs.slice(-this.maxLogs);
     }
-    
+
     // In production, send to external logging service
     // (Datadog, CloudWatch, etc.)
     if (entry.threats && entry.threats.length > 0) {
       console.error('🚨 Security threat detected:', entry);
     }
   }
-  
+
   getRecentLogs(limit: number = 100): AuditLogEntry[] {
     return this.logs.slice(-limit);
   }
-  
+
   getSecurityEvents(): AuditLogEntry[] {
     return this.logs.filter(log => log.threats && log.threats.length > 0);
   }

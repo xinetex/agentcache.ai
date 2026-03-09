@@ -144,7 +144,7 @@ export class ContextLayer {
   async mset(entries: Map<string, string>, ttl?: number): Promise<void> {
     if (this.redis) {
       const pipeline = this.redis.pipeline();
-      for (const [key, value] of entries) {
+      for (const [key, value] of Array.from(entries)) {
         if (ttl) {
           pipeline.setex(key, ttl, value);
         } else {
@@ -155,7 +155,7 @@ export class ContextLayer {
     }
 
     // Update local cache
-    for (const [key, value] of entries) {
+    for (const [key, value] of Array.from(entries)) {
       this.localSet(key, value, ttl);
     }
   }

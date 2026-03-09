@@ -1,4 +1,4 @@
-import { vectorIndex } from '../src/lib/vector';
+import { vectorIndex } from '../src/lib/vector.js';
 
 const API_URL = process.env.API_URL || 'http://localhost:3000';
 

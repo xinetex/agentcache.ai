@@ -1,4 +1,4 @@
-import { appendToSession, getSessionHistory } from '../lib/redis.js';
+import { redis } from '../lib/redis.js';
 import { upsertMemory, queryMemory, vectorIndex } from '../lib/vector.js';
 import { v4 as uuidv4 } from 'uuid';
 import { CognitiveEngine } from './CognitiveEngine.js';
@@ -40,7 +40,7 @@ export class ContextManager {
         }
 
         // 1. Fetch L2 (Warm) Context - Recent History
-        const recentHistory = await getSessionHistory(sessionId);
+        const recentHistory = await redis.getSessionHistory(sessionId);
 
         // 2. Fetch L3 (Cold) Context - Vector Search with Episodic Decay
         let longTermMemories: Message[] = [];
@@ -155,8 +155,8 @@ export class ContextManager {
         const assistantMsg: Message = { role: 'assistant', content: assistantMessage, timestamp };
 
         // Write to L2 (Warm Tier) - Always save to recent history
-        await appendToSession(sessionId, userMsg);
-        await appendToSession(sessionId, assistantMsg);
+        await redis.appendToSession(sessionId, userMsg);
+        await redis.appendToSession(sessionId, assistantMsg);
 
         // Cognitive Layer: Validation
         // Only save to L3 (Long Term) if it passes validation

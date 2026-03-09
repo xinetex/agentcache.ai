@@ -1,14 +1,17 @@
-import { LLMProvider, Message, CompletionResponse } from '../types.js';
+import { Message, CompletionResponse } from '../types.js';
 import { MoonshotClient } from '../../moonshot.js';
+import { AbstractLLMProvider } from '../AbstractLLMProvider.js';
+import { LLMRegistry } from '../Registry.js';
 
-export class MoonshotProvider implements LLMProvider {
+export class MoonshotProvider extends AbstractLLMProvider {
     private client: MoonshotClient;
 
-    constructor(apiKey?: string) {
-        this.client = new MoonshotClient(apiKey);
+    constructor(apiKey?: string, baseUrl?: string) {
+        super('moonshot', apiKey, baseUrl);
+        this.client = new MoonshotClient(this.apiKey);
     }
 
-    async chat(messages: Message[], options?: { model?: string; temperature?: number; maxTokens?: number }): Promise<CompletionResponse> {
+    protected async executeChat(messages: Message[], options?: { model?: string; temperature?: number; maxTokens?: number }): Promise<CompletionResponse> {
         // Map generic messages to Moonshot format (they are compatible)
         const msMessages = messages.map(m => ({
             role: m.role,
@@ -39,3 +42,5 @@ export class MoonshotProvider implements LLMProvider {
         };
     }
 }
+
+LLMRegistry.register('moonshot', MoonshotProvider);

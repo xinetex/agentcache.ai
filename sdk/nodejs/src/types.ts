@@ -69,8 +69,8 @@ export enum NodeType {
  */
 export const QueryRequestSchema = z.object({
   prompt: z.string().describe('The query prompt to cache/retrieve'),
-  context: z.record(z.any()).optional().describe('Additional context for the query'),
-  metadata: z.record(z.any()).optional().describe('Custom metadata to attach'),
+  context: z.record(z.string(), z.any()).optional().describe('Additional context for the query'),
+  metadata: z.record(z.string(), z.any()).optional().describe('Custom metadata to attach'),
   ttl: z.number().optional().describe('Time-to-live in seconds (overrides default)'),
   invalidate_on: z.array(z.string()).optional().describe('Events that should invalidate this cache entry'),
   namespace: z.string().optional().describe('Namespace for multi-tenant isolation'),

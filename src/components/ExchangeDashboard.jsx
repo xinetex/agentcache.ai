@@ -112,8 +112,8 @@ const ExchangeDashboard = ({ onBack, agentId }) => {
                                     <button
                                         onClick={() => buyListing(l.id, l.pricePerUnit)}
                                         style={{ background: 'transparent', border: '1px solid cyan', color: 'cyan', padding: '5px 15px', cursor: 'pointer', transition: 'all 0.2s' }}
-                                        onMouseEnter={e => e.target.style.background = 'cyan', e.target.style.color = 'black'}
-                                        onMouseLeave={e => e.target.style.background = 'transparent', e.target.style.color = 'cyan'}
+                                        onMouseEnter={e => { e.target.style.background = 'cyan'; e.target.style.color = 'black'; }}
+                                        onMouseLeave={e => { e.target.style.background = 'transparent'; e.target.style.color = 'cyan'; }}
                                     >BUY</button>
                                 </div>
                             </div>

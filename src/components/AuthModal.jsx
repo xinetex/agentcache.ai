@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext.jsx';
 import './AuthModal.css';
 
 const AuthModal = ({ onClose, onSuccess, initialMode = 'login', message = null }) => {

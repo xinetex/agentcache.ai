@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Stars, Text, Html } from '@react-three/drei';
 import * as THREE from 'three';
-import { DatasetService } from '../services/datasetService';
+import { DatasetService } from '../services/datasetService.js';
 
 // "Hero" points - the actual interactive data
 function GalaxyPoints({ data, onHover }) {

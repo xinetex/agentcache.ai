@@ -11,7 +11,7 @@ import {
     User,
     Zap
 } from 'lucide-react';
-import CyberCard from './CyberCard';
+import CyberCard from './CyberCard.jsx';
 
 /**
  * Agent Comms Panel

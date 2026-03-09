@@ -10,7 +10,7 @@ const agent = new GrowthAgent();
 
 (async () => {
     try {
-        await agent.runCampaign();
+        await agent.performStrategyScan();
 
         console.log("-----------------------------------------");
         console.log("STATUS: Campaign Active");

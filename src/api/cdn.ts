@@ -23,7 +23,7 @@ function initSmartCache(process: any) {
     return getVideoCache({
         l1MaxSize: parseInt(process.env.CDN_L1_MAX_SIZE || '') || 100 * 1024 * 1024,
         l1MaxAge: parseInt(process.env.CDN_L1_TTL || '') || 5 * 60 * 1000,
-    redisUrl: process.env.REDIS_URL || process.env.KV_URL || undefined,
+        redisUrl: process.env.REDIS_URL || process.env.KV_URL || undefined,
         l2TTL: parseInt(process.env.CDN_L2_TTL || '') || 3600,
         s3Endpoint: process.env.JETTYTHUNDER_S3_ENDPOINT || process.env.S3_ENDPOINT,
         s3AccessKey: process.env.JETTYTHUNDER_ACCESS_KEY || process.env.S3_ACCESS_KEY,
@@ -190,8 +190,8 @@ function isMissingContentGenerateable(path: string): boolean {
 async function generateMissingContent(targetPath: string) {
     try {
         // Dynamic import for ESM compatibility
-        const colodaModule = await import('../../services/coloda-preview.js');
-        const generator = colodaModule.default;
+        const colodaModule = await import('../services/coloda-preview.js');
+        const generator = colodaModule.default();
 
         // Generate content based on target path
         const generated = await generator.createSmartPreview(targetPath, {

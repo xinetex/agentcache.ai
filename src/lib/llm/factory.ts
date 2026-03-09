@@ -1,45 +1,43 @@
 import { LLMProvider } from './types.js';
-import { OpenAIProvider } from './providers/openai.js';
-import { AnthropicProvider } from './providers/anthropic.js';
-import { GeminiProvider } from './providers/gemini.js';
-import { MoonshotProvider } from './providers/moonshot.js';
-import { GrokProvider } from './providers/grok.js';
-import { PerplexityProvider } from './providers/perplexity.js';
-import { InceptionLabsProvider } from './providers/inception.js';
+import { LLMRegistry } from './Registry.js';
 import { withToolCache } from '../cache/tool.js';
 
-export type ProviderType = 'openai' | 'anthropic' | 'gemini' | 'moonshot' | 'grok' | 'perplexity' | 'inception';
+// Import all providers to ensure they are registered in the LLMRegistry
+import './providers/openai.js';
+import './providers/anthropic.js';
+import './providers/gemini.js';
+import './providers/moonshot.js';
+import './providers/grok.js';
+import './providers/perplexity.js';
+import './providers/inception.js';
+import './providers/ollama.js';
+
+export type ProviderType = 'openai' | 'anthropic' | 'gemini' | 'moonshot' | 'grok' | 'perplexity' | 'inception' | 'ollama';
 
 export class LLMFactory {
-    static createProvider(type: ProviderType, apiKey?: string): LLMProvider {
-        let provider: LLMProvider;
-        switch (type) {
-            case 'openai':
-                provider = new OpenAIProvider(apiKey || process.env.OPENAI_API_KEY);
-                break;
-            case 'anthropic':
-                provider = new AnthropicProvider(apiKey || process.env.ANTHROPIC_API_KEY);
-                break;
-            case 'gemini':
-                provider = new GeminiProvider(apiKey || process.env.GEMINI_API_KEY);
-                break;
-            case 'moonshot':
-                provider = new MoonshotProvider(apiKey || process.env.MOONSHOT_API_KEY);
-                break;
-            case 'grok':
-                provider = new GrokProvider(apiKey || process.env.AI_GATEWAY_API_KEY);
-                break;
-            case 'perplexity':
-                provider = new PerplexityProvider(apiKey || process.env.PERPLEXITY_API_KEY);
-                break;
-            case 'inception':
-                provider = new InceptionLabsProvider(apiKey || process.env.INCEPTION_API_KEY);
-                break;
-            default:
-                throw new Error(`Unknown provider type: ${type}`);
-        }
+    /**
+     * Maps provider types to their default API key environment variables
+     */
+    private static readonly API_KEY_MAP: Record<string, string | undefined> = {
+        openai: process.env.OPENAI_API_KEY,
+        anthropic: process.env.ANTHROPIC_API_KEY,
+        gemini: process.env.GEMINI_API_KEY,
+        moonshot: process.env.MOONSHOT_API_KEY,
+        grok: process.env.AI_GATEWAY_API_KEY,
+        perplexity: process.env.PERPLEXITY_API_KEY,
+        inception: process.env.INCEPTION_API_KEY,
+    };
 
-        // Apply Tool Caching to the 'chat' method
+    /**
+     * Polymorphically creates an LLM provider using the Registry pattern
+     */
+    static createProvider(type: ProviderType, apiKey?: string): LLMProvider {
+        const defaultKey = this.API_KEY_MAP[type];
+
+        // Use the Registry to resolve the provider class without switch-case branching
+        const provider = LLMRegistry.resolve(type, apiKey || defaultKey);
+
+        // Apply Tool Caching to the 'chat' method (Cross-cutting concern)
         const originalChat = provider.chat.bind(provider);
         provider.chat = withToolCache(
             `llm:${type}`,

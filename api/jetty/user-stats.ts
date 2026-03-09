@@ -1,5 +1,5 @@
 import { Redis } from '@upstash/redis';
-import { jettySpeedDb } from '../../src/services/jettySpeedDb';
+import { jettySpeedDb } from '../../src/services/jettySpeedDb.js';
 
 export const config = {
   runtime: 'nodejs',

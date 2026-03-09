@@ -36,7 +36,7 @@ export function withToolCache<T extends (...args: any[]) => Promise<any>>(
             const cached = await redis.get(cacheKey);
             if (cached) {
                 console.log(`[ToolCache] HIT: ${toolName} (${hash})`);
-                return JSON.parse(cached);
+                return JSON.parse(cached as string);
             }
         } catch (err) {
             console.warn('[ToolCache] Read error:', err);

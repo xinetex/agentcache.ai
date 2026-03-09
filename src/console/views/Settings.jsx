@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { User, Key, Users, Bell, Shield, Wallet, Save, RefreshCw, Trash2, CheckCircle, Plus } from 'lucide-react';
-import CyberCard from '../components/CyberCard';
-import { useAuth } from '../auth/AuthContext';
+import CyberCard from '../components/CyberCard.jsx';
+import { useAuth } from '../auth/AuthContext.jsx';
 
 export default function Settings() {
     const { user } = useAuth();

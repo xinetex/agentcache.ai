@@ -1,6 +1,6 @@
 
-import { AgentCacheClient } from './packages/agentcache-js/src/client';
-import { CacheRequest } from './packages/agentcache-js/src/types';
+import { AgentCacheClient } from './packages/agentcache-js/src/client.js';
+import { CacheRequest } from './packages/agentcache-js/src/types.js';
 
 /**
  * Verification Script for AgentCache SDK

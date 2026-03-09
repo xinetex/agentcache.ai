@@ -1,5 +1,5 @@
 
-import { moltbook } from "./src/lib/moltbook";
+import { moltbook } from '../src/lib/moltbook.js';
 
 // Note: Requires MOLTBOOK_API_KEY to be set, but this script is for the USER to run manually
 // with a NEW key content.

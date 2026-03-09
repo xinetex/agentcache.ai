@@ -1,4 +1,4 @@
-import { blobStore } from '../../src/lib/blob-store';
+import { blobStore } from '../../src/lib/blob-store.js';
 import { Readable } from 'stream';
 
 export const config = {

@@ -1,7 +1,7 @@
 
 import { db } from '../db/client.js';
 import { marketplaceListings, marketplaceOrders, agentSuggestions } from '../db/schema.js';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, sql } from 'drizzle-orm';
 import { ledger } from './LedgerService.js';
 
 export class MarketplaceService {

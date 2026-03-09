@@ -120,7 +120,7 @@ export class SemanticLayer {
 
     // Local search with cosine similarity
     const results: SearchResult[] = [];
-    for (const [key, record] of this.localStore.entries()) {
+    for (const [key, record] of Array.from(this.localStore.entries())) {
       if (record.metadata?.namespace === namespace || !namespace) {
         const score = this.cosineSimilarity(embedding, record.embedding);
         if (score >= threshold) {
@@ -163,7 +163,7 @@ export class SemanticLayer {
     // Deterministic pseudo-embedding based on text hash
     // NOT for production semantic search, just for dev/testing
     const embedding = new Array(this.embeddingDim).fill(0);
-    
+
     for (let i = 0; i < text.length; i++) {
       const charCode = text.charCodeAt(i);
       const idx = (charCode * (i + 1)) % this.embeddingDim;

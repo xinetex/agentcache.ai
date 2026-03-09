@@ -27,12 +27,12 @@ const predictiveSynapse = new PredictiveSynapse();
 export async function clawAgent(c: Context) {
   try {
     const body = await c.req.json();
-    const { 
+    const {
       query,
       context = {},
       user_id,
       intent,
-      force_system2 = false 
+      force_system2 = false
     } = body;
 
     if (!query) {
@@ -42,14 +42,16 @@ export async function clawAgent(c: Context) {
     const startTime = Date.now();
 
     // Step 1: Predict user intent (pre-cognition)
-    const predictedIntent = intent || await predictiveSynapse.predictIntent(query, context);
+    const predictedIntentCandidate = intent ? undefined : await predictiveSynapse.predict(query);
+    const predictedIntent = intent || (predictedIntentCandidate && predictedIntentCandidate.length > 0 ? predictedIntentCandidate[0].hash : 'unknown');
 
     // Step 2: Route to appropriate cognitive system
-    const routeDecision = await cognitiveRouter.route(query, {
-      intent: predictedIntent,
-      forceSystem2: force_system2,
-      namespace: CLAWSAVE_NAMESPACE
-    });
+    const routeDecisionSystem = await cognitiveRouter.route(query, user_id);
+    const routeDecision = {
+      system: routeDecisionSystem,
+      confidence: 0.9, // Router returns bare system type, mocked confidence
+      reason: routeDecisionSystem === 'system_1' ? 'fast reflex' : 'deep reasoning required'
+    };
 
     // Step 3: Execute based on routing decision
     let response;
@@ -57,7 +59,7 @@ export async function clawAgent(c: Context) {
       // Fast path - check cache first
       const cacheKey = `claw:${Buffer.from(query).toString('base64').slice(0, 32)}`;
       const cached = await redis?.get(cacheKey);
-      
+
       if (cached) {
         response = {
           result: JSON.parse(cached as string),
@@ -77,7 +79,7 @@ export async function clawAgent(c: Context) {
           system: 'system_1',
           latency_ms: Date.now() - startTime
         };
-        
+
         // Cache for future
         await redis?.set(cacheKey, JSON.stringify(response.result), { ex: 300 });
       }
@@ -136,10 +138,8 @@ export async function clawStorage(c: Context) {
     const startTime = Date.now();
 
     // Use brain to optimize storage decision
-    const storageDecision = await cognitiveRouter.route(`storage:${operation}:${file_key || file_id}`, {
-      intent: 'storage_operation',
-      namespace: CLAWSAVE_NAMESPACE
-    });
+    const storageDecisionSystem = await cognitiveRouter.route(`storage:${operation}:${file_key || file_id}`, user_id);
+    const storageDecision = { system: storageDecisionSystem };
 
     let result;
     switch (operation) {
@@ -164,7 +164,7 @@ export async function clawStorage(c: Context) {
         // Check AgentCache memory first
         const memoryCacheKey = `claw:file:${file_id || file_key}`;
         const cachedMeta = await redis?.get(memoryCacheKey);
-        
+
         if (cachedMeta) {
           result = {
             operation: 'retrieve',
@@ -392,7 +392,7 @@ function generateReflexResponse(intent: string, context: Record<string, any>): s
 
 // Helper: Deep reasoning for System 2
 async function deepReasoning(
-  query: string, 
+  query: string,
   context: Record<string, any>,
   intent: string
 ): Promise<Record<string, any>> {
@@ -416,15 +416,15 @@ async function deepReasoning(
 
 // Helper: Track ClawSave usage
 async function trackClawUsage(
-  userId: string | undefined, 
-  endpoint: string, 
+  userId: string | undefined,
+  endpoint: string,
   operation: string
 ): Promise<void> {
   if (!redis) return;
-  
+
   const date = new Date().toISOString().split('T')[0];
   const key = `usage:clawsave_com:${date}:${endpoint}`;
-  
+
   try {
     await redis.incr(key);
     await redis.expire(key, 60 * 60 * 24 * 30); // 30 days

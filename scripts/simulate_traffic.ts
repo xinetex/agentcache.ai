@@ -1,8 +1,8 @@
 import 'dotenv/config';
-import { eventBus } from '../src/lib/event-bus';
-import { db } from '../src/db/client';
-import { decisions, agents } from '../src/db/schema';
-import { redis } from '../src/lib/redis';
+import { eventBus } from '../src/lib/event-bus.js';
+import { db } from '../src/db/client.js';
+import { decisions, agents } from '../src/db/schema.js';
+import { redis } from '../src/lib/redis.js';
 
 async function simulate() {
     console.log("🚀 Starting Mission Control Simulation...");
@@ -32,18 +32,16 @@ async function simulate() {
 
     // 2. Simulate Events (via EventBus)
     console.log("Emitting events...");
-    eventBus.publish({
-        type: 'CACHE_HIT',
+    eventBus.publish('CACHE_HIT', {
         agentId: 'Agent-Alpha',
         hash: 'a1b2c3d4',
-        payload: { latency: 12 }
+        latency: 12
     });
 
-    eventBus.publish({
-        type: 'OPTIMIZATION',
+    eventBus.publish('OPTIMIZATION', {
         agentId: 'Swarm-Beta',
         hash: 'opt-x99',
-        payload: { saved: '1.2MB' }
+        saved: '1.2MB'
     });
 
     // 3. Simulate Stats (Redis)

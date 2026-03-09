@@ -71,8 +71,10 @@ Output strictly valid JSON with this schema:
                 { role: 'user', content: prompt }
             ], {
                 model: 'moonshot-v1-8k',
-                // jsonMode: true // If supported
             });
+
+            // Extract the Kimi reasoning if available
+            const kimiReasoning = response.metadata?.reasoning_content;
 
             // Parse JSON (robustly finding the JSON block)
             const jsonMatch = response.content.match(/\{[\s\S]*\}/);
@@ -82,14 +84,19 @@ Output strictly valid JSON with this schema:
 
             const result = JSON.parse(jsonMatch[0]);
 
+            // Prefer the model's native chain of thought, fallback to the requested json reasoning
+            const finalReasoning = kimiReasoning
+                ? `[KIMI THOUGHT PROCESS]\n${kimiReasoning}\n\n[SUMMARY]\n${result.reasoning}`
+                : (result.reasoning || response.content.slice(0, 500));
+
             // Save to DB
             await db.insert(bannerAnalysis).values({
                 bannerHash: hash,
-                agentModel: 'moonshot-v1-8k',
+                agentModel: response.model || 'moonshot-v1-8k',
                 riskScore: result.risk_score || 0,
                 classification: result.classification || 'Unknown',
                 vulnerabilities: result.vulnerabilities || [],
-                reasoning: result.reasoning || response.content.slice(0, 500),
+                reasoning: finalReasoning,
                 compliance: {}, // Placeholder
                 analyzedAt: new Date()
             });

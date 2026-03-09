@@ -1,4 +1,4 @@
-import BaseNode from './BaseNode';
+import BaseNode from './BaseNode.jsx';
 
 function SemanticDedupNode({ data }) {
   const config = {

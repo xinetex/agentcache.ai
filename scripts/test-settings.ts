@@ -1,4 +1,3 @@
-
 import { redis } from '../src/lib/redis.js';
 
 async function testSettings() {
@@ -16,7 +15,7 @@ async function testSettings() {
     const saved = await redis.get('adminConfig:settings');
     console.log('Retrieved:', saved);
 
-    if (saved && JSON.parse(saved).orgName === 'TEST_ORG') {
+    if (saved && JSON.parse(saved as string).orgName === 'TEST_ORG') {
         console.log('✅ Redis Persistence Works');
     } else {
         console.error('❌ Redis Persistence Failed');

@@ -83,7 +83,7 @@ export interface ShareOptions {
 export class AgentMemory {
   private agentId: string;
   private namespace: string;
-  
+
   // Storage layers
   private semantic: SemanticLayer;
   private structured: StructuredLayer;
@@ -95,7 +95,7 @@ export class AgentMemory {
   constructor(agentId: string, namespace?: string) {
     this.agentId = agentId;
     this.namespace = namespace || `agent:${agentId}`;
-    
+
     // Initialize layers
     this.semantic = new SemanticLayer();
     this.structured = new StructuredLayer();
@@ -241,7 +241,7 @@ export class AgentMemory {
           results.push({
             key: record.key,
             value: record.value,
-            metadata: options.includeMetadata ? record.metadata : undefined,
+            metadata: options.includeMetadata ? (record.metadata as MemoryRecord['metadata']) : undefined,
           });
         }
       }
@@ -306,7 +306,7 @@ export class AgentMemory {
 
     // Create share record
     const shareId = `share:${this.agentId}:${targetAgentId}:${Date.now()}`;
-    
+
     await this.structured.upsert(shareId, {
       sourceAgent: this.agentId,
       targetAgent: targetAgentId,
@@ -364,7 +364,7 @@ export class AgentMemory {
   async findRelated(key: string, relation?: string, depth: number = 1): Promise<RecallResult[]> {
     const fullKey = this.makeKey(key);
     const nodes = await this.graph.traverse(fullKey, relation, depth);
-    
+
     const results: RecallResult[] = [];
     for (const node of nodes) {
       const value = await this.getValue(node.id);
@@ -396,12 +396,12 @@ export class AgentMemory {
     value = await this.structured.get(key);
     if (value !== null) return value;
 
-    value = await this.blob.get(key);
+    value = await this.blob.get(key) as any;
     return value;
   }
 
   private async getMetadata(key: string): Promise<MemoryRecord['metadata'] | undefined> {
-    return this.structured.getMetadata(key);
+    return this.structured.getMetadata(key) as Promise<MemoryRecord['metadata'] | undefined>;
   }
 
   private async recordAccess(key: string): Promise<void> {
@@ -470,8 +470,8 @@ export class AgentMemory {
 
   private isBlob(value: any): boolean {
     return value instanceof Buffer ||
-           value instanceof Uint8Array ||
-           (typeof value === 'object' && value?.type === 'blob');
+      value instanceof Uint8Array ||
+      (typeof value === 'object' && value?.type === 'blob');
   }
 
   private serialize(value: any): string {

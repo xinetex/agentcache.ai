@@ -42,7 +42,7 @@ memoryRouter.post('/store', async (c) => {
     return c.json({ error: 'content too large (max 20,000 chars)' }, 413);
   }
 
-  const apiKey = c.get('apiKey');
+  const apiKey = (c as any).get('apiKey');
   const keyHash = apiKey ? createHash('sha256').update(apiKey as string).digest('hex') : null;
 
   const id = uuidv4();

@@ -9,7 +9,7 @@ async function main() {
     // 1. Verify Coder Agent Initialization (Listing Services)
     console.log("\n1️⃣  Initializing Coder Agent...");
     try {
-        const { coderAgent } = await import('../src/agents/CoderAgent.ts');
+        const { coderAgent } = await import('../src/agents/CoderAgent.js');
         await coderAgent.initialize();
         console.log("   ✅ Coder Agent Initialized.");
     } catch (e) {
@@ -21,7 +21,7 @@ async function main() {
 
     // We can't fetch localhost easily if server isn't running.
     // So we import the handler directly for unit testing logic.
-    const depositHandler = (await import('../api/billing/deposit.ts')).default;
+    const depositHandler = (await import('../api/billing/deposit.js')).default;
 
     const mockReq = {
         method: 'POST',
@@ -31,7 +31,7 @@ async function main() {
                 return null;
             }
         },
-        json: async () => ({ amount: 50.00 })
+        json: async (): Promise<any> => ({ amount: 50.00 })
     };
 
     try {
@@ -41,7 +41,7 @@ async function main() {
 
         console.log("   Deposit Response:", data);
 
-        if (data.success && data.balance >= 50) {
+        if (data && data.success && data.balance >= 50) {
             console.log("   ✅ Deposit Successful. Balance updated.");
         } else {
             console.error("   ❌ Deposit Failed:", data);
@@ -54,7 +54,7 @@ async function main() {
     // 3. Verify Coder Agent Logic (Mocked LLM)
     console.log("\n3️⃣  Testing Coder Agent Audit...");
     try {
-        const { coderAgent } = await import('../src/agents/CoderAgent.ts');
+        const { coderAgent } = await import('../src/agents/CoderAgent.js');
 
         // Mock the LLM chat to avoid spending tokens during test
         coderAgent.model.chat = async () => ({ content: "# Audit Report\n\nCode looks good." });

@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Share2, AlertTriangle, CheckCircle, Volume2, Shield, Activity, TrendingUp, User, Globe, Play, StopCircle } from 'lucide-react';
-import { NeuralGlassLayout } from '../../components/dashboard/NeuralGlassLayout';
-import CyberCard from '../components/CyberCard';
+import { NeuralGlassLayout } from '../../components/dashboard/NeuralGlassLayout.tsx';
+import CyberCard from '../components/CyberCard.jsx';
 
 export default function EchoChamberFrame({ onExit }) {
     const [gameState, setGameState] = useState('IDLE');

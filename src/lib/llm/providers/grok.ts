@@ -1,14 +1,17 @@
-import { LLMProvider, Message, CompletionResponse } from '../types.js';
+import { Message, CompletionResponse } from '../types.js';
 import { GrokClient } from '../../grok.js';
+import { AbstractLLMProvider } from '../AbstractLLMProvider.js';
+import { LLMRegistry } from '../Registry.js';
 
-export class GrokProvider implements LLMProvider {
+export class GrokProvider extends AbstractLLMProvider {
     private client: GrokClient;
 
-    constructor(apiKey?: string) {
-        this.client = new GrokClient(apiKey);
+    constructor(apiKey?: string, baseUrl?: string) {
+        super('grok', apiKey, baseUrl);
+        this.client = new GrokClient(this.apiKey);
     }
 
-    async chat(messages: Message[], options?: { model?: string; temperature?: number; maxTokens?: number }): Promise<CompletionResponse> {
+    protected async executeChat(messages: Message[], options?: { model?: string; temperature?: number; maxTokens?: number }): Promise<CompletionResponse> {
         // Map generic messages to Grok format
         const grokMessages = messages.map(m => ({
             role: m.role,
@@ -35,3 +38,5 @@ export class GrokProvider implements LLMProvider {
         };
     }
 }
+
+LLMRegistry.register('grok', GrokProvider);

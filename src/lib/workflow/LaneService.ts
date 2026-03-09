@@ -58,6 +58,6 @@ export class LaneService {
         const raw = await this.redis.lpop(`queue:${lane}`);
         if (!raw) return null;
 
-        return typeof raw === 'string' ? JSON.parse(raw) : raw;
+        return typeof raw === 'string' ? JSON.parse(raw) as AgentJob : raw as unknown as AgentJob;
     }
 }

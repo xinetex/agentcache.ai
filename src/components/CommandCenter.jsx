@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useSector } from '../context/SectorContext';
+import { useSector } from '../context/SectorContext.jsx';
 import { useAgentSystem } from '../hooks/useAgentSystem';
 import './CommandCenter.css';
 

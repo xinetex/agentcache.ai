@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Beaker, TrendingUp, TrendingDown, CheckCircle, AlertCircle } from 'lucide-react';
-import CyberCard from '../../console/components/CyberCard';
+import CyberCard from '../../console/components/CyberCard.jsx';
 import { motion } from 'framer-motion';
 
 export default function ExperimentCard() {

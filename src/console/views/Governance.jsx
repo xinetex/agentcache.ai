@@ -9,9 +9,9 @@ import {
     FileText,
     Gavel
 } from 'lucide-react';
-import CyberCard from '../components/CyberCard';
-import DataGrid from '../components/DataGrid';
-import StatDial from '../components/StatDial';
+import CyberCard from '../components/CyberCard.jsx';
+import DataGrid from '../components/DataGrid.jsx';
+import StatDial from '../components/StatDial.jsx';
 
 export default function Governance() {
     const [stats, setStats] = useState({

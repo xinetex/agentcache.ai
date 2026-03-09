@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, ChevronRight, Map, Cpu, Zap } from 'lucide-react';
-import CyberCard from './CyberCard';
+import CyberCard from './CyberCard.jsx';
 
 export default function WelcomeTour({ onClose, isDemo }) {
     const [step, setStep] = useState(0);

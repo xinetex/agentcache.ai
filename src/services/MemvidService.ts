@@ -72,8 +72,8 @@ export class MemvidService {
         // If Env has OPENAI_API_KEY, it uses it. Otherwise might fail if local model missing.
         // Assuming we want RAG answer
         try {
-            const answer = await mv.ask(query);
-            return answer.text;
+            const answer = await mv.ask(query) as any;
+            return answer.text || answer.answer || JSON.stringify(answer);
         } catch (err) {
             console.warn(`[Memvid] RAG Failed (maybe no LLM configured?), falling back to Search.`);
             console.error(err);

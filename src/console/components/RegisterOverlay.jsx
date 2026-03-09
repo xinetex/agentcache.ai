@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../auth/AuthContext.jsx';
 import { Shield, ArrowRight, UserPlus, Building2, Key } from 'lucide-react';
-import CyberCard from './CyberCard';
+import CyberCard from './CyberCard.jsx';
 
 export default function RegisterOverlay() {
     const { login } = useAuth(); // We'll need a register function in AuthContext later

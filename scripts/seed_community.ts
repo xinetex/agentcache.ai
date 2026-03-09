@@ -1,5 +1,5 @@
 
-import { AgentCacheClient } from '../packages/agentcache-js/src/client';
+import { AgentCacheClient } from '../packages/agentcache-js/src/client.js';
 import { db } from '../src/db/client.js';
 import { redis } from '../src/lib/redis.js';
 

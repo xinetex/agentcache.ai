@@ -1,4 +1,4 @@
-import { redis, appendToSession, getSessionHistory } from '../src/lib/redis.js';
+import { redis } from '../src/lib/redis.js';
 
 async function verify() {
     console.log('Testing Redis Client...');
@@ -15,8 +15,8 @@ async function verify() {
         console.log(`GET test_ex: ${valEx} ${valEx === 'expires_soon' ? '✅' : '❌'}`);
 
         // 3. Lists (Session History)
-        await appendToSession('test_session', { role: 'user', content: 'hi' });
-        const history = await getSessionHistory('test_session');
+        await (redis as any).appendToSession('test_session', { role: 'user', content: 'hi' });
+        const history = await (redis as any).getSessionHistory('test_session');
         console.log(`Session History: ${history.length} items ${history.length >= 1 ? '✅' : '❌'}`);
         console.log('First item:', history[0]);
 

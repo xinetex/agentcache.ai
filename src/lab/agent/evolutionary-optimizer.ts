@@ -7,7 +7,7 @@
  * - Evolution: Survival of the Fittest
  */
 
-import { inngest } from '../inngest/client.js';
+import { inngest } from '../../inngest/client.js';
 
 // --- Types ---
 

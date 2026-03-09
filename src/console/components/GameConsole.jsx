@@ -10,7 +10,7 @@ import {
     Lock,
     Eye
 } from 'lucide-react';
-import CyberCard from './CyberCard';
+import CyberCard from './CyberCard.jsx';
 
 export default function GameConsole({ onLaunch }) {
     const [selectedGame, setSelectedGame] = useState(null);

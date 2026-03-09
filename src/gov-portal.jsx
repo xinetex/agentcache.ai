@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import GovWizardPremium from './components/GovWizardPremium';
-import Sentinel3D from './components/Sentinel3D';
-import SentinelHUD from './components/SentinelHUD';
+import GovWizardPremium from './components/GovWizardPremium.jsx';
+import Sentinel3D from './components/Sentinel3D.jsx';
+import SentinelHUD from './components/SentinelHUD.jsx';
 import './components/GovWizardPremium.css'; // Ensure styles are loaded
 
 // Mount Sentinel Dashboard

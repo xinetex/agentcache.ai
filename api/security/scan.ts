@@ -1,4 +1,4 @@
-import { scanForPickle, verifyProvenance } from '../../src/lib/security';
+import { scanForPickle, verifyProvenance } from '../../src/lib/security.js';
 
 export default async function handler(req, res) {
     // CORS

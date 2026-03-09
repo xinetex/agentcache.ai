@@ -5,6 +5,7 @@ import {
   getKeyPrefix,
   hashApiKey,
 } from '../../lib/workspace-provisioning.js';
+import { getUpgradeTargetForInternalPlan } from '../../lib/billing-plans.js';
 
 export default async function handler(req, res) {
   try {
@@ -61,8 +62,14 @@ export default async function handler(req, res) {
 
       const currentCount = parseInt(keyCountResult.rows[0].count);
       if (currentCount >= org.max_api_keys) {
+        const upgradeTarget = getUpgradeTargetForInternalPlan(org.plan_tier);
         return res.status(403).json({ 
-          error: `API key limit reached for ${org.plan_tier} plan (max: ${org.max_api_keys})` 
+          error: `API key limit reached for ${org.plan_tier} plan (max: ${org.max_api_keys})`,
+          upgradeRequired: Boolean(upgradeTarget),
+          currentPlan: org.plan_tier,
+          recommendedPlan: upgradeTarget?.publicId || null,
+          upgradeUrl: upgradeTarget ? `/upgrade.html?plan=${upgradeTarget.publicId}` : '/pricing.html',
+          limitType: 'api_keys',
         });
       }
 

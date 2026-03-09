@@ -1,4 +1,4 @@
-import { vectorIndex } from '../../src/lib/vector';
+import { vectorIndex } from '../../src/lib/vector.js';
 
 export const config = {
     runtime: 'nodejs',

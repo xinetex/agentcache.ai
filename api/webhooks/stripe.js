@@ -1,7 +1,7 @@
 
 import Stripe from 'stripe';
-import { db } from '../../src/db/client';
-import { organizations, members } from '../../src/db/schema';
+import { db } from '../../src/db/client.js';
+import { organizations, members } from '../../src/db/schema.js';
 import { eq } from 'drizzle-orm';
 import { buffer } from 'micro';
 

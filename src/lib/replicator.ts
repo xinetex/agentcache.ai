@@ -1,5 +1,5 @@
-import { db } from '../db/client';
-import { knowledgeNodes } from '../db/schema';
+import { db } from '../db/client.js';
+import { knowledgeNodes } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { generatePresignedUrl } from '../../lib/aws-sig-v4.js';
 

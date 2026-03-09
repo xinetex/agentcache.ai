@@ -1,4 +1,4 @@
-import bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcryptjs';
 import { generateToken } from '../../lib/jwt.js';
 import { query } from '../../lib/db.js';
 
@@ -6,11 +6,11 @@ export const config = {
   runtime: 'nodejs'
 };
 
-function isPasswordHash(value) {
+function isPasswordHash(value: any) {
   return typeof value === 'string' && value.startsWith('$2');
 }
 
-export default async function handler(req, res) {
+export default async function handler(req: any, res: any) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -100,7 +100,7 @@ export default async function handler(req, res) {
         url: !user.organization_id ? '/onboarding.html' : null,
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Login error:', error);
     return res.status(500).json({
       error: 'Internal server error',
