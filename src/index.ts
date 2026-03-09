@@ -152,11 +152,35 @@ app.use('/api/*', cors({
 }));
 
 // Agent discovery header — any agent calling any API endpoint discovers the onboarding path
-app.use('/api/*', async (c, next) => {
+app.use('*', async (c, next) => {
+  // Global Security Headers (Best Practices)
+  c.header('X-Content-Type-Options', 'nosniff');
+  c.header('X-Frame-Options', 'DENY');
+  c.header('X-XSS-Protection', '1; mode=block');
+  c.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+
   await next();
-  c.header('X-Agent-Onboard', 'https://agentcache.ai/skill.md');
-  c.header('X-Agent-Manifest', 'https://agentcache.ai/.well-known/agents.json');
-  c.header('X-MCP-Manifest', 'https://agentcache.ai/mcp/manifest');
+
+  if (c.req.path.startsWith('/api')) {
+    c.header('X-Agent-Onboard', 'https://agentcache.ai/skill.md');
+    c.header('X-Agent-Manifest', 'https://agentcache.ai/.well-known/agents.json');
+    c.header('X-MCP-Manifest', 'https://agentcache.ai/mcp/manifest');
+  }
+});
+
+// Root-level discovery routes (Agentic SEO)
+import { generateAgentsJson, generateSkillMd } from './lib/hub/discovery.js';
+
+app.get('/.well-known/agents.json', async (c) => {
+  return c.json(generateAgentsJson());
+});
+
+app.get('/skill.md', async (c) => {
+  const skillMd = generateSkillMd();
+  c.header('Content-Type', 'text/markdown; charset=utf-8');
+  // Cache discovery manifest for 1 hour to reduce load while keeping it fresh
+  c.header('Cache-Control', 'public, max-age=3600');
+  return c.body(skillMd);
 });
 
 // Mount Vercel integration routes

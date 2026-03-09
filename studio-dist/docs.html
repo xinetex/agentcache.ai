@@ -155,8 +155,13 @@
                 <h3 class="font-semibold text-white mb-3 text-sm uppercase tracking-wider">Features</h3>
                 <ul class="space-y-2 text-sm text-slate-400">
                   <li><a href="#caching" class="hover:text-cyan-400 transition block py-1">Caching Logic</a></li>
-                  <li><a href="#smart-routing"
-                      class="hover:text-cyan-400 transition block py-1 text-cyan-400 font-medium">Smart Routing</a></li>
+                  <li><a href="#smart-routing" class="hover:text-cyan-400 transition block py-1">Smart Routing</a></li>
+                  <li><a href="#cognitive"
+                      class="hover:text-cyan-400 transition block py-1 text-cyan-400 font-medium">Cognitive Layer
+                      (Lemma)</a></li>
+                  <li><a href="#economy"
+                      class="hover:text-cyan-400 transition block py-1 text-cyan-400 font-medium">Agentic Economy
+                      (x402)</a></li>
                   <li><a href="#memory" class="hover:text-cyan-400 transition block py-1">Memory Management</a></li>
                 </ul>
               </div>
@@ -311,6 +316,48 @@ response = client.chat.completions.create(
                     </div>
                   </div>
                 </div>
+              </div>
+            </section>
+
+            <!-- Cognitive Layer -->
+            <section id="cognitive" class="mb-16 scroll-mt-24">
+              <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                  <i data-lucide="brain-circuit" class="w-5 h-5 text-blue-400"></i>
+                </div>
+                Cognitive Layer (Lemma)
+              </h2>
+              <div class="glass rounded-xl p-6 border border-slate-800 space-y-4">
+                <p class="text-slate-300 leading-relaxed">
+                  The Lemma Intelligence Protocol enables agents to decompose complex goals into synthetic sub-tasks.
+                  Goal -> Decomposition -> Execution -> Synthesis. This ensures high-stability reasoning over multiple
+                  LLM instances.
+                </p>
+                <a href="/md.html?doc=lemma"
+                  class="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 font-bold tracking-wide uppercase text-sm">
+                  View Lemma Guide <i data-lucide="external-link" class="w-4 h-4"></i>
+                </a>
+              </div>
+            </section>
+
+            <!-- Agentic Economy -->
+            <section id="economy" class="mb-16 scroll-mt-24">
+              <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                  <i data-lucide="coins" class="w-5 h-5 text-amber-400"></i>
+                </div>
+                Agentic Economy (x402)
+              </h2>
+              <div class="glass rounded-xl p-6 border border-slate-800 space-y-4">
+                <p class="text-slate-300 leading-relaxed">
+                  AgentCache natively supports the x402 Agentic Payment Protocol for autonomous settlement. When agents
+                  encounter a 402 Payment Required block, they can discover payment URIs and provide pre-authorization
+                  tokens to unblock semantic routes instantly.
+                </p>
+                <a href="/md.html?doc=x402"
+                  class="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 font-bold tracking-wide uppercase text-sm">
+                  View x402 Spec <i data-lucide="external-link" class="w-4 h-4"></i>
+                </a>
               </div>
             </section>
 
