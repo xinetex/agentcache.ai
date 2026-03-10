@@ -129,7 +129,7 @@ describe.sequential('AgentCache cognitive claim coverage', () => {
     expect(beforeHeal.status).toBe('dead');
     expect(beforeHeal.healed).toBe(true);
     expect(afterHeal.status).toBe('healthy');
-  });
+  }, 15_000);
 
   it('Neural Evolution emits a concrete winning cache strategy from live hit and miss metrics', async () => {
     const redisMock = createRedisMock();

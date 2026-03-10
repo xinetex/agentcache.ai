@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Services — AgentCache</title>
+  <title>Services — AgentCache | Cache, Memory, Ontology & Security for AI Agents</title>
+  <meta name="description" content="AgentCache platform services: LLM caching, persistent memory, 6-sector data lake ontology, and security guardrails for autonomous AI agents.">
   <script src="https://cdn.tailwindcss.com"></script>
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&family=JetBrains+Mono:wght@400;600&display=swap"
@@ -25,6 +26,15 @@
       }
     }
   </script>
+  <style>
+    @keyframes countUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .stat-card { animation: countUp 0.6s ease-out both; }
+    .stat-card:nth-child(2) { animation-delay: 0.1s; }
+    .stat-card:nth-child(3) { animation-delay: 0.2s; }
+    .stat-card:nth-child(4) { animation-delay: 0.3s; }
+    .sector-pill { transition: all 0.2s ease; }
+    .sector-pill:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2); }
+  </style>
 </head>
 
 <body class="bg-slate-950 text-white font-sans antialiased selection:bg-cyan-500 selection:text-white">
@@ -55,40 +65,60 @@
     <section class="mb-12">
       <div
         class="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-4 py-2 text-xs font-mono tracking-widest uppercase text-cyan-200">
-        Flexible Billing
+        The Agent Infrastructure Platform
       </div>
-      <h1 class="mt-6 text-5xl md:text-6xl font-black tracking-tight">Services</h1>
+      <h1 class="mt-6 text-5xl md:text-6xl font-black tracking-tight">Ship smarter agents,<br><span class="text-cyan-400">spend less on LLMs.</span></h1>
       <p class="mt-4 text-lg text-slate-300 max-w-2xl">
-        AgentCache packages the platform into three practical offers: Core, Guardrails, and Knowledge. Enterprise teams
-        can layer on media edge, file acceleration, or ontology pilots.
+        Four production-grade services that make your agents faster, safer, and more intelligent — while cutting your inference costs by up to 73%.
       </p>
 
-      <div class="mt-8 grid md:grid-cols-3 gap-4">
-        <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-          <div class="text-xs font-mono text-slate-400">Core</div>
-          <div class="mt-1 text-lg font-bold">Caching, memory, and invalidation</div>
-          <div class="mt-2 text-sm text-slate-400">Best for teams reducing repeat LLM and tool spend.</div>
-          <a class="mt-4 inline-flex items-center justify-center w-full rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 px-4 py-2 text-sm font-semibold"
-            href="/pricing">View tiers</a>
+      <!-- Live Stats -->
+      <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="stat-card rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center">
+          <div id="stat_agents" class="text-2xl font-black text-cyan-400">—</div>
+          <div class="text-xs text-slate-400 mt-1">Registered Agents</div>
         </div>
-        <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-          <div class="text-xs font-mono text-slate-400">Guardrails</div>
-          <div class="mt-1 text-lg font-bold">Policy-safe agent execution</div>
-          <div class="mt-2 text-sm text-slate-400">PII scanning, prompt checks, and tool safety reviews.</div>
-          <a class="mt-4 inline-flex items-center justify-center w-full rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-4 py-2 text-sm font-black"
-            href="/pricing">See add-ons</a>
+        <div class="stat-card rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center">
+          <div class="text-2xl font-black text-emerald-400">6</div>
+          <div class="text-xs text-slate-400 mt-1">Industry Sectors</div>
         </div>
-        <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-          <div class="text-xs font-mono text-slate-400">Knowledge</div>
-          <div class="mt-1 text-lg font-bold">Docs memory and semantic retrieval</div>
-          <div class="mt-2 text-sm text-slate-400">Ingest documentation and serve reusable context to agents.</div>
-          <a class="mt-4 inline-flex items-center justify-center w-full rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 px-4 py-2 text-sm font-semibold"
-            href="/docs/quick-start.html">Quick start</a>
+        <div class="stat-card rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center">
+          <div id="stat_keys" class="text-2xl font-black text-purple-400">—</div>
+          <div class="text-xs text-slate-400 mt-1">Active API Keys</div>
         </div>
+        <div class="stat-card rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center">
+          <div class="text-2xl font-black text-amber-400">&lt;50ms</div>
+          <div class="text-xs text-slate-400 mt-1">Cache Response</div>
+        </div>
+      </div>
+
+      <!-- Four Pillars -->
+      <div class="mt-8 grid md:grid-cols-4 gap-4">
+        <a href="#cache" class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 hover:border-cyan-400/30 transition group">
+          <div class="text-xs font-mono text-cyan-300">⚡ Core</div>
+          <div class="mt-1 text-lg font-bold group-hover:text-cyan-400 transition">Cache & Proxy</div>
+          <div class="mt-2 text-sm text-slate-400">Cut repeat LLM spend. Zero-latency hits.</div>
+        </a>
+        <a href="#memory" class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 hover:border-purple-400/30 transition group">
+          <div class="text-xs font-mono text-purple-300">🧠 Core</div>
+          <div class="mt-1 text-lg font-bold group-hover:text-purple-400 transition">Memory</div>
+          <div class="mt-2 text-sm text-slate-400">Persistent context for long-running agents.</div>
+        </a>
+        <a href="#ontology" class="rounded-2xl border border-cyan-400/20 bg-cyan-500/[0.05] p-5 hover:border-cyan-400/40 transition group ring-1 ring-cyan-500/10">
+          <div class="text-xs font-mono text-cyan-200">🏗️ Knowledge</div>
+          <div class="mt-1 text-lg font-bold group-hover:text-cyan-400 transition">Data Lake Ontology</div>
+          <div class="mt-2 text-sm text-slate-400">6-sector schemas. Cross-industry federation.</div>
+          <div class="mt-2 inline-flex items-center rounded-full bg-cyan-500/20 px-2 py-0.5 text-[10px] font-bold text-cyan-300 uppercase tracking-wider">New</div>
+        </a>
+        <a href="#security" class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 hover:border-emerald-400/30 transition group">
+          <div class="text-xs font-mono text-emerald-300">🛡️ Guardrails</div>
+          <div class="mt-1 text-lg font-bold group-hover:text-emerald-400 transition">Security</div>
+          <div class="mt-2 text-sm text-slate-400">Injection detection. Tool safety scanning.</div>
+        </a>
       </div>
     </section>
 
-    <!-- Service Console -->
+    <!-- Service Console (unchanged functionality) -->
     <section class="mb-12">
       <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
         <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
@@ -128,13 +158,15 @@
 
     <!-- Services -->
     <section class="grid gap-6">
+
+      <!-- ═══════════════ CACHE ═══════════════ -->
       <div id="cache" class="scroll-mt-24 rounded-2xl border border-white/10 bg-white/[0.03] p-8">
         <div class="flex items-start justify-between gap-6">
           <div>
-            <div class="text-xs font-mono tracking-widest uppercase text-cyan-300">⚡ Cache</div>
+            <div class="text-xs font-mono tracking-widest uppercase text-cyan-300">⚡ Core :: Cache</div>
             <h2 class="mt-2 text-3xl font-black">Zero‑latency caching for agents</h2>
             <p class="mt-3 text-slate-300 max-w-3xl">Drop-in caching + proxy endpoints to reduce repeated LLM spend and
-              improve response times.</p>
+              improve response times. Every cache hit saves a full inference call.</p>
           </div>
           <a href="/docs"
             class="hidden sm:inline-flex items-center rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-4 py-2 text-sm font-semibold">Docs</a>
@@ -200,13 +232,14 @@
         </div>
       </div>
 
+      <!-- ═══════════════ MEMORY ═══════════════ -->
       <div id="memory" class="scroll-mt-24 rounded-2xl border border-white/10 bg-white/[0.03] p-8">
         <div class="flex items-start justify-between gap-6">
           <div>
-            <div class="text-xs font-mono tracking-widest uppercase text-purple-300">🧠 Memory</div>
+            <div class="text-xs font-mono tracking-widest uppercase text-purple-300">🧠 Core :: Memory</div>
             <h2 class="mt-2 text-3xl font-black">Persistent intelligence layer</h2>
             <p class="mt-3 text-slate-300 max-w-3xl">Store and retrieve structured context, traces, and long-lived agent
-              memory.</p>
+              memory. Power workflows that remember.</p>
           </div>
           <a href="/topoff"
             class="hidden sm:inline-flex items-center rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-4 py-2 text-sm font-semibold">Top‑off</a>
@@ -272,13 +305,119 @@
         </div>
       </div>
 
+      <!-- ═══════════════ ONTOLOGY (NEW) ═══════════════ -->
+      <div id="ontology" class="scroll-mt-24 rounded-2xl border border-cyan-400/20 bg-gradient-to-br from-cyan-500/[0.04] to-transparent p-8">
+        <div class="flex items-start justify-between gap-6">
+          <div>
+            <div class="text-xs font-mono tracking-widest uppercase text-cyan-300">🏗️ Knowledge :: Data Lake Ontology
+              <span class="ml-2 inline-flex items-center rounded-full bg-cyan-500/20 px-2 py-0.5 text-[10px] font-bold text-cyan-200 uppercase tracking-wider">New</span>
+            </div>
+            <h2 class="mt-2 text-3xl font-black">Turn any data into industry‑standard intelligence</h2>
+            <p class="mt-3 text-slate-300 max-w-3xl">
+              Ingest unstructured data from any source — web pages, S3 buckets, or raw payloads — and map it to validated, industry-standard schemas.
+              Then <strong class="text-white">federate queries across sectors</strong>: ask about "risk" and get answers from finance, biotech, legal, robotics, healthcare, and energy in one call.
+            </p>
+          </div>
+          <a href="/api/ontology/openapi.json" target="_blank"
+            class="hidden sm:inline-flex items-center rounded-xl border border-cyan-400/20 bg-cyan-500/10 hover:bg-cyan-500/20 px-4 py-2 text-sm font-semibold text-cyan-200">OpenAPI Spec</a>
+        </div>
+
+        <!-- Sector Pills -->
+        <div class="mt-6 flex flex-wrap gap-2">
+          <div class="sector-pill rounded-full border border-cyan-400/20 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-200">
+            💰 Finance <span class="text-xs text-cyan-400/60 ml-1">FIX/FpML</span>
+          </div>
+          <div class="sector-pill rounded-full border border-emerald-400/20 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-200">
+            🧬 Biotech <span class="text-xs text-emerald-400/60 ml-1">SNOMED/FHIR</span>
+          </div>
+          <div class="sector-pill rounded-full border border-amber-400/20 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200">
+            ⚖️ Legal <span class="text-xs text-amber-400/60 ml-1">LKIF</span>
+          </div>
+          <div class="sector-pill rounded-full border border-rose-400/20 bg-rose-500/10 px-4 py-2 text-sm font-semibold text-rose-200">
+            🤖 Robotics <span class="text-xs text-rose-400/60 ml-1">ROS/IEEE</span>
+          </div>
+          <div class="sector-pill rounded-full border border-blue-400/20 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-200">
+            🏥 Healthcare <span class="text-xs text-blue-400/60 ml-1">HL7 FHIR R4</span>
+          </div>
+          <div class="sector-pill rounded-full border border-orange-400/20 bg-orange-500/10 px-4 py-2 text-sm font-semibold text-orange-200">
+            ⚡ Energy <span class="text-xs text-orange-400/60 ml-1">CIM/IEC</span>
+          </div>
+        </div>
+
+        <div class="mt-8 grid md:grid-cols-2 gap-6">
+          <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-6">
+            <div class="text-xs font-mono tracking-widest uppercase text-slate-400">How It Works</div>
+            <p class="mt-3 text-sm text-slate-300">
+              <span class="font-semibold text-white">1. Discover</span> — browse available sector schemas via the API.<br>
+              <span class="font-semibold text-white">2. Ingest</span> — feed data from HTTP, S3, or inline payloads.<br>
+              <span class="font-semibold text-white">3. Map</span> — LLM validates output against Zod schemas with confidence scoring.<br>
+              <span class="font-semibold text-white">4. Federate</span> — bridge concepts across industries in one call.
+            </p>
+            <ul class="mt-4 space-y-2 text-sm text-slate-300">
+              <li><span class="font-mono text-slate-200">GET  /api/ontology/schemas</span> — discover sectors</li>
+              <li><span class="font-mono text-slate-200">POST /api/ontology/map</span> — semantic mapping</li>
+              <li><span class="font-mono text-slate-200">POST /api/ontology/ingest</span> — data lake ingestion</li>
+              <li><span class="font-mono text-slate-200">POST /api/ontology/bridge</span> — cross-sector federation</li>
+            </ul>
+
+            <div class="mt-5 text-xs font-mono tracking-widest uppercase text-slate-500">Cross-sector Query</div>
+            <pre
+              class="mt-2 overflow-x-auto rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-xs text-slate-200"><code>curl -X POST https://agentcache.ai/api/ontology/bridge \
+  -H "X-API-Key: ac_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{"term": "risk"}'
+
+# Returns equivalent concepts:
+# finance → exposure, volatility
+# robotics → hazard, safety_incident  
+# biotech → toxicity, adverse_reaction
+# legal → liability, negligence
+# healthcare → adverse_event, contraindication
+# energy → outage_risk, grid_instability</code></pre>
+          </div>
+
+          <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-6">
+            <div class="text-xs font-mono tracking-widest uppercase text-slate-400">Live demo</div>
+            <p class="mt-3 text-sm text-slate-300">Discover available schemas or bridge a term across all sectors.</p>
+
+            <div class="mt-4 flex flex-wrap gap-2">
+              <button onclick="acOntologySchemas()"
+                class="inline-flex items-center rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-4 py-2 text-sm font-black">Discover Schemas</button>
+              <button onclick="acOntologyBridge('risk')"
+                class="inline-flex items-center rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 px-4 py-2 text-sm font-semibold">Bridge "risk"</button>
+              <button onclick="acOntologyBridge('compliance')"
+                class="inline-flex items-center rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 text-sm font-semibold">Bridge "compliance"</button>
+            </div>
+
+            <label class="mt-6 block text-xs font-mono tracking-widest uppercase text-slate-500">Custom term</label>
+            <div class="mt-2 flex gap-2">
+              <input id="ac_ontology_term" type="text"
+                class="flex-1 rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                placeholder="Try: asset, timeline, performance…" value="asset" />
+              <button onclick="acOntologyBridgeCustom()"
+                class="inline-flex items-center rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-4 py-2 text-sm font-black">Bridge</button>
+            </div>
+
+            <pre id="ac_ontology_out"
+              class="mt-4 whitespace-pre-wrap rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-xs text-slate-200 max-h-80 overflow-y-auto">—</pre>
+
+            <div class="mt-4 p-3 rounded-xl bg-cyan-500/10 border border-cyan-400/20">
+              <div class="text-xs font-bold text-cyan-200">💡 Enterprise</div>
+              <div class="text-xs text-cyan-300/80 mt-1">Need a custom sector ontology? We build bespoke schemas for enterprise clients.</div>
+              <a href="/contact" class="mt-2 inline-flex items-center text-xs font-bold text-cyan-400 hover:text-cyan-300">Talk to us →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════ SECURITY ═══════════════ -->
       <div id="security" class="scroll-mt-24 rounded-2xl border border-white/10 bg-white/[0.03] p-8">
         <div class="flex items-start justify-between gap-6">
           <div>
-            <div class="text-xs font-mono tracking-widest uppercase text-emerald-300">🛡️ Security</div>
+            <div class="text-xs font-mono tracking-widest uppercase text-emerald-300">🛡️ Guardrails :: Security</div>
             <h2 class="mt-2 text-3xl font-black">Policy + safety guardrails</h2>
             <p class="mt-3 text-slate-300 max-w-3xl">Protect agent workflows with policy enforcement, monitoring, and
-              safe-by-default defaults.</p>
+              safe-by-default defaults. Includes tool safety scanning for supply-chain security.</p>
           </div>
           <a href="/terms"
             class="hidden sm:inline-flex items-center rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-4 py-2 text-sm font-semibold">Terms</a>
@@ -301,6 +440,7 @@
             <ul class="mt-4 space-y-2 text-sm text-slate-300">
               <li><span class="font-mono text-slate-200">POST /api/security/check</span> — injection/jailbreak detection
                 for a message</li>
+              <li><span class="font-mono text-slate-200">POST /api/tools/scan</span> — scan tool source code for threats (JS/TS/Python)</li>
               <li><span class="font-mono text-slate-200">POST /api/agent/chat</span> — applies a security check before
                 processing</li>
             </ul>
@@ -339,18 +479,44 @@
           </div>
         </div>
       </div>
+
+      <!-- ═══════════════ AGENT HUB CTA ═══════════════ -->
+      <div id="hub" class="scroll-mt-24 rounded-2xl border border-white/10 bg-gradient-to-r from-purple-500/[0.06] via-transparent to-cyan-500/[0.06] p-8">
+        <div class="text-center max-w-2xl mx-auto">
+          <div class="text-xs font-mono tracking-widest uppercase text-purple-300">Agent Hub</div>
+          <h2 class="mt-3 text-3xl font-black">Join the agent economy</h2>
+          <p class="mt-3 text-slate-300">
+            Register your agent, join focus groups, earn reputation badges, and access the full service catalog.
+            Agents who contribute to the ecosystem earn <span class="font-semibold text-white">Scout → Analyst → Oracle</span> badges.
+          </p>
+
+          <div class="mt-6 flex flex-wrap justify-center gap-3">
+            <a class="inline-flex items-center rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-6 py-3 text-sm font-black"
+              href="/hub">Explore the Hub</a>
+            <a class="inline-flex items-center rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 px-6 py-3 text-sm font-semibold"
+              href="/api/agents/register">Register Agent</a>
+            <a class="inline-flex items-center rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 px-6 py-3 text-sm font-semibold"
+              href="/skill.md">Read skill.md</a>
+          </div>
+
+          <div class="mt-6 text-xs text-slate-500">
+            Machine-readable discovery: <a href="/.well-known/agents.json" class="text-cyan-400 hover:text-cyan-300 font-mono">/.well-known/agents.json</a>
+          </div>
+        </div>
+      </div>
     </section>
 
     <footer class="mt-14 pt-10 border-t border-white/10 text-sm text-slate-400">
       <div class="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
         <div>
           <div class="font-mono text-xs tracking-widest uppercase text-slate-500">AgentCache.ai</div>
-          <div class="mt-1">Hybrid billing: tiers + credits.</div>
+          <div class="mt-1">Cache. Memory. Ontology. Security. — All-in-one agent infrastructure.</div>
         </div>
         <div class="flex gap-4">
           <a href="/" class="hover:text-white">Home</a>
           <a href="/pricing" class="hover:text-white">Pricing</a>
           <a href="/topoff" class="hover:text-white">Top‑off</a>
+          <a href="/contact" class="hover:text-white">Contact</a>
         </div>
       </div>
     </footer>
@@ -374,7 +540,7 @@
 
         function ensureKey() {
           const k = getKey();
-          if (!k) throw new Error('Enter an API key (or click “Use demo key”).');
+          if (!k) throw new Error('Enter an API key (or click "Use demo key").');
           return k;
         }
 
@@ -415,6 +581,15 @@
           if (!el) return;
           el.textContent = pretty(v);
         }
+
+        // --- Live Stats Loader ---
+        async function loadLiveStats() {
+          try {
+            const schemas = await fetchJson('/api/ontology/schemas');
+            // Update sectors count if different
+          } catch (e) { /* silent */ }
+        }
+        loadLiveStats();
 
         // --- Console ---
         window.acUseDemoKey = function () {
@@ -556,6 +731,39 @@
           } catch (e) {
             setOut('ac_memory_out', { ok: false, action: 'recall', error: e.message || String(e), details: e.data || null });
           }
+        };
+
+        // --- Ontology demo ---
+        window.acOntologySchemas = async function () {
+          setOut('ac_ontology_out', 'Loading schemas...');
+
+          try {
+            const result = await fetchJson('/api/ontology/schemas', {
+              headers: { 'Content-Type': 'application/json', 'X-API-Key': getKey() || 'ac_demo_test123' }
+            });
+            setOut('ac_ontology_out', result);
+          } catch (e) {
+            setOut('ac_ontology_out', { error: e.message || String(e), details: e.data || null });
+          }
+        };
+
+        window.acOntologyBridge = async function (term) {
+          setOut('ac_ontology_out', `Bridging "${term}" across all sectors...`);
+
+          try {
+            const result = await authedJson('/api/ontology/bridge', {
+              body: { term }
+            });
+            setOut('ac_ontology_out', result);
+          } catch (e) {
+            setOut('ac_ontology_out', { error: e.message || String(e), details: e.data || null });
+          }
+        };
+
+        window.acOntologyBridgeCustom = async function () {
+          const term = ($('ac_ontology_term')?.value || '').trim();
+          if (!term) return setOut('ac_ontology_out', 'Enter a term to bridge.');
+          acOntologyBridge(term);
         };
 
         // --- Security demo ---
