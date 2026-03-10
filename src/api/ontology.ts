@@ -253,4 +253,96 @@ ontologyRouter.get('/metrics/:sector', async (c) => {
     });
 });
 
+// ─────────────────────────────────────────────
+//  GET /api/ontology/openapi.json
+//  Machine-readable OpenAPI 3.1 spec
+// ─────────────────────────────────────────────
+ontologyRouter.get('/openapi.json', async (c) => {
+    const sectors = ontologyRegistry.listAll();
+
+    const spec = {
+        openapi: '3.1.0',
+        info: {
+            title: 'AgentCache Data Lake Ontology API',
+            version: '1.0.0',
+            description: 'Ingest unstructured data, map to industry-standard schemas, and federate queries across 6 sectors.',
+            contact: { url: 'https://agentcache.ai' },
+        },
+        servers: [{ url: 'https://agentcache.ai' }],
+        paths: {
+            '/api/ontology/schemas': {
+                get: {
+                    summary: 'List all registered sector ontologies',
+                    responses: { '200': { description: 'Array of sector schemas with fields and TTLs' } },
+                },
+            },
+            '/api/ontology/map': {
+                post: {
+                    summary: 'Map source data to a target schema',
+                    requestBody: {
+                        content: { 'application/json': { schema: { type: 'object', properties: {
+                            sourceData: { oneOf: [{ type: 'string' }, { type: 'object' }] },
+                            targetSchema: { type: 'object' },
+                            sectorId: { type: 'string', enum: sectors.map(s => s.sectorId) },
+                            schemaVersion: { type: 'string' },
+                        }, required: ['sourceData', 'targetSchema'] } } },
+                    },
+                    responses: { '200': { description: 'Mapped data conforming to target schema' } },
+                },
+            },
+            '/api/ontology/excavate': {
+                post: {
+                    summary: 'Scrape a URL and map to sector ontology',
+                    requestBody: {
+                        content: { 'application/json': { schema: { type: 'object', properties: {
+                            url: { type: 'string', format: 'uri' },
+                            sector: { type: 'string', enum: sectors.map(s => s.sectorId) },
+                        }, required: ['url'] } } },
+                    },
+                    responses: { '200': { description: 'Excavated and mapped data' } },
+                },
+            },
+            '/api/ontology/ingest': {
+                post: {
+                    summary: 'Ingest from data lake source (HTTP, S3, or raw)',
+                    requestBody: {
+                        content: { 'application/json': { schema: { type: 'object', properties: {
+                            source: { type: 'object', properties: {
+                                type: { type: 'string', enum: ['http', 's3', 'raw'] },
+                                uri: { type: 'string' },
+                                data: { oneOf: [{ type: 'string' }, { type: 'object' }] },
+                            }, required: ['type'] },
+                            sector: { type: 'string', enum: sectors.map(s => s.sectorId) },
+                        }, required: ['source', 'sector'] } } },
+                    },
+                    responses: { '200': { description: 'Ingested and mapped data' } },
+                },
+            },
+            '/api/ontology/bridge': {
+                post: {
+                    summary: 'Cross-sector term federation',
+                    description: 'Query a concept and get equivalent terms across all sectors',
+                    requestBody: {
+                        content: { 'application/json': { schema: { type: 'object', properties: {
+                            term: { type: 'string' },
+                            fromSector: { type: 'string' },
+                            toSector: { type: 'string' },
+                        }, required: ['term'] } } },
+                    },
+                    responses: { '200': { description: 'Federated results with equivalent terms per sector' } },
+                },
+            },
+        },
+        components: {
+            securitySchemes: {
+                apiKey: { type: 'apiKey', in: 'header', name: 'X-API-Key' },
+                x402: { type: 'apiKey', in: 'header', name: 'Preauthorization', description: 'x402 agentic payment receipt' },
+            },
+        },
+        security: [{ apiKey: [] }, { x402: [] }],
+    };
+
+    return c.json(spec);
+});
+
 export default ontologyRouter;

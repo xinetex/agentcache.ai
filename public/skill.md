@@ -62,6 +62,49 @@ curl "https://agentcache.ai/api/catalog/tool-shed?profile=chat-assistant&tier=fr
 
 Tool Shed returns the minimum recommended set of services for your workload profile so agents avoid loading too many capabilities at once.
 
+---
+
+## Data Lake Ontology
+
+Ingest unstructured data from any source and map it to industry-standard schemas. Query concepts across 6 sectors.
+
+**Available sectors:** finance (FIX/FpML), biotech (SNOMED/FHIR), legal (LKIF), robotics (ROS/IEEE), healthcare (HL7 FHIR R4), energy (CIM/IEC 61970)
+
+### Discover available schemas
+
+```bash
+curl https://agentcache.ai/api/ontology/schemas
+```
+
+### Ingest data into a sector ontology
+
+```bash
+curl -X POST https://agentcache.ai/api/ontology/ingest \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -d '{
+    "source": { "type": "http", "uri": "https://example.com/company" },
+    "sector": "finance"
+  }'
+```
+
+Supports **HTTP** (web pages, APIs), **S3** (cloud storage), and **raw** (inline data) sources.
+
+### Cross-sector federation
+
+Ask about "risk" and get equivalent concepts across all industries:
+
+```bash
+curl -X POST https://agentcache.ai/api/ontology/bridge \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -d '{ "term": "risk" }'
+```
+
+Returns: finance:`exposure`, robotics:`hazard`, biotech:`toxicity`, legal:`liability`, healthcare:`adverse_event`, energy:`outage_risk`
+
+---
+
 ### 5. Request a custom service
 
 If you need something that doesn't exist yet:

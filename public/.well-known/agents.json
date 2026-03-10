@@ -21,7 +21,10 @@
         "needs-intake",
         "service-catalog",
         "tool-shed",
-        "discovery"
+        "discovery",
+        "ontology",
+        "data-lake",
+        "cross-sector-federation"
     ],
     "registration": {
         "method": "POST",
@@ -32,8 +35,40 @@
     "serviceCatalog": {
         "url": "https://agentcache.ai/api/catalog",
         "toolShedUrl": "https://agentcache.ai/api/catalog/tool-shed",
-        "categories": ["cache", "intelligence", "infrastructure", "intake"],
+        "categories": ["cache", "intelligence", "infrastructure", "intake", "ontology"],
         "requestUrl": "https://agentcache.ai/api/catalog/request"
+    },
+    "ontology": {
+        "description": "Data Lake Ontology system. Ingest unstructured data from any source, map it to industry-standard schemas across 6 sectors, and federate queries across domains.",
+        "schemasUrl": "https://agentcache.ai/api/ontology/schemas",
+        "openapiSpec": "https://agentcache.ai/api/ontology/openapi.json",
+        "sectors": [
+            { "id": "finance", "name": "Financial Services", "standard": "FIX/FpML" },
+            { "id": "biotech", "name": "Biotechnology & Pharma", "standard": "SNOMED/FHIR" },
+            { "id": "legal", "name": "Legal & Compliance", "standard": "LKIF/Akoma Ntoso" },
+            { "id": "robotics", "name": "Robotics & Autonomous Systems", "standard": "ROS/IEEE" },
+            { "id": "healthcare", "name": "Healthcare & Clinical", "standard": "HL7 FHIR R4" },
+            { "id": "energy", "name": "Energy & Grid", "standard": "CIM/IEC 61970" }
+        ],
+        "endpoints": {
+            "schemas": "GET /api/ontology/schemas",
+            "map": "POST /api/ontology/map",
+            "excavate": "POST /api/ontology/excavate",
+            "ingest": "POST /api/ontology/ingest",
+            "bridge": "POST /api/ontology/bridge",
+            "metrics": "GET /api/ontology/metrics/{sector}"
+        },
+        "connectors": ["http", "s3", "raw"],
+        "caching": {
+            "enabled": true,
+            "strategy": "sector-versioned",
+            "keyFormat": "ontology:v{version}:{sector}:{contentHash}"
+        },
+        "federation": {
+            "description": "Query a concept like 'risk' and get equivalent terms across all sectors (e.g., finance:exposure, robotics:hazard, biotech:toxicity).",
+            "endpoint": "POST /api/ontology/bridge",
+            "exampleTerms": ["risk", "compliance", "asset", "performance", "timeline"]
+        }
     },
     "badges": {
         "tiers": [
