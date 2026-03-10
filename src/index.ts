@@ -276,6 +276,10 @@ app.route('/api/admin/defense', defenseRouter);
 import { armorRouter } from './api/admin/armor.js';
 app.route('/api/admin/armor', armorRouter);
 
+// Platform Revenue Reporting
+import platformRouter from './api/platform.js';
+app.route('/api/platform', platformRouter);
+
 // Public V1 API
 import { v1Router } from './api/v1/router.js';
 app.route('/api/v1', v1Router);
