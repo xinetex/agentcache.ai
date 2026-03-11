@@ -6,13 +6,19 @@ vi.mock('../../src/services/OntologyService.js', () => ({
     }
 }));
 
-vi.mock('../../src/services/ArmorService.js', () => ({
-    ArmorService: class {
-        async checkRequest() {
-            return { allowed: true };
-        }
-    },
-}));
+vi.mock('../../src/services/ArmorService.js', () => {
+    const mock = {
+        checkRequest: async () => ({ allowed: true }),
+        checkSettlementVelocity: async () => ({ allowed: true })
+    };
+    return {
+        ArmorService: class {
+            checkRequest = mock.checkRequest;
+            checkSettlementVelocity = mock.checkSettlementVelocity;
+        },
+        armorService: mock
+    };
+});
 
 let app: any;
 
