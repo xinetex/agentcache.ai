@@ -276,6 +276,23 @@ app.route('/api/admin/defense', defenseRouter);
 import { armorRouter } from './api/admin/armor.js';
 app.route('/api/admin/armor', armorRouter);
 
+// Aggregate Health (all subsystems)
+import { healthRouter } from './api/admin/health.js';
+app.route('/api/admin/health', healthRouter);
+
+import { agentsAdminRouter } from './api/admin/agents.js';
+app.route('/api/admin/agents', agentsAdminRouter);
+
+import { swarmAdminRouter } from './api/admin/swarm.js';
+app.route('/api/admin/swarm', swarmAdminRouter);
+
+import { pipelineAdminRouter } from './api/admin/pipeline.js';
+app.route('/api/admin/pipeline', pipelineAdminRouter);
+
+import { symbiontAdminRouter } from './api/admin/symbiont.js';
+app.route('/api/admin/symbiont', symbiontAdminRouter);
+
+
 // Platform Revenue Reporting
 import platformRouter from './api/platform.js';
 app.route('/api/platform', platformRouter);

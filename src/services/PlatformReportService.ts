@@ -20,12 +20,13 @@ export class PlatformReportService {
      * Full platform report — the "How much money have we made?" answer.
      */
     async getFullReport(): Promise<any> {
-        const [revenue, ontology, agents, credits, usage] = await Promise.all([
+        const [revenue, ontology, agents, credits, usage, qr] = await Promise.all([
             this.getRevenueMetrics(),
             this.getOntologyMetrics(),
             this.getAgentMetrics(),
             this.getCreditMetrics(),
             this.getUsageMetrics(),
+            this.getQrMetrics(),
         ]);
 
         return {
@@ -35,6 +36,7 @@ export class PlatformReportService {
             agents,
             credits,
             usage,
+            qr,
         };
     }
 
@@ -209,6 +211,26 @@ export class PlatformReportService {
         } catch (e: any) {
             console.error('[PlatformReport] Usage metrics error:', e.message);
             return { error: e.message };
+        }
+    }
+
+    /**
+     * QR Pairing metrics (from qr_pairing_codes table).
+     */
+    async getQrMetrics(): Promise<any> {
+        try {
+            const totalResult = await db.select({ count: count() }).from(sql`qr_pairing_codes` as any);
+            const pendingResult = await db.select({ count: count() })
+                .from(sql`qr_pairing_codes` as any)
+                .where(sql`status = 'pending' AND expires_at > NOW()`);
+
+            return {
+                totalPairings: Number(totalResult[0]?.count || 0),
+                activePending: Number(pendingResult[0]?.count || 0),
+            };
+        } catch (e: any) {
+            console.warn('[PlatformReport] QR metrics error (table may not exist):', e.message);
+            return { totalPairings: 0, activePending: 0 };
         }
     }
 }

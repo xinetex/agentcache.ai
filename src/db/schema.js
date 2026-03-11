@@ -637,3 +637,27 @@ export const marketInsights = pgTable('market_insights', {
     createdAt: timestamp('created_at').defaultNow(),
 });
 
+// --- Symbiont: Legal Bridge ---
+export const legalContracts = pgTable('legal_contracts', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    swarmId: text('swarm_id'), // Link to the swarm that generated it
+    templateId: text('template_id').notNull(), // e.g. '04-ai-revenue-share-operating-agreement'
+    content: text('content').notNull(), // The actual contract text (markdown)
+    metadata: jsonb('metadata').default({}), // Roles, splits, actor names
+    status: text('status').default('draft'), // 'draft', 'signed', 'active', 'closed'
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+    swarmIdx: index('legal_contracts_swarm_idx').on(table.swarmId),
+}));
+
+export const contractSignatures = pgTable('contract_signatures', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    contractId: uuid('contract_id').references(() => legalContracts.id).notNull(),
+    agentId: text('agent_id').notNull(),
+    walletAddress: text('wallet_address'),
+    signatureHash: text('signature_hash'),
+    timestamp: timestamp('timestamp').defaultNow(),
+}, (table) => ({
+    contractIdx: index('contract_sigs_contract_idx').on(table.contractId),
+}));
