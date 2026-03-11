@@ -537,6 +537,7 @@ export const marketplaceListings = pgTable('marketplace_listings', {
     unitType: text('unit_type').default('request'), // 'request', 'hour', 'token'
     tags: text('tags').array(),
     status: text('status').default('active'), // 'active', 'paused'
+    isVerified: boolean('is_verified').default(false),
     createdAt: timestamp('created_at').defaultNow(),
 });
 

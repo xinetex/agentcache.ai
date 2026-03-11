@@ -3,6 +3,8 @@ import { db } from '../db/client.js';
 import { legalContracts } from '../db/schema.js';
 import { eq, desc } from 'drizzle-orm';
 import { baseSettlement } from './BaseSettlementProvider.js';
+import { armorService } from './ArmorService.js';
+import { redis } from '../lib/redis.js';
 
 export interface SettlementResult {
     success: boolean;
@@ -42,6 +44,13 @@ export class AgentSettlementService {
                 console.log(`[Settlement] ♻️ Token ${tokenId} already settled. Returning cached receipt.`);
                 const account = await ledger.getAccount(targetAgentId);
                 return { success: true, authorized: true, remainingBudget: account?.balance || 0 };
+            }
+
+            // 0.55 Circuit Breaker Check: Prevent high-velocity autonomous drain
+            const safetyCheck = await armorService.checkSettlementVelocity(targetAgentId);
+            if (!safetyCheck.allowed) {
+                console.error(`[Settlement] 🛡️ CIRCUIT BREAKER TRIGGERED for ${targetAgentId}: ${safetyCheck.reason}`);
+                return { success: false, authorized: false, error: `Security Block: ${safetyCheck.reason}` };
             }
 
             // 0.6 On-Chain Guard: If txHash provided, verify on Base Mainnet
@@ -86,6 +95,12 @@ export class AgentSettlementService {
 
             const postBalance = await ledger.getAccount(targetAgentId).then(a => a?.balance || 0);
             console.log(`[Settlement] ✅ Settlement successful. New Balance: ${postBalance}`);
+
+            // Update Global Stats for Phase 3.5 Dashboard
+            await Promise.all([
+                redis.incrbyfloat('stats:total_settled', estimatedCost),
+                options?.txHash ? redis.set('stats:last_tx_hash', options.txHash) : Promise.resolve()
+            ]).catch(e => console.error('[Settlement] Failed to log global stats:', e));
 
             return {
                 success: true,

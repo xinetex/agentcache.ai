@@ -4,6 +4,7 @@ import { generateEmbedding } from '../lib/llm/embeddings.js';
 import { db } from '../db/client.js';
 import { creditTransactions } from '../db/schema.js';
 import { cognitiveMemory } from './cognitive-memory.js';
+import { redis } from '../lib/redis.js';
 
 export interface IntuitionResult {
     latentVector: Float32Array;
@@ -14,6 +15,13 @@ export interface IntuitionResult {
 
 export class IntuitionService {
     private manipulatorModel: any; // FFN - Latent Manipulator
+    
+    // Semantic Compasses (Ground Truth Directions for core sectors)
+    private semanticCompasses: Map<string, { query: string, expectedShift: number }> = new Map([
+        ['finance', { query: "market analysis and financial reports", expectedShift: 0.05 }],
+        ['legal', { query: "regulatory compliance and contract law", expectedShift: 0.05 }],
+        ['tech', { query: "software architecture and distributed systems", expectedShift: 0.05 }]
+    ]);
 
     constructor() {
         // Mock manipulator initialization for prototype
@@ -45,7 +53,12 @@ export class IntuitionService {
         // This connects the visualization/swarm logic to the semantic logic
         this.navigateSwarm(transformedVector);
 
-        // 4. Record Usage (Savings Share Logic)
+        // 4. Integrity Check (Phase 3.7): Periodically run canaries in the background
+        if (Math.random() > 0.9) {
+            this.runManipulatorCanary().catch(err => console.error('[Intuition] Canary failed:', err));
+        }
+
+        // 5. Record Usage (Savings Share Logic)
         await this.recordUsage();
 
         return {
@@ -106,6 +119,43 @@ export class IntuitionService {
             return null;
         }
         return null;
+    }
+
+    /**
+     * Latent Manipulator Canaries (Phase 3.7):
+     * Periodically run "Golden Queries" to ensure the FFN isn't drifting.
+     */
+    async runManipulatorCanary(): Promise<boolean> {
+        console.log(`[Intuition] 🦜 Running Latent Manipulator Canary...`);
+        
+        let allPassed = true;
+        for (const [sector, compass] of this.semanticCompasses) {
+            // 1. Get baseline (System 1 input)
+            const embedding = await generateEmbedding(compass.query);
+            const latentVector = new Float32Array(embedding);
+            
+            // 2. Measure actual shift
+            const transformed = this.manipulatorModel.forward(latentVector);
+            
+            // 3. Verify semantic grounding (Mock check for prototype)
+            // In production, we'd check the cosine similarity of the SHIFT vector 
+            // against the expected sector center.
+            const shiftMag = transformed.reduce((acc, val, i) => acc + Math.abs(val - latentVector[i]), 0);
+            
+            if (shiftMag < 1.0) { // Extremely low shift or drift
+                 console.warn(`[Intuition] ⚠️ Canary warning for ${sector}: Manipulator feels "stiff" or biased.`);
+                 allPassed = false;
+            }
+        }
+
+        if (allPassed) {
+            console.log(`[Intuition] ✅ Latent Manipulator is ground-truth compliant.`);
+            await redis.set('system:intuition:drift', 'none');
+        } else {
+            await redis.set('system:intuition:drift', 'detected', 'EX', 300);
+        }
+        
+        return allPassed;
     }
 
     /**

@@ -1,4 +1,5 @@
 import { BitAgentPool } from '../lib/swarm/BitAgent.js';
+import { redis } from '../lib/redis.js';
 
 export interface BoidsConfig {
     maxSpeed: number;
@@ -29,6 +30,10 @@ export class BoidsEngine {
         width: 1000,
         height: 1000
     };
+    
+    // Health-reactive state (Phase 3.6)
+    private swarmHealth = { divergenceScore: 0, status: 'healthy' };
+    private lastHealthCheck = 0;
 
     private binSize = 50;
     private binHeads: Int32Array | null = null;
@@ -41,6 +46,14 @@ export class BoidsEngine {
         const stride = 8;
         const size = pool.size;
         const { width, height, neighborhoodRadius } = this.config;
+
+        // 1. Sync Swarm Health (Phase 3.6) - Throttled check for performance
+        if (Date.now() - this.lastHealthCheck > 2000) { // Every 2 seconds
+            this.syncHealth().catch(() => {});
+            this.lastHealthCheck = Date.now();
+        }
+
+        const healthScale = this.swarmHealth.status === 'quarantined' ? 0.2 : (1 - this.swarmHealth.divergenceScore);
 
         // 1. Initialize/Reset Spatial Grid
         const cols = Math.ceil(width / this.binSize);
@@ -158,22 +171,23 @@ export class BoidsEngine {
                 steerY += cohY * this.config.cohesionWeight;
             }
 
-            // Target attraction (Bayesian Guidance)
+            // Target attraction (Bayesian Guidance) - Scaled by health (Phase 3.6)
             const tx = pool.buffer[offset + 4] - ix;
             const ty = pool.buffer[offset + 5] - iy;
-            steerX += tx * this.config.targetWeight;
-            steerY += ty * this.config.targetWeight;
+            steerX += tx * (this.config.targetWeight * healthScale);
+            steerY += ty * (this.config.targetWeight * healthScale);
 
             // Apply steering to velocity
             pool.buffer[offset + 2] += steerX * this.config.maxForce;
             pool.buffer[offset + 3] += steerY * this.config.maxForce;
 
-            // Limit speed
+            // Limit speed - Scaled by health (Phase 3.6)
+            const maxSpeed = this.config.maxSpeed * (0.5 + 0.5 * healthScale);
             const speedSq = pool.buffer[offset + 2] ** 2 + pool.buffer[offset + 3] ** 2;
-            if (speedSq > this.config.maxSpeed * this.config.maxSpeed) {
+            if (speedSq > maxSpeed * maxSpeed) {
                 const speed = Math.sqrt(speedSq);
-                pool.buffer[offset + 2] = (pool.buffer[offset + 2] / speed) * this.config.maxSpeed;
-                pool.buffer[offset + 3] = (pool.buffer[offset + 3] / speed) * this.config.maxSpeed;
+                pool.buffer[offset + 2] = (pool.buffer[offset + 2] / speed) * maxSpeed;
+                pool.buffer[offset + 3] = (pool.buffer[offset + 3] / speed) * maxSpeed;
             }
 
             // Update position (with wrap-around for prototype)
@@ -188,6 +202,17 @@ export class BoidsEngine {
 
     setConfig(newConfig: Partial<BoidsConfig>) {
         this.config = { ...this.config, ...newConfig };
+    }
+
+    private async syncHealth() {
+        try {
+            const data = await redis.get('swarm:health:global-swarm');
+            if (data) {
+                this.swarmHealth = JSON.parse(data);
+            }
+        } catch (err) {
+            // Keep existing health on error
+        }
     }
 }
 

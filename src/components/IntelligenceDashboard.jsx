@@ -24,6 +24,8 @@ const IntelligenceDashboard = ({ onBack }) => {
         intentTarget: null
     });
     const [isIntuitionActive, setIsIntuitionActive] = useState(true);
+    const [swarmHealth, setSwarmHealth] = useState({ divergence: 0.05, status: 'healthy' });
+    const [financialPulse, setFinancialPulse] = useState({ totalSettled: 0, lastTx: null });
 
     useEffect(() => {
         if (viewMode === 'graph') {
@@ -52,6 +54,14 @@ const IntelligenceDashboard = ({ onBack }) => {
             const res = await fetch('/api/admin/swarm/boids');
             const json = await res.json();
             setBoids(json.agents || []);
+            
+            // Surfacing Swarm Health (Phase 3.5)
+            if (json.health) {
+                setSwarmHealth(json.health);
+            }
+            if (json.financials) {
+                setFinancialPulse(json.financials);
+            }
         } catch (err) {
             console.error("Failed to fetch boids:", err);
         }
@@ -151,6 +161,41 @@ const IntelligenceDashboard = ({ onBack }) => {
                 >
                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isIntuitionActive ? '#0f0' : '#f00' }} />
                     INTUITION {isIntuitionActive ? 'ARMED' : 'OFFLINE'}
+                </div>
+
+                {/* Swarm Health Monitor (Phase 3.5) */}
+                <div style={{ 
+                    background: 'rgba(0,0,0,0.7)', 
+                    border: `1px solid ${swarmHealth.status === 'healthy' ? '#0f0' : '#f00'}`, 
+                    padding: '5px 15px', 
+                    borderRadius: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    fontSize: '11px'
+                }}>
+                    <span style={{ color: '#666' }}>COHERENCE:</span>
+                    <span style={{ color: swarmHealth.status === 'healthy' ? '#0f0' : '#f00', fontWeight: 'bold' }}>
+                        {(100 - (swarmHealth.divergence * 100)).toFixed(1)}%
+                    </span>
+                    <span style={{ color: '#444' }}>|</span>
+                    <span style={{ color: '#aaa' }}>{swarmHealth.status.toUpperCase()}</span>
+                </div>
+            </div>
+
+            {/* Financial Pulse Widget (Phase 3.5) */}
+            <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 100, display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'flex-end' }}>
+                <div style={{ background: 'rgba(0,0,0,0.8)', border: '1px solid #ffd700', padding: '10px 20px', borderRadius: '8px', backdropFilter: 'blur(10px)', boxShadow: '0 0 15px rgba(255, 215, 0, 0.1)' }}>
+                    <div style={{ fontSize: '9px', color: '#ffd700', letterSpacing: '1px', marginBottom: '5px' }}>x402 FINANCIAL PULSE (BASE)</div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+                        <span style={{ color: '#fff', fontSize: '20px', fontWeight: 'bold' }}>{financialPulse.totalSettled.toFixed(2)}</span>
+                        <span style={{ color: '#ffd700', fontSize: '10px' }}>USDC</span>
+                    </div>
+                    {financialPulse.lastTx && (
+                        <div style={{ fontSize: '8px', color: '#666', marginTop: '5px', fontFamily: 'monospace' }}>
+                            LAST TX: {financialPulse.lastTx.slice(0, 10)}...
+                        </div>
+                    )}
                 </div>
             </div>
 

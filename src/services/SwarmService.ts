@@ -2,6 +2,7 @@ import { redis } from '../lib/redis.js';
 import { v4 as uuidv4 } from 'uuid';
 import { SwarmNode, AgentTask } from '../lib/swarm/protocol.js';
 import { agentOrchestrator } from './AgentOrchestrator.js';
+import { coherenceService } from './CoherenceService.js';
 
 export interface SwarmConfig {
     id?: string;
@@ -65,6 +66,12 @@ export class SwarmService {
             goal: config.goal,
             participants: actors.map(a => a.id)
         }, config.priority || 2);
+
+        // Audit Bus: Log spawning event for coherence monitoring
+        await coherenceService.logMessage(swarmId, 'system', `Spawned swarm for goal: ${config.goal}`, {
+            actors: actors.length,
+            priority: config.priority || 2
+        });
 
         const swarmData = {
             id: swarmId,

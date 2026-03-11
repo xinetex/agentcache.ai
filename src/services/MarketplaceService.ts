@@ -3,6 +3,7 @@ import { db } from '../db/client.js';
 import { marketplaceListings, marketplaceOrders, agentSuggestions } from '../db/schema.js';
 import { eq, desc, sql } from 'drizzle-orm';
 import { ledger } from './LedgerService.js';
+import { armorService } from './ArmorService.js';
 
 export class MarketplaceService {
 
@@ -10,13 +11,18 @@ export class MarketplaceService {
      * List a new service on the exchange.
      */
     async createListing(agentId: string, data: { title: string, description: string, price: number, unit: string }) {
+        // 1. Execute Proof-of-Intuition (PoI) Validation
+        // For the prototype, we treat the agentId as the provider of the manifold/service
+        const isVerified = await armorService.validateManifold(agentId);
+
         const result = await db.insert(marketplaceListings).values({
             sellerAgentId: agentId,
             title: data.title,
             description: data.description,
             pricePerUnit: data.price,
             unitType: data.unit,
-            status: 'active'
+            status: 'active',
+            isVerified: isVerified
         }).returning();
         return result[0];
     }

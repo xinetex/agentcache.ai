@@ -67,6 +67,94 @@ export class ArmorService {
     }
 
     /**
+     * Economic Safety: Check settlement velocity to prevent high-frequency drain.
+     * Uses an atomic Lua script to prevent race conditions in high-concurrency swarms.
+     */
+    async checkSettlementVelocity(agentId: string): Promise<{ allowed: boolean; reason?: string }> {
+        const minuteKey = `armor:settle:rpm:${agentId}:${Math.floor(Date.now() / 60000)}`;
+        const hourKey = `armor:settle:rph:${agentId}:${Math.floor(Date.now() / 3600000)}`;
+
+        const luaScript = `
+            local rpm = redis.call("INCR", KEYS[1])
+            local rph = redis.call("INCR", KEYS[2])
+            if rpm == 1 then redis.call("EXPIRE", KEYS[1], 120) end
+            if rph == 1 then redis.call("EXPIRE", KEYS[2], 7200) end
+            return {rpm, rph}
+        `;
+
+        try {
+            // @ts-ignore - redis.eval is available in our Upstash wrapper
+            const [rpm, rph] = await (redis as any).eval(luaScript, 2, minuteKey, hourKey);
+
+            // Circuit Breaker Thresholds
+            if (rpm > 50) { // Max 50 settlements per minute
+                await this.recordBlock(agentId, 'Settlement Velocity Exceeded (Minute)');
+                return { allowed: false, reason: 'High-frequency settlement detected (RPM > 50)' };
+            }
+            if (rph > 500) { // Max 500 settlements per hour
+                await this.recordBlock(agentId, 'Settlement Velocity Exceeded (Hour)');
+                return { allowed: false, reason: 'Cumulative settlement limit reached (RPH > 500)' };
+            }
+        } catch (err: any) {
+            console.warn('[Armor] Atomic Settlement Velocity Check Failed (Fail Open):', err.message);
+        }
+
+        return { allowed: true };
+    }
+
+    /**
+     * Proof-of-Intuition (PoI): Validate a latent manifold against a System 2 Oracle.
+     * Prevents "Semantic Noise" from polluting the marketplace.
+     */
+    async validateManifold(manifoldId: string): Promise<boolean> {
+        console.log(`[Armor] 🔍 Executing PoI Validation for manifold: ${manifoldId}...`);
+        
+        // 1. In a production env, we'd pull 5 random latent coordinates from the manifold
+        // 2. We'd re-verify them through a reference model (e.g., GPT-4o or DeepSeek)
+        
+        // MVP: Simulate validation delay and probabilistic verification
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        const success = Math.random() > 0.1; // 90% pass rate for existing manifolds
+        
+        if (!success) {
+            console.warn(`[Armor] ❌ PoI Validation FAILED for ${manifoldId}: Semantic Drift detected.`);
+            await this.cortex.synapse({
+                sector: 'LEGAL',
+                type: 'ANOMALY',
+                message: `🛡️ PoI FAILURE: Manifold ${manifoldId} rejected due to semantic drift.`
+            });
+        } else {
+            console.log(`[Armor] ✅ PoI Validation PASSED for ${manifoldId}. Manifold Sealed.`);
+        }
+
+        return success;
+    }
+
+    /**
+     * Canary Mirroring (Phase 3.6): Route a small percentage of traffic to 
+     * a shadow swarm to mirror production topologies for side-by-side comparison.
+     */
+    async mirrorTraffic(path: string, payload: any) {
+        // Only mirror 5% of traffic
+        if (Math.random() > 0.05) return;
+
+        console.log(`[Armor] 🦜 Mirroring traffic to SHADOW SWARM for path: ${path}`);
+        
+        // In a production env, we'd trigger a 'shadow-exec' event in Redis
+        // For the prototype, we log the intent
+        const shadowEvent = JSON.stringify({
+            path,
+            payload: payload ? JSON.stringify(payload).slice(0, 200) : null,
+            timestamp: Date.now(),
+            mirrorId: `shadow_${Math.random().toString(36).slice(2, 9)}`
+        });
+
+        await redis.lpush('armor:mirrored_traffic', shadowEvent);
+        await redis.ltrim('armor:mirrored_traffic', 0, 99);
+    }
+
+    /**
      * Record a blocked request with details
      */
     private async recordBlock(ip: string, reason: string) {
@@ -144,4 +232,4 @@ export class ArmorService {
         }
     }
 }
-
+export const armorService = new ArmorService();

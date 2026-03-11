@@ -3,6 +3,8 @@ import { swarmService, SwarmConfig } from '../../services/SwarmService.js';
 import { boidsEngine } from '../../services/BoidsEngine.js';
 import { boidsNavigator } from '../../services/BoidsNavigator.js';
 import { BitAgentPool } from '../../lib/swarm/BitAgent.js';
+import { coherenceService } from '../../services/CoherenceService.js';
+import { redis } from '../../lib/redis.js';
 
 const swarmAdminRouter = new Hono();
 
@@ -58,10 +60,20 @@ swarmAdminRouter.get('/boids', async (c) => {
         sampled.push(boidsPool!.getAgent(i));
     }
 
+    // 3.5: Inject Health & Financial Metrics
+    const health = await coherenceService.calculateDivergence('global-swarm');
+    const totalSettled = await redis.get('stats:total_settled') || "0";
+    const lastTx = await redis.get('stats:last_tx_hash') || null;
+
     return c.json({
         total: boidsPool!.size,
         sampled: sampled.length,
-        agents: sampled
+        agents: sampled,
+        health,
+        financials: {
+            totalSettled: parseFloat(totalSettled as string),
+            lastTx
+        }
     });
 });
 
