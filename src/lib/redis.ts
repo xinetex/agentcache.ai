@@ -129,6 +129,11 @@ class MockRedis {
     return existed ? 1 : 0;
   }
 
+  async keys(pattern: string) {
+    const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
+    return Array.from(this.store.keys()).filter(k => regex.test(k));
+  }
+
   async hgetall(key: string) {
     const hash = this.store.get(key);
     return (hash && typeof hash === 'object' && !Array.isArray(hash)) ? hash : {};

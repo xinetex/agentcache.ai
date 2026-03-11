@@ -28,6 +28,7 @@ const IntelligenceDashboard = ({ onBack }) => {
     const [swarmHealth, setSwarmHealth] = useState({ divergence: 0.05, status: 'healthy' });
     const [financialPulse, setFinancialPulse] = useState({ totalSettled: 0, lastTx: null });
     const [globalCacheStats, setGlobalCacheStats] = useState({ hits: 0, totalSavingsUsd: 0 });
+    const [maintenanceStats, setMaintenanceStats] = useState({ activeAgents: 0, heals: 0 });
 
     useEffect(() => {
         if (viewMode === 'graph') {
@@ -66,6 +67,9 @@ const IntelligenceDashboard = ({ onBack }) => {
             }
             if (json.cache) {
                 setGlobalCacheStats(json.cache);
+            }
+            if (json.maintenance) {
+                setMaintenanceStats(json.maintenance);
             }
         } catch (err) {
             console.error("Failed to fetch boids:", err);
@@ -209,6 +213,7 @@ const IntelligenceDashboard = ({ onBack }) => {
                 <SavingsDashboard 
                     stats={globalCacheStats} 
                     health={swarmHealth}
+                    maintenance={maintenanceStats}
                 />
             </div>
 

@@ -78,9 +78,42 @@ const SavingsDashboard = ({ stats, health }) => {
                     gap: '8px'
                 }}>
                     <span>⚠️</span>
-                    <span><strong>System 1 Drift Detected:</strong> Latent manipulator canaries are flagging high variance. Grounding required.</span>
                 </div>
             )}
+
+            <div style={{ 
+                marginTop: '12px',
+                paddingTop: '16px', 
+                borderTop: '1px solid rgba(255,255,255,0.05)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ 
+                        width: '8px', 
+                        height: '8px', 
+                        borderRadius: '50%', 
+                        background: (maintenance?.activeAgents || 0) > 0 ? '#0f0' : '#444',
+                        boxShadow: (maintenance?.activeAgents || 0) > 0 ? '0 0 8px #0f0' : 'none',
+                        animation: (maintenance?.activeAgents || 0) > 0 ? 'pulse 2s infinite' : 'none'
+                    }} />
+                    <span style={{ fontSize: '11px', color: '#888', fontWeight: 500 }}>
+                        {maintenance?.activeAgents || 0} ACTIVE MAINTENANCE AGENTS
+                    </span>
+                </div>
+                <div style={{ fontSize: '11px', color: '#0f0', fontWeight: 700 }}>
+                    {maintenance?.heals || 0} HEALS
+                </div>
+            </div>
+
+            <style>{`
+                @keyframes pulse {
+                    0% { opacity: 0.4; }
+                    50% { opacity: 1; }
+                    100% { opacity: 0.4; }
+                }
+            `}</style>
         </div>
     );
 };

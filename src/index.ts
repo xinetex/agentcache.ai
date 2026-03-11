@@ -132,6 +132,10 @@ const freshnessRules = new FreshnessRuleEngine();
     autonomyService.start();
     console.log('[Startup] Autonomy Engine: ACTIVE');
 
+    // Phase 4.2: Register initial Maintenance Watchers
+    const { invalidationService } = await import('./services/InvalidationService.js');
+    invalidationService.registerWatcher('https://raw.githubusercontent.com/openai/openai-openapi/master/openapi.yaml', ['cache:llm:openai:*']);
+
     console.log('[Startup] PatternEngine: SKIPPED (Local Dev Mode)');
     }
   } catch (e) {

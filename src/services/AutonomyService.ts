@@ -1,6 +1,7 @@
 import { platformReportService } from './PlatformReportService.js';
 import { swarmService } from './SwarmService.js';
 import { cortexBridge } from './CortexBridge.js';
+import { invalidationService } from './InvalidationService.js';
 import { redis } from '../lib/redis.js';
 
 /**
@@ -37,9 +38,12 @@ export class AutonomyService {
      * Single observation/action cycle.
      */
     async tick() {
-        console.log('🧠 [AutonomyService] Observing sector health...');
+        console.log('🧠 [AutonomyService] Observing sector health and maintenance cues...');
         
         try {
+            // Phase 4.2: Trigger Active Maintenance (Invalidation Swarm)
+            await invalidationService.runMaintenanceStep();
+
             const pockets = await platformReportService.detectNeedPockets();
             
             if (pockets.length === 0) {
