@@ -241,6 +241,7 @@ import catalogRouter from './api/catalog.js';
 import focusGroupRouter from './api/focus-group.js';
 import toolScannerRouter from './api/tool-scanner.js';
 import marketplaceRouter from './api/marketplace.js';
+import cacheRouter from './api/cache.js';
 
 import { authenticateApiKey } from './middleware/auth.js';
 import contentRouter from './api/content.js';
@@ -281,6 +282,7 @@ app.route('/api/brain', brainRouter);
 app.route('/api/memory', memoryRouter);
 app.route('/api/cognitive', cognitiveRouter);
 app.route('/api/security', securityRouter);
+app.route('/api/cache', cacheRouter);
 
 // Mount Decisions & Galaxy API
 

@@ -4,6 +4,7 @@ import { boidsEngine } from '../../services/BoidsEngine.js';
 import { boidsNavigator } from '../../services/BoidsNavigator.js';
 import { BitAgentPool } from '../../lib/swarm/BitAgent.js';
 import { coherenceService } from '../../services/CoherenceService.js';
+import { semanticCacheService } from '../../services/SemanticCacheService.js';
 import { redis } from '../../lib/redis.js';
 
 const swarmAdminRouter = new Hono();
@@ -62,6 +63,7 @@ swarmAdminRouter.get('/boids', async (c) => {
 
     // 3.5: Inject Health & Financial Metrics
     const health = await coherenceService.calculateDivergence('global-swarm');
+    const cacheStats = await semanticCacheService.getGlobalStats();
     const totalSettled = await redis.get('stats:total_settled') || "0";
     const lastTx = await redis.get('stats:last_tx_hash') || null;
 
@@ -73,7 +75,8 @@ swarmAdminRouter.get('/boids', async (c) => {
         financials: {
             totalSettled: parseFloat(totalSettled as string),
             lastTx
-        }
+        },
+        cache: cacheStats
     });
 });
 
