@@ -9,16 +9,26 @@ const cacheRouter = new Hono();
  * POST /api/cache/check
  * Check if a completion request is already in the semantic cache.
  */
-cacheRouter.post('/check', authenticateApiKey, async (c) => {
+cacheRouter.post('/check', async (c) => {
+    const authError = await authenticateApiKey(c);
+    if (authError) return authError;
+
     try {
         const body = await c.req.json();
-        const { messages, model, semantic } = body;
+        const { messages, model, provider, temperature, semantic, previous_query } = body;
 
         if (!messages || !Array.isArray(messages)) {
             return c.json({ error: 'messages array required' }, 400);
         }
 
-        const result = await semanticCacheService.check({ messages, model, semantic });
+        const result = await semanticCacheService.check({ 
+            messages, 
+            model, 
+            provider, 
+            temperature, 
+            semantic, 
+            previous_query 
+        });
         return c.json(result);
     } catch (err: any) {
         return c.json({ error: err.message }, 500);
@@ -29,20 +39,28 @@ cacheRouter.post('/check', authenticateApiKey, async (c) => {
  * POST /api/cache/set
  * Store a new response in the semantic cache.
  */
-cacheRouter.post('/set', authenticateApiKey, async (c) => {
+cacheRouter.post('/set', async (c) => {
+    const authError = await authenticateApiKey(c);
+    if (authError) return authError;
+
     try {
         const body = await c.req.json();
-        const { messages, response, ttl } = body;
+        const { messages, response, ttl, model, provider, temperature } = body;
 
         if (!messages || !response) {
             return c.json({ error: 'messages and response required' }, 400);
         }
 
-        // Generate key from messages (SDK can also send the key if it calculated it, but we re-derive for safety)
-        const key = semanticCacheService.constructor['generateKey'](messages);
-        await semanticCacheService.set(key, response, ttl);
+        await semanticCacheService.set({ 
+            messages, 
+            response, 
+            ttl, 
+            model: model || 'gpt-4o', 
+            provider: provider || 'openai',
+            temperature 
+        });
 
-        return c.json({ success: true, key });
+        return c.json({ success: true });
     } catch (err: any) {
         return c.json({ error: err.message }, 500);
     }
@@ -52,16 +70,24 @@ cacheRouter.post('/set', authenticateApiKey, async (c) => {
  * POST /api/cache/get
  * Retrieve a specific cached response by payload (messages).
  */
-cacheRouter.post('/get', authenticateApiKey, async (c) => {
+cacheRouter.post('/get', async (c) => {
+    const authError = await authenticateApiKey(c);
+    if (authError) return authError;
+
     try {
         const body = await c.req.json();
-        const { messages, model } = body;
+        const { messages, model, provider, temperature } = body;
 
         if (!messages) {
             return c.json({ error: 'messages required' }, 400);
         }
 
-        const result = await semanticCacheService.check({ messages, model });
+        const result = await semanticCacheService.check({ messages, model, provider, temperature });
+        
+        if (!result.hit) {
+            return c.json(result, 404);
+        }
+
         return c.json(result);
     } catch (err: any) {
         return c.json({ error: err.message }, 500);
