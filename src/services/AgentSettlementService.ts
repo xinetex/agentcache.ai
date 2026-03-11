@@ -2,6 +2,7 @@ import { ledger } from './LedgerService.js';
 import { db } from '../db/client.js';
 import { legalContracts } from '../db/schema.js';
 import { eq, desc } from 'drizzle-orm';
+import { baseSettlement } from './BaseSettlementProvider.js';
 
 export interface SettlementResult {
     success: boolean;
@@ -21,9 +22,9 @@ export class AgentSettlementService {
 
     /**
      * Validate a Preauthorization token and settle the base cost.
-     * In the future, this will verify signatures on-chain or via MPC.
+     * Optionally verify an on-chain Transaction Hash for real-money settlements.
      */
-    async settle(tokenId: string, agentId: string, estimatedCost: number): Promise<SettlementResult> {
+    async settle(tokenId: string, agentId: string, estimatedCost: number, options?: { txHash?: string; agentWallet?: string }): Promise<SettlementResult> {
         console.log(`[Settlement] 💳 Processing settlement for agent ${agentId} via token ${tokenId}...`);
 
         try {
@@ -41,6 +42,17 @@ export class AgentSettlementService {
                 console.log(`[Settlement] ♻️ Token ${tokenId} already settled. Returning cached receipt.`);
                 const account = await ledger.getAccount(targetAgentId);
                 return { success: true, authorized: true, remainingBudget: account?.balance || 0 };
+            }
+
+            // 0.6 On-Chain Guard: If txHash provided, verify on Base Mainnet
+            if (options?.txHash && options?.agentWallet) {
+                const isVerified = await baseSettlement.verifyOnChainSettlement(options.txHash, options.agentWallet, estimatedCost);
+                if (!isVerified) {
+                    return { success: false, authorized: false, error: 'On-Chain Settlement Verification Failed' };
+                }
+                console.log(`[Settlement] ⛓️ On-chain transaction ${options.txHash} verified.`);
+                // For real-money settlements, we boost internal ledger credit based on on-chain deposit
+                await ledger.createAccount(targetAgentId, 'agent', estimatedCost).catch(() => { });
             }
 
             // 1. Resolve agent account

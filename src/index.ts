@@ -218,6 +218,7 @@ import needsRouter from './api/needs.js';
 import catalogRouter from './api/catalog.js';
 import focusGroupRouter from './api/focus-group.js';
 import toolScannerRouter from './api/tool-scanner.js';
+import marketplaceRouter from './api/marketplace.js';
 
 import { authenticateApiKey } from './middleware/auth.js';
 import contentRouter from './api/content.js';
@@ -246,6 +247,7 @@ app.post('/api/claw/memory/share', clawMemoryShare);
 app.route('/api/auth', authRouter);
 app.route('/api/billing', billingRouter);
 app.route('/api/credits', creditsRouter);
+app.route('/api/marketplace', marketplaceRouter);
 
 // Mount Muscle API (JettyThunder)
 app.route('/api/muscle', muscleRouter);
