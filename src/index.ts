@@ -72,6 +72,28 @@ app.use('/api/*', async (c, next) => {
 
   await next();
 });
+
+// -----------------------------------------------------------------------------
+// Coherence Telemetry Middleware (Phase 4.1)
+// -----------------------------------------------------------------------------
+app.use('/api/*', async (c, next) => {
+  await next();
+
+  const swarmId = c.req.header('X-Swarm-Id') || 'global-swarm';
+  try {
+    const healthRaw = await redis.get(`swarm:health:${swarmId}`);
+    if (healthRaw) {
+      const health = typeof healthRaw === 'string' ? JSON.parse(healthRaw) : healthRaw;
+      c.header('X-Swarm-Coherence', (1 - (health.divergenceScore || 0)).toFixed(4));
+      c.header('X-Byzantine-Status', health.status || 'healthy');
+      if (health.intuitionDrift) {
+        c.header('X-Intuition-Drift', 'true');
+      }
+    }
+  } catch (e) {
+    // Fail silently to avoid breaking the main request flow
+  }
+});
 // Lazy load ContextManager
 let contextManager: ContextManager | null = null;
 function getContextManager() {

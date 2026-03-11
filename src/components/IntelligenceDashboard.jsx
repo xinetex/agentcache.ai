@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import ShadowGraph from './ShadowGraph.jsx';
+import SavingsDashboard from './SavingsDashboard.jsx';
 import './WorkspaceDashboard.css'; 
 import { DiscoveryFeed } from './DiscoveryFeed.jsx';
 
@@ -197,6 +198,17 @@ const IntelligenceDashboard = ({ onBack }) => {
                         </div>
                     )}
                 </div>
+            </div>
+
+            {/* Savings & Health Panel (Phase 4.1) */}
+            <div style={{ position: 'absolute', top: 80, left: 20, zIndex: 100 }}>
+                <SavingsDashboard 
+                    stats={{
+                        hits: intuitionData.hits,
+                        totalSavingsUsd: (intuitionData.hits * 0.05) // $0.05 per hit
+                    }} 
+                    health={swarmHealth}
+                />
             </div>
 
             {/* Ingest Control (Only in Graph Mode) */}
