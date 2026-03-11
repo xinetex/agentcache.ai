@@ -1,4 +1,13 @@
 /**
+ * @license
+ * Copyright (c) 2026 AgentCache.ai. All rights reserved.
+ * 
+ * PROPRIETARY AND CONFIDENTIAL: 
+ * This software and its documentation are the property of AgentCache.ai.
+ * Unauthorized copying, distribution, or modification of this file, 
+ * via any medium, is strictly prohibited.
+ */
+/**
  * BitAgent: High-performance, low-memory agent representation.
  * 
  * Instead of millions of Javascript objects, we use a single pre-allocated 
