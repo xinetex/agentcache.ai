@@ -58,14 +58,14 @@ export async function upsertMemory(id: string, text: string, metadata: Record<st
 }
 
 /**
- * Query the Hybrid Store
+ * Query the Hybrid Store with optional Metadata Filtering (Phase 7)
  */
-export async function queryMemory(query: string, topK: number = 3): Promise<any[]> {
+export async function queryMemory(query: string, topK: number = 3, filter?: Record<string, any>): Promise<any[]> {
     // 1. Generate Query Vector
     const queryVector = await generateEmbedding(query);
 
-    // 2. Search FAISS
-    const results = await vectorClient.search(queryVector, topK);
+    // 2. Search FAISS (now with filter support)
+    const results = await vectorClient.search(queryVector, topK, filter);
 
     // 3. Hydrate Results (Resolve UUIDs + Metadata)
     const hydrated = await Promise.all(results.map(async (res) => {
@@ -165,10 +165,10 @@ export const vectorIndex = {
         }
     },
 
-    async query(options: { data?: string; vector?: number[]; topK?: number; includeMetadata?: boolean; includeData?: boolean }) {
+    async query(options: { data?: string; vector?: number[]; topK?: number; includeMetadata?: boolean; includeData?: boolean; filter?: Record<string, any> }) {
         if (options.vector) {
             // Search by vector directly (Not implemented in top-level queryMemory but reachable)
-            const results = await vectorClient.search(options.vector, options.topK || 3);
+            const results = await vectorClient.search(options.vector, options.topK || 3, options.filter);
             return await Promise.all(results.map(async (res) => {
                 const uuid = await redis.hget(MAP_LONG_TO_UUID, String(res.id));
                 if (!uuid) return null;
@@ -184,7 +184,7 @@ export const vectorIndex = {
             })).then(r => r.filter(x => x !== null));
         }
 
-        return await queryMemory(options.data || '', options.topK || 3);
+        return await queryMemory(options.data || '', options.topK || 3, options.filter);
     },
 
     // Support delete

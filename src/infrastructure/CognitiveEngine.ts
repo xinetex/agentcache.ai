@@ -125,24 +125,100 @@ export class CognitiveEngine {
 
     /**
      * Conflict Resolution: Resolve contradictory memories.
-     * Strategy: Temporal Priority (Newer > Older) + Confidence.
+     * Tier 1: Cheap Conflict Scoring (Utility-based)
+     * Tier 2: LLM-Assisted Verdict (Escalation)
      */
-    async resolveConflicts(memories: Message[]): Promise<Message[]> {
+    async resolveConflicts(memories: Message[], contextQuery?: string, options?: { highStakes?: boolean }): Promise<Message[]> {
         if (memories.length <= 1) return memories;
 
-        // 1. Group by Topic (Simulated Semantic Clustering)
-        // In production: Use vector similarity to group conflicting facts.
-        // For MVP: We assume the retrieved memories are ALREADY about the same topic
-        // because they came from the Vector DB query.
-
-        // 2. Sort by Timestamp (Newest First)
-        const sorted = [...memories].sort((a, b) => {
-            const timeA = a.timestamp || 0;
-            const timeB = b.timestamp || 0;
-            return timeB - timeA;
+        // 1. Compute Utility Scores (Axis 3.1)
+        const scored = memories.map(m => {
+            const utility = this.calculateBeliefUtility(m, contextQuery);
+            return { message: m, utility };
         });
 
-        return sorted;
+        // 2. Identify Primary Conflicts
+        // We sort by utility
+        scored.sort((a, b) => b.utility - a.utility);
+        
+        const winner = scored[0];
+        const losers = scored.slice(1);
+
+        // 3. Escalation: Trigger Moonshot for narrow margins or high-stakes (Axis 3.2)
+        const margin = winner.utility - (losers[0]?.utility || 0);
+        const shouldEscalate = options?.highStakes || (margin < 0.1 && winner.utility > 0.5);
+
+        if (shouldEscalate && process.env.MOONSHOT_API_KEY) {
+            console.log(`[CognitiveEngine] ⚖️ Escalating conflict to Moonshot (Margin: ${margin.toFixed(2)})`);
+            return await this.llmResolveConflict(memories, contextQuery);
+        }
+
+        // 4. Record Hypotheses (Don't discard losers)
+        // In production, we'd store these in a specialized hyp-graph.
+        // For now, we tag the winner with provenance information.
+        winner.message.content += `\n[Conflict Resolved: Utility Score ${winner.utility.toFixed(2)}]`;
+        winner.message.content += `\n[Hypotheses Preserved: ${losers.length}]`;
+
+        return [winner.message];
+    }
+
+    /**
+     * compute utility score: u = wt * f(recency) + ws * source_trust + wc * context_match
+     */
+    private calculateBeliefUtility(m: Message, query?: string): number {
+        const now = Date.now();
+        const age = now - (m.timestamp || now);
+        
+        // f(recency): 7-day half-life
+        const wt = 0.4;
+        const recency = 1 / (1 + (age / (1000 * 60 * 60 * 24 * 7)));
+
+        // source_trust: default 0.8 (can be tuned per tenant)
+        const ws = 0.3;
+        const sourceTrust = 0.8; 
+
+        // context_match: simulated for now, in prod this is the vector similarity
+        const wc = 0.3;
+        const contextMatch = query ? 0.9 : 0.5; // Placeholder
+
+        return (wt * recency) + (ws * sourceTrust) + (wc * contextMatch);
+    }
+
+    /**
+     * LLM-assisted verdict: Escalation step for high-stakes decisions.
+     */
+    private async llmResolveConflict(memories: Message[], context?: string): Promise<Message[]> {
+        try {
+            const bundle = memories.map(m => `[ID: ${m.id}] ${m.content}`).join('\n\n');
+            
+            const response = await this.moonshot.chat([
+                { 
+                    role: 'system', 
+                    content: `You are a Cognitive Judge. Resolve contradictory beliefs. 
+                    - Pick a winner based on logic, source, and recency.
+                    - Unify them if possible into a higher-order belief.
+                    - Respond with JSON: {"winnerId": "string", "unifiedContent": "string", "reason": "string"}.`
+                },
+                { role: 'user', content: `Context: ${context || 'General'}\n\nConflicting Beliefs:\n${bundle}` }
+            ], 'moonshot-v1-8k', 0.1);
+
+            const resultText = response.choices[0].message.content;
+            const jsonMatch = resultText.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) return [memories[0]]; // Fallback to priority 0
+
+            const verdict = JSON.parse(jsonMatch[0]);
+            
+            return [{
+                role: 'system',
+                content: verdict.unifiedContent,
+                timestamp: Date.now(),
+                id: `resolved_by=moonshot,evidence=[${memories.map(m => m.id).join(',')}]`
+            }];
+
+        } catch (e) {
+            console.error("LLM Conflict Resolution Error:", e);
+            return [memories[0]];
+        }
     }
 
     /**

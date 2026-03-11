@@ -101,6 +101,40 @@ class MockRedis {
     return [];
   }
 
+  async xadd(key: string, id: string, ...args: string[]) {
+    if (!this.store.has(key)) this.store.set(key, []);
+    const stream = this.store.get(key);
+    
+    // Parse fields [k, v, k, v] into object
+    const entry: any = {};
+    for (let i = 0; i < args.length; i += 2) {
+      entry[args[i]] = args[i+1];
+    }
+    
+    const entryId = id === '*' ? `${Date.now()}-${stream.length}` : id;
+    stream.push([entryId, args]); // Store in [id, fields] format matching @upstash/redis
+    return entryId;
+  }
+
+  async xrevrange(key: string, end: string, start: string, countType?: string, count?: number) {
+    const stream = this.store.get(key);
+    if (!Array.isArray(stream)) return [];
+    
+    const reversed = [...stream].reverse();
+    const limit = (countType === 'COUNT' && count) ? count : reversed.length;
+    return reversed.slice(0, limit);
+  }
+
+  async xtrim(key: string, strategy: string, operator: string, threshold: number) {
+    const stream = this.store.get(key);
+    if (Array.isArray(stream) && strategy === 'MAXLEN') {
+      if (stream.length > threshold) {
+        this.store.set(key, stream.slice(-threshold));
+      }
+    }
+    return 1;
+  }
+
   async incr(key: string) {
     return this.incrby(key, 1);
   }

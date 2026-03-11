@@ -1,6 +1,7 @@
 
 import { redis } from '../lib/redis.js';
 import { coherenceService } from './CoherenceService.js';
+import { internalEconomics } from './InternalEconomicsService.js';
 import { createHash } from 'crypto';
 
 interface Watcher {
@@ -31,6 +32,11 @@ export class InvalidationService {
      * The main maintenance loop called by AutonomyService.
      */
     async runMaintenanceStep() {
+        if (await internalEconomics.shouldThrottle()) {
+            console.log('[Invalidation] Platform budget exceeded. Maintenance swarm standing down.');
+            return;
+        }
+
         this.activeAgents = this.watchers.size;
         for (const [url, watcher] of this.watchers) {
             try {

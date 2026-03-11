@@ -2,11 +2,13 @@
 /**
  * AgentCache SDK: The Developer Wedge
  * A lightweight wrapper to add semantic caching and coherence telemetry to any LLM app.
+ * Now evolved with Phase 5 Resonance: Lateral Knowledge Synthesis.
  */
 export class AgentCacheClient {
     private baseUrl: string;
     private apiKey: string;
     private swarmId: string;
+    private activeCircles: string[] = [];
 
     lastCoherenceScore: number = 1.0;
     lastByzantineFlag: boolean = false;
@@ -16,6 +18,48 @@ export class AgentCacheClient {
         this.baseUrl = options.baseUrl || 'https://agentcache.ai';
         this.apiKey = options.apiKey;
         this.swarmId = options.swarmId || 'default-swarm';
+    }
+
+    /**
+     * Join a Nodal Circle for shared knowledge resonance.
+     */
+    async joinCircle(circleId: string) {
+        try {
+            const res = await fetch(`${this.baseUrl}/api/cache/circle/join`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-Key': this.apiKey
+                },
+                body: JSON.stringify({ circleId })
+            });
+            if (res.ok) {
+                this.activeCircles.push(circleId);
+                console.log(`[AgentCache] 🕸️ Joined Resonance Circle: ${circleId}`);
+            }
+        } catch (err) {
+            console.error(`[AgentCache] Failed to join circle:`, err);
+        }
+    }
+
+    /**
+     * Leave a Nodal Circle
+     */
+    async leaveCircle(circleId: string) {
+        try {
+            await fetch(`${this.baseUrl}/api/cache/circle/leave`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-Key': this.apiKey
+                },
+                body: JSON.stringify({ circleId })
+            });
+            this.activeCircles = this.activeCircles.filter(c => c !== circleId);
+            console.log(`[AgentCache] 🕸️ Left Resonance Circle: ${circleId}`);
+        } catch (err) {
+            console.error(`[AgentCache] Failed to leave circle:`, err);
+        }
     }
 
     /**
@@ -43,10 +87,28 @@ export class AgentCacheClient {
                 };
             }
 
-            // 2. Cache Miss - Call original provider
+            // 2. Cache Miss - Trigger Resonance Probe (Lateral Knowledge)
+            const latestQuery = params.messages[params.messages.length - 1]?.content || '';
+            const resonanceRes = await self.probeResonance(latestQuery);
+            
+            if (resonanceRes && resonanceRes.hits && resonanceRes.hits.length > 0) {
+                const bestHit = resonanceRes.hits[0];
+                console.log(`[AgentCache] 🧠 Resonance Detected! Injecting echoes from ${bestHit.circleId}`);
+                
+                // Inject resonance into system prompt or as a new message
+                params.messages = [
+                    { 
+                        role: 'system', 
+                        content: `[RESONANT_ECHO from Circle ${bestHit.circleId}]: ${bestHit.text}` 
+                    },
+                    ...params.messages
+                ];
+            }
+
+            // 3. Call original provider
             const response = await originalCreate(params, options);
 
-            // 3. Store response in AgentCache (Async/Non-blocking)
+            // 4. Store response in AgentCache (Async/Non-blocking)
             self.setCache(params, response.choices[0].message.content).catch(() => {});
 
             return response;
@@ -76,7 +138,6 @@ export class AgentCacheClient {
             if (!res.ok) return { cached: false };
             
             const data = await res.json();
-            // If cached, we need to actually GET the content
             if (data.cached) {
                 const getRes = await fetch(`${this.baseUrl}/api/cache/get`, {
                     method: 'POST',
@@ -98,6 +159,23 @@ export class AgentCacheClient {
         }
     }
 
+    private async probeResonance(query: string) {
+        try {
+            const res = await fetch(`${this.baseUrl}/api/cache/resonance`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-Key': this.apiKey
+                },
+                body: JSON.stringify({ query, threshold: 0.88 })
+            });
+            if (!res.ok) return null;
+            return await res.json();
+        } catch (err) {
+            return null;
+        }
+    }
+
     private async setCache(params: any, content: string) {
         try {
             await fetch(`${this.baseUrl}/api/cache/set`, {
@@ -111,7 +189,8 @@ export class AgentCacheClient {
                     model: params.model,
                     messages: params.messages,
                     response: content,
-                    ttl: 604800 // 7 days default
+                    ttl: 604800,
+                    circleId: this.activeCircles[0] // Use first active circle for now
                 })
             });
         } catch (err) {

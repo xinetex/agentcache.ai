@@ -2,6 +2,7 @@ import { platformReportService } from './PlatformReportService.js';
 import { swarmService } from './SwarmService.js';
 import { cortexBridge } from './CortexBridge.js';
 import { invalidationService } from './InvalidationService.js';
+import { internalEconomics } from './InternalEconomicsService.js';
 import { redis } from '../lib/redis.js';
 
 /**
@@ -38,8 +39,15 @@ export class AutonomyService {
      * Single observation/action cycle.
      */
     async tick() {
+        const start = Date.now();
         console.log('🧠 [AutonomyService] Observing sector health and maintenance cues...');
         
+        // Safety Check: Are we burning too much Vercel/Redis cash?
+        if (await internalEconomics.shouldThrottle()) {
+            console.log("🧠 [AutonomyService] Throttling tick due to platform budget limit.");
+            return;
+        }
+
         try {
             // Phase 4.2: Trigger Active Maintenance (Invalidation Swarm)
             await invalidationService.runMaintenanceStep();
@@ -85,6 +93,10 @@ export class AutonomyService {
             }
         } catch (error: any) {
             console.error('🧠 [AutonomyService] Error in tick:', error.message);
+        } finally {
+            const executionMs = Date.now() - start;
+            // Record overhead: execution time + rough estimate of Redis ops performed
+            await internalEconomics.recordOverhead(executionMs, 5); 
         }
     }
 }

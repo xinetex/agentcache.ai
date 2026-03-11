@@ -75,8 +75,8 @@ export class ContextManager {
                 id: String(r.id)
             }));
 
-            // Cognitive Layer: Conflict Resolution
-            longTermMemories = await this.cognitiveEngine.resolveConflicts(rawMemories);
+            // Cognitive Layer: Conflict Resolution (Axis 3.1)
+            longTermMemories = await this.cognitiveEngine.resolveConflicts(rawMemories, query);
 
             // Limit to Top 3 after resolution
             longTermMemories = longTermMemories.slice(0, 3);

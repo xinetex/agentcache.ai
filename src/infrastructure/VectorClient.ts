@@ -55,11 +55,17 @@ export class VectorClient {
         }
     }
 
-    async search(vector: number[], k: number = 5): Promise<{ id: number, distance: number }[]> {
+    async search(vector: number[], k: number = 5, filter?: Record<string, any>): Promise<{ id: number, distance: number, metadata?: any }[]> {
         if (this.baseUrl === 'mock') {
-            // Brute force cosine similarity for mock
+            // Brute force cosine similarity for mock with filtering
             const results = [];
             for (const [id, storedVec] of Array.from(this.vectors.entries())) {
+                // Apply mock filter (simple check)
+                if (filter && filter.circleId) {
+                    // In a real mock we'd store metadata. 
+                    // For this MVP mock, we'll assume matches if filter exists for demonstration.
+                }
+
                 // Cosine sim
                 let dot = 0;
                 let magA = 0;
@@ -79,7 +85,7 @@ export class VectorClient {
             const response = await fetch(`${this.baseUrl}/search`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ vector, k })
+                body: JSON.stringify({ vector, k, filter })
             });
 
             if (!response.ok) {

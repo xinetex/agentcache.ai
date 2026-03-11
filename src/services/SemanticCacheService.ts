@@ -114,7 +114,9 @@ export class SemanticCacheService {
         provider?: string; 
         temperature?: number;
         response: string; 
-        ttl?: number 
+        ttl?: number;
+        circleId?: string;
+        originAgent?: string;
     }): Promise<string> {
         const key = SemanticCacheService.generateKey({
             provider: params.provider || 'openai',
@@ -125,6 +127,18 @@ export class SemanticCacheService {
         
         const ttl = params.ttl || 604800;
         await redis.setex(key, ttl, params.response);
+
+        // Track metadata for Semantic Resonance (Phase 5)
+        if (params.circleId || params.originAgent) {
+            const latestQuery = params.messages[params.messages.length - 1]?.content || '';
+            const { upsertMemory } = await import('../lib/vector.js');
+            await upsertMemory(key, latestQuery, {
+                circleId: params.circleId,
+                originAgent: params.originAgent,
+                responsePreview: params.response.substring(0, 100)
+            });
+        }
+
         return key;
     }
 

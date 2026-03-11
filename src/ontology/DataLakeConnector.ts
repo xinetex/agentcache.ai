@@ -32,6 +32,24 @@ export interface DataLakeResult {
  * the retrieval; this class orchestrates the ontology mapping.
  */
 export abstract class DataLakeConnector {
+    private dataCallback?: (payload: any) => Promise<void>;
+
+    /**
+     * Register a callback for reactive data events.
+     */
+    onData(callback: (payload: any) => Promise<void>): void {
+        this.dataCallback = callback;
+    }
+
+    /**
+     * Trigger the data callback (internal use by concrete connectors)
+     */
+    protected async emitData(payload: any): Promise<void> {
+        if (this.dataCallback) {
+            await this.dataCallback(payload);
+        }
+    }
+
     /**
      * Retrieve raw data from the source. Implemented by concrete connectors.
      */
