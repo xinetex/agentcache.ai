@@ -80,7 +80,6 @@ memoryRouter.post('/recall', async (c) => {
   const limitRaw = Number(body.limit);
   const limit = Number.isFinite(limitRaw) ? Math.min(10, Math.max(1, Math.floor(limitRaw))) : 5;
   const previousQuery = safeString(body.previous_query);
-
   const results = await queryMemory(query, limit);
   await cognitiveMemory.observeTransition(previousQuery || undefined, query);
   const predictions = await cognitiveMemory.predictNext(query, 1);

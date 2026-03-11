@@ -257,6 +257,7 @@ class MockRedis {
   }
 }
 
+const mockRedisInstance = new MockRedis();
 let redisClient: any;
 let isMock = false;
 
@@ -273,33 +274,17 @@ try {
   }
 } catch (e) {
   console.warn("⚠️ Redis Credentials Missing. Using In-Memory Mock.");
-  redisClient = new MockRedis();
+  redisClient = mockRedisInstance;
   isMock = true;
 }
 
 // Proxy to catch runtime Auth failures and switch to mock
 export const redis = new Proxy({}, {
   get: (target, prop) => {
-    // Special methods not in Upstash Redis
-    if (prop === 'appendToSession') {
-      return async (sessionId: string, data: any) => {
-        const key = `session:${sessionId}:history`;
-        // Use raw client methods
-        const self = (isMock ? redisClient : redisClient);
-        await self.lpush(key, JSON.stringify(data));
-        await self.ltrim(key, 0, 99);
-        return true;
-      };
-    }
-    if (prop === 'getSessionHistory') {
-      return async (sessionId: string) => {
-        const key = `session:${sessionId}:history`;
-        const self = (isMock ? redisClient : redisClient);
-        const items = await self.lrange(key, 0, -1);
-        return items.map((item: any) => typeof item === 'string' ? JSON.parse(item) : item);
-      };
-    }
+    // ...
+    if (prop === 'isMock') return isMock; // Add a way to check if we are in mock mode
 
+    // ...
     if (isMock) return (redisClient as any)[prop];
 
     return async (...args: any[]) => {
@@ -307,10 +292,12 @@ export const redis = new Proxy({}, {
         // @ts-ignore
         return await redisClient[prop](...args);
       } catch (err: any) {
-        if (err.message && (err.message.includes("WRONGPASS") || err.message.includes("Unauthorized"))) {
-          console.warn("⚠️ Redis Auth Failed during op. Switching to In-Memory Mock.");
-          redisClient = new MockRedis();
-          isMock = true;
+        if (err.message && (err.message.includes("WRONGPASS") || err.message.includes("Unauthorized") || err.message.includes("Invalid token"))) {
+          if (!isMock) {
+            console.warn("⚠️ Redis Auth Failed during op. Switching to In-Memory Mock.");
+            redisClient = mockRedisInstance;
+            isMock = true;
+          }
           // Retry with mock
           // @ts-ignore
           return await redisClient[prop](...args);
