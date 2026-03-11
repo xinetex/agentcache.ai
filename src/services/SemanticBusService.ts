@@ -14,10 +14,13 @@ import { ontologyBridge } from '../ontology/OntologyBridge.js';
 
 export interface BusMessage {
     content: string;
-    sector: any;
+    sector: string;
+    payload?: any;
     origin?: string;
     ontologyRef?: string;
 }
+
+import { policyEngine } from './PolicyEngine.js';
 
 /**
  * SemanticBusService
@@ -33,6 +36,13 @@ export class SemanticBusService {
      * Publish a message to the semantic bus.
      */
     async publish(msg: BusMessage): Promise<void> {
+        // 0. Policy Enforcement (Governance Tier)
+        const policyResult = await policyEngine.evaluate(msg);
+        if (!policyResult.allowed) {
+            console.warn(`[SemanticBus] 🛑 Message blocked by policy: ${policyResult.reason}`);
+            return;
+        }
+
         const { sector, content, ontologyRef } = msg;
 
         // 1. Resolve Sector Ontology
@@ -58,7 +68,7 @@ export class SemanticBusService {
 
         // 5. Dispatch to Cortex Bridge
         await cortexBridge.synapse({
-            sector: sector,
+            sector: sector as any,
             type: extractedEntities.length > 0 ? 'DISCOVERY' : 'OPTIMIZATION',
             message: `Semantic Bus: ${content.substring(0, 50)}...`,
             entities: extractedEntities,
