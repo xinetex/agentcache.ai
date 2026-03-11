@@ -164,6 +164,7 @@
 
     <!-- 2. MAIN CONTENT (Center) -->
     <script src="js/wireless-map.js"></script>
+    <script src="js/swarm-visualizer.js"></script>
     <main class="flex-1 overflow-y-auto bg-[#050505] relative custom-scrollbar">
         <!-- Top Bar -->
         <header
@@ -294,6 +295,10 @@
                     <button onclick="switchTab('system')" id="tab-system"
                         class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-300 hover:border-gray-300 transition-colors">
                         <iconify-icon icon="solar:server-square-linear" class="mr-2"></iconify-icon>Infrastructure
+                    </button>
+                    <button onclick="switchTab('swarm')" id="tab-swarm"
+                        class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-300 hover:border-gray-300 transition-colors">
+                        <iconify-icon icon="solar:globus-linear" class="mr-2"></iconify-icon>Massive Swarm
                     </button>
                 </nav>
             </div>
@@ -601,6 +606,33 @@
                 </div>
             </div>
 
+            <!-- TAB CONTENT: MASSIVE SWARM -->
+            <div id="view-swarm" class="admin-view hidden space-y-6">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h3 class="text-xl font-light text-white flex items-center gap-2">
+                            <iconify-icon icon="solar:globus-bold" class="text-cyan-400"></iconify-icon>
+                            Fluid Intelligence Manifold
+                        </h3>
+                        <div class="text-xs text-gray-500">Live simulation of 1,000,000 Bit-Agents steered by Bayesian Optimization.</div>
+                    </div>
+                </div>
+                
+                <div class="glass rounded-2xl overflow-hidden relative border border-cyan-500/20 h-[600px]">
+                    <canvas id="swarmCanvas" class="w-full h-full block"></canvas>
+                    
+                    <!-- Legend -->
+                    <div class="absolute bottom-4 left-4 flex gap-4 text-[10px] font-mono text-gray-400 bg-black/60 px-3 py-2 rounded-lg backdrop-blur">
+                        <div class="flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full bg-cyan-400"></div> SENSING
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full bg-purple-500"></div> OPTIMIZING
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Quick Links -->
             <div>
                 <h3 class="text-sm font-medium text-gray-200 mb-3 tracking-tight">Quick Actions</h3>
@@ -744,6 +776,13 @@
                 startLogPolling();
             } else {
                 stopLogPolling();
+            }
+
+            // 6. Handle Swarm Visualizer
+            if (tabName === 'swarm') {
+                initSwarmView();
+            } else if (window.swarmVisualizer) {
+                window.swarmVisualizer.stop();
             }
         }
 

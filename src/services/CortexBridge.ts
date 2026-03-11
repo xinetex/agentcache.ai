@@ -2,8 +2,8 @@
 import { redis } from '../lib/redis.js';
 
 export interface SynapseSignal {
-    sector: "ROBOTICS" | "BIOLOGICS" | "FINANCE" | "PHOTONICS";
-    type: "ANOMALY" | "OPTIMIZATION" | "WARNING" | "DISCOVERY";
+    sector: "ROBOTICS" | "BIOLOGICS" | "FINANCE" | "PHOTONICS" | "LEGAL" | "HEALTHCARE" | "ENERGY" | "BIOTECH";
+    type: "ANOMALY" | "OPTIMIZATION" | "WARNING" | "DISCOVERY" | "OPTIMIZATION_REQUIRED";
     message: string;
     data?: any;
 }
@@ -59,3 +59,5 @@ export class CortexBridge {
         };
     }
 }
+
+export const cortexBridge = new CortexBridge();

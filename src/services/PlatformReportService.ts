@@ -233,6 +233,51 @@ export class PlatformReportService {
             return { totalPairings: 0, activePending: 0 };
         }
     }
+
+    /**
+     * Autonomous Need Detection: Identifies "Need Pockets" where agentic pressure is required.
+     * Criteria: High volume + Low Cache Hit Ratio = Optimization Needed.
+     */
+    async detectNeedPockets(): Promise<any[]> {
+        const ontology = await this.getOntologyMetrics();
+        const sectors = ontology.sectorBreakdown || [];
+        const pockets: any[] = [];
+
+        // Thresholds for "Need"
+        const VOLUME_THRESHOLD = 50; // Min calls to consider a pocket
+        const HIT_RATIO_SEVERE = 0.3; // Below 30% hit ratio is critical
+        const HIT_RATIO_WARNING = 0.6; // Below 60% needs attention
+
+        for (const sector of sectors) {
+            const total = sector.hits + sector.misses;
+            const ratio = total > 0 ? sector.hits / total : 1;
+
+            if (total > VOLUME_THRESHOLD && ratio < HIT_RATIO_WARNING) {
+                let severity = 'low';
+                let recommendedSwarmSize = 2;
+
+                if (ratio < HIT_RATIO_SEVERE) {
+                    severity = 'high';
+                    recommendedSwarmSize = 5;
+                } else if (ratio < 0.5) {
+                    severity = 'medium';
+                    recommendedSwarmSize = 3;
+                }
+
+                pockets.push({
+                    sectorId: sector.sectorId,
+                    name: sector.name,
+                    volume: total,
+                    hitRatio: ratio,
+                    severity,
+                    recommendedSwarmSize,
+                    reason: `Low cache efficiency (${(ratio * 100).toFixed(1)}%) in ${sector.name} sector.`
+                });
+            }
+        }
+
+        return pockets.sort((a, b) => b.volume - a.volume);
+    }
 }
 
 export const platformReportService = new PlatformReportService();

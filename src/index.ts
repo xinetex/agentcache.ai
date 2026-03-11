@@ -12,6 +12,7 @@ import { cors } from 'hono/cors';
 import { createHash } from 'crypto';
 import { z } from 'zod';
 import { redis } from './lib/redis.js';
+import { autonomyService } from './services/AutonomyService.js';
 import { ContextManager } from './infrastructure/ContextManager.js';
 import vercelIntegration from './integrations/vercel.js';
 import { antiCache, CacheInvalidator, UrlMonitor, FreshnessCalculator, FreshnessRuleEngine } from './mcp/anticache.js';
@@ -105,7 +106,11 @@ const freshnessRules = new FreshnessRuleEngine();
       // Only listen if not in serverless ephemeral mode
       patternEngine.listen();
     } else {
-      console.warn('[Startup] Skipping PatternEngine (Missing DB/Redis or Vercel)');
+      // Start Autonomy Engine (Phase 5)
+    autonomyService.start();
+    console.log('[Startup] Autonomy Engine: ACTIVE');
+
+    console.log('[Startup] PatternEngine: SKIPPED (Local Dev Mode)');
     }
   } catch (e) {
     console.error('[Startup] PatternEngine failed to start:', e);

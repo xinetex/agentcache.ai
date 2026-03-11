@@ -123,4 +123,19 @@ intelligenceRouter.get('/feed', async (c) => {
     })));
 });
 
+
+import { intuitionService } from '../services/IntuitionService.js';
+
+/**
+ * POST /api/intelligence/intuition
+ * Process a query through the intuition layer directly
+ */
+intelligenceRouter.post('/intuition', async (c) => {
+    const { query } = await c.req.json();
+    if (!query) return c.json({ error: 'query is required' }, 400);
+
+    const result = await intuitionService.process(query);
+    return c.json(result);
+});
+
 export default intelligenceRouter;

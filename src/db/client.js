@@ -26,7 +26,10 @@ if (!connectionString) {
         hub_focus_group_responses: [],
         hub_agent_badges: [],
         service_requests: [],
-        needs_signals: []
+        service_requests: [],
+        needs_signals: [],
+        bancache: [],
+        banner_analysis: []
     };
 
     function findAccount(ownerId) {
@@ -57,13 +60,23 @@ if (!connectionString) {
                 if (!currentTable && tableObj === schema.users) currentTable = 'users';
                 if (!currentTable && tableObj === schema.decisions) currentTable = 'decisions';
                 if (!currentTable && tableObj === schema.creditUsageDaily) currentTable = 'credit_usage_daily';
+                if (!currentTable && tableObj === schema.bancache) currentTable = 'bancache';
+                if (!currentTable && tableObj === schema.bannerAnalysis) currentTable = 'banner_analysis';
+                if (!currentTable && tableObj === schema.creditTransactions) currentTable = 'credit_transactions';
 
                 if (currentTable) {
-                    queryImpl = async () => mockStore[currentTable] || [];
+                    queryImpl = async () => {
+                    const data = mockStore[currentTable] || [];
+                    // Simulate Drizzle's nested join result format
+                    return data.map(row => ({
+                        [currentTable]: row
+                    }));
+                };
                 }
 
                 return mock;
             },
+            leftJoin: () => mock,
             where: (condition) => {
                 const oldQuery = queryImpl;
                 queryImpl = async () => {
@@ -128,6 +141,7 @@ if (!connectionString) {
                 };
             },
             onConflictDoNothing: () => mock,
+            onConflictDoUpdate: () => mock,
             then: (resolve) => {
                 queryImpl().then(resolve);
             }
@@ -141,6 +155,9 @@ if (!connectionString) {
             let tName = '';
             if (tableObj === schema.ledgerAccounts) tName = 'ledger_accounts';
             if (tableObj === schema.ledgerTransactions) tName = 'ledger_transactions';
+            if (tableObj === schema.bancache) tName = 'bancache';
+            if (tableObj === schema.bannerAnalysis) tName = 'banner_analysis';
+            if (tableObj === schema.creditTransactions) tName = 'credit_transactions';
             return createChainableMock(tName, 'insert');
         },
         update: (tableObj) => {
