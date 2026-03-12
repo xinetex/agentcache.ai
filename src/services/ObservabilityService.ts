@@ -13,7 +13,7 @@ import { otelBridge } from './OpenTelemetryBridge.js';
 
 export interface TelemetryEvent {
     id: string;
-    type: 'RESONANCE' | 'CONFLICT' | 'POLICY' | 'MEMORY' | 'CLAWBACK' | 'REPUTATION_UPDATE' | 'RECOVERY_PLAN';
+    type: 'RESONANCE' | 'CONFLICT' | 'POLICY' | 'MEMORY' | 'CLAWBACK' | 'REPUTATION_UPDATE' | 'RECOVERY_PLAN' | 'CACHE_OPERATION';
     timestamp: number;
     sector?: string;
     description: string;

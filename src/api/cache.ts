@@ -30,7 +30,7 @@ cacheRouter.post('/check', async (c) => {
 
     try {
         const body = await c.req.json();
-        const { messages, model, provider, temperature, semantic, previous_query } = body;
+        const { messages, model, provider, temperature, semantic, previous_query, sessionId, turnIndex } = body;
 
         if (!messages || !Array.isArray(messages)) {
             return c.json({ error: 'messages array required' }, 400);
@@ -42,7 +42,9 @@ cacheRouter.post('/check', async (c) => {
             provider, 
             temperature, 
             semantic, 
-            previous_query 
+            previous_query,
+            sessionId,
+            turnIndex
         });
         return c.json(result);
     } catch (err: any) {
@@ -63,7 +65,7 @@ cacheRouter.post('/set', async (c) => {
 
     try {
         const body = await c.req.json();
-        const { messages, response, ttl, model, provider, temperature, circleId } = body;
+        const { messages, response, ttl, model, provider, temperature, circleId, sessionId, turnIndex } = body;
 
         if (!messages || !response) {
             return c.json({ error: 'messages and response required' }, 400);
@@ -77,7 +79,9 @@ cacheRouter.post('/set', async (c) => {
             provider: provider || 'openai',
             temperature,
             circleId,
-            originAgent: apiKey // Implicitly track origin
+            originAgent: apiKey, // Implicitly track origin
+            sessionId,
+            turnIndex
         });
 
         return c.json({ success: true });

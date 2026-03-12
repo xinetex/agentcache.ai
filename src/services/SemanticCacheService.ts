@@ -12,6 +12,7 @@ import { redis } from '../lib/redis.js';
 import { createHash } from 'crypto';
 import { stableHash } from '../lib/stable-json.js';
 import { cognitiveMemory } from './cognitive-memory.js';
+import { observabilityService } from './ObservabilityService.js';
 
 export interface CacheCheckResult {
     cached: boolean;
@@ -24,6 +25,10 @@ export interface CacheCheckResult {
     type?: string;
     similarity?: number;
     predictive_prefetch?: any[];
+    drift?: number;
+    reason?: 'exact' | 'semantic' | 'drift_bypass' | 'miss';
+    sessionId?: string;
+    turnIndex?: number;
 }
 
 /**
@@ -59,7 +64,9 @@ export class SemanticCacheService {
         provider?: string; 
         temperature?: number;
         semantic?: boolean; 
-        previous_query?: string 
+        previous_query?: string;
+        sessionId?: string;
+        turnIndex?: number;
     }): Promise<CacheCheckResult> {
         const key = SemanticCacheService.generateKey({
             provider: params.provider || 'openai',
@@ -85,13 +92,26 @@ export class SemanticCacheService {
             ? await cognitiveMemory.predictNext(latestQuery, 1)
             : [];
 
-        if (cachedResponse) {
+        // Phase 31.5: Drift Assessment (The "Rot" Detector)
+        let drift = 0;
+        let driftBypass = false;
+        
+        if (latestQuery) {
+            const driftResult = await cognitiveMemory.assessDrift(key);
+            drift = driftResult.drift;
+            if (drift > 0.15) {
+                driftBypass = true;
+                console.log(`[Cognitive] ⚠️ Cache DRIFT detected (${(drift * 100).toFixed(1)}%). Bypassing for safety.`);
+            }
+        }
+
+        if (cachedResponse && !driftBypass) {
             // Record a hit globally
             await redis.incr('stats:total_hits');
             await redis.incrbyfloat('stats:total_savings_usd', 0.05); // Standard $0.05 per hit
             await cognitiveMemory.recordCacheOutcome(true);
 
-            return {
+            const result: CacheCheckResult = {
                 cached: true,
                 hit: true,
                 response: String(cachedResponse),
@@ -100,18 +120,59 @@ export class SemanticCacheService {
                 type: 'exact',
                 similarity: 1.0,
                 savedUsd: 0.05,
-                coherence: 1.0,
-                predictive_prefetch: predictivePrefetch
+                coherence: 1.0 - drift,
+                predictive_prefetch: predictivePrefetch,
+                drift,
+                reason: 'exact',
+                sessionId: params.sessionId,
+                turnIndex: params.turnIndex
             };
+
+            // Emit Observation Trace
+            await observabilityService.track({
+                type: 'CACHE_OPERATION',
+                description: `Cache HIT: turn ${params.turnIndex || 0} (Drift: ${(drift * 100).toFixed(1)}%)`,
+                sector: 'global',
+                metadata: {
+                    sessionId: params.sessionId,
+                    turnIndex: params.turnIndex,
+                    drift,
+                    hit: true,
+                    key: result.key
+                }
+            });
+
+            return result;
         }
 
         await cognitiveMemory.recordCacheOutcome(false);
-        return { 
+        
+        const missResult: CacheCheckResult = { 
             cached: false, 
             hit: false,
             key: key.slice(-16),
-            predictive_prefetch: predictivePrefetch
+            predictive_prefetch: predictivePrefetch,
+            drift,
+            reason: driftBypass ? 'drift_bypass' : 'miss',
+            sessionId: params.sessionId,
+            turnIndex: params.turnIndex
         };
+
+        // Emit Observation Trace
+        await observabilityService.track({
+            type: 'CACHE_OPERATION',
+            description: `Cache MISS: ${driftBypass ? 'DRIFT BYPASS' : 'NOT FOUND'}`,
+            sector: 'global',
+            metadata: {
+                sessionId: params.sessionId,
+                turnIndex: params.turnIndex,
+                drift,
+                hit: false,
+                reason: missResult.reason
+            }
+        });
+
+        return missResult;
     }
 
     /**
@@ -126,6 +187,8 @@ export class SemanticCacheService {
         ttl?: number;
         circleId?: string;
         originAgent?: string;
+        sessionId?: string;
+        turnIndex?: number;
     }): Promise<string> {
         const key = SemanticCacheService.generateKey({
             provider: params.provider || 'openai',
@@ -147,6 +210,18 @@ export class SemanticCacheService {
                 responsePreview: params.response.substring(0, 100)
             });
         }
+
+        // Emit Observation Trace
+        await observabilityService.track({
+            type: 'CACHE_OPERATION',
+            description: `Cache SET: turn ${params.turnIndex || 0}`,
+            sector: 'global',
+            metadata: {
+                sessionId: params.sessionId,
+                turnIndex: params.turnIndex,
+                key: key.slice(-16)
+            }
+        });
 
         return key;
     }
