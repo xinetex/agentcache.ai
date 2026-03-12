@@ -140,24 +140,30 @@
         <div class="flex flex-col md:flex-row gap-12">
 
           <!-- Sidebar -->
-          <aside class="w-full md:w-64 shrink-0 hidden md:block">
+          <aside class="w-full md:w-64 shrink-0 hidden md:block border-r border-white/5 pr-8">
             <div class="sticky top-32 space-y-8">
               <div>
                 <h3 class="font-semibold text-white mb-3 text-sm uppercase tracking-wider">Getting Started</h3>
                 <ul class="space-y-2 text-sm text-slate-400">
                   <li><a href="#intro" class="hover:text-cyan-400 transition block py-1">Introduction</a></li>
                   <li><a href="#quickstart" class="hover:text-cyan-400 transition block py-1">Quick Start</a></li>
-                  <li><a href="#authentication" class="hover:text-cyan-400 transition block py-1">Authentication</a>
-                  </li>
+                  <li><a href="#authentication" class="hover:text-cyan-400 transition block py-1">Authentication</a></li>
                 </ul>
               </div>
               <div>
-                <h3 class="font-semibold text-white mb-3 text-sm uppercase tracking-wider">Features</h3>
+                <h3 class="font-semibold text-white mb-3 text-sm uppercase tracking-wider text-purple-400">Cognitive Layer</h3>
                 <ul class="space-y-2 text-sm text-slate-400">
-                  <li><a href="#caching" class="hover:text-cyan-400 transition block py-1">Caching Logic</a></li>
-                  <li><a href="#smart-routing"
-                      class="hover:text-cyan-400 transition block py-1 text-cyan-400 font-medium">Smart Routing</a></li>
-                  <li><a href="#memory" class="hover:text-cyan-400 transition block py-1">Memory Management</a></li>
+                  <li><a href="#caching" class="hover:text-cyan-400 transition block py-1">Semantic Caching</a></li>
+                  <li><a href="#cognitive-vector" class="hover:text-cyan-400 transition block py-1">Vector Engine (CVS)</a></li>
+                  <li><a href="#resonance" class="hover:text-cyan-400 transition block py-1">Resonance Circles</a></li>
+                </ul>
+              </div>
+              <div>
+                <h3 class="font-semibold text-white mb-3 text-sm uppercase tracking-wider text-emerald-400">Intelligence</h3>
+                <ul class="space-y-2 text-sm text-slate-400">
+                  <li><a href="#smart-routing" class="hover:text-cyan-400 transition block py-1">Smart Routing</a></li>
+                  <li><a href="#drift-monitor" class="hover:text-cyan-400 transition block py-1">Drift Monitoring</a></li>
+                  <li><a href="#predictive" class="hover:text-cyan-400 transition block py-1">Predictive Synapse</a></li>
                 </ul>
               </div>
               <div>
@@ -249,6 +255,24 @@ response = client.chat.completions.create(
               </div>
             </section>
 
+            <!-- Authentication -->
+            <section id="authentication" class="mb-16 scroll-mt-24">
+              <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                  <i data-lucide="shield-check" class="w-5 h-5 text-emerald-400"></i>
+                </div>
+                Authentication
+              </h2>
+              <div class="space-y-4 text-slate-300">
+                <p>AgentCache uses a dual-key authentication system to ensure isolation and security.</p>
+                <ul class="list-disc pl-6 space-y-2 text-sm">
+                  <li><strong>Agent Key (Bearer)</strong>: Authenticates your agent with AgentCache.</li>
+                  <li><strong>Provider Key (Header)</strong>: Your real LLM key (OpenAI/Anthropic), passed as <code>X-OpenAI-Key</code> or <code>X-Anthropic-Key</code>.</li>
+                  <li><strong>Tenant ID</strong>: Use <code>X-Tenant-Id</code> to isolate vector indices in production.</li>
+                </ul>
+              </div>
+            </section>
+
             <!-- Smart Routing -->
             <section id="smart-routing" class="mb-16 scroll-mt-24">
               <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
@@ -285,6 +309,83 @@ response = client.chat.completions.create(
                     </li>
                   </ul>
                 </div>
+              </div>
+            </section>
+
+            <!-- Semantic Caching -->
+            <section id="caching" class="mb-16 scroll-mt-24">
+              <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                  <i data-lucide="database" class="w-5 h-5 text-cyan-400"></i>
+                </div>
+                Semantic Caching
+              </h2>
+              <div class="glass rounded-xl p-6 border border-slate-800 space-y-4">
+                <p class="text-slate-300">AgentCache fingerprints request intent, not just raw text. This allows for:</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="p-4 bg-slate-900/50 rounded-lg border border-slate-800">
+                    <div class="font-bold text-white mb-1">Exact Match</div>
+                    <div class="text-xs text-slate-500 font-mono italic">Lower Latency</div>
+                    <p class="text-xs text-slate-400 mt-2">Identical prompt history cached in Redis.</p>
+                  </div>
+                  <div class="p-4 bg-slate-900/50 rounded-lg border border-slate-800">
+                    <div class="font-bold text-white mb-1">Semantic Match</div>
+                    <div class="text-xs text-slate-500 font-mono italic">Higher Efficiency</div>
+                    <p class="text-xs text-slate-400 mt-2">Similarity search via Cognitive Vector Service.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Vector Engine -->
+            <section id="cognitive-vector" class="mb-16 scroll-mt-24">
+              <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                  <i data-lucide="box" class="w-5 h-5 text-orange-400"></i>
+                </div>
+                Cognitive Vector Service (CVS)
+              </h2>
+              <div class="space-y-4 text-slate-300">
+                <p>Highly optimized FAISS-based vector engine (C# standalone) for sub-millisecond similarity search with HNSW indices.</p>
+                <div class="bg-slate-900 p-4 rounded-lg font-mono text-xs text-cyan-400">
+                  POST /Vectors/drift<br>
+                  X-Tenant-Id: your_org_id
+                </div>
+              </div>
+            </section>
+
+            <!-- Resonance -->
+            <section id="resonance" class="mb-16 scroll-mt-24">
+              <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-pink-500/20 flex items-center justify-center">
+                  <i data-lucide="waves" class="w-5 h-5 text-pink-400"></i>
+                </div>
+                Resonance Circles
+              </h2>
+              <p class="text-slate-300 mb-4">Lateral knowledge sharing across agents. Join a circle to automatically benefit from the memory of other authorized agents in the same sector.</p>
+            </section>
+
+            <!-- Drift Monitoring -->
+            <section id="drift-monitor" class="mb-16 scroll-mt-24">
+              <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center">
+                  <i data-lucide="line-chart" class="w-5 h-5 text-yellow-400"></i>
+                </div>
+                Drift Monitoring
+              </h2>
+              <p class="text-slate-300">Monitors semantic intent evolution. Detects when an agent's reasoning anchor is drifting away from canonical domain exemplars.</p>
+            </section>
+
+            <!-- Predictive Synapse -->
+            <section id="predictive" class="mb-16 scroll-mt-24">
+              <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                  <i data-lucide="brain-circuit" class="w-5 h-5 text-blue-400"></i>
+                </div>
+                Predictive Synapse
+              </h2>
+              <p class="text-slate-300">Sequence learning that pre-fetches the next 3 potential cache hits before the agent even submits the query.</p>
+            </section>
 
                 <div>
                   <h3 class="text-lg font-semibold text-white mb-4">Usage</h3>
@@ -323,8 +424,34 @@ response = client.chat.completions.create(
                 API Reference
               </h2>
               <div class="glass rounded-xl p-6 border border-slate-800">
-                <p class="text-slate-400">Full API reference coming soon. For now, use the OpenAI-compatible endpoint
-                  documented above.</p>
+                <p class="text-slate-300 mb-4">Core endpoints are fully OpenAI-compatible.</p>
+                <div class="space-y-2 font-mono text-xs text-slate-400">
+                  <div>POST /api/v1/chat/completions (Cache Entry Point)</div>
+                  <div>POST /api/v1/embeddings (Vector Entry Point)</div>
+                  <div>POST /api/cache/resonance (Resonance Probe)</div>
+                </div>
+              </div>
+            </section>
+
+            <!-- SDKs -->
+            <section id="sdks" class="mb-16 scroll-mt-24">
+              <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center">
+                  <i data-lucide="package" class="w-5 h-5 text-indigo-400"></i>
+                </div>
+                SDKs
+              </h2>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="glass p-6 rounded-xl border border-slate-800">
+                  <h3 class="text-white font-bold mb-2">agentcache-node</h3>
+                  <code class="text-xs bg-black/50 p-2 rounded block mb-4">npm install agentcache-node</code>
+                  <p class="text-sm text-slate-400 text-sm">Full lifecycle support for Node.js, including L1 local caching.</p>
+                </div>
+                <div class="glass p-6 rounded-xl border border-slate-800">
+                  <h3 class="text-white font-bold mb-2">agentcache-python</h3>
+                  <code class="text-xs bg-black/50 p-2 rounded block mb-4">pip install agentcache</code>
+                  <p class="text-sm text-slate-400 text-sm">Official Python client for LangChain and LlamaIndex integration.</p>
+                </div>
               </div>
             </section>
 
