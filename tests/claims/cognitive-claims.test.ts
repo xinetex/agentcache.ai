@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { createHash } from 'crypto';
 import { AgentCacheCognitiveService } from '../../src/services/cognitive-memory.js';
-import { upsertMemory, vectorIndex } from '../../src/lib/vector.js';
+import { HybridVectorIndex } from '../../src/lib/vector.js';
+import { VectorClient } from '../../src/infrastructure/VectorClient.js';
+import { DriftWalker } from '../../src/infrastructure/DriftWalker.js';
 import { generateEmbedding } from '../../src/lib/llm/embeddings.js';
 import { redis } from '../../src/lib/redis.js';
 
@@ -28,9 +30,13 @@ function createRedisMock() {
     async hget(key: string, field: string) {
       return hashes.get(key)?.[field] ?? null;
     },
-    async hset(key: string, field: string, value: string | number) {
+    async hset(key: string, fieldOrObj: string | Record<string, any>, value?: string | number) {
       const hash = hashes.get(key) ?? {};
-      hash[field] = value;
+      if (typeof fieldOrObj === 'object') {
+        Object.assign(hash, fieldOrObj);
+      } else {
+        hash[fieldOrObj] = value!;
+      }
       hashes.set(key, hash);
       return 1;
     },
@@ -116,17 +122,30 @@ describe.sequential('AgentCache cognitive claim coverage', () => {
     const id = unique('claim-drift');
     const text = unique('memory-text');
     const redisMock = createRedisMock();
+    
+    // 1. Create a truly private, isolated vector client and index
+    const vectorClient = new VectorClient('mock');
+    const localIndex = new HybridVectorIndex(redisMock, vectorClient);
 
-    await upsertMemory(id, text, { query: text, claim: 'drift' });
+    // Initial setup in isolated mock
+    await localIndex.upsert({ id, data: text, metadata: { query: text, claim: 'drift' } });
+    
     const fresh = await generateEmbedding(text);
-    await vectorIndex.upsert({
+    // Corrupt the vector in the SAME mock index
+    await localIndex.upsert({
       id,
       vector: fresh.map((value) => value * -1),
       metadata: { query: text, claim: 'drift' },
       data: text,
     });
 
-    const service = new AgentCacheCognitiveService({ redis: redisMock as any });
+    // 2. Pass the isolated walker to the service
+    const driftWalker = new DriftWalker(localIndex);
+    const service = new AgentCacheCognitiveService({ 
+      redis: redisMock as any,
+      driftWalker
+    });
+
     const beforeHeal = await service.assessDrift(id, true);
     const afterHeal = await service.assessDrift(id, false);
 

@@ -4,14 +4,17 @@
  * 
  * PROPRIETARY AND CONFIDENTIAL: 
  * This software and its documentation are the property of AgentCache.ai.
- * Authorized copying, distribution, or modification of this file, 
+ * Unauthorized copying, distribution, or modification of this file, 
  * via any medium, is strictly prohibited.
  */
-import { vectorIndex } from '../lib/vector.js';
+import { vectorIndex as defaultIndex } from '../lib/vector.js';
 import { generateEmbedding } from '../lib/llm/embeddings.js';
 
 export class DriftWalker {
-    private index = vectorIndex;
+    /**
+     * @param index HybridVectorIndex instance (Dependency Injection)
+     */
+    constructor(private index: any = defaultIndex) {}
 
     // Thresholds
     private DRIFT_WARNING = 0.1;

@@ -10,6 +10,7 @@
 import { createHash } from 'crypto';
 import { PredictiveSynapse } from '../infrastructure/PredictiveSynapse.js';
 import { DriftWalker } from '../infrastructure/DriftWalker.js';
+import { HybridVectorIndex } from '../lib/vector.js';
 import { redis as defaultRedis } from '../lib/redis.js';
 import { eventBus } from '../lib/event-bus.js';
 
@@ -68,7 +69,7 @@ export class AgentCacheCognitiveService {
   }) {
     this.redis = options?.redis || defaultRedis;
     this.synapse = options?.synapse || new PredictiveSynapse(this.redis);
-    this.driftWalker = options?.driftWalker || new DriftWalker();
+    this.driftWalker = options?.driftWalker || new DriftWalker(new HybridVectorIndex(this.redis));
   }
 
   private async bumpMetric(field: string, amount: number = 1): Promise<void> {

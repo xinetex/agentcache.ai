@@ -41,6 +41,23 @@ vi.mock('../../src/lib/vector.js', () => ({
     ],
     delete: async () => {},
   },
+  HybridVectorIndex: class {
+    constructor() {
+      return {
+        fetch: async (ids: string[]) => ids.map(id => ({ 
+          id, 
+          data: 'mock-data', 
+          metadata: {}, 
+          vector: new Array(1536).fill(0.1) 
+        })),
+        upsert: async () => {},
+        query: async (opts: any) => [
+          { id: 'mock-id', score: 0.1, data: opts.data || '', metadata: {} }
+        ],
+        delete: async () => {},
+      };
+    }
+  }
 }));
 
 let app: any;
