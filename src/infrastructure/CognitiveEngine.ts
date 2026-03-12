@@ -13,6 +13,7 @@ import { redis } from '../lib/redis.js';
 import { upsertMemory, queryMemory } from '../lib/vector.js';
 import { VectorClient } from './VectorClient.js';
 import { HopfieldNetwork } from './HopfieldMemory.js';
+import { observabilityService } from '../services/ObservabilityService.js';
 
 export interface ValidationResult {
     valid: boolean;
@@ -168,6 +169,19 @@ export class CognitiveEngine {
         winner.message.content += `\n[Conflict Resolved: Utility Score ${winner.utility.toFixed(2)}]`;
         winner.message.content += `\n[Hypotheses Preserved: ${losers.length}]`;
 
+        // Phase 12 Telemetry
+        observabilityService.track({
+            type: 'CONFLICT',
+            description: `Conflict resolved: ${winner.message.id} won over ${losers.length} alternatives`,
+            metadata: {
+                winnerId: winner.message.id,
+                utility: winner.utility,
+                margin,
+                loserCount: losers.length,
+                escalated: shouldEscalate
+            }
+        }).catch(e => console.error('Observability track failed', e));
+
         return [winner.message];
     }
 
@@ -237,10 +251,10 @@ export class CognitiveEngine {
      * Vector Memory: Store content embedding (Holographic Storage)
      * "Freezing the state into the non-localized void"
      */
-    async storeMemoryVector(id: string, content: string): Promise<boolean> {
+    async storeMemoryVector(id: string, content: string, metadata: Record<string, any> = { type: 'memory', timestamp: Date.now() }): Promise<boolean> {
         try {
             console.log(`[CognitiveEngine] 🕸️ Weaving memory into the hologram: "${content.substring(0, 30)}..."`);
-            await upsertMemory(id, content, { type: 'memory', timestamp: Date.now() });
+            await upsertMemory(id, content, metadata);
             return true;
         } catch (e) {
             console.error('[CognitiveEngine] Failed to store holographic memory:', e);
@@ -469,3 +483,5 @@ Respond with JSON: {"safe": boolean, "reason": "short explanation"}.`
         return state;
     }
 }
+
+export const cognitiveEngine = new CognitiveEngine();

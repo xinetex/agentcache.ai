@@ -112,10 +112,16 @@ export class VectorClient {
             // For now, we search all active shards to simulate a "Global Resonance" search.
             for (const shard of Array.from(this.shards.values())) {
                 for (const [id, storedVec] of Array.from(shard.vectors.entries())) {
-                    // Apply Metadata Filter (Elastic Search Logic)
+                    // Apply Metadata Filter (Elastic Search Logic: Supports literal or $in)
                     if (filter && filter.circleId) {
                         const meta = shard.metadata.get(id);
-                        if (meta?.circleId !== filter.circleId) continue;
+                        const filterVal = filter.circleId;
+                        
+                        if (typeof filterVal === 'object' && filterVal.$in) {
+                            if (!filterVal.$in.includes(meta?.circleId)) continue;
+                        } else if (meta?.circleId !== filterVal) {
+                            continue;
+                        }
                     }
 
                     // Optimized Cosine Sim Calculation

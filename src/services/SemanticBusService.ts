@@ -11,12 +11,15 @@
 import { cortexBridge } from './CortexBridge.js';
 import { ontologyRegistry } from '../ontology/OntologyRegistry.js';
 import { ontologyBridge } from '../ontology/OntologyBridge.js';
+import { cognitiveEngine } from '../infrastructure/CognitiveEngine.js';
 
 export interface BusMessage {
     content: string;
     sector: string;
     payload?: any;
     origin?: string;
+    originAgent?: string;
+    circleId?: string;
     ontologyRef?: string;
 }
 
@@ -66,7 +69,17 @@ export class SemanticBusService {
         // 4. Cross-Sector Resonance (Ontology Bridge)
         const resonances = ontologyBridge.federatedQuery(extractedEntities[0] || content);
 
-        // 5. Dispatch to Cortex Bridge
+        // 5. Store in Cognitive Memory (with metadata for Resonance)
+        const msgId = `bus_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
+        await (cognitiveEngine as any).storeMemoryVector(msgId, content, {
+            type: 'bus_signal',
+            sector: sectorId,
+            originAgent: msg.originAgent,
+            circleId: msg.circleId,
+            entities: extractedEntities
+        });
+
+        // 6. Dispatch to Cortex Bridge
         await cortexBridge.synapse({
             sector: sector as any,
             type: extractedEntities.length > 0 ? 'DISCOVERY' : 'OPTIMIZATION',

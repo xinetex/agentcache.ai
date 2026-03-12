@@ -105,9 +105,17 @@ class MockRedis {
   async lrange(key: string, start: number, stop: number) {
     const list = this.store.get(key);
     if (Array.isArray(list)) {
-      return list; // Mock slicing for simplicity, or implement if needed
+      // In Redis, -1 means last element. Mock support for basic negative indices.
+      const realStop = stop === -1 ? list.length : stop;
+      return list.slice(start, realStop + 1);
     }
     return [];
+  }
+
+  async publish(channel: string, message: string) {
+    // In mock mode, we just return 0 as there are no real pub/sub listeners.
+    // However, existence of this method prevents 'is not a function' errors.
+    return 0;
   }
 
   async xadd(key: string, id: string, ...args: string[]) {

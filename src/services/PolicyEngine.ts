@@ -10,6 +10,7 @@
 
 import { BusMessage } from './SemanticBusService.js';
 import { ontologyRegistry } from '../ontology/OntologyRegistry.js';
+import { observabilityService } from './ObservabilityService.js';
 
 export interface PolicyResult {
     allowed: boolean;
@@ -50,6 +51,8 @@ export class PolicyEngine {
                     schema.parse(msg.payload);
                     return { allowed: true, score: 1.0 };
                 } catch (e: any) {
+                    console.log(`[PolicyEngine] Ontological validation failed for ${msg.sector}. Payload:`, JSON.stringify(msg.payload, null, 2));
+                    console.log(`[PolicyEngine] Zod Error:`, e.errors);
                     return { 
                         allowed: false, 
                         score: 0.0, 
@@ -83,6 +86,19 @@ export class PolicyEngine {
             const result = await policy.evaluate(message);
             if (!result.allowed) {
                 console.warn(`[PolicyEngine] Message REJECTED by policy "${policy.id}": ${result.reason}`);
+                
+                // Phase 12 Telemetry
+                observabilityService.track({
+                    type: 'POLICY',
+                    description: `Message rejected by policy: ${policy.id}`,
+                    metadata: {
+                        policyId: policy.id,
+                        reason: result.reason,
+                        score: result.score,
+                        sector: message.sector
+                    }
+                }).catch(e => console.error('Observability track failed', e));
+
                 return result;
             }
         }

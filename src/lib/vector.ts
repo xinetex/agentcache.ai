@@ -48,7 +48,7 @@ export async function upsertMemory(id: string, text: string, metadata: Record<st
     const embedding = await generateEmbedding(text);
 
     // 3. Store in FAISS (C#)
-    await vectorClient.addVectors([longId], embedding);
+    await vectorClient.addVectors([longId], embedding, metadata);
 
     // 4. Store Metadata in Redis
     const metaKey = `${PREFIX_META}${id}`;

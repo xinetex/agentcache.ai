@@ -11,6 +11,7 @@
 import { redis } from '../lib/redis.js';
 import { queryMemory } from '../lib/vector.js';
 import { createHash } from 'crypto';
+import { observabilityService } from './ObservabilityService.js';
 
 export interface ResonanceResult {
     id: string;
@@ -76,7 +77,6 @@ export class ResonanceService {
         if (circles.length === 0) return [];
 
         // 1. Semantic Search with Metadata Scoping (Phase 7 Hardening)
-        // We push the circleId constraint down to the vector store to avoid L2 noise.
         const results = await queryMemory(query, 10, { circleId: { $in: circles } });
         
         const resonanceResults: ResonanceResult[] = [];
@@ -88,16 +88,28 @@ export class ResonanceService {
             const normalizedScore = Math.max(0, Math.min(1, 1 - distance)); 
 
             if (normalizedScore >= threshold) {
-                resonanceResults.push({
+                const result: ResonanceResult = {
                     id: res.id,
                     text: res.data,
                     normalizedScore,
                     rawMetric: distance,
-                    metricType: 'L2',
+                    metricType: 'L2' as const,
                     sourceLayer: 'vector',
                     originAgent: res.metadata?.originAgent || 'unknown',
                     circleId: res.metadata?.circleId
-                });
+                };
+                resonanceResults.push(result);
+
+                // Phase 12 Telemetry
+                observabilityService.track({
+                    type: 'RESONANCE',
+                    description: `Lateral resonance found in circle ${result.circleId}`,
+                    metadata: {
+                        score: normalizedScore,
+                        circleId: result.circleId,
+                        originAgent: result.originAgent
+                    }
+                }).catch(e => console.error('Observability track failed', e));
             }
         }
 
