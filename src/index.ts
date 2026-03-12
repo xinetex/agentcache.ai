@@ -373,6 +373,7 @@ app.route('/api/finance', financeRouter);
 import ontologyRouter from './api/ontology.js';
 app.route('/api/ontology', ontologyRouter);
 
+import sentryRouter from './api/sentry.js';
 import lemmaRouter from './api/lemma.js';
 app.route('/api/lemma', lemmaRouter);
 
@@ -428,6 +429,7 @@ app.route('/api/catalog', catalogRouter);
 app.route('/api/focus-group', focusGroupRouter);
 // Tool Safety Scanner (supply chain security for agent tools)
 app.route('/api/tools/scan', toolScannerRouter);
+app.route('/api/sentry', sentryRouter);
 
 // ============================================================================
 // AGENT DISCOVERY LAYER

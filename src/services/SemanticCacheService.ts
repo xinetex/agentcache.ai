@@ -12,8 +12,9 @@ import { redis } from '../lib/redis.js';
 import { createHash } from 'crypto';
 import { stableHash } from '../lib/stable-json.js';
 import { cognitiveMemory } from './cognitive-memory.js';
-import { observabilityService } from './ObservabilityService.js';
 import { eventBus } from '../lib/event-bus.js';
+import { shodanService } from './ShodanService.js';
+import { bancacheService } from './BancacheService.js';
 
 export interface CacheCheckResult {
     cached: boolean;
@@ -30,6 +31,8 @@ export interface CacheCheckResult {
     reason?: 'exact' | 'semantic' | 'drift_bypass' | 'miss';
     sessionId?: string;
     turnIndex?: number;
+    environmental_risk?: number;
+    quarantined?: boolean;
 }
 
 /**
@@ -84,6 +87,8 @@ export class SemanticCacheService {
         previous_query?: string;
         sessionId?: string;
         turnIndex?: number;
+        target_ip?: string;
+        target_banner?: string;
     }): Promise<CacheCheckResult> {
         const key = SemanticCacheService.generateKey({
             provider: params.provider || 'openai',
@@ -127,6 +132,34 @@ export class SemanticCacheService {
             }
         }
 
+        // Phase 32.5: Environmental Correlation (Semantic Shadow)
+        let environmentalRisk = 0;
+        let quarantined = false;
+
+        if (params.target_ip || params.target_banner) {
+            const shodanRisk = params.target_ip ? (await shodanService.getRiskProfile(params.target_ip)).riskScore : 0;
+            const bannerRisk = params.target_banner ? (await bancacheService.analyzeBanner(params.target_banner)).riskScore : 0;
+            
+            environmentalRisk = Math.max(shodanRisk, bannerRisk);
+
+            // AUTO-QUARANTINE LOGIC: Drift + Environmental Risk
+            if (drift > 0.1 && environmentalRisk > 7.0) {
+                quarantined = true;
+                driftBypass = true;
+                console.log(`[Cognitive] 🚨 AUTO-QUARANTINE: Drift (${drift}) correlated with Environmental Risk (${environmentalRisk}).`);
+                
+                eventBus.emit({
+                    type: 'quarantine_event',
+                    payload: {
+                        sessionId: params.sessionId,
+                        drift,
+                        environmentalRisk,
+                        target_ip: params.target_ip
+                    }
+                });
+            }
+        }
+
         if (cachedResponse && !driftBypass) {
             // Record a hit globally
             await redis.incr('stats:total_hits');
@@ -147,7 +180,9 @@ export class SemanticCacheService {
                 drift,
                 reason: 'exact',
                 sessionId: params.sessionId,
-                turnIndex: params.turnIndex
+                turnIndex: params.turnIndex,
+                environmental_risk: environmentalRisk,
+                quarantined: quarantined
             };
 
             // Emit Observation Trace
@@ -177,7 +212,9 @@ export class SemanticCacheService {
             drift,
             reason: driftBypass ? 'drift_bypass' : 'miss',
             sessionId: params.sessionId,
-            turnIndex: params.turnIndex
+            turnIndex: params.turnIndex,
+            environmental_risk: environmentalRisk,
+            quarantined: quarantined
         };
 
         // Emit Observation Trace
