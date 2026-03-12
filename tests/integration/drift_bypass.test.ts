@@ -43,6 +43,7 @@ async function request(path: string, body?: Record<string, unknown>, method: str
   });
 
   const payload = await response.json();
+  console.log(`[Test Request] ${method} ${path} -> Status: ${response.status}, Payload:`, JSON.stringify(payload));
   return { response, payload };
 }
 

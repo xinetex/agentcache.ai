@@ -15,10 +15,11 @@ import { cognitiveMemory } from './cognitive-memory.js';
 import { eventBus } from '../lib/event-bus.js';
 import { shodanService } from './ShodanService.js';
 import { bancacheService } from './BancacheService.js';
+import { observabilityService } from './ObservabilityService.js';
 
 export interface CacheCheckResult {
     cached: boolean;
-    hit?: boolean; // For compat
+    hit: boolean; // Normalized in Phase 32.5
     response?: string;
     key?: string;
     coherence?: number;
@@ -128,7 +129,9 @@ export class SemanticCacheService {
             if (drift > threshold) {
                 driftBypass = true;
                 const reason = SemanticCacheService.antibodySessions.has(params.sessionId || '') ? 'ANTIBODY_HARDENING' : 'DRIFT';
-                console.log(`[Cognitive] ⚠️ Cache ${reason} detected (${(drift * 100).toFixed(1)}%). Bypassing for safety.`);
+                console.log(`[Cognitive] ⚠️ Cache ${reason} detected (${(drift * 100).toFixed(1)}%). Threshold: ${threshold}. Bypassing for safety.`);
+            } else {
+                console.log(`[Cognitive] ✅ Drift nominal (${(drift * 100).toFixed(1)}%). Threshold: ${threshold}.`);
             }
         }
 
@@ -137,10 +140,12 @@ export class SemanticCacheService {
         let quarantined = false;
 
         if (params.target_ip || params.target_banner) {
+            console.log(`[Cognitive] 🔍 Checking Environmental Risk for IP: ${params.target_ip || 'none'}, Banner: ${params.target_banner ? 'present' : 'none'}`);
             const shodanRisk = params.target_ip ? (await shodanService.getRiskProfile(params.target_ip)).riskScore : 0;
             const bannerRisk = params.target_banner ? (await bancacheService.analyzeBanner(params.target_banner)).riskScore : 0;
             
             environmentalRisk = Math.max(shodanRisk, bannerRisk);
+            console.log(`[Cognitive] 🛡️ Environmental Risk: ${environmentalRisk} (Shodan: ${shodanRisk}, Banner: ${bannerRisk})`);
 
             // AUTO-QUARANTINE LOGIC: Drift + Environmental Risk
             if (drift > 0.1 && environmentalRisk > 7.0) {
@@ -148,14 +153,11 @@ export class SemanticCacheService {
                 driftBypass = true;
                 console.log(`[Cognitive] 🚨 AUTO-QUARANTINE: Drift (${drift}) correlated with Environmental Risk (${environmentalRisk}).`);
                 
-                eventBus.emit({
-                    type: 'quarantine_event',
-                    payload: {
-                        sessionId: params.sessionId,
-                        drift,
-                        environmentalRisk,
-                        target_ip: params.target_ip
-                    }
+                eventBus.emit('quarantine_event', {
+                    sessionId: params.sessionId,
+                    drift,
+                    environmentalRisk,
+                    target_ip: params.target_ip
                 });
             }
         }
