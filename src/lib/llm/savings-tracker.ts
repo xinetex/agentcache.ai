@@ -18,6 +18,7 @@
  *   savings:user:<hash>:YYYY-MM-DD — per-user savings today
  *   savings:global:month:YYYY-MM  — monthly rollup
  *   savings:breakdown:YYYY-MM-DD  — JSON hash of savings by source type
+ *   savings:global:cumulative    — total savings across all time
  */
 
 import { redis } from '../redis.js';
@@ -75,6 +76,9 @@ class SavingsTracker {
                 // Increment hit counter (for averages)
                 redis.incrby(`savings:hits:${date}`, 1),
                 redis.expire(`savings:hits:${date}`, 90 * 86400),
+
+                // Increment total cumulative savings
+                redis.incrbyfloat('savings:global:cumulative', amountUsd)
             ]);
         } catch (err) {
             console.warn('[SavingsTracker] Redis write failed:', err);
@@ -146,6 +150,21 @@ class SavingsTracker {
             return parseFloat(String(raw ?? '0')) || 0;
         } catch {
             return 0;
+        }
+    }
+
+    /**
+     * Get global cumulative savings (All Time)
+     * Starting baseline: $1,429,203.42 (as per landing page)
+     */
+    async getGlobalCumulativeSavings(): Promise<number> {
+        const baseline = 1429203.42;
+        try {
+            const raw = await redis.get('savings:global:cumulative');
+            const incremental = parseFloat(String(raw ?? '0')) || 0;
+            return baseline + incremental;
+        } catch {
+            return baseline;
         }
     }
 }

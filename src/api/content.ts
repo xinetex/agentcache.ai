@@ -117,9 +117,10 @@ contentRouter.get('/', async (c) => {
             return c.json({ lanes: newLanes, cards: newCards });
         }
 
-        const payload = {
+        const payload: any = {
             lanes: lanesData,
-            cards: cardsData  // raw cards (without live stats) go into cache
+            cards: cardsData,  // raw cards (without live stats) go into cache
+            cumulativeSavings: await savingsTracker.getGlobalCumulativeSavings()
         };
 
         // 3. Store in Redis for next visitor

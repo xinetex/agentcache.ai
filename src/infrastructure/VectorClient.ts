@@ -31,8 +31,11 @@ export class VectorClient {
         this.baseUrl = baseUrl;
         this.embeddingProvider = new LocalEmbeddingProvider();
 
-        // Hybrid Fallback: If no C# service URL exists, we initialize Upstash Vector as a cloud-native fallback.
-        if (!process.env.VECTOR_SERVICE_URL || process.env.VECTOR_SERVICE_URL === 'mock') {
+        const isTest = process.env.NODE_ENV === 'test';
+        const isMockForce = process.env.VECTOR_SERVICE_URL === 'mock' || baseUrl === 'mock';
+
+        // Hybrid Fallback: Only trigger if not forced to mock and not in a test environment
+        if (!isTest && !isMockForce && (!process.env.VECTOR_SERVICE_URL || process.env.VECTOR_SERVICE_URL === 'mock')) {
             const url = process.env.UPSTASH_VECTOR_REST_URL;
             const token = process.env.UPSTASH_VECTOR_REST_TOKEN;
 
@@ -40,7 +43,12 @@ export class VectorClient {
                 console.log('☁️ Using Upstash Vector as Cloud Fallback Layer.');
                 this.upstashIndex = new Index({ url, token });
                 this.baseUrl = 'cloud';
-            } else {
+            }
+        }
+
+        // Final safety: if no cloud and no real service, use mock
+        if (this.baseUrl === 'mock' || (!this.upstashIndex && (!process.env.VECTOR_SERVICE_URL || process.env.VECTOR_SERVICE_URL === 'mock'))) {
+            if (!this.upstashIndex) {
                 console.warn('⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.');
                 this.baseUrl = 'mock';
                 this.createShard(this.activeShardId);
@@ -77,7 +85,11 @@ export class VectorClient {
         }
 
         if (this.upstashIndex) {
-            await this.upstashIndex.upsert({ id: String(ids[0]), vector: vectors, metadata });
+            try {
+                await this.upstashIndex.upsert({ id: String(ids[0]), vector: vectors, metadata });
+            } catch (e: any) {
+                console.error('❌ Upstash Upsert Failed:', e.message);
+            }
             return;
         }
 
@@ -121,8 +133,21 @@ export class VectorClient {
         }
 
         if (this.upstashIndex) {
-            const results = await this.upstashIndex.query({ vector, topK: k, includeMetadata: true, filter: filter?.circleId ? `circleId = '${filter.circleId}'` : undefined });
-            return results.map(r => ({ id: Number(r.id), distance: 1 - r.score, metadata: r.metadata }));
+            try {
+                const results = await this.upstashIndex.query({ 
+                    vector, 
+                    topK: k, 
+                    includeMetadata: true, 
+                    filter: filter?.circleId ? `circleId = '${filter.circleId}'` : undefined 
+                });
+                return results.map(r => ({ id: Number(r.id), distance: 1 - r.score, metadata: r.metadata }));
+            } catch (e: any) {
+                console.error('❌ Upstash Query Failed:', e.message);
+                if (e.message.includes('Unexpected token')) {
+                    console.error('⚠️ Upstash returned non-JSON response. Check credentials or network.');
+                }
+                return [];
+            }
         }
 
         try {

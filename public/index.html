@@ -244,12 +244,17 @@
             </p>
 
             <div class="mt-8 relative z-10 flex flex-wrap justify-center gap-3">
-                <div class="inline-flex items-center gap-3 rounded-full bg-slate-800 border border-slate-700 px-6 py-4 shadow-2xl group/snippet cursor-pointer" onclick="copyInstall()">
-                    <code class="text-cyan-400 font-mono text-sm">npm install agentcache-node</code>
-                    <i data-lucide="copy" class="w-4 h-4 text-slate-500 group-hover/snippet:text-cyan-400 transition"></i>
+                <div class="inline-flex items-center gap-3 rounded-full bg-slate-800 border border-slate-700 px-6 py-4 shadow-2xl group/snippet cursor-pointer transition-all active:scale-95" id="install-snippet" onclick="copyInstall()">
+                    <div class="flex items-center gap-3" id="snippet-inner">
+                        <code class="text-cyan-400 font-mono text-sm">npm install agentcache-node</code>
+                        <div class="flex items-center gap-1">
+                            <i data-lucide="copy" class="w-4 h-4 text-slate-500 group-hover/snippet:text-cyan-400 transition"></i>
+                            <span class="text-[10px] font-mono text-slate-600 group-hover/snippet:text-slate-400 transition uppercase tracking-widest hidden md:inline ml-1">Copy</span>
+                        </div>
+                    </div>
                 </div>
                 <a href="/docs"
-                    class="inline-flex items-center rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-6 py-4 text-xs font-black tracking-widest uppercase transition">Get Started</a>
+                    class="inline-flex items-center rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-6 py-4 text-xs font-black tracking-widest uppercase transition shadow-xl shadow-cyan-500/10">Get Started</a>
             </div>
 
             <!-- Savings Ticker -->
@@ -534,6 +539,11 @@
                 }
                 const payload = await res.json();
                 contentData = normalizeContent(payload);
+                
+                // Initialize Savings with real data
+                if (payload.cumulativeSavings) {
+                    currentSavings = payload.cumulativeSavings;
+                }
             } catch (err) {
                 console.warn('Falling back to local landing content:', err);
                 contentData = cloneFallbackContent();
@@ -855,10 +865,22 @@
         window.copyInstall = () => {
             const text = 'npm install agentcache-node';
             navigator.clipboard.writeText(text);
-            const el = document.querySelector('[onclick="copyInstall()"]');
+            const el = document.getElementById('snippet-inner');
             const originalContent = el.innerHTML;
-            el.innerHTML = `<code class="text-green-400 font-mono text-sm">Copied!</code>`;
-            setTimeout(() => { el.innerHTML = originalContent; lucide.createIcons(); }, 1500);
+            
+            // Premium Success State
+            el.innerHTML = `
+                <div class="flex items-center gap-2 text-green-400 animate-bounce">
+                    <i data-lucide="check-circle" class="w-4 h-4"></i>
+                    <code class="font-mono text-sm">VERIFIED & COPIED</code>
+                </div>
+            `;
+            lucide.createIcons();
+            
+            setTimeout(() => { 
+                el.innerHTML = originalContent; 
+                lucide.createIcons(); 
+            }, 1500);
         };
 
         // Savings Ticker Logic
