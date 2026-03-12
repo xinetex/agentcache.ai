@@ -62,6 +62,11 @@
                             <iconify-icon icon="solar:widget-linear" class="text-emerald-400"></iconify-icon>
                             Mission Control
                         </a>
+                        <a href="/drift-manifold.html"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors group">
+                            <iconify-icon icon="solar:globus-linear" class="group-hover:text-cyan-400"></iconify-icon>
+                            Drift Manifold
+                        </a>
                         <a href="#" onclick="switchTab('fleet'); return false;"
                             class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
                             <iconify-icon icon="solar:users-group-rounded-linear"></iconify-icon>
@@ -699,10 +704,10 @@
             <div>
                 <h3 class="text-sm font-medium text-gray-200 mb-3 tracking-tight flex items-center gap-2">
                     <iconify-icon icon="solar:shield-warning-linear" class="text-rose-400"></iconify-icon>
-                    Recent Security Events
+                    Immune System Activity
                 </h3>
                 <div id="threat-feed" class="glass rounded-xl p-4 space-y-3">
-                    <div class="text-center text-gray-500 text-xs py-4">Loading threat data...</div>
+                    <div class="text-center text-gray-500 text-xs py-4">Loading immune telemetry...</div>
                 </div>
             </div>
 
@@ -897,13 +902,21 @@
         function updateLiveActivity(events) {
             const feed = document.getElementById('live-activity-feed');
             if (!feed || !events.length) return;
-            const colors = { 'Rate Limit': 'bg-amber-500', 'Threat': 'bg-rose-500', default: 'bg-blue-500' };
+            const colors = { 
+                'Rate Limit': 'bg-amber-500', 
+                'Threat': 'bg-rose-500', 
+                'Antibody': 'bg-cyan-500',
+                'Duel': 'bg-purple-500',
+                'Healed': 'bg-emerald-500',
+                default: 'bg-blue-500' 
+            };
             feed.innerHTML = events.slice(0, 5).map(e => {
-                const color = Object.entries(colors).find(([k]) => e.reason?.includes(k))?.[1] || colors.default;
+                const color = Object.entries(colors).find(([k]) => e.reason?.includes(k) || e.type?.includes(k))?.[1] || colors.default;
                 const ago = Math.floor((Date.now() - e.timestamp) / 60000);
                 const agoText = ago < 1 ? 'just now' : ago < 60 ? `${ago}m ago` : `${Math.floor(ago/60)}h ago`;
-                return `<div class="flex gap-3"><div class="mt-1 w-2 h-2 rounded-full ${color} shrink-0"></div><div><div class="text-sm text-gray-300">Security Event</div><div class="text-xs text-gray-600 mt-1">${e.reason || 'Blocked'} — ${e.ip || 'unknown'}</div><div class="text-[10px] text-gray-700 mt-1">${agoText}</div></div></div>`;
-            }).join('') || '<div class="text-xs text-gray-600">No recent events</div>';
+                const label = e.type || 'Immune Event';
+                return `<div class="flex gap-3"><div class="mt-1 w-2 h-2 rounded-full ${color} shrink-0"></div><div><div class="text-sm text-gray-300">${label}</div><div class="text-xs text-gray-600 mt-1">${e.reason || 'Telemetry trace'} — ${e.sessionId || e.ip || 'global'}</div><div class="text-[10px] text-gray-700 mt-1">${agoText}</div></div></div>`;
+            }).join('') || '<div class="text-xs text-gray-600">No recent activity</div>';
         }
 
         // Auto-refresh hero every 30s

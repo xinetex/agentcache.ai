@@ -18,7 +18,7 @@ export const DEFAULT_CARDS = [
     // --- MISSION LANE (Hero + Problem/Solution) ---
     {
         id: 'mission-1', laneId: 'mission', template: 'hero',
-        data: { title: 'CACHE YOUR THOUGHTS', subtitle: 'ZERO LATENCY', content: 'Don\'t pay for the same thought twice. Cache reasoning, save 90%, and deploy instant AI.' }
+        data: { title: 'THE COGNITIVE OS', subtitle: 'AGENTIC ERA', content: 'The standard library for autonomous swarms. Add semantic memory, risk-aware governance, and an active immune system with one line of code.' }
     },
     {
         id: 'mission-problem-1', laneId: 'mission', template: 'hero',
@@ -44,11 +44,11 @@ export const DEFAULT_CARDS = [
     },
     {
         id: 'case-tools', laneId: 'usecases', template: 'standard',
-        data: { title: 'Tool Calls', subtitle: 'DETERMINISTIC', content: 'Perfect for weather, currency, and package lookups. 100% hit rate for identical tool calls.', image: '/assets/studio-dashboard.png' }
+        data: { title: 'Immune System', subtitle: 'ACTIVE DEFENSE', content: 'Detects "Cognitive Rot" and adversarial injections in real-time. Antibody Pulses harden the cache during attacks.', image: '/assets/studio-dashboard.png' }
     },
     {
         id: 'case-db', laneId: 'usecases', template: 'standard',
-        data: { title: 'DB Queries', subtitle: 'POSTGRES / SQL', content: 'Cache expensive SQL queries with a 5-minute TTL. Reduce database load instantly.', image: '/assets/studio-dashboard.png' }
+        data: { title: 'Healing', subtitle: 'TOPOLOGICAL', content: 'Active self-repair for agent drift. Re-embed nodes or inject corrective truth via Antibody Pulses.', image: '/assets/studio-dashboard.png' }
     },
     {
         id: 'case-embed', laneId: 'usecases', template: 'standard',

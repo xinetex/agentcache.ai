@@ -162,7 +162,8 @@
                 <h3 class="font-semibold text-white mb-3 text-sm uppercase tracking-wider text-emerald-400">Intelligence</h3>
                 <ul class="space-y-2 text-sm text-slate-400">
                   <li><a href="#smart-routing" class="hover:text-cyan-400 transition block py-1">Smart Routing</a></li>
-                  <li><a href="#drift-monitor" class="hover:text-cyan-400 transition block py-1">Drift Monitoring</a></li>
+                  <li><a href="#topological-healing" class="hover:text-cyan-400 transition block py-1">Topological Healing</a></li>
+                  <li><a href="#pathology-sandbox" class="hover:text-cyan-400 transition block py-1">Pathology Sandbox</a></li>
                   <li><a href="#predictive" class="hover:text-cyan-400 transition block py-1">Predictive Synapse</a></li>
                 </ul>
               </div>
@@ -270,6 +271,32 @@ response = client.chat.completions.create(
                   <li><strong>Provider Key (Header)</strong>: Your real LLM key (OpenAI/Anthropic), passed as <code>X-OpenAI-Key</code> or <code>X-Anthropic-Key</code>.</li>
                   <li><strong>Tenant ID</strong>: Use <code>X-Tenant-Id</code> to isolate vector indices in production.</li>
                 </ul>
+              </div>
+            </section>
+
+            <!-- Immune System -->
+            <section id="immune-system" class="mb-16 scroll-mt-24">
+              <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-rose-500/20 flex items-center justify-center">
+                  <i data-lucide="shield" class="w-5 h-5 text-rose-400"></i>
+                </div>
+                The Immune System
+              </h2>
+              <div class="glass rounded-xl p-6 border border-slate-800 space-y-6">
+                <p class="text-slate-300 leading-relaxed">
+                  Beyond passive caching, AgentCache implements an active <strong>Immune System</strong> for your agents. It detects "Cognitive Rot" and adversarial injections in real-time.
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="p-4 bg-slate-900/50 rounded-lg border border-slate-800">
+                    <div class="font-bold text-white mb-1">Antibody Hardening</div>
+                    <p class="text-xs text-slate-400 mt-2">Dynamically lowers drift thresholds (0.15 → 0.05) for flagged sessions to quarantine suspicious reasoning.</p>
+                  </div>
+                  <div class="p-4 bg-slate-900/50 rounded-lg border border-slate-800">
+                    <div class="font-bold text-white mb-1">Semantic Guardrails</div>
+                    <p class="text-xs text-slate-400 mt-2">Bypasses the cache and forces re-validation if semantic intent drifts outside allowed parameters.</p>
+                  </div>
+                </div>
               </div>
             </section>
 
@@ -389,15 +416,43 @@ response = client.chat.completions.create(
               <p class="text-slate-300 mb-4">Lateral knowledge sharing across agents. Join a circle to automatically benefit from the memory of other authorized agents in the same sector.</p>
             </section>
 
-            <!-- Drift Monitoring -->
-            <section id="drift-monitor" class="mb-16 scroll-mt-24">
+            <!-- Topological Healing -->
+            <section id="topological-healing" class="mb-16 scroll-mt-24">
               <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
                 <div class="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center">
-                  <i data-lucide="line-chart" class="w-5 h-5 text-yellow-400"></i>
+                  <i data-lucide="heart-pulse" class="w-5 h-5 text-yellow-400"></i>
                 </div>
-                Drift Monitoring
+                Topological Healing
               </h2>
-              <p class="text-slate-300">Monitors semantic intent evolution. Detects when an agent's reasoning anchor is drifting away from canonical domain exemplars.</p>
+              <p class="text-slate-300 leading-relaxed mb-6">
+                Agent memory isn't static. <strong>Topological Healing</strong> allows the system to actively repair "drifted" reasoning by re-embedding nodes or issuing corrective <strong>Antibody Pulses</strong> (re-prompting the agent with verified truth).
+              </p>
+              <div class="bg-slate-950/50 rounded-xl p-6 border border-slate-800">
+                <h3 class="text-sm font-semibold text-white mb-4 uppercase tracking-wider text-slate-500">Healing Strategies</h3>
+                <div class="space-y-4">
+                  <div class="flex gap-4">
+                    <div class="text-cyan-400 font-mono text-sm shrink-0">DROP</div>
+                    <div class="text-sm text-slate-400">Force a re-embedding of the memory node to realign it with current canonical truth.</div>
+                  </div>
+                  <div class="flex gap-4">
+                    <div class="text-rose-400 font-mono text-sm shrink-0">PULSE</div>
+                    <div class="text-sm text-slate-400">Inject a corrective "Antibody" context into the agent's prompt to break circular reasoning.</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Pathology Sandbox -->
+            <section id="pathology-sandbox" class="mb-16 scroll-mt-24">
+              <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                  <i data-lucide="flask-conical" class="w-5 h-5 text-purple-400"></i>
+                </div>
+                Pathology Sandbox
+              </h2>
+              <p class="text-slate-300">
+                Stress-test your agent against <strong>Pathological Personas</strong>. The sandbox simulates "Logic Duels" where adversarial agents attempt to corrupt your agent's core axioms (SOUL.md).
+              </p>
             </section>
 
             <!-- Predictive Synapse -->

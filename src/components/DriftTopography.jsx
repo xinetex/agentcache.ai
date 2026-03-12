@@ -11,7 +11,7 @@ import * as THREE from 'three';
 /**
  * DriftPoint - Represents a single drift event in 3D space
  */
-function DriftPoint({ event, index, total }) {
+function DriftPoint({ event, index, total, isSelected, onSelect }) {
   const mesh = useRef();
   
   // Project high-dim vector to 3D (Simple projection for visualization)
@@ -44,13 +44,19 @@ function DriftPoint({ event, index, total }) {
     if (mesh.current) {
       const time = state.clock.getElapsedTime();
       mesh.current.position.y = pos[1] + Math.sin(time + index) * 0.1;
-      mesh.current.scale.setScalar(1 + Math.sin(time * 2 + index) * 0.2);
+      mesh.current.scale.setScalar((isSelected ? 1.5 : 1) + Math.sin(time * 2 + index) * 0.2);
     }
   });
 
   return (
     <group position={pos}>
-      <mesh ref={mesh}>
+      <mesh 
+        ref={mesh} 
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelect(event);
+        }}
+      >
         <sphereGeometry args={[0.08, 16, 16]} />
         <meshStandardMaterial 
           color={color} 
@@ -125,7 +131,9 @@ function TopographyGrid() {
  */
 export default function DriftTopography({ active = true }) {
   const [events, setEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const [status, setStatus] = useState('connecting');
+  const [healing, setHealing] = useState(false);
   const maxEvents = 100;
 
   useEffect(() => {
@@ -156,6 +164,29 @@ export default function DriftTopography({ active = true }) {
     return () => source.close();
   }, [active]);
 
+  const handleHeal = async (strategy) => {
+    if (!selectedEvent || healing) return;
+    setHealing(true);
+    try {
+      const res = await fetch('/api/cognitive/heal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: selectedEvent.id, strategy })
+      });
+      const result = await res.json();
+      console.log('[DriftTopography] Heal result:', result);
+      if (result.success) {
+        // Optimistically update status
+        setEvents(prev => prev.map(e => e.id === selectedEvent.id ? { ...e, status: 'healthy', drift: 0 } : e));
+        setSelectedEvent(null);
+      }
+    } catch (err) {
+      console.error('[DriftTopography] Heal failed', err);
+    } finally {
+      setHealing(false);
+    }
+  };
+
   return (
     <div className="drift-topography-container" style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, zIndex: 0 }}>
       {/* HUD Info Overlay */}
@@ -181,6 +212,73 @@ export default function DriftTopography({ active = true }) {
         </div>
       </div>
 
+      {/* Selected Event Detail / Heal Controller */}
+      {selectedEvent && (
+        <div style={{ 
+          position: 'absolute', 
+          bottom: 40, 
+          right: 40, 
+          zIndex: 20, 
+          width: '300px',
+          background: 'rgba(10, 15, 25, 0.9)', 
+          border: '1px solid #1e293b',
+          borderTop: '4px solid #f59e0b',
+          padding: '20px',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+          color: 'white'
+        }}>
+          <div style={{ fontSize: '9px', color: '#666', marginBottom: '8px', letterSpacing: '1px' }}>LATENT ANOMALY DETECTED</div>
+          <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px' }}>Memory Node: {selectedEvent.id.slice(0, 8)}...</div>
+          <div style={{ fontSize: '12px', color: selectedEvent.status === 'dead' ? '#ef4444' : '#f59e0b', marginBottom: '15px' }}>
+            STATUS: {selectedEvent.status.toUpperCase()} ({(selectedEvent.drift * 100).toFixed(1)}% Drift)
+          </div>
+          
+          <div style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '15px', lineHeight: '1.4', background: 'rgba(0,0,0,0.3)', padding: '8px' }}>
+            <i>"The manifold is warping in this region. This node threatens reasoning integrity."</i>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <button 
+              onClick={() => handleHeal('drop')}
+              disabled={healing}
+              style={{
+                background: 'transparent',
+                border: '1px solid #06b6d4',
+                color: '#06b6d4',
+                padding: '8px',
+                fontSize: '10px',
+                cursor: 'pointer',
+                textTransform: 'uppercase'
+              }}
+            >
+              Re-Embed (Drop)
+            </button>
+            <button 
+              onClick={() => handleHeal('reprompt')}
+              disabled={healing}
+              style={{
+                background: 'transparent',
+                border: '1px solid #f59e0b',
+                color: '#f59e0b',
+                padding: '8px',
+                fontSize: '10px',
+                cursor: 'pointer',
+                textTransform: 'uppercase'
+              }}
+            >
+              Antibody Pulse
+            </button>
+          </div>
+          <button 
+            onClick={() => setSelectedEvent(null)}
+            style={{ width: '100%', marginTop: '10px', background: 'transparent', border: 'none', color: '#666', fontSize: '10px', cursor: 'pointer' }}
+          >
+            CANCEL FOCUS
+          </button>
+        </div>
+      )}
+
       <Canvas dpr={[1, 2]}>
         <PerspectiveCamera makeDefault position={[0, 5, 12]} fov={35} />
         <ambientLight intensity={0.5} />
@@ -197,6 +295,8 @@ export default function DriftTopography({ active = true }) {
               event={event} 
               index={idx} 
               total={events.length} 
+              isSelected={selectedEvent?.id === event.id}
+              onSelect={setSelectedEvent}
             />
           ))}
 

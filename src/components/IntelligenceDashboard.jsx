@@ -6,12 +6,12 @@ import './WorkspaceDashboard.css';
 import { DiscoveryFeed } from './DiscoveryFeed.jsx';
 import DriftTopography from './DriftTopography.jsx';
 
-const IntelligenceDashboard = ({ onBack }) => {
+const IntelligenceDashboard = ({ onBack, initialView = 'graph' }) => {
     const [data, setData] = useState({ nodes: [], links: [] });
     const [selectedNode, setSelectedNode] = useState(null);
     const [loading, setLoading] = useState(true);
     const [ingestInput, setIngestInput] = useState('');
-    const [viewMode, setViewMode] = useState('graph'); // 'graph', 'swarm', or 'topo'
+    const [viewMode, setViewMode] = useState(initialView); // 'graph', 'swarm', or 'topo'
     const [boids, setBoids] = useState([]);
     const [boidsConfig, setBoidsConfig] = useState({
         separationWeight: 1.5,

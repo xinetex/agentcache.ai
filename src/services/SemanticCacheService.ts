@@ -13,6 +13,7 @@ import { createHash } from 'crypto';
 import { stableHash } from '../lib/stable-json.js';
 import { cognitiveMemory } from './cognitive-memory.js';
 import { observabilityService } from './ObservabilityService.js';
+import { eventBus } from '../lib/event-bus.js';
 
 export interface CacheCheckResult {
     cached: boolean;
@@ -39,6 +40,22 @@ export interface CacheCheckResult {
  * Re-aligned with Phase 3 Cognitive/Predictive logic to satisfy contract tests.
  */
 export class SemanticCacheService {
+    private static antibodySessions = new Set<string>();
+
+    constructor() {
+        // Subscribe to antibody pulses for dynamic hardening
+        eventBus.subscribe((event) => {
+            if (event.type === 'antibody_pulse' && event.payload?.sessionId) {
+                console.log(`[SemanticCache] 🛡️ Antibody pulse received for session ${event.payload.sessionId}. Hardening defenses.`);
+                SemanticCacheService.antibodySessions.add(event.payload.sessionId);
+                
+                // Expiry pulse after 10 minutes
+                setTimeout(() => {
+                    SemanticCacheService.antibodySessions.delete(event.payload.sessionId);
+                }, 600000);
+            }
+        });
+    }
     
     /**
      * Generate a deterministic but semantic-aware key for a message history.
@@ -97,11 +114,16 @@ export class SemanticCacheService {
         let driftBypass = false;
         
         if (latestQuery) {
-            const driftResult = await cognitiveMemory.assessDrift(key);
+            const driftResult = await cognitiveMemory.assessDrift(key, false, params.sessionId);
             drift = driftResult.drift;
-            if (drift > 0.15) {
+            
+            // Phase 32: Dynamic Hardening (Antibody Response)
+            const threshold = SemanticCacheService.antibodySessions.has(params.sessionId || '') ? 0.05 : 0.15;
+            
+            if (drift > threshold) {
                 driftBypass = true;
-                console.log(`[Cognitive] ⚠️ Cache DRIFT detected (${(drift * 100).toFixed(1)}%). Bypassing for safety.`);
+                const reason = SemanticCacheService.antibodySessions.has(params.sessionId || '') ? 'ANTIBODY_HARDENING' : 'DRIFT';
+                console.log(`[Cognitive] ⚠️ Cache ${reason} detected (${(drift * 100).toFixed(1)}%). Bypassing for safety.`);
             }
         }
 

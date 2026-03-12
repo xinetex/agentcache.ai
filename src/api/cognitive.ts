@@ -80,6 +80,22 @@ cognitiveRouter.post('/drift', async (c) => {
   });
 });
 
+cognitiveRouter.post('/heal', async (c) => {
+  const authError = await authenticateApiKey(c);
+  if (authError) return authError;
+
+  const body = await c.req.json().catch(() => ({} as any));
+  const id = typeof body.id === 'string' ? body.id : '';
+  const strategy = (typeof body.strategy === 'string' ? body.strategy : 'drop') as 'drop' | 'reprompt' | 'mutate';
+
+  if (!id) {
+    return c.json({ error: 'id is required' }, 400);
+  }
+
+  const result = await cognitiveMemory.heal(id, strategy);
+  return c.json(result);
+});
+
 cognitiveRouter.post('/evolve', async (c) => {
   const authError = await authenticateApiKey(c);
   if (authError) return authError;

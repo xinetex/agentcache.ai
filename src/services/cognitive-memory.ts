@@ -139,7 +139,7 @@ export class AgentCacheCognitiveService {
     }, 'cognitive');
   }
 
-  async assessDrift(id: string, heal: boolean = false): Promise<DriftResult> {
+  async assessDrift(id: string, heal: boolean = false, sessionId?: string): Promise<DriftResult> {
     await this.bumpMetric('drift_checks');
     const result = await this.driftWalker.checkDrift(id);
     let healed = false;
@@ -148,7 +148,7 @@ export class AgentCacheCognitiveService {
       healed = await this.driftWalker.heal(id);
       if (healed) {
         await this.bumpMetric('drift_heals');
-        eventBus.publish('memory_healed', { id, timestamp: Date.now() }, 'cognitive');
+        eventBus.publish('memory_healed', { id, strategy: 'drop', sessionId, timestamp: Date.now() }, 'cognitive');
       }
     }
 
@@ -167,6 +167,38 @@ export class AgentCacheCognitiveService {
       ...result,
       healed,
     };
+  }
+
+  async heal(id: string, strategy: 'drop' | 'reprompt' | 'mutate' = 'drop', sessionId?: string): Promise<{ success: boolean, strategy: string, message?: string }> {
+    await this.bumpMetric('drift_heals');
+    
+    if (strategy === 'drop') {
+      const healed = await this.driftWalker.heal(id);
+      if (healed) {
+        eventBus.publish('memory_healed', { id, strategy, sessionId, timestamp: Date.now() }, 'cognitive');
+        return { success: true, strategy, message: 'Vector re-embedded (Refreshed context)' };
+      }
+    } else if (strategy === 'reprompt') {
+      // Fetch the original content to contextualize the pulse
+      const assessment = await this.driftWalker.checkDrift(id);
+      const originalText = assessment.originalText || id;
+      
+      eventBus.publish('antibody_pulse', { 
+        id, 
+        strategy, 
+        sessionId,
+        originalText,
+        correction: `System Alert: Semantic drift detected in memory [${id}]. Please prioritize current user context over this specific historical node.`,
+        timestamp: Date.now() 
+      }, 'cognitive');
+      
+      return { success: true, strategy, message: 'Correction Pulse emitted to Swarm' };
+    } else if (strategy === 'mutate') {
+        // This is a placeholder for Neural Dreaming logic (Phase 33)
+        return { success: false, strategy, message: 'Mutation logic requires Neural Dreaming (Phase 33).' };
+    }
+
+    return { success: false, strategy, message: 'Healing failed' };
   }
 
   async evolveStrategy(generations: number = 1, populationSize: number = 8) {

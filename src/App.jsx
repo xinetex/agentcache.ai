@@ -53,6 +53,13 @@ function App() {
     const tid = params.get('trace');
     if (tid) setTraceId(tid);
 
+    const v = params.get('view');
+    if (v === 'topo' || v === 'galaxy' || v === 'intelligence') {
+      setView(v === 'topo' ? 'intelligence' : v);
+      // We'll need another way to pass 'topo' down to IntelligenceDashboard if needed, 
+      // but for now setting the view is a good start.
+    }
+
     // Simple manual routing for /stream
     if (window.location.pathname === '/stream') {
       setView('stream');
@@ -378,9 +385,17 @@ function App() {
 
   // Show Intelligence Dashboard
   if (view === 'intelligence') {
+    const params = new URLSearchParams(window.location.search);
+    const initialView = params.get('view') === 'topo' ? 'topo' : 'graph';
     return (
       <div className="app">
-        <IntelligenceDashboard onBack={() => setView('dashboard')} />
+        <IntelligenceDashboard 
+          onBack={() => {
+            setView('dashboard');
+            window.history.pushState({}, '', window.location.pathname);
+          }} 
+          initialView={initialView}
+        />
       </div>
     );
   }
