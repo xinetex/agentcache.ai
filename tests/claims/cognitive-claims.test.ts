@@ -115,6 +115,7 @@ describe.sequential('AgentCache cognitive claim coverage', () => {
   it('DriftWalker detects semantic rot and heals the memory back to healthy state', async () => {
     const id = unique('claim-drift');
     const text = unique('memory-text');
+    const redisMock = createRedisMock();
 
     await upsertMemory(id, text, { query: text, claim: 'drift' });
     const fresh = await generateEmbedding(text);
@@ -125,7 +126,7 @@ describe.sequential('AgentCache cognitive claim coverage', () => {
       data: text,
     });
 
-    const service = new AgentCacheCognitiveService({ redis });
+    const service = new AgentCacheCognitiveService({ redis: redisMock as any });
     const beforeHeal = await service.assessDrift(id, true);
     const afterHeal = await service.assessDrift(id, false);
 

@@ -4,7 +4,7 @@
  * 
  * PROPRIETARY AND CONFIDENTIAL: 
  * This software and its documentation are the property of AgentCache.ai.
- * Unauthorized copying, distribution, or modification of this file, 
+ * Authorized copying, distribution, or modification of this file, 
  * via any medium, is strictly prohibited.
  */
 import { vectorIndex } from '../lib/vector.js';
@@ -20,15 +20,14 @@ export class DriftWalker {
     /**
      * Compute Cosine Similarity
      */
-    private cosineSimilarity(a: number[], b: number[]): number {
-        // [STABILITY GUARD] - Ensure vectors are valid before accessing .length
-        if (!a || !b) {
-            console.warn('[DriftWalker] cosineSimilarity: Received undefined/null vector(s)');
+    private cosineSimilarity(a: any, b: any): number {
+        // [CORRECTNESS GUARD] - Absolute type safety
+        if (!Array.isArray(a) || !Array.isArray(b)) {
+            console.warn('[DriftWalker] cosineSimilarity: Inputs are not arrays', { typeA: typeof a, typeB: typeof b });
             return 0;
         }
         
         if (a.length === 0 || b.length === 0) {
-            console.warn('[DriftWalker] cosineSimilarity: Received empty vector(s)');
             return 0;
         }
 
@@ -41,9 +40,9 @@ export class DriftWalker {
         let normA = 0;
         let normB = 0;
         for (let i = 0; i < a.length; i++) {
-            dot += a[i] * b[i];
-            normA += a[i] * a[i];
-            normB += b[i] * b[i];
+            dot += (a[i] || 0) * (b[i] || 0);
+            normA += (a[i] || 0) * (a[i] || 0);
+            normB += (b[i] || 0) * (b[i] || 0);
         }
         
         const denominator = Math.sqrt(normA) * Math.sqrt(normB);
@@ -59,8 +58,7 @@ export class DriftWalker {
         // 1. Fetch Stored Vector & Metadata
         const results = await this.index.fetch([id], { includeVectors: true, includeMetadata: true });
 
-        if (!results || results.length === 0 || !results[0]) {
-            console.warn(`[DriftWalker] Vector ID ${id} not found in index.`);
+        if (!results || !Array.isArray(results) || results.length === 0 || !results[0]) {
             return { drift: 1.0, status: 'dead' };
         }
 
@@ -69,20 +67,13 @@ export class DriftWalker {
         const storedMyVector = stored.vector;
 
         if (!originalText) {
-            console.warn(`[DriftWalker] No text metadata for ${id}. Cannot verify drift.`);
             return { drift: 0, status: 'healthy' };
         }
 
-        // 2. Generate Fresh Embedding (Current Truth)
+        // 2. Fresh Embedding
         const freshVector = await generateEmbedding(originalText);
 
-        // 3. Compare (Cosine Drift)
-        // Hard check before calling cosineSimilarity
-        if (!storedMyVector || !freshVector) {
-            console.error(`[DriftWalker] Failed to get vectors for comparison. ID: ${id}`);
-            return { drift: 1, status: 'dead', originalText };
-        }
-
+        // 3. Compare
         const similarity = this.cosineSimilarity(storedMyVector, freshVector);
         const drift = 1 - similarity;
 
@@ -94,7 +85,7 @@ export class DriftWalker {
     }
 
     /**
-     * Heal a drifted vector by overwriting it with the fresh one
+     * Heal a drifted vector
      */
     async heal(id: string, freshVector?: number[]): Promise<boolean> {
         if (!this.index) return false;
@@ -115,7 +106,6 @@ export class DriftWalker {
 
         if (!vectorToSave) return false;
 
-        // Overwrite
         await this.index.upsert({
             id,
             vector: vectorToSave,
