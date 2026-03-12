@@ -102,9 +102,22 @@ export function canAddPipelineNode(
   const maxNodes = getFeatureLimit(tierId, 'pipelineNodes');
 
   // -1 means unlimited
-  if (maxNodes === -1) return true;
-
   return currentNodeCount < maxNodes;
+}
+
+/**
+ * Check if adding an agent to a swarm is allowed
+ */
+export function canAddAgent(
+  tierId: string,
+  currentAgentCount: number
+): boolean {
+  const maxSlots = getFeatureLimit(tierId, 'agentSlots');
+
+  // -1 means unlimited
+  if (maxSlots === -1) return true;
+
+  return currentAgentCount < maxSlots;
 }
 
 /**

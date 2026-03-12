@@ -10,21 +10,21 @@
 const PLAN_METADATA = {
   free: {
     publicId: 'free',
-    displayName: 'Free',
+    displayName: 'Solo Pilot',
     quota: 10_000,
     upgradePlan: 'pro',
-    upgradeUrl: '/upgrade.html?plan=pro',
+    upgradeUrl: '/pricing.html',
   },
   pro: {
     publicId: 'pro',
-    displayName: 'Pro',
+    displayName: 'Swarm Fleet',
     quota: 1_000_000,
     upgradePlan: 'enterprise',
-    upgradeUrl: '/upgrade.html?plan=enterprise',
+    upgradeUrl: '/pricing.html',
   },
   enterprise: {
     publicId: 'enterprise',
-    displayName: 'Enterprise',
+    displayName: 'Cognitive Cluster',
     quota: 10_000_000,
     upgradePlan: null,
     upgradeUrl: '/pricing.html',

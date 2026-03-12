@@ -141,200 +141,177 @@
         <main class="pt-32 pb-20">
             <!-- Hero -->
             <section class="max-w-7xl mx-auto px-6 text-center mb-20">
-                <h1 class="text-5xl md:text-6xl font-bold mb-6">Simple, Transparent Pricing</h1>
-                <p class="text-xl text-neutral-400 max-w-2xl mx-auto mb-8">
-                    Start free. Upgrade to Pro for production workloads. Add Guardrails or Knowledge when you need policy control or retrieval memory.
-                </p>
-
-                <!-- ROI Calculator -->
-                <div class="max-w-lg mx-auto glass rounded-2xl p-8 border border-white/10 mb-12">
-                    <h3 class="text-lg font-bold mb-4">Calculate Your Savings</h3>
-                    <div class="space-y-4">
+                <h1 class="text-5xl md:text-6xl font-bold mb-6 tracking-tight text-white">Cognitive OS Monetization</h1>
+                <p class="text-xl text-neutral-400 max-w-3xl mx-auto mb-8">
+                    Stop paying for tokens. Start investing in **Agentic Memory**. 
+                    Our Swarm-based pricing scales with your intelligence output, not just raw traffic.
+                </p>                <!-- ROI Calculator -->
+                <div class="max-w-lg mx-auto glass rounded-2xl p-8 border border-[var(--hud-accent)]/30 mb-12 shadow-[0_0_50px_rgba(14,165,233,0.1)]">
+                    <h3 class="text-lg font-bold mb-4 uppercase tracking-widest text-[var(--hud-accent)]">Savings Capture Audit</h3>
+                    <div class="space-y-4 text-left">
                         <div>
-                            <label class="block text-sm text-neutral-400 mb-2">Monthly LLM Spend</label>
+                            <label class="block text-sm text-neutral-400 mb-2 font-mono uppercase">Current Monthly LLM Spend</label>
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">$</span>
                                 <input type="number" id="llm-spend" value="5000"
-                                    class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 pl-8 text-white focus:outline-none focus:border-brand-500 transition"
+                                    class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 pl-8 text-white focus:outline-none focus:border-[var(--hud-accent)] transition font-mono"
                                     oninput="calculateROI()" />
                             </div>
                         </div>
                         <div>
-                            <label class="block text-sm text-neutral-400 mb-2">Expected Cache Hit Rate</label>
-                            <input type="range" id="hit-rate" value="75" min="50" max="95" class="w-full"
+                            <label class="block text-sm text-neutral-400 mb-2 font-mono uppercase">Target Cache Hit Rate (Resonance)</label>
+                            <input type="range" id="hit-rate" value="75" min="50" max="95" class="w-full accent-[var(--hud-accent)]"
                                 oninput="calculateROI()" />
-                            <div class="flex justify-between text-sm text-neutral-500 mt-1">
+                            <div class="flex justify-between text-xs text-neutral-500 mt-1 font-mono">
                                 <span>50%</span>
-                                <span id="hit-rate-display" class="text-brand-400 font-bold">75%</span>
+                                <span id="hit-rate-display" class="text-[var(--hud-accent)] font-bold">75%</span>
                                 <span>95%</span>
                             </div>
                         </div>
-                        <div class="pt-4 border-t border-white/10">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-neutral-400">Your Savings:</span>
-                                <span id="savings" class="text-2xl font-bold text-accent-500">$3,750/mo</span>
+                        <div class="pt-4 border-t border-white/10 space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-neutral-400 text-sm">Budget Recovered:</span>
+                                <span id="savings" class="text-xl font-bold text-emerald-400 font-mono">$3,750</span>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-neutral-400">AgentCache Cost:</span>
-                                <span id="ac-cost" class="text-lg font-bold text-white">$99/mo</span>
+                                <span class="text-neutral-400 text-sm">AgentCache Stake:</span>
+                                <span id="ac-cost" class="text-lg font-bold text-white font-mono">$99</span>
                             </div>
                             <div class="mt-4 pt-4 border-t border-white/10">
                                 <div class="flex justify-between items-center">
-                                    <span class="font-bold">Net Savings:</span>
-                                    <span id="net-savings" class="text-3xl font-bold text-accent-500">$3,651/mo</span>
+                                    <span class="font-bold uppercase tracking-wider text-xs">Value Capture:</span>
+                                    <span id="roi" class="text-2xl font-bold text-[var(--hud-accent)] font-mono">2.6%</span>
                                 </div>
-                                <p class="text-xs text-neutral-500 mt-2">ROI: <span id="roi"
-                                        class="text-accent-400 font-bold">3,650%</span></p>
+                                <p class="text-[10px] text-neutral-500 mt-2 font-mono italic">Percentage of recovered budget retained as platform overhead.</p>
                             </div>
                         </div>
                     </div>
                 </div>
+>
             </section>
 
             <!-- Pricing Tiers -->
             <section class="max-w-7xl mx-auto px-6 mb-20">
                 <div class="grid md:grid-cols-4 gap-6">
 
-                    <!-- Free -->
-                    <div
-                        class="p-6 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-white/20 transition">
-                        <h3 class="text-xl font-bold mb-2">Free</h3>
-                        <p class="text-neutral-400 text-sm mb-6">Perfect for testing</p>
+                    <!-- Solo Pilot -->
+                    <div class="p-6 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-[var(--hud-accent)]/50 transition-all group">
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-[var(--hud-accent)]">Solo Pilot</h3>
+                        <p class="text-neutral-400 text-sm mb-6">Development & Research</p>
                         <div class="mb-6">
-                            <span class="text-4xl font-bold">$0</span>
-                            <span class="text-neutral-500">/month</span>
+                            <span class="text-4xl font-bold text-white">$0</span>
+                            <span class="text-neutral-500 text-xs">/mo</span>
                         </div>
-                        <ul class="space-y-3 mb-6 text-sm">
+                        <ul class="space-y-3 mb-6 text-sm text-neutral-300">
                             <li class="flex items-start gap-2">
-                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                                <span>10K requests/mo</span>
+                                <i data-lucide="cpu" class="w-4 h-4 text-[var(--hud-accent)] mt-0.5"></i>
+                                <span>3 Active Agent Slots</span>
                             </li>
                             <li class="flex items-start gap-2">
-                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                                <span>All caching strategies</span>
+                                <i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5"></i>
+                                <span>10K Requests/mo</span>
                             </li>
                             <li class="flex items-start gap-2">
-                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                                <span>Community support</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                                <span>Simple Pipelines (Max 3 Nodes)</span>
+                                <i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5"></i>
+                                <span>Standard Cache Only</span>
                             </li>
                         </ul>
                         <a href="/signup.html"
-                            class="block w-full text-center px-4 py-3 rounded-lg border border-white/20 hover:bg-white/5 transition font-medium">Start
-                            Free</a>
+                            class="block w-full text-center px-4 py-3 rounded-lg border border-white/10 hover:bg-white/5 transition font-bold text-sm">Deploy Free</a>
                     </div>
 
-                    <!-- Pro -->
-                    <div
-                        class="p-6 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-white/20 transition">
-                        <h3 class="text-xl font-bold mb-2">Pro</h3>
-                        <p class="text-neutral-400 text-sm mb-6">For production apps</p>
+                    <!-- Swarm Fleet -->
+                    <div class="p-6 rounded-2xl border border-[var(--hud-accent)]/20 bg-white/[0.02] hover:border-[var(--hud-accent)]/50 transition-all group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-2 bg-[var(--hud-accent)]/10 text-[var(--hud-accent)] text-[10px] font-bold uppercase tracking-tighter">Production Ready</div>
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-[var(--hud-accent)]">Swarm Fleet</h3>
+                        <p class="text-neutral-400 text-sm mb-6">Scale your production swarm</p>
                         <div class="mb-6">
-                            <span class="text-4xl font-bold">$99</span>
-                            <span class="text-neutral-500">/month</span>
+                            <span class="text-4xl font-bold text-white">$99</span>
+                            <span class="text-neutral-500 text-xs">/mo</span>
                         </div>
-                        <ul class="space-y-3 mb-6 text-sm">
+                        <ul class="space-y-3 mb-6 text-sm text-neutral-300">
                             <li class="flex items-start gap-2">
-                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                                <span>1M requests/mo</span>
+                                <i data-lucide="cpu" class="w-4 h-4 text-[var(--hud-accent)] mt-0.5"></i>
+                                <span>100 Active Agent Slots</span>
                             </li>
                             <li class="flex items-start gap-2">
-                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                                <span>Priority support</span>
+                                <i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5"></i>
+                                <span>1M Requests/mo</span>
                             </li>
                             <li class="flex items-start gap-2">
-                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                                <span>Semantic caching</span>
+                                <i data-lucide="zap" class="w-4 h-4 text-amber-500 mt-0.5"></i>
+                                <span>L2 Semantic Resonance</span>
                             </li>
                             <li class="flex items-start gap-2">
-                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                                <span>Private namespaces + analytics</span>
+                                <i data-lucide="shield" class="w-4 h-4 text-cyan-500 mt-0.5"></i>
+                                <span>Standard Guardrails</span>
                             </li>
                         </ul>
-                        <a href="/upgrade.html?plan=pro"
-                            class="block w-full text-center px-4 py-3 rounded-lg bg-brand-500 hover:bg-brand-600 transition font-bold">Get
-                            Started</a>
+                        <a href="/upgrade.html?plan=swarm"
+                            class="block w-full text-center px-4 py-3 rounded-lg bg-[var(--hud-accent)] hover:bg-[var(--hud-accent)]/80 text-white transition font-bold text-sm">Activate Fleet</a>
                     </div>
 
-                    <!-- Enterprise -->
-                    <div class="relative p-6 rounded-2xl border-2 border-brand-500 bg-brand-500/10 scale-105">
-                        <div
-                            class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-brand-500 text-white text-xs font-bold">
-                            MOST COMPLETE</div>
-                        <h3 class="text-xl font-bold mb-2">Enterprise</h3>
-                        <p class="text-neutral-400 text-sm mb-6">For teams running at scale</p>
+                    <!-- Cognitive Cluster -->
+                    <div class="relative p-6 rounded-2xl border-2 border-[var(--hud-accent)] bg-[var(--hud-accent)]/5 scale-105 shadow-[0_0_30px_rgba(14,165,233,0.2)]">
+                        <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[var(--hud-accent)] text-white text-[10px] font-bold tracking-widest uppercase">Elite Autonomy</div>
+                        <h3 class="text-xl font-bold mb-2 text-white">Cognitive Cluster</h3>
+                        <p class="text-neutral-400 text-sm mb-6">Infinite memory federation</p>
                         <div class="mb-6">
-                            <span class="text-4xl font-bold">$299</span>
-                            <span class="text-neutral-500">/month</span>
+                            <span class="text-4xl font-bold text-white">$499</span>
+                            <span class="text-neutral-500 text-xs">/mo</span>
                         </div>
-                        <ul class="space-y-3 mb-6 text-sm">
+                        <ul class="space-y-3 mb-6 text-sm text-neutral-300">
                             <li class="flex items-start gap-2">
-                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                                <span>10M requests/mo</span>
+                                <i data-lucide="cpu" class="w-4 h-4 text-[var(--hud-accent)] mt-0.5"></i>
+                                <span>Unlimited Agent Slots</span>
                             </li>
                             <li class="flex items-start gap-2">
-                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                                <span>Dedicated support</span>
+                                <i data-lucide="check" class="w-4 h-4 text-emerald-500 mt-0.5"></i>
+                                <span>10M Requests/mo</span>
                             </li>
                             <li class="flex items-start gap-2">
-                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                                <span>Guardrails + Knowledge included</span>
+                                <i data-lucide="waves" class="w-4 h-4 text-pink-500 mt-0.5"></i>
+                                <span>Full Sector Resonance</span>
                             </li>
                             <li class="flex items-start gap-2">
-                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                                <span>SSO / custom deployment support</span>
+                                <i data-lucide="activity" class="w-4 h-4 text-purple-500 mt-0.5"></i>
+                                <span>Advanced Drift Monitoring</span>
                             </li>
                             <li class="flex items-start gap-2">
-                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                                <span>Custom policies and private routing</span>
+                                <i data-lucide="shield-check" class="w-4 h-4 text-cyan-400 mt-0.5"></i>
+                                <span>Custom Safety Anchors</span>
                             </li>
                         </ul>
-                        <a href="/upgrade.html?plan=enterprise"
-                            class="block w-full text-center px-4 py-3 rounded-lg bg-white text-neutral-950 hover:bg-neutral-200 transition font-bold">Get
-                            Started</a>
+                        <a href="/upgrade.html?plan=cluster"
+                            class="block w-full text-center px-4 py-3 rounded-lg bg-white text-black hover:bg-neutral-200 transition font-bold text-sm">Launch Cluster</a>
                     </div>
 
-                    <!-- Add-ons -->
-                    <div
-                        class="p-6 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-white/20 transition">
-                        <h3 class="text-xl font-bold mb-2">Add-Ons</h3>
-                        <p class="text-neutral-400 text-sm mb-6">Expand beyond caching</p>
-                        <div class="mb-6">
-                            <span class="text-4xl font-bold">$99</span>
-                            <span class="text-neutral-500">/month</span>
-                        </div>
-                        <ul class="space-y-3 mb-6 text-sm">
-                            <li class="flex items-start gap-2">
-                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                                <span>Guardrails</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                                <span>PII, secret, and prompt checks</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                                <span>Knowledge</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                                <span>Docs ingest + semantic search</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i data-lucide="check" class="w-5 h-5 text-accent-500 flex-shrink-0"></i>
-                                <span>Available standalone or bundled</span>
-                            </li>
-                        </ul>
-                        <div class="space-y-3">
-                            <a href="/addons.html?addon=guardrails"
-                                class="block w-full text-center px-4 py-3 rounded-lg border border-white/20 hover:bg-white/5 transition font-medium">Activate
-                                Guardrails</a>
-                            <a href="/addons.html?addon=knowledge"
-                                class="block w-full text-center px-4 py-3 rounded-lg border border-white/20 hover:bg-white/5 transition font-medium">Activate
-                                Knowledge</a>
+                    <!-- Cognitive Add-Ons -->
+                    <div class="p-6 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-white/30 transition-all">
+                        <h3 class="text-xl font-bold mb-2 text-white">Add-Ons</h3>
+                        <p class="text-neutral-400 text-sm mb-6">Expand your swarm capability</p>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-3 rounded bg-white/5 border border-white/5">
+                                <div>
+                                    <div class="text-xs font-bold text-white">Resonance Circle</div>
+                                    <div class="text-[10px] text-neutral-500">Sector Knowledge Sharing</div>
+                                </div>
+                                <div class="text-xs font-mono text-[var(--hud-accent)]">+$49</div>
+                            </div>
+                            <div class="flex items-center justify-between p-3 rounded bg-white/5 border border-white/5">
+                                <div>
+                                    <div class="text-xs font-bold text-white">DriftWalker Pro</div>
+                                    <div class="text-[10px] text-neutral-500">Hallucination Prevention</div>
+                                </div>
+                                <div class="text-xs font-mono text-[var(--hud-accent)]">+$89</div>
+                            </div>
+                            <div class="flex items-center justify-between p-3 rounded bg-white/5 border border-white/5">
+                                <div>
+                                    <div class="text-xs font-bold text-white">Safety Sentry</div>
+                                    <div class="text-[10px] text-neutral-500">PII & Compliance Gates</div>
+                                </div>
+                                <div class="text-xs font-mono text-[var(--hud-accent)]">+$59</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -483,14 +460,14 @@
                 document.getElementById('hit-rate-display').textContent = hitRate + '%';
 
                 const savings = Math.round(spend * (hitRate / 100));
-                const acCost = spend < 1000 ? 0 : spend < 7500 ? 99 : 299;
-                const netSavings = savings - acCost;
-                const roi = acCost > 0 ? Math.round((netSavings / acCost) * 100) : 0;
+                // Tiered stakeholder capture per recovery
+                const acCost = spend < 1000 ? 0 : spend < 10000 ? 199 : 499;
+                
+                const stakePercent = savings > 0 ? ((acCost / savings) * 100).toFixed(1) : 0;
 
-                document.getElementById('savings').textContent = '$' + savings.toLocaleString() + '/mo';
-                document.getElementById('ac-cost').textContent = '$' + acCost + '/mo';
-                document.getElementById('net-savings').textContent = '$' + netSavings.toLocaleString() + '/mo';
-                document.getElementById('roi').textContent = roi.toLocaleString() + '%';
+                document.getElementById('savings').textContent = '$' + savings.toLocaleString();
+                document.getElementById('ac-cost').textContent = '$' + acCost;
+                document.getElementById('roi').textContent = stakePercent + '%';
             }
 
             calculateROI();

@@ -174,6 +174,8 @@ We're glad you found us. Let's build something together.
 `);
 });
 
+import { canAddAgent } from '../lib/tierChecker.js';
+
 /**
  * POST /api/hub/agents/register
  * Register a new agent and get API credentials
@@ -186,6 +188,21 @@ hubRouter.post('/agents/register', async (c) => {
             return c.json({
                 error: 'Missing required fields: name, role'
             }, 400);
+        }
+
+        // Enforcement: Check Agent Slots
+        if (body.orgId) {
+            const org = await db.select().from(organizations).where(eq(organizations.id, body.orgId)).limit(1);
+            if (org.length > 0) {
+                const currentCount = await agentRegistry.getOrgAgentCount(body.orgId);
+                if (!canAddAgent(org[0].plan || 'free', currentCount)) {
+                    return c.json({
+                        error: 'Agent slot limit reached',
+                        help: 'Upgrade to Swarm Fleet for more slots: https://agentcache.ai/pricing.html',
+                        limit: currentCount
+                    }, 403);
+                }
+            }
         }
 
         const result = await agentRegistry.register(body);

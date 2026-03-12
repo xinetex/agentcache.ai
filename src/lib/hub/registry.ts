@@ -40,6 +40,7 @@ export interface AgentRegistration {
     wallet?: string;
     environment?: 'production' | 'staging' | 'sandbox' | 'development';
     modelBackend?: string;
+    orgId?: string;
 }
 
 export interface AgentSearchCriteria {
@@ -118,6 +119,7 @@ export class AgentRegistry {
         const profile = createAgentProfile(agentId, data.name, data.role, {
             domain: data.domain || [],
             environment: data.environment || 'production',
+            organization: data.orgId,
             strengths: data.capabilities || [],
             modelBackend: data.modelBackend
         });
@@ -288,6 +290,19 @@ export class AgentRegistry {
     async getCount(): Promise<number> {
         if (useMemoryRegistry()) return registry.size;
         const rows = await db.select().from(hubAgents);
+        return rows.length;
+    }
+
+    /**
+     * Get agent count for an organization
+     */
+    async getOrgAgentCount(orgId: string): Promise<number> {
+        if (useMemoryRegistry()) {
+            return Array.from(registry.values()).filter(a => a.organization === orgId).length;
+        }
+        const rows = await db.select()
+            .from(hubAgents)
+            .where(eq(hubAgents.organization, orgId));
         return rows.length;
     }
 

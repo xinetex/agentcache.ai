@@ -25,6 +25,7 @@ export interface TierFeatures {
   pipelineNodes: number; // -1 = unlimited
   customNodes: boolean;
   privateNamespace: boolean;
+  agentSlots: number; // New metric: Max active agents in swarm
   sso?: boolean;
   onPremise?: boolean;
 }
@@ -42,7 +43,7 @@ export interface Tier {
 export const TIERS: Record<string, Tier> = {
   FREE: {
     id: 'free',
-    name: 'Free',
+    name: 'Solo Pilot',
     price: 0,
     quota: 10_000, // 10K requests/month
     features: {
@@ -53,17 +54,18 @@ export const TIERS: Record<string, Tier> = {
       support: 'community',
       antiCache: true,
       overflow: true,
-      pipelineNodes: 3, // max 3 nodes per pipeline
+      pipelineNodes: 3, 
       customNodes: false,
-      privateNamespace: false
+      privateNamespace: false,
+      agentSlots: 3
     }
   },
   PRO: {
     id: 'pro',
-    name: 'Pro',
+    name: 'Swarm Fleet',
     price: 99, // $99/month
     quota: 1_000_000, // 1M requests/month
-    stripeMonthlyPriceId: process.env.STRIPE_PRICE_PRO_MONTHLY || 'price_pro_monthly',
+    stripeMonthlyPriceId: process.env.STRIPE_PRICE_PRO_MONTHLY || 'price_1SW7YHAjvdndXr9TfNQ3C8ct',
     stripeYearlyPriceId: process.env.STRIPE_PRICE_PRO_YEARLY || 'price_pro_yearly',
     features: {
       cacheTypes: ['llm', 'tool', 'db', 'embedding', 'semantic'],
@@ -73,16 +75,18 @@ export const TIERS: Record<string, Tier> = {
       support: 'priority',
       antiCache: true,
       overflow: true,
-      pipelineNodes: 20, // max 20 nodes per pipeline
+      pipelineNodes: 20,
       customNodes: false,
-      privateNamespace: true
+      privateNamespace: true,
+      agentSlots: 100
     }
   },
   ENTERPRISE: {
     id: 'enterprise',
-    name: 'Enterprise',
-    price: 299, // $299/month
+    name: 'Cognitive Cluster',
+    price: 499, // $499/month
     quota: 10_000_000, // 10M requests/month
+    stripeMonthlyPriceId: process.env.STRIPE_PRICE_BUSINESS || 'price_1SW7YHAjvdndXr9TXD41MUq8',
     features: {
       cacheTypes: 'all',
       namespaces: -1, // Unlimited
@@ -94,6 +98,7 @@ export const TIERS: Record<string, Tier> = {
       pipelineNodes: -1, // Unlimited
       customNodes: true,
       privateNamespace: true,
+      agentSlots: -1, // Unlimited
       sso: true,
       onPremise: true
     }

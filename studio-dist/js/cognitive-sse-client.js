@@ -37,10 +37,17 @@ class CognitiveSSEClient {
     };
 
     this.eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+      let data = JSON.parse(event.data);
       
-      if (data.type === 'connected') {
-        console.log('SSE connection established:', data.message);
+      // Handle AgentEvent wrapping (payload)
+      if (data.payload && data.type) {
+        // Flatten for existing handlers if they expect the payload properties at root
+        const type = data.type;
+        data = { ...data.payload, type };
+      }
+
+      if (data.type === 'sys:connected' || data.type === 'connected') {
+        console.log('SSE connection established:', data.message || 'Ready');
         return;
       }
 

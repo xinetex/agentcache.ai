@@ -1,0 +1,1203 @@
+> [debug] [2026-03-12T03:37:55.265Z] Found config in file "/Users/letstaco/Documents/agentcache-ai/vercel.json"
+Vercel CLI 48.4.0
+> [debug] [2026-03-12T03:37:55.270Z] user supplied known subcommand: "build"
+> [debug] [2026-03-12T03:37:55.333Z] Setting target to production
+> [debug] [2026-03-12T03:37:55.373Z] Found ".git/config" - detected "/Users/letstaco/Documents/agentcache-ai" as repo root
+WARN! Build not running on Vercel. System environment variables will not be available.
+> [debug] [2026-03-12T03:37:55.879Z] Failed loading environment variables: Error: ENOENT: no such file or directory, open '/Users/letstaco/Documents/agentcache-ai/.vercel/.env.production.local'
+> [debug] [2026-03-12T03:37:55.893Z] Locating files /Users/letstaco/Documents/agentcache-ai
+> [debug] [2026-03-12T03:37:55.894Z] Ignoring /Users/letstaco/Documents/agentcache-ai/.DS_Store
+> [debug] [2026-03-12T03:37:55.895Z] Ignoring /Users/letstaco/Documents/agentcache-ai/.dockerignore
+> [debug] [2026-03-12T03:37:55.895Z] Ignoring /Users/letstaco/Documents/agentcache-ai/.env
+> [debug] [2026-03-12T03:37:55.895Z] Ignoring /Users/letstaco/Documents/agentcache-ai/.env.example
+> [debug] [2026-03-12T03:37:55.895Z] Ignoring /Users/letstaco/Documents/agentcache-ai/.env.example.jetty
+> [debug] [2026-03-12T03:37:55.895Z] Ignoring /Users/letstaco/Documents/agentcache-ai/.env.local
+> [debug] [2026-03-12T03:37:55.895Z] Ignoring /Users/letstaco/Documents/agentcache-ai/.env.lyve
+> [debug] [2026-03-12T03:37:55.895Z] Ignoring /Users/letstaco/Documents/agentcache-ai/.env.production
+> [debug] [2026-03-12T03:37:55.895Z] Ignoring /Users/letstaco/Documents/agentcache-ai/.env.vercel
+> [debug] [2026-03-12T03:37:55.895Z] Ignoring /Users/letstaco/Documents/agentcache-ai/.env.vercel_check
+> [debug] [2026-03-12T03:37:55.895Z] Ignoring /Users/letstaco/Documents/agentcache-ai/.env.vercel_check_2
+> [debug] [2026-03-12T03:37:55.895Z] Ignoring /Users/letstaco/Documents/agentcache-ai/.env.vercel_prod
+> [debug] [2026-03-12T03:37:55.895Z] Ignoring /Users/letstaco/Documents/agentcache-ai/.git
+> [debug] [2026-03-12T03:37:55.895Z] Ignoring /Users/letstaco/Documents/agentcache-ai/.gitignore
+> [debug] [2026-03-12T03:37:55.895Z] Ignoring /Users/letstaco/Documents/agentcache-ai/.venv
+> [debug] [2026-03-12T03:37:55.895Z] Ignoring /Users/letstaco/Documents/agentcache-ai/.vercel
+> [debug] [2026-03-12T03:37:55.896Z] Ignoring /Users/letstaco/Documents/agentcache-ai/node_modules
+> [debug] [2026-03-12T03:37:55.896Z] Ignoring /Users/letstaco/Documents/agentcache-ai/output.log
+> [debug] [2026-03-12T03:37:55.896Z] Ignoring /Users/letstaco/Documents/agentcache-ai/server.log
+> [debug] [2026-03-12T03:37:55.896Z] Ignoring /Users/letstaco/Documents/agentcache-ai/server_manual.log
+> [debug] [2026-03-12T03:37:55.896Z] Ignoring /Users/letstaco/Documents/agentcache-ai/server_v2.log
+> [debug] [2026-03-12T03:37:55.896Z] Ignoring /Users/letstaco/Documents/agentcache-ai/server_v3.log
+> [debug] [2026-03-12T03:37:55.896Z] Ignoring /Users/letstaco/Documents/agentcache-ai/server_v4.log
+> [debug] [2026-03-12T03:37:55.897Z] Ignoring /Users/letstaco/Documents/agentcache-ai/ts_errors.log
+> [debug] [2026-03-12T03:37:55.897Z] Ignoring /Users/letstaco/Documents/agentcache-ai/ts_errors_final.log
+> [debug] [2026-03-12T03:37:55.897Z] Ignoring /Users/letstaco/Documents/agentcache-ai/ts_errors_v10.log
+> [debug] [2026-03-12T03:37:55.897Z] Ignoring /Users/letstaco/Documents/agentcache-ai/ts_errors_v2.log
+> [debug] [2026-03-12T03:37:55.897Z] Ignoring /Users/letstaco/Documents/agentcache-ai/ts_errors_v3.log
+> [debug] [2026-03-12T03:37:55.897Z] Ignoring /Users/letstaco/Documents/agentcache-ai/ts_errors_v4.log
+> [debug] [2026-03-12T03:37:55.897Z] Ignoring /Users/letstaco/Documents/agentcache-ai/ts_errors_v5.log
+> [debug] [2026-03-12T03:37:55.897Z] Ignoring /Users/letstaco/Documents/agentcache-ai/ts_errors_v6.log
+> [debug] [2026-03-12T03:37:55.897Z] Ignoring /Users/letstaco/Documents/agentcache-ai/ts_errors_v7.log
+> [debug] [2026-03-12T03:37:55.897Z] Ignoring /Users/letstaco/Documents/agentcache-ai/ts_errors_v8.log
+> [debug] [2026-03-12T03:37:55.897Z] Ignoring /Users/letstaco/Documents/agentcache-ai/ts_errors_v9.log
+> [debug] [2026-03-12T03:37:55.898Z] Ignoring /Users/letstaco/Documents/agentcache-ai/api/brain
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/_archive
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/about.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/addons.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/admin-reset.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/admin.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/agents.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/analytics.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/assets
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/blog
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/blog-index.json
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/blog-styler.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/blog.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/brain.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/case-study-food-delivery.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/case-study-mdap.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/cdn-down.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/changelog.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/chat.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/cognitive-universe-old.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/cognitive-universe.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/community.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/components
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/composer-v2.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/composer.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/constraints.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/contact.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/cookie.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/css
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/daily.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/dashboard-local.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/dashboard-old.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/dashboard.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/dashboards
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/data
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/data.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/demo-live.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/demo.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/docs
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/docs.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/dynamicview-renderer.js
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/enterprise-filestorage.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/favicon.ico
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/forgot-password.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/get-key.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/global-cache-study.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/gov-portal.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/grid.svg
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/hub.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/image-gen.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/index-legacy.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/index-old-backup.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/index-old.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/index-premium.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/index-rsvp.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/index-v2.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/index-v3.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/index.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/integrations
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/js
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/lab-visualizer.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/login.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/md.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/mission-control.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/mission-control_legacy.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/mobile-auth.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/observatory.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/onboarding.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/pipeline-studio.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/pipelines.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/portal-dashboard.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/post.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/pricing.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/privacy.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/proxy.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/public
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/q4-2025-ai-dev-update.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/reset-password.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/robots.txt
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/sector.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/security.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/services.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/settings.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/signup.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/sitemap.xml
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/skill.md
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/spelling.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/status.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/storage
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/studio.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/success.html
+> [debug] [2026-03-12T03:37:55.899Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/swarm-observability.html
+> [debug] [2026-03-12T03:37:55.900Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/tactical.html
+> [debug] [2026-03-12T03:37:55.900Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/team.html
+> [debug] [2026-03-12T03:37:55.900Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/templates
+> [debug] [2026-03-12T03:37:55.900Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/terms.html
+> [debug] [2026-03-12T03:37:55.900Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/thanks.html
+> [debug] [2026-03-12T03:37:55.900Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/topoff.html
+> [debug] [2026-03-12T03:37:55.900Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/tour.js
+> [debug] [2026-03-12T03:37:55.900Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/upgrade.html
+> [debug] [2026-03-12T03:37:55.900Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/user-dashboard.html
+> [debug] [2026-03-12T03:37:55.900Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/verify-swarm.json
+> [debug] [2026-03-12T03:37:55.900Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/visualizations.html
+> [debug] [2026-03-12T03:37:55.900Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/widgets
+> [debug] [2026-03-12T03:37:55.900Z] Ignoring /Users/letstaco/Documents/agentcache-ai/dist/workflows.html
+> [debug] [2026-03-12T03:37:55.900Z] Ignoring /Users/letstaco/Documents/agentcache-ai/examples/.DS_Store
+> [debug] [2026-03-12T03:37:55.900Z] Ignoring /Users/letstaco/Documents/agentcache-ai/logs/blog-automation-error.log
+> [debug] [2026-03-12T03:37:55.900Z] Ignoring /Users/letstaco/Documents/agentcache-ai/logs/blog-automation.log
+> [debug] [2026-03-12T03:37:55.900Z] Ignoring /Users/letstaco/Documents/agentcache-ai/docs/.DS_Store
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_analytics.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_api_keys.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_api_sentinel.js
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_auth.js
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_backbone.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_bancache.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_biotech.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_chat.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_chat_api.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_coder.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_cognitive_awakening.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_collective_trust.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_compliance.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_constraints.js
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_cvs_v1.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_data_manager.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_distress.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_docs.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_external_check.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_finance.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_governance.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_gtm_metrics.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_hardened_extraction.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_history.js
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_hologram.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_image_gen.js
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_injection_protection.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_inngest_build.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_integrations.js
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_intervention_gate.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_kimi_wiring.js
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_limiter.js
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_llm_providers.js
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_marketplace.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_memvid.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_monetization.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_motion.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_payment.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_phase_11.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_phase_14.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_phase_3_6.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_phase_3_7.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_phase_4_1.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_phase_4_2.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_phase_8.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_pii.js
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_pipeline.js
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_policy.js
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_python_swarm.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_redis_refactor.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_researcher.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_resonance.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_risk_intel.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_robotics.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_router.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_saas_flow.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_sdk_resonance.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_semantic_cache.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_sentinel.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_sentry.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_settings.js
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_settings.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_spelling.js
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_stream.js
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_stripe.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_studio_api.js
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_studio_integration.js
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_swarm_wiring.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_tool_cache.js
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_triad.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_triage.ts
+> [debug] [2026-03-12T03:37:55.905Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_unified_swarm.ts
+> [debug] [2026-03-12T03:37:55.906Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_universal_recovery.ts
+> [debug] [2026-03-12T03:37:55.906Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_wallet_auth.ts
+> [debug] [2026-03-12T03:37:55.906Z] Ignoring /Users/letstaco/Documents/agentcache-ai/scripts/verify_workflow.ts
+> [debug] [2026-03-12T03:37:55.906Z] Ignoring /Users/letstaco/Documents/agentcache-ai/tests/.DS_Store
+> [debug] [2026-03-12T03:37:55.906Z] Ignoring /Users/letstaco/Documents/agentcache-ai/transcoder-service/.venv
+> [debug] [2026-03-12T03:37:55.906Z] Ignoring /Users/letstaco/Documents/agentcache-ai/transcoder-service/__pycache__
+> [debug] [2026-03-12T03:37:55.909Z] Ignoring /Users/letstaco/Documents/agentcache-ai/examples/pipeline_code_and_images/.DS_Store
+> [debug] [2026-03-12T03:37:55.910Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/cli/node_modules
+> [debug] [2026-03-12T03:37:55.910Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/client/.gitignore
+> [debug] [2026-03-12T03:37:55.910Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/client/.npmignore
+> [debug] [2026-03-12T03:37:55.910Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/client/node_modules
+> [debug] [2026-03-12T03:37:55.910Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/lite/node_modules
+> [debug] [2026-03-12T03:37:55.910Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/standard/node_modules
+> [debug] [2026-03-12T03:37:55.910Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/node-sdk/node_modules
+> [debug] [2026-03-12T03:37:55.911Z] Ignoring /Users/letstaco/Documents/agentcache-ai/sdk-python/agentcache/__pycache__
+> [debug] [2026-03-12T03:37:55.911Z] Ignoring /Users/letstaco/Documents/agentcache-ai/sdk-python/dist/agentcache-0.3.0-py3-none-any.whl
+> [debug] [2026-03-12T03:37:55.912Z] Ignoring /Users/letstaco/Documents/agentcache-ai/sdk-python/dist/agentcache-0.3.0.tar.gz
+> [debug] [2026-03-12T03:37:55.919Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/client/dist/index.d.mts
+> [debug] [2026-03-12T03:37:55.919Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/client/dist/index.d.ts
+> [debug] [2026-03-12T03:37:55.919Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/client/dist/index.js
+> [debug] [2026-03-12T03:37:55.919Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/client/dist/index.mjs
+> [debug] [2026-03-12T03:37:55.919Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/lite/dist/index.d.mts
+> [debug] [2026-03-12T03:37:55.920Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/lite/dist/index.d.ts
+> [debug] [2026-03-12T03:37:55.920Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/lite/dist/index.js
+> [debug] [2026-03-12T03:37:55.920Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/lite/dist/index.mjs
+> [debug] [2026-03-12T03:37:55.920Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/python-sdk/agentcache/__pycache__
+> [debug] [2026-03-12T03:37:55.920Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/node-sdk/dist/client.d.ts
+> [debug] [2026-03-12T03:37:55.920Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/node-sdk/dist/client.js
+> [debug] [2026-03-12T03:37:55.920Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/node-sdk/dist/express.d.ts
+> [debug] [2026-03-12T03:37:55.920Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/node-sdk/dist/express.js
+> [debug] [2026-03-12T03:37:55.920Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/node-sdk/dist/index.d.ts
+> [debug] [2026-03-12T03:37:55.920Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/node-sdk/dist/index.js
+> [debug] [2026-03-12T03:37:55.920Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/node-sdk/dist/wrapper.d.ts
+> [debug] [2026-03-12T03:37:55.920Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/node-sdk/dist/wrapper.js
+> [debug] [2026-03-12T03:37:55.920Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/standard/dist/index.d.mts
+> [debug] [2026-03-12T03:37:55.920Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/standard/dist/index.d.ts
+> [debug] [2026-03-12T03:37:55.920Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/standard/dist/index.js
+> [debug] [2026-03-12T03:37:55.920Z] Ignoring /Users/letstaco/Documents/agentcache-ai/packages/standard/dist/index.mjs
+> [debug] [2026-03-12T03:37:55.920Z] Ignoring /Users/letstaco/Documents/agentcache-ai/sdk-python/agentcache/strategies/__pycache__
+> [debug] [2026-03-12T03:37:55.923Z] Locating files /Users/letstaco/Documents/agentcache-ai [30ms]
+[vc] PATH TO REGEXP ERROR @ #632: {"path":":path*","error":"Can not repeat \"path\" without a prefix and suffix"}
+> [debug] [2026-03-12T03:37:56.522Z] Imported Builder "@vercel/node" from "/opt/homebrew/lib/node_modules/vercel/node_modules/@vercel/node"
+> [debug] [2026-03-12T03:37:56.556Z] Imported Builder "@vercel/static-build" from "/opt/homebrew/lib/node_modules/vercel/node_modules/@vercel/static-build"
+> [debug] [2026-03-12T03:37:56.600Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:37:56.601Z] Building entrypoint "package.json" with "@vercel/static-build"
+Installing dependencies...
+npm warn Unknown cli config "--unsafe-perm". This will stop working in the next major version of npm.
+
+up to date in 908ms
+
+130 packages are looking for funding
+  run `npm fund` for details
+Running "npm run build"
+
+> agentcache-ai@1.0.0 build
+> npm run test -- --run && vite build && mkdir -p dist && cp -r studio-dist/* dist/
+
+
+> agentcache-ai@1.0.0 test
+> vitest --run
+
+
+[1m[46m RUN [49m[22m [36mv4.0.14 [39m[90m/Users/letstaco/Documents/agentcache-ai[39m
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ [32m✓[39m tests/unit/upgrade-response.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m tests/unit/platform-memory-l3.test.js [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts
+[22m[39m⚠️ Redis Credentials Missing. Using In-Memory Mock.
+
+[90mstderr[2m | tests/unit/cognitive-memory.test.ts
+[22m[39m⚠️ Redis Credentials Missing. Using In-Memory Mock.
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System
+[22m[39m⚡ Using Upstash Redis (HTTP)
+
+ [32m✓[39m tests/unit/wizard-framework.test.js [2m([22m[2m7 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+[90mstdout[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol
+[22m[39m⚡ Using Upstash Redis (HTTP)
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts
+[22m[39m⚡ Using Upstash Redis (HTTP)
+
+[90mstderr[2m | tests/unit/cognitive-memory.test.ts
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts[2m > [22m[2mAgentCache cognitive claim coverage[2m > [22m[2mDriftWalker detects semantic rot and heals the memory back to healthy state
+[22m[39m⚠️ No OPENAI_API_KEY. Using deterministic mock embedding.
+
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts[2m > [22m[2mAgentCache cognitive claim coverage[2m > [22m[2mDriftWalker detects semantic rot and heals the memory back to healthy state
+[22m[39m⚠️ No OPENAI_API_KEY. Using deterministic mock embedding.
+
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts[2m > [22m[2mAgentCache cognitive claim coverage[2m > [22m[2mDriftWalker detects semantic rot and heals the memory back to healthy state
+[22m[39m⚠️ No OPENAI_API_KEY. Using deterministic mock embedding.
+
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts[2m > [22m[2mAgentCache cognitive claim coverage[2m > [22m[2mDriftWalker detects semantic rot and heals the memory back to healthy state
+[22m[39m⚠️ No OPENAI_API_KEY. Using deterministic mock embedding.
+
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts[2m > [22m[2mAgentCache cognitive claim coverage[2m > [22m[2mDriftWalker detects semantic rot and heals the memory back to healthy state
+[22m[39m⚠️ No OPENAI_API_KEY. Using deterministic mock embedding.
+
+ [32m✓[39m tests/unit/cognitive-memory.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/claims/cognitive-claims.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m tests/unit/complexity-calculator.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/unit/stream_logic.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+[90mstdout[2m | tests/unit/integral_operator.test.ts[2m > [22m[2mUniversalOperator[2m > [22m[2mshould warn on high-risk actions
+[22m[39m
+[Operator] Received Goal: "manage memory"
+
+[90mstdout[2m | tests/unit/integral_operator.test.ts[2m > [22m[2mUniversalOperator[2m > [22m[2mshould warn on high-risk actions
+[22m[39m[Operator] World Model Abstraction: System is stable.
+
+[90mstdout[2m | tests/unit/integral_operator.test.ts[2m > [22m[2mUniversalOperator[2m > [22m[2mshould warn on high-risk actions
+[22m[39m[Operator] Formulated Plan with 2 steps
+  > Step 1: Check current memory status (Tool: agentcache_stats)
+
+[90mstdout[2m | tests/unit/integral_operator.test.ts[2m > [22m[2mUniversalOperator[2m > [22m[2mshould warn on high-risk actions
+[22m[39m    [!] Proceeding with caution...
+    [√] Execution Successful
+
+[90mstdout[2m | tests/unit/integral_operator.test.ts[2m > [22m[2mUniversalOperator[2m > [22m[2mshould warn on high-risk actions
+[22m[39m  > Step 2: Optimize context (Tool: agentcache_compress_context)
+
+[90mstdout[2m | tests/unit/integral_operator.test.ts[2m > [22m[2mUniversalOperator[2m > [22m[2mshould warn on high-risk actions
+[22m[39m    [!] Proceeding with caution...
+    [√] Execution Successful
+
+[90mstdout[2m | tests/unit/integral_operator.test.ts[2m > [22m[2mUniversalOperator[2m > [22m[2mshould warn on high-risk actions
+[22m[39m[Operator] Goal Complete
+
+ [32m✓[39m tests/unit/integral_operator.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/unit/platform-memory-decay.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+[90mstderr[2m | tests/unit/lemma-caching.test.ts
+[22m[39m⚠️ Redis Credentials Missing. Using In-Memory Mock.
+
+ [32m✓[39m tests/unit/billing-plans.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m tests/unit/lemma-caching.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/unit/workspace-provisioning.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [2m[90m↓[39m[22m tests/integration/audio1tv.test.ts [2m([22m[2m19 tests[22m[2m | [22m[33m19 skipped[39m[2m)[22m
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)
+[22m[39m⚡ Using Upstash Redis (HTTP)
+
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+ [2m[90m↓[39m[22m tests/integration/jettythunder.test.ts [2m([22m[2m30 tests[22m[2m | [22m[33m30 skipped[39m[2m)[22m
+ [2m[90m↓[39m[22m tests/integration/system2_bridge.test.ts [2m([22m[2m1 test[22m[2m | [22m[33m1 skipped[39m[2m)[22m
+(node:20198) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[90mstderr[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts
+[22m[39m[Billing] No STRIPE_SECRET_KEY found. Billing is disabled (Mock Mode).
+
+[90mstderr[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol
+[22m[39m[Billing] No STRIPE_SECRET_KEY found. Billing is disabled (Mock Mode).
+
+[90mstderr[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)
+[22m[39m[Billing] No STRIPE_SECRET_KEY found. Billing is disabled (Mock Mode).
+
+[90mstderr[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System
+[22m[39m[Billing] No STRIPE_SECRET_KEY found. Billing is disabled (Mock Mode).
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts
+[22m[39m[OpenClawClient] Mode: PRODUCTION (Moonshot API)
+
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)
+[22m[39m[OpenClawClient] Mode: PRODUCTION (Moonshot API)
+
+[90mstdout[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol
+[22m[39m[OpenClawClient] Mode: PRODUCTION (Moonshot API)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System
+[22m[39m[OpenClawClient] Mode: PRODUCTION (Moonshot API)
+
+[90mstderr[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts
+[22m[39m[FirecrawlService] FIRECRAWL_API_KEY is not set. Scraping will fail.
+
+[90mstderr[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol
+[22m[39m[FirecrawlService] FIRECRAWL_API_KEY is not set. Scraping will fail.
+
+[90mstderr[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)
+[22m[39m[FirecrawlService] FIRECRAWL_API_KEY is not set. Scraping will fail.
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System
+[22m[39m[Startup] PatternEngine: SKIPPED (Local Dev Mode)
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts
+[22m[39m[Startup] PatternEngine: SKIPPED (Local Dev Mode)
+
+[90mstdout[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol
+[22m[39m[Startup] PatternEngine: SKIPPED (Local Dev Mode)
+
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)
+[22m[39m[Startup] PatternEngine: SKIPPED (Local Dev Mode)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mSchema Registry[2m > [22m[2mresolves all 6 built-in sectors
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mSchema Registry[2m > [22m[2mlists all schemas with field names
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mSchema Registry[2m > [22m[2mindexes vocabulary terms for cross-sector lookup
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mSchema Registry[2m > [22m[2mreturns empty for unknown sector
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)[2m > [22m[2mtraces a mission through the LemmaService
+[22m[39m[MissionTracer] 🛰️ Mission Started: test-trace-id
+
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)[2m > [22m[2mtraces a mission through the LemmaService
+[22m[39m[MissionTracer] ✅ Mission Complete: test-trace-id
+
+[90mstderr[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol[2m > [22m[2mreturns x402 headers on 402 Payment Required for unfunded agents
+[22m[39m⚠️ Redis Auth Failed during op. Switching to In-Memory Mock.
+
+[90mstderr[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mAPI: GET /api/ontology/schemas[2m > [22m[2mreturns all registered schema listings
+[22m[39m⚠️ Redis Auth Failed during op. Switching to In-Memory Mock.
+
+[90mstderr[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m⚠️ Redis Auth Failed during op. Switching to In-Memory Mock.
+
+[90mstderr[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)[2m > [22m[2msettles an x402 payment via AgentSettlementService
+[22m[39m⚠️ Redis Auth Failed during op. Switching to In-Memory Mock.
+
+ [32m✓[39m tests/contracts/public-api.contract.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 2405[2mms[22m[39m
+     [33m[2m✓[22m[39m cache endpoints expose predictive prefetch on miss and hit flows [33m 313[2mms[22m[39m
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)[2m > [22m[2msettles an x402 payment via AgentSettlementService
+[22m[39m[Settlement] 💳 Processing settlement for agent 34c461f0-5d6b-43ca-b2b4-5612423cf2a8 via token 0xTestSettlementHash...
+
+[90mstderr[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)[2m > [22m[2msettles an x402 payment via AgentSettlementService
+[22m[39m[Armor] Atomic Settlement Velocity Check Failed (Fail Open): __vite_ssr_import_0__.redis.eval is not a function
+
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)[2m > [22m[2msettles an x402 payment via AgentSettlementService
+[22m[39m[Settlement] 💸 Transferring 10 from 34c461f0-5d6b-43ca-b2b4-5612423cf2a8 to 00000000-0000-0000-0000-000000000000...
+
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)[2m > [22m[2msettles an x402 payment via AgentSettlementService
+[22m[39m[Settlement] ✅ Settlement successful. New Balance: 90
+
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)[2m > [22m[2msettles an x402 payment via AgentSettlementService
+[22m[39m[Test] 💰 Initial: 100, Final: 90
+
+ [32m✓[39m tests/integration/agentic-governance.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 1449[2mms[22m[39m
+     [33m[2m✓[22m[39m settles an x402 payment via AgentSettlementService [33m 312[2mms[22m[39m
+[90mstdout[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol[2m > [22m[2mallows agent access instantly if Preauthorization is provided (x402 payment success)
+[22m[39m[Settlement] 💳 Processing settlement for agent ac_demo_test_x402 via token 0xABC123MockHash...
+
+[90mstdout[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol[2m > [22m[2mallows agent access instantly if Preauthorization is provided (x402 payment success)
+[22m[39m[Settlement] ♻️ Token 0xABC123MockHash already settled. Returning cached receipt.
+
+ [32m✓[39m tests/integration/x402-payment.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 3457[2mms[22m[39m
+     [33m[2m✓[22m[39m returns x402 headers on 402 Payment Required for unfunded agents [33m 1177[2mms[22m[39m
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mData Lake Ingestion (Raw Connector)[2m > [22m[2mingests inline JSON and maps to finance ontology
+[22m[39m[RawConnector] Ingested 70 chars of inline object data.
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mQ1: Schema Version Coexistence[2m > [22m[2mresolves pinned schema versions separately from latest
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mQ1: Schema Version Coexistence[2m > [22m[2mlists available versions per sector
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mQ1: Schema Version Coexistence[2m > [22m[2msupports registering a new version without breaking the old
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+[OntologyRegistry] Registered: finance v2.0.0 (2 terms)
+
+ [32m✓[39m tests/integration/ontology-datalake.test.ts [2m([22m[2m20 tests[22m[2m)[22m[33m 3816[2mms[22m[39m
+       [33m[2m✓[22m[39m returns federated results for "compliance" [33m 885[2mms[22m[39m
+       [33m[2m✓[22m[39m bridges a term between two specific sectors [33m 521[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m16 passed[39m[22m[2m | [22m[33m3 skipped[39m[90m (19)[39m
+[2m      Tests [22m [1m[32m75 passed[39m[22m[2m | [22m[33m50 skipped[39m[90m (125)[39m
+[2m   Start at [22m 23:37:58
+[2m   Duration [22m 4.22s[2m (transform 4.09s, setup 0ms, import 3.38s, tests 11.23s, environment 4ms)[22m
+
+NODE_ENV=production is not supported in the .env file. Only NODE_ENV=development is supported to create a development build of your project. If you need to set process.env.NODE_ENV, you can set it in the Vite config instead.
+vite v7.2.4 building client environment for production...
+transforming...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+
+/assets/grid.svg referenced in /assets/grid.svg didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+/assets/noise.png referenced in /assets/noise.png didn't resolve at build time, it will remain unchanged to be resolved at runtime
+✓ 3422 modules transformed.
+rendering chunks...
+computing gzip size...
+studio-dist/dashboard.html                        0.71 kB │ gzip:   0.37 kB
+studio-dist/onboarding.html                       0.78 kB │ gzip:   0.49 kB
+studio-dist/gov-portal.html                       8.95 kB │ gzip:   2.88 kB
+studio-dist/analytics.html                       15.55 kB │ gzip:   3.80 kB
+studio-dist/index.html                           38.01 kB │ gzip:   9.16 kB
+studio-dist/pipeline-studio.html                 48.75 kB │ gzip:  10.57 kB
+studio-dist/assets/dashboard-Fd0xVSp_.css         7.04 kB │ gzip:   1.58 kB
+studio-dist/assets/gov_portal-Cewp29IR.css        7.52 kB │ gzip:   1.93 kB
+studio-dist/assets/onboarding-CVDkYzXw.css        7.71 kB │ gzip:   1.79 kB
+studio-dist/assets/index-_sLpXLjh.css           151.36 kB │ gzip:  21.67 kB
+studio-dist/assets/onboarding-CBuTpFxs.js        16.38 kB │ gzip:   4.69 kB
+studio-dist/assets/client-CJWdlQ9l.js           193.39 kB │ gzip:  60.61 kB
+studio-dist/assets/gov_portal-W3Szsy16.js       276.01 kB │ gzip:  82.55 kB
+studio-dist/assets/with-selector-3VWWqh8U.js    722.53 kB │ gzip: 189.24 kB
+studio-dist/assets/dashboard-BmdqGvfa.js      1,147.48 kB │ gzip: 335.06 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 10.56s
+> [debug] [2026-03-12T03:38:14.552Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:14.553Z] Building entrypoint "api/auth/github/callback.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:23.758Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:23.758Z] Building entrypoint "api/auth/github/login.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:23.815Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:23.815Z] Building entrypoint "api/auth/google/callback.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:24.142Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:24.143Z] Building entrypoint "api/auth/google/login.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:24.228Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:24.228Z] Building entrypoint "api/v1/chat/completions.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:25.240Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:25.240Z] Building entrypoint "api/content/card/[id].js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:25.320Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:25.320Z] Building entrypoint "api/dynamicview/templates/[id].js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:25.367Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:25.367Z] Building entrypoint "api/admin/deploy-campaign.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:25.417Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:25.418Z] Building entrypoint "api/admin/feedback.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:25.448Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:25.448Z] Building entrypoint "api/admin/fleet.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:25.799Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:25.799Z] Building entrypoint "api/admin/logs.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:25.850Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:25.850Z] Building entrypoint "api/admin/settings.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:26.073Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:26.073Z] Building entrypoint "api/admin/users.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:26.314Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:26.314Z] Building entrypoint "api/agent/chat.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:26.753Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:26.753Z] Building entrypoint "api/agents/register.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:27.156Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:27.156Z] Building entrypoint "api/assets/list.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:27.255Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:27.255Z] Building entrypoint "api/assets/upload.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:27.334Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:27.334Z] Building entrypoint "api/audit/log.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:27.369Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:27.369Z] Building entrypoint "api/auth/actions.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:27.527Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:27.527Z] Building entrypoint "api/auth/dev-login.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:27.547Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:27.547Z] Building entrypoint "api/auth/health.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:27.619Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:27.619Z] Building entrypoint "api/auth/login.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:27.760Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:27.760Z] Building entrypoint "api/auth/me.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:27.838Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:27.838Z] Building entrypoint "api/auth/register-old.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:27.965Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:27.965Z] Building entrypoint "api/auth/register.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:28.238Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:28.238Z] Building entrypoint "api/auth/reset-password-confirm.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:28.335Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:28.335Z] Building entrypoint "api/auth/reset-password-request.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:28.614Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:28.614Z] Building entrypoint "api/auth/signup.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:28.789Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:28.789Z] Building entrypoint "api/auth/verify.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:28.830Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:28.830Z] Building entrypoint "api/auth/wallet.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:29.027Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:29.027Z] Building entrypoint "api/billing/checkout.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:29.238Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:29.238Z] Building entrypoint "api/billing/create-checkout.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:29.766Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:29.766Z] Building entrypoint "api/billing/deposit.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:29.989Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:29.989Z] Building entrypoint "api/billing/portal.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:30.348Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:30.348Z] Building entrypoint "api/billing/usage.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:30.522Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:30.522Z] Building entrypoint "api/billing/webhook.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:32.003Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:32.004Z] Building entrypoint "api/bridge/moonshot-ai.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:32.137Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:32.137Z] Building entrypoint "api/cache/get.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:32.354Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:32.354Z] Building entrypoint "api/cache/invalidate.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:32.465Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:32.466Z] Building entrypoint "api/cache/semantic.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:32.519Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:32.519Z] Building entrypoint "api/cache/set.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:32.731Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:32.731Z] Building entrypoint "api/cognitive/compress.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:32.762Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:32.762Z] Building entrypoint "api/cognitive/predictions.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:32.837Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:32.837Z] Building entrypoint "api/cognitive/stream.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:32.870Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:32.870Z] Building entrypoint "api/content/card.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:32.919Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:32.919Z] Building entrypoint "api/credits/balance.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:32.938Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:32.938Z] Building entrypoint "api/credits/create-checkout.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:33.155Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:33.155Z] Building entrypoint "api/credits/packages.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:33.272Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:33.272Z] Building entrypoint "api/cron/activate-flywheel.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:33.651Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:33.651Z] Building entrypoint "api/cron/check-listeners.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:33.799Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:33.799Z] Building entrypoint "api/cron/claw-worker.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:33.838Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:33.838Z] Building entrypoint "api/cron/monitor.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:33.971Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:33.972Z] Building entrypoint "api/cron/needs-refresh.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:34.029Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:34.053Z] Building entrypoint "api/cron/researcher.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:34.251Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:34.251Z] Building entrypoint "api/cron/worker.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:34.910Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:34.910Z] Building entrypoint "api/decisions/index.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:35.136Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:35.136Z] Building entrypoint "api/docs/ingest.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:35.262Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:35.262Z] Building entrypoint "api/docs/search.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:35.402Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:35.402Z] Building entrypoint "api/dynamicview/generate.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:35.443Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:35.443Z] Building entrypoint "api/eval/run.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:35.472Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:35.472Z] Building entrypoint "api/events/stream.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:35.505Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:35.505Z] Building entrypoint "api/finance/prewarm.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:35.542Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:35.542Z] Building entrypoint "api/game/context_squeeze.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:35.560Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:35.560Z] Building entrypoint "api/game/echo_chamber.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:35.579Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:35.579Z] Building entrypoint "api/game/evolution.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:35.656Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:35.656Z] Building entrypoint "api/game/experiment.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:35.829Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:35.829Z] Building entrypoint "api/game/leaderboard.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:35.969Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:35.969Z] Building entrypoint "api/game/leak_hunter.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:35.988Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:35.988Z] Building entrypoint "api/game/loop.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:36.004Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:36.004Z] Building entrypoint "api/game/session.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:36.181Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:36.181Z] Building entrypoint "api/governance/presets.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:36.367Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:36.367Z] Building entrypoint "api/health/redis.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:36.403Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:36.403Z] Building entrypoint "api/hive/vector.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:36.425Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:36.425Z] Building entrypoint "api/hpc/blob.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:36.473Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:36.474Z] Building entrypoint "api/jetty/cache-chunk.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:36.546Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:36.546Z] Building entrypoint "api/jetty/check-duplicate.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:36.721Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:36.722Z] Building entrypoint "api/jetty/optimal-edges.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:36.864Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:36.864Z] Building entrypoint "api/jetty/track-upload.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:37.046Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:37.046Z] Building entrypoint "api/jetty/user-stats.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:37.343Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:37.343Z] Building entrypoint "api/knowledge/index.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:37.588Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:37.588Z] Building entrypoint "api/lab/genomes.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:37.629Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:37.629Z] Building entrypoint "api/lab/run-experiment.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:37.822Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:37.822Z] Building entrypoint "api/lib/agent-policy.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:37.860Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:37.860Z] Building entrypoint "api/lib/audit.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:37.922Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:37.922Z] Building entrypoint "api/listeners/register.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:38.032Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:38.032Z] Building entrypoint "api/marketplace/strategies.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:38.262Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:38.262Z] Building entrypoint "api/notifications/index.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:38.647Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:38.647Z] Building entrypoint "api/notifications/read.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:39.033Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:39.033Z] Building entrypoint "api/observability/agents.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:39.109Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:39.109Z] Building entrypoint "api/observability/clusters.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:39.134Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:39.134Z] Building entrypoint "api/observability/discoveries.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:39.189Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:39.189Z] Building entrypoint "api/observability/experiments.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:39.222Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:39.222Z] Building entrypoint "api/observability/network.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:39.245Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:39.245Z] Building entrypoint "api/observability/stats.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:39.267Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:39.267Z] Building entrypoint "api/observability/stream.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:39.293Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:39.293Z] Building entrypoint "api/observability/telemetry.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:39.320Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:39.320Z] Building entrypoint "api/onboarding/complete.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:39.494Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:39.494Z] Building entrypoint "api/pay/solana.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:40.705Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:40.705Z] Building entrypoint "api/pay/verify.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:41.694Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:41.694Z] Building entrypoint "api/pipeline/generate.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:41.955Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:41.955Z] Building entrypoint "api/pipelines/create.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:42.011Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:42.012Z] Building entrypoint "api/pipelines/delete.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:42.139Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:42.139Z] Building entrypoint "api/pipelines/generate.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:42.280Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:42.280Z] Building entrypoint "api/pipelines/index.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:42.498Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:42.498Z] Building entrypoint "api/pipelines/list.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:42.635Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:42.635Z] Building entrypoint "api/pipelines/run.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:43.338Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:43.339Z] Building entrypoint "api/pipelines/update.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:43.493Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:43.493Z] Building entrypoint "api/policy/agent.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:43.524Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:43.524Z] Building entrypoint "api/policy/rules.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:43.712Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:43.712Z] Building entrypoint "api/portal/dashboard.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:43.885Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:43.885Z] Building entrypoint "api/portal/dedup-savings.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:44.015Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:44.015Z] Building entrypoint "api/portal/keys.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:44.132Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:44.132Z] Building entrypoint "api/portal/namespaces.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:44.253Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:44.253Z] Building entrypoint "api/portal/pipelines.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:44.371Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:44.371Z] Building entrypoint "api/portal/provision.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:44.540Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:44.540Z] Building entrypoint "api/qchannel/ads.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:44.606Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:44.606Z] Building entrypoint "api/qchannel/analytics.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:44.672Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:44.672Z] Building entrypoint "api/qchannel/briefing.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:44.819Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:44.819Z] Building entrypoint "api/qchannel/feed.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:44.879Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:44.879Z] Building entrypoint "api/qchannel/intelligence.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:45.077Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:45.077Z] Building entrypoint "api/qchannel/news.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:45.665Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:45.665Z] Building entrypoint "api/qchannel/nfts.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:45.812Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:45.812Z] Building entrypoint "api/qchannel/pair.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:45.993Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:45.993Z] Building entrypoint "api/qchannel/predictions.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:46.132Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:46.132Z] Building entrypoint "api/qchannel/visuals.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:46.194Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:46.194Z] Building entrypoint "api/qchannel/voice.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:46.332Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:46.332Z] Building entrypoint "api/qchannel/zones.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:46.393Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:46.393Z] Building entrypoint "api/qr/approve.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:46.529Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:46.529Z] Building entrypoint "api/qr/generate.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:46.659Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:46.659Z] Building entrypoint "api/qr/status.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:46.789Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:46.789Z] Building entrypoint "api/region/sync.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:46.969Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:46.969Z] Building entrypoint "api/router/route.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:47.007Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:47.007Z] Building entrypoint "api/s3/presigned.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:47.032Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:47.032Z] Building entrypoint "api/scanner/signals.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:47.214Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:47.214Z] Building entrypoint "api/sector/filestorage.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:47.248Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:47.248Z] Building entrypoint "api/sector/government.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:47.269Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:47.269Z] Building entrypoint "api/security/scan.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:47.298Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:47.298Z] Building entrypoint "api/services/hackernews.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:47.315Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:47.315Z] Building entrypoint "api/settings/preferences.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:47.489Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:47.489Z] Building entrypoint "api/solutions/support-cache.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:47.594Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:47.594Z] Building entrypoint "api/stream/sanitizer.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:47.617Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:47.617Z] Building entrypoint "api/stream/semantic.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:47.717Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:47.718Z] Building entrypoint "api/studio/stats.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:47.743Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:47.743Z] Building entrypoint "api/team/members.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:47.760Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:47.760Z] Building entrypoint "api/telegram/setup.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:47.859Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:47.859Z] Building entrypoint "api/telegram/webhook.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:48.170Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:48.170Z] Building entrypoint "api/thumbnail/index.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:48.418Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:48.418Z] Building entrypoint "api/user/change-password.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:48.532Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:48.532Z] Building entrypoint "api/user/settings.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:48.722Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:48.722Z] Building entrypoint "api/user/update-profile.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:48.794Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:48.794Z] Building entrypoint "api/v1/messages.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:48.822Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:48.822Z] Building entrypoint "api/webhooks/credits.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:49.132Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:49.132Z] Building entrypoint "api/webhooks/github.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:49.234Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:49.234Z] Building entrypoint "api/webhooks/jettythunder-provision.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:49.305Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:49.305Z] Building entrypoint "api/webhooks/sentry.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:49.382Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:49.382Z] Building entrypoint "api/webhooks/stripe.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:49.830Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:49.830Z] Building entrypoint "api/wizard/learn.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:50.020Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:50.020Z] Building entrypoint "api/wizard/recommend.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:50.176Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:50.176Z] Building entrypoint "api/workflow/cache.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:50.409Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:50.409Z] Building entrypoint "api/workspace/list.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:50.560Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:50.560Z] Building entrypoint "api/workspace/save.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:50.691Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:50.691Z] Building entrypoint "api/workspace/scan-and-create.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:50.843Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:50.843Z] Building entrypoint "api/dashboards/[sector].js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:50.913Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:50.913Z] Building entrypoint "api/pipelines/[id].js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:51.096Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:51.096Z] Building entrypoint "api/account.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:51.126Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:51.126Z] Building entrypoint "api/admin-content.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:51.293Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:51.293Z] Building entrypoint "api/admin-stats.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:51.493Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:51.493Z] Building entrypoint "api/admin-users.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:51.697Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:51.697Z] Building entrypoint "api/agents.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:51.892Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:51.892Z] Building entrypoint "api/analytics.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:51.931Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:51.931Z] Building entrypoint "api/billing.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:52.196Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:52.196Z] Building entrypoint "api/bridge.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:52.321Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:52.321Z] Building entrypoint "api/cache-test-basic.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:52.341Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:52.341Z] Building entrypoint "api/cache.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:52.366Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:52.366Z] Building entrypoint "api/checkout.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:52.512Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:52.512Z] Building entrypoint "api/cognitive-universe.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:52.558Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:52.558Z] Building entrypoint "api/cognitive.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:52.574Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:52.574Z] Building entrypoint "api/config.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:52.592Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:52.592Z] Building entrypoint "api/constraints.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:52.611Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:52.611Z] Building entrypoint "api/content.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:52.654Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:52.654Z] Building entrypoint "api/credits.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:52.913Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:52.913Z] Building entrypoint "api/dashboard.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:53.158Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:53.158Z] Building entrypoint "api/debug-edge.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:53.189Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:53.189Z] Building entrypoint "api/debug-node.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:53.207Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:53.207Z] Building entrypoint "api/debug-stripe.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:53.398Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:53.398Z] Building entrypoint "api/drip-run.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:53.443Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:53.443Z] Building entrypoint "api/embeddings.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:53.524Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:53.524Z] Building entrypoint "api/galaxy.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:53.545Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:53.545Z] Building entrypoint "api/health.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:53.561Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:53.561Z] Building entrypoint "api/history.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:38:53.586Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:53.586Z] Building entrypoint "api/image-gen.js" with "@vercel/node"
+> [debug] [2026-03-12T03:38:53.609Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:53.609Z] Building entrypoint "api/index.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+src/api/cache.ts(57,26): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(key: never): unknown', gave the following error.
+    Argument of type '"apiKey"' is not assignable to parameter of type 'never'.
+  Overload 2 of 2, '(key: "jwtPayload"): any', gave the following error.
+    Argument of type '"apiKey"' is not assignable to parameter of type '"jwtPayload"'.
+src/api/cache.ts(75,13): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/api/cache.ts(92,26): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(key: never): unknown', gave the following error.
+    Argument of type '"apiKey"' is not assignable to parameter of type 'never'.
+  Overload 2 of 2, '(key: "jwtPayload"): any', gave the following error.
+    Argument of type '"apiKey"' is not assignable to parameter of type '"jwtPayload"'.
+src/api/cache.ts(102,71): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+src/api/cache.ts(116,26): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(key: never): unknown', gave the following error.
+    Argument of type '"apiKey"' is not assignable to parameter of type 'never'.
+  Overload 2 of 2, '(key: "jwtPayload"): any', gave the following error.
+    Argument of type '"apiKey"' is not assignable to parameter of type '"jwtPayload"'.
+src/api/cache.ts(122,43): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+src/api/cache.ts(136,26): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(key: never): unknown', gave the following error.
+    Argument of type '"apiKey"' is not assignable to parameter of type 'never'.
+  Overload 2 of 2, '(key: "jwtPayload"): any', gave the following error.
+    Argument of type '"apiKey"' is not assignable to parameter of type '"jwtPayload"'.
+src/api/cache.ts(142,44): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+
+> [debug] [2026-03-12T03:38:59.769Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:38:59.769Z] Building entrypoint "api/inngest.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:39:00.179Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:00.179Z] Building entrypoint "api/integrations.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:39:00.219Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:00.219Z] Building entrypoint "api/keys.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:00.368Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:00.368Z] Building entrypoint "api/lidar-intent.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:00.406Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:00.407Z] Building entrypoint "api/limiter.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:00.549Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:00.549Z] Building entrypoint "api/marketplace.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:39:00.955Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:00.955Z] Building entrypoint "api/mcp-bridge.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:01.017Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:01.017Z] Building entrypoint "api/moonshot.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:01.065Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:01.065Z] Building entrypoint "api/overflow.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:01.104Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:01.105Z] Building entrypoint "api/pii.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:39:01.161Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:01.161Z] Building entrypoint "api/ping.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:01.183Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:01.183Z] Building entrypoint "api/pipeline-orchestrator.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:01.566Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:01.566Z] Building entrypoint "api/pipeline.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:01.763Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:01.763Z] Building entrypoint "api/pipelines.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:01.910Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:01.910Z] Building entrypoint "api/plans.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:02.080Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:02.080Z] Building entrypoint "api/policy.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:02.116Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:02.116Z] Building entrypoint "api/predict.js" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:39:02.184Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:02.184Z] Building entrypoint "api/preview-generator.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:02.204Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:02.204Z] Building entrypoint "api/pricing.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:02.221Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:02.221Z] Building entrypoint "api/sector.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:02.248Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:02.249Z] Building entrypoint "api/settings.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:39:02.432Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:02.432Z] Building entrypoint "api/spelling.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:02.467Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:02.467Z] Building entrypoint "api/stats.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:39:02.505Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:02.505Z] Building entrypoint "api/subscribe.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:02.527Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:02.527Z] Building entrypoint "api/swarm.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:39:02.569Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:02.570Z] Building entrypoint "api/telemetry.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:02.619Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:02.619Z] Building entrypoint "api/templates.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:39:02.651Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:02.651Z] Building entrypoint "api/test_stripe.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:39:02.813Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:02.813Z] Building entrypoint "api/test-login.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:02.860Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:02.860Z] Building entrypoint "api/test-minimal.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:02.879Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:02.879Z] Building entrypoint "api/tool-cache.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:02.897Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:02.897Z] Building entrypoint "api/trace.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:02.920Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:02.920Z] Building entrypoint "api/upload.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:02.943Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:02.943Z] Building entrypoint "api/verify.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:02.961Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:02.961Z] Building entrypoint "api/webhook-trigger.js" with "@vercel/node"
+> [debug] [2026-03-12T03:39:02.978Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:02.978Z] Building entrypoint "api/webhook.ts" with "@vercel/node"
+Using TypeScript 5.9.3 (local user-provided)
+> [debug] [2026-03-12T03:39:03.179Z] Setting env VERCEL_PROJECT_SETTINGS_NODE_VERSION to "22.x"
+> [debug] [2026-03-12T03:39:03.179Z] Building entrypoint "api/webhooks.js" with "@vercel/node"
+Build Completed in .vercel/output [1m]
+> [debug] [2026-03-12T03:39:03.622Z] Vercel CLI 48.4.0
+
+> [debug] [2026-03-12T03:39:03.844Z] Telemetry event tracked
+> [debug] [2026-03-12T03:39:04.023Z] Telemetry subprocess exited with code 0

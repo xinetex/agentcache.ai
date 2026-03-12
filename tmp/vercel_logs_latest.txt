@@ -1,0 +1,3 @@
+Vercel CLI 48.4.0
+Fetching deployment "agentcache-qvyg5seew-drgnflai-jetty.vercel.app" in drgnflai-jetty
+Error: Deployment not ready. Currently: ● Error.
