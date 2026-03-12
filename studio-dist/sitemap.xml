@@ -1,6 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://agentcache.ai/</loc></url>
-  <url><loc>https://agentcache.ai/docs.html</loc></url>
-  <url><loc>https://agentcache.ai/thanks.html</loc></url>
+  <!-- Core -->
+  <url><loc>https://agentcache.ai/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://agentcache.ai/pricing.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://agentcache.ai/docs.html</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://agentcache.ai/services.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+
+  <!-- Hub & Community -->
+  <url><loc>https://agentcache.ai/hub.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://agentcache.ai/agents.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://agentcache.ai/blog.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- Product Pages -->
+  <url><loc>https://agentcache.ai/addons.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://agentcache.ai/workflows.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://agentcache.ai/contact.html</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://agentcache.ai/changelog.html</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+
+  <!-- Case Studies -->
+  <url><loc>https://agentcache.ai/case-study-food-delivery.html</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://agentcache.ai/case-study-mdap.html</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
+
+  <!-- Auth -->
+  <url><loc>https://agentcache.ai/signup.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://agentcache.ai/login.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+
+  <!-- Legal -->
+  <url><loc>https://agentcache.ai/terms.html</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://agentcache.ai/privacy.html</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+
+  <!-- Agent Discovery -->
+  <url><loc>https://agentcache.ai/skill.md</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://agentcache.ai/.well-known/agents.json</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
 </urlset>

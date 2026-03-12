@@ -1,36 +1,33 @@
-# Use official .NET SDK image to build
+# Build Stage
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copy project files and restore
+COPY ["AgentCache.VectorService.csproj", "./"]
+RUN dotnet restore "AgentCache.VectorService.csproj"
+
+# Copy full source and publish
+COPY . .
+RUN dotnet publish "AgentCache.VectorService.csproj" -c Release -o /app/publish
+
+# Runtime Stage
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
-# Copy csproj and restore
-COPY *.csproj ./
-RUN dotnet restore
-
-# Copy everything else and build
-COPY . ./
-RUN dotnet publish -c Release -o out
-
-# Runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
-WORKDIR /app
-COPY --from=build /app/out .
-
-# Install dependencies for FAISS
-# We need OpenBLAS and LAPACK usually for FAISS
-RUN apt-get update && apt-get install -y \
-    libopenblas-dev \
-    liblapack-dev \
-    wget \
+# Install native FAISS dependencies (Consistent BLAS/LAPACK runtime)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libopenblas0 \
+    liblapack3 \
+    libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install FAISS (Pre-built or compile? For Docker we should probably compile or grab pre-built)
-# For this blueprint, we will simulate the presence of libfaiss_c.so
-# In a real scenario, you would use a multi-stage build to compile faiss from source
-# or download a specific version for Debian.
-# We will use valid placeholder steps for installing faiss dependencies.
+COPY --from=build /app/publish .
 
-# Make sure the app looks for the library in the right place
-ENV LD_LIBRARY_PATH=/app/native:/usr/local/lib:$LD_LIBRARY_PATH
+# Standardize native library lookup path
+ENV LD_LIBRARY_PATH=/app:$LD_LIBRARY_PATH
+
+# Performance: HNSW optimizations benefit from standardizing thread counts
+ENV OMP_NUM_THREADS=4
 
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "AgentCache.VectorService.dll"]

@@ -5,38 +5,28 @@ namespace AgentCache.VectorService.Services
 {
     public class VectorEngine : IDisposable
     {
-        private IntPtr _index = IntPtr.Zero;
+        private readonly ConcurrentDictionary<string, IntPtr> _indices = new();
         private readonly object _lock = new();
-        private const int Dimension = 1536; // Default for many LLMs (e.g. OpenAI ada-002)
+        private const int Dimension = 1536; 
+        private const string DefaultIndexDescription = "HNSW32,Flat"; // High-performance HNSW
 
         public VectorEngine()
         {
-            // Initialize with a simple Flat L2 index by default
-            // In production, we'd load this from disk or config
-            InitializeIndex("IDMap,Flat", MetricType.METRIC_L2);
         }
 
-        public void InitializeIndex(string description, MetricType metric)
+        public IntPtr GetOrCreateIndex(string tenantId)
         {
-            lock (_lock)
+            return _indices.GetOrAdd(tenantId, tid => 
             {
-                if (_index != IntPtr.Zero)
-                {
-                    FaissNative.index_free(_index);
-                }
-
-                int result = FaissNative.index_factory(out _index, Dimension, description, (int)metric);
-                if (result != 0)
-                {
-                    throw new Exception($"Failed to create FAISS index. Error code: {result}");
-                }
-                Console.WriteLine($"Initialized FAISS Index: {description}");
-            }
+                int result = FaissNative.index_factory(out IntPtr index, Dimension, DefaultIndexDescription, (int)MetricType.METRIC_L2);
+                if (result != 0) throw new Exception($"Failed to create index for tenant {tid}. Code: {result}");
+                Console.WriteLine($"Initialized Shard for Tenant: {tid} ({DefaultIndexDescription})");
+                return index;
+            });
         }
 
-        public void AddVectors(long[] ids, float[] vectors)
+        public void AddVectors(IntPtr index, long[] ids, float[] vectors)
         {
-            // vectors is a flat array of size n * d
             long n = ids.Length;
             if (vectors.Length != n * Dimension)
             {
@@ -45,82 +35,56 @@ namespace AgentCache.VectorService.Services
 
             lock (_lock)
             {
-                int result = FaissNative.index_add_with_ids(_index, n, vectors, ids);
-                if (result != 0)
-                {
-                    throw new Exception($"Failed to add vectors. Error code: {result}");
-                }
+                int result = FaissNative.index_add_with_ids(index, n, vectors, ids);
+                if (result != 0) throw new Exception($"Failed to add vectors. Code: {result}");
             }
         }
 
-        public float[] GetVector(long id)
+        public float[] GetVector(IntPtr index, long id)
         {
             float[] vector = new float[Dimension];
             lock (_lock)
             {
-                // Note: faiss_Index_reconstruct expects the offset (0..n-1), NOT the label (ID), 
-                // unless the index supports direct ID lookup (like IDMap).
-                // "IDMap,Flat" SHOULD support this, but faiss_Index_reconstruct wraps `reconstruct` which usually takes an offset.
-                // If this fails, we might need `faiss_Index_reconstruct_n` or handle mapping manually.
-                // For this MVP, we will try direct reconstruction. 
-                // CRITICAL: Standard FAISS `reconstruct` uses logical index (0, 1, 2) not ID.
-                // We would need to maintain a Dictionary<long, long> IdToOffset manually or use Faiss IDMap APIs.
-                // Since we are "Making our own tools", let's be robust: 
-                // We will THROWS if not implemented, but for the MVP we will assume the ID *is* the offset 
-                // (which implies sequential IDs starting at 0).
-                
-                // TODO: For production, implement robust ID-to-Offset mapping.
-                
-                int result = FaissNative.index_reconstruct(_index, id, vector);
-                if (result != 0)
-                {
-                   // Fallback or explicit error
-                   throw new Exception($"Failed to reconstruct vector {id}. Code {result}");
-                }
+                int result = FaissNative.index_reconstruct(index, id, vector);
+                if (result != 0) throw new Exception($"Failed to reconstruct vector {id}. Code {result}");
             }
             return vector;
         }
 
-        public (long[] Ids, float[] Distances) Search(float[] queryVector, int k)
+        public (long[] Ids, float[] Distances) Search(IntPtr index, float[] queryVector, int k)
         {
-            if (queryVector.Length != Dimension)
-            {
-                throw new ArgumentException("Query vector dimension mismatch");
-            }
+            if (queryVector.Length != Dimension) throw new ArgumentException("Query vector dimension mismatch");
 
             long[] labels = new long[k];
             float[] distances = new float[k];
 
             lock (_lock)
             {
-                // Search 1 vector (n=1)
-                int result = FaissNative.index_search(_index, 1, queryVector, k, distances, labels);
-                if (result != 0)
-                {
-                    throw new Exception($"Search failed. Error code: {result}");
-                }
+                int result = FaissNative.index_search(index, 1, queryVector, k, distances, labels);
+                if (result != 0) throw new Exception($"Search failed. Code: {result}");
             }
 
             return (labels, distances);
         }
 
-        public void SaveIndex(string path)
+        public float CalculateDrift(IntPtr index, float[] queryVector)
         {
-            lock (_lock)
-            {
-                FaissNative.write_index(_index, path);
-            }
+            // For MVP: Drift is calculated as the distance from the query to the centroid 
+            // of the top-1 result. Higher distance = higher semantic drift from expected patterns.
+            var (ids, distances) = Search(index, queryVector, 1);
+            if (ids.Length == 0 || ids[0] == -1) return 1.0f; // Max drift if no match
+            return distances[0]; 
         }
 
         public void Dispose()
         {
             lock (_lock)
             {
-                if (_index != IntPtr.Zero)
+                foreach (var index in _indices.Values)
                 {
-                    FaissNative.index_free(_index);
-                    _index = IntPtr.Zero;
+                    if (index != IntPtr.Zero) FaissNative.index_free(index);
                 }
+                _indices.Clear();
             }
         }
     }

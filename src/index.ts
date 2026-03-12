@@ -134,18 +134,22 @@ const freshnessRules = new FreshnessRuleEngine();
       // Dynamic import to prevent heavy load on Vercel startup
       const { PatternEngine } = await import('./infrastructure/PatternEngine.js');
       const patternEngine = new PatternEngine();
-      // Only listen if not in serverless ephemeral mode
-      patternEngine.listen();
+      // Only listen if not in serverless ephemeral mode and not in test
+      if (process.env.NODE_ENV !== 'test') {
+        patternEngine.listen();
+      }
     } else {
       // Start Autonomy Engine (Phase 5)
-    autonomyService.start();
-    console.log('[Startup] Autonomy Engine: ACTIVE');
+      if (process.env.NODE_ENV !== 'test') {
+        autonomyService.start();
+        console.log('[Startup] Autonomy Engine: ACTIVE');
 
-    // Phase 4.2: Register initial Maintenance Watchers
-    const { invalidationService } = await import('./services/InvalidationService.js');
-    invalidationService.registerWatcher('https://raw.githubusercontent.com/openai/openai-openapi/master/openapi.yaml', ['cache:llm:openai:*']);
+        // Phase 4.2: Register initial Maintenance Watchers
+        const { invalidationService } = await import('./services/InvalidationService.js');
+        invalidationService.registerWatcher('https://raw.githubusercontent.com/openai/openai-openapi/master/openapi.yaml', ['cache:llm:openai:*']);
+      }
 
-    console.log('[Startup] PatternEngine: SKIPPED (Local Dev Mode)');
+      console.log('[Startup] PatternEngine: SKIPPED (Local Dev Mode)');
     }
   } catch (e) {
     console.error('[Startup] PatternEngine failed to start:', e);

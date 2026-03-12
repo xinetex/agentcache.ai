@@ -75,12 +75,10 @@ if (!connectionString) {
 
                 if (currentTable) {
                     queryImpl = async () => {
-                    const data = mockStore[currentTable] || [];
-                    // Simulate Drizzle's nested join result format
-                    return data.map(row => ({
-                        [currentTable]: row
-                    }));
-                };
+                        const data = mockStore[currentTable] || [];
+                        // Simple selects return flattened objects in Drizzle unless joins are used
+                        return data;
+                    };
                 }
 
                 return mock;

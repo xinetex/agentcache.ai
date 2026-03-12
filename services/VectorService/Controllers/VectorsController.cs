@@ -17,8 +17,9 @@ namespace AgentCache.VectorService.Controllers
         }
 
         [HttpPost("add")]
-        public IActionResult AddVectors([FromBody] AddVectorsRequest request)
+        public IActionResult AddVectors([FromHeader(Name = "X-Tenant-Id")] string tenantId, [FromBody] AddVectorsRequest request)
         {
+            if (string.IsNullOrEmpty(tenantId)) return BadRequest("Missing X-Tenant-Id header.");
             try
             {
                 if (request.Vectors == null || request.Ids == null || request.Vectors.Length / 1536 != request.Ids.Length)
@@ -26,7 +27,8 @@ namespace AgentCache.VectorService.Controllers
                     return BadRequest("Invalid vector data or dimension mismatch (1536 expected).");
                 }
 
-                _engine.AddVectors(request.Ids, request.Vectors);
+                var index = _engine.GetOrCreateIndex(tenantId);
+                _engine.AddVectors(index, request.Ids, request.Vectors);
                 return Ok(new { count = request.Ids.Length, message = "Vectors added successfully" });
             }
             catch (Exception ex)
@@ -37,11 +39,13 @@ namespace AgentCache.VectorService.Controllers
         }
 
         [HttpPost("search")]
-        public IActionResult Search([FromBody] SearchRequest request)
+        public IActionResult Search([FromHeader(Name = "X-Tenant-Id")] string tenantId, [FromBody] SearchRequest request)
         {
+            if (string.IsNullOrEmpty(tenantId)) return BadRequest("Missing X-Tenant-Id header.");
             try
             {
-                var (ids, distances) = _engine.Search(request.Vector, request.K);
+                var index = _engine.GetOrCreateIndex(tenantId);
+                var (ids, distances) = _engine.Search(index, request.Vector, request.K);
                 
                 var results = new List<SearchResult>();
                 for (int i = 0; i < ids.Length; i++)
@@ -58,17 +62,35 @@ namespace AgentCache.VectorService.Controllers
             }
         }
 
-        [HttpGet("{id}")]
-        public IActionResult Fetch(long id)
+        [HttpPost("drift")]
+        public IActionResult CalculateDrift([FromHeader(Name = "X-Tenant-Id")] string tenantId, [FromBody] DriftRequest request)
         {
+            if (string.IsNullOrEmpty(tenantId)) return BadRequest("Missing X-Tenant-Id header.");
             try
             {
-                var vector = _engine.GetVector(id);
+                var index = _engine.GetOrCreateIndex(tenantId);
+                var driftValue = _engine.CalculateDrift(index, request.Vector);
+                return Ok(new { drift = driftValue });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calculating drift");
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult Fetch([FromHeader(Name = "X-Tenant-Id")] string tenantId, long id)
+        {
+            if (string.IsNullOrEmpty(tenantId)) return BadRequest("Missing X-Tenant-Id header.");
+            try
+            {
+                var index = _engine.GetOrCreateIndex(tenantId);
+                var vector = _engine.GetVector(index, id);
                 return Ok(new { id, vector });
             }
             catch (Exception ex)
             {
-                // likely 404 or index error
                 return NotFound(new { error = ex.Message });
             }
         }
@@ -84,6 +106,11 @@ namespace AgentCache.VectorService.Controllers
     {
         public float[] Vector { get; set; } = Array.Empty<float>();
         public int K { get; set; } = 5;
+    }
+
+    public class DriftRequest
+    {
+        public float[] Vector { get; set; } = Array.Empty<float>();
     }
 
     public class SearchResult

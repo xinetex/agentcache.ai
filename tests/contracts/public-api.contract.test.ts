@@ -19,6 +19,30 @@ vi.mock('../../src/api/clawsave.js', () => ({
   clawMemoryShare: (c: any) => c.json({ ok: true }),
 }));
 
+vi.mock('../../src/lib/llm/embeddings.js', () => ({
+  generateEmbedding: async () => new Array(1536).fill(0.1),
+}));
+
+vi.mock('../../src/lib/vector.js', () => ({
+  upsertMemory: async () => {},
+  queryMemory: async (query: string) => [
+    { id: 'mock-id', score: 0.1, data: query, metadata: {} }
+  ],
+  vectorIndex: {
+    fetch: async (ids: string[]) => ids.map(id => ({ 
+      id, 
+      data: 'mock-data', 
+      metadata: {}, 
+      vector: new Array(1536).fill(0.1) 
+    })),
+    upsert: async () => {},
+    query: async (opts: any) => [
+      { id: 'mock-id', score: 0.1, data: opts.data || '', metadata: {} }
+    ],
+    delete: async () => {},
+  },
+}));
+
 let app: any;
 
 const apiKey = 'ac_demo_test123';

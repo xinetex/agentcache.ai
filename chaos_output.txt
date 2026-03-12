@@ -1,0 +1,483 @@
+⚠️ Redis Credentials Missing. Using In-Memory Mock.
+[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+⚠️ No VECTOR_SERVICE_URL. Using In-Memory Elastic Sharded Vector Service.
+MoonshotClient initialized without API key
+⚠️ No VECTOR_SERVICE_URL. Using In-Memory Elastic Sharded Vector Service.
+🧪 Starting Phase 13: Provocation Pack v0.1 (Chaos Loop Verification)...
+[Resonance] Agent dceeec63071f91fc joined circle: chaos_circle_1
+
+1. Simulating Infrastructure Chaos: The Latency Storm...
+[ProvocationEngine] 🔥 Injecting INFRASTRUCTURE chaos: LATENCY_STORM (Severity: 1)
+[Observability] 📡 Event: PROVOCATION - Chaos Injected: INFRASTRUCTURE (LATENCY_STORM)
+[OTel Export] 📤 Push: {"timestamp":"2026-03-12T00:26:06.286Z","traceId":"7fd616c8e9dea","spanId":"7437e48b","severity":"DEBUG","body":"Chaos Injected: INFRASTRUCTURE (LATENCY_STORM)","attributes":{"service.name":"agentcache-ai","event.type":"PROVOCATION","provocationId":"LATENCY_STORM","config":{"type":"INFRASTRUCTURE","severity":1,"durationMs":2000}}}
+[PolicyEngine] Ontological validation failed for FINANCE. Payload: {
+  "instrument": "AAPL",
+  "price": 150.25,
+  "currency": "USD",
+  "exchange": "NASDAQ"
+}
+[SLOMonitor] ⏱️ Starting correction loop for: agent_chaos_tester
+[PolicyEngine] Message REJECTED by policy "ontological-purity": Ontology Violation: [
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "entityName"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  },
+  {
+    "code": "invalid_value",
+    "values": [
+      "hedge_fund",
+      "bank",
+      "broker_dealer",
+      "exchange",
+      "fintech",
+      "insurance",
+      "regulator"
+    ],
+    "path": [
+      "entityType"
+    ],
+    "message": "Invalid option: expected one of \"hedge_fund\"|\"bank\"|\"broker_dealer\"|\"exchange\"|\"fintech\"|\"insurance\"|\"regulator\""
+  },
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "jurisdiction"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  },
+  {
+    "expected": "array",
+    "code": "invalid_type",
+    "path": [
+      "instruments"
+    ],
+    "message": "Invalid input: expected array, received undefined"
+  },
+  {
+    "expected": "number",
+    "code": "invalid_type",
+    "path": [
+      "aum"
+    ],
+    "message": "Invalid input: expected number, received undefined"
+  },
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "lastAuditDate"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  }
+]
+[Observability] 📡 Event: POLICY - Message rejected by policy: ontological-purity
+[OTel Export] 📤 Push: {"timestamp":"2026-03-12T00:26:06.289Z","traceId":"cd53d38d64484","spanId":"811ec870","severity":"WARN","body":"Message rejected by policy: ontological-purity","attributes":{"service.name":"agentcache-ai","event.type":"POLICY","policyId":"ontological-purity","reason":"Ontology Violation: [\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"entityName\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"code\": \"invalid_value\",\n    \"values\": [\n      \"hedge_fund\",\n      \"bank\",\n      \"broker_dealer\",\n      \"exchange\",\n      \"fintech\",\n      \"insurance\",\n      \"regulator\"\n    ],\n    \"path\": [\n      \"entityType\"\n    ],\n    \"message\": \"Invalid option: expected one of \\\"hedge_fund\\\"|\\\"bank\\\"|\\\"broker_dealer\\\"|\\\"exchange\\\"|\\\"fintech\\\"|\\\"insurance\\\"|\\\"regulator\\\"\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"jurisdiction\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"array\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"instruments\"\n    ],\n    \"message\": \"Invalid input: expected array, received undefined\"\n  },\n  {\n    \"expected\": \"number\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"aum\"\n    ],\n    \"message\": \"Invalid input: expected number, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"lastAuditDate\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  }\n]","score":0,"sector":"FINANCE"}}
+[SemanticBus] 🛑 Message blocked by policy: Ontology Violation: [
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "entityName"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  },
+  {
+    "code": "invalid_value",
+    "values": [
+      "hedge_fund",
+      "bank",
+      "broker_dealer",
+      "exchange",
+      "fintech",
+      "insurance",
+      "regulator"
+    ],
+    "path": [
+      "entityType"
+    ],
+    "message": "Invalid option: expected one of \"hedge_fund\"|\"bank\"|\"broker_dealer\"|\"exchange\"|\"fintech\"|\"insurance\"|\"regulator\""
+  },
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "jurisdiction"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  },
+  {
+    "expected": "array",
+    "code": "invalid_type",
+    "path": [
+      "instruments"
+    ],
+    "message": "Invalid input: expected array, received undefined"
+  },
+  {
+    "expected": "number",
+    "code": "invalid_type",
+    "path": [
+      "aum"
+    ],
+    "message": "Invalid input: expected number, received undefined"
+  },
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "lastAuditDate"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  }
+]
+   🔸 Publish duration under latency: 2ms (Expected > 500ms)
+[ProvocationEngine] ❄️ Withdrawing provocation: LATENCY_STORM
+[Observability] 📡 Event: PROVOCATION_WITHDRAWN - Chaos Withdrawn: INFRASTRUCTURE (LATENCY_STORM)
+[OTel Export] 📤 Push: {"timestamp":"2026-03-12T00:26:06.289Z","traceId":"b5ab9df3cd401","spanId":"70af8288","severity":"INFO","body":"Chaos Withdrawn: INFRASTRUCTURE (LATENCY_STORM)","attributes":{"service.name":"agentcache-ai","event.type":"PROVOCATION_WITHDRAWN","provocationId":"LATENCY_STORM","type":"INFRASTRUCTURE"}}
+
+2. Simulating Input Chaos: Signal Mutation...
+[ProvocationEngine] 🔥 Injecting INPUT chaos: SIGNAL_DRIFT (Severity: 0.8)
+[Observability] 📡 Event: PROVOCATION - Chaos Injected: INPUT (SIGNAL_DRIFT)
+[OTel Export] 📤 Push: {"timestamp":"2026-03-12T00:26:06.289Z","traceId":"18ea19bbdcc8b8","spanId":"098940c3","severity":"DEBUG","body":"Chaos Injected: INPUT (SIGNAL_DRIFT)","attributes":{"service.name":"agentcache-ai","event.type":"PROVOCATION","provocationId":"SIGNAL_DRIFT","config":{"type":"INPUT","severity":0.8}}}
+   🔸 Sending malformed payload...
+[PolicyEngine] Ontological validation failed for FINANCE. Payload: {
+  "instrument": "RECOVERY",
+  "price": 100
+}
+[SLOMonitor] ⏱️ Starting correction loop for: agent_chaos_tester
+[PolicyEngine] Message REJECTED by policy "ontological-purity": Ontology Violation: [
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "entityName"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  },
+  {
+    "code": "invalid_value",
+    "values": [
+      "hedge_fund",
+      "bank",
+      "broker_dealer",
+      "exchange",
+      "fintech",
+      "insurance",
+      "regulator"
+    ],
+    "path": [
+      "entityType"
+    ],
+    "message": "Invalid option: expected one of \"hedge_fund\"|\"bank\"|\"broker_dealer\"|\"exchange\"|\"fintech\"|\"insurance\"|\"regulator\""
+  },
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "jurisdiction"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  },
+  {
+    "expected": "array",
+    "code": "invalid_type",
+    "path": [
+      "instruments"
+    ],
+    "message": "Invalid input: expected array, received undefined"
+  },
+  {
+    "expected": "number",
+    "code": "invalid_type",
+    "path": [
+      "aum"
+    ],
+    "message": "Invalid input: expected number, received undefined"
+  },
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "lastAuditDate"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  }
+]
+[Observability] 📡 Event: POLICY - Message rejected by policy: ontological-purity
+[OTel Export] 📤 Push: {"timestamp":"2026-03-12T00:26:06.289Z","traceId":"4c3f00bab8a2e","spanId":"67bbd044","severity":"WARN","body":"Message rejected by policy: ontological-purity","attributes":{"service.name":"agentcache-ai","event.type":"POLICY","policyId":"ontological-purity","reason":"Ontology Violation: [\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"entityName\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"code\": \"invalid_value\",\n    \"values\": [\n      \"hedge_fund\",\n      \"bank\",\n      \"broker_dealer\",\n      \"exchange\",\n      \"fintech\",\n      \"insurance\",\n      \"regulator\"\n    ],\n    \"path\": [\n      \"entityType\"\n    ],\n    \"message\": \"Invalid option: expected one of \\\"hedge_fund\\\"|\\\"bank\\\"|\\\"broker_dealer\\\"|\\\"exchange\\\"|\\\"fintech\\\"|\\\"insurance\\\"|\\\"regulator\\\"\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"jurisdiction\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"array\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"instruments\"\n    ],\n    \"message\": \"Invalid input: expected array, received undefined\"\n  },\n  {\n    \"expected\": \"number\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"aum\"\n    ],\n    \"message\": \"Invalid input: expected number, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"lastAuditDate\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  }\n]","score":0,"sector":"FINANCE"}}
+[SemanticBus] 🛑 Message blocked by policy: Ontology Violation: [
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "entityName"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  },
+  {
+    "code": "invalid_value",
+    "values": [
+      "hedge_fund",
+      "bank",
+      "broker_dealer",
+      "exchange",
+      "fintech",
+      "insurance",
+      "regulator"
+    ],
+    "path": [
+      "entityType"
+    ],
+    "message": "Invalid option: expected one of \"hedge_fund\"|\"bank\"|\"broker_dealer\"|\"exchange\"|\"fintech\"|\"insurance\"|\"regulator\""
+  },
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "jurisdiction"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  },
+  {
+    "expected": "array",
+    "code": "invalid_type",
+    "path": [
+      "instruments"
+    ],
+    "message": "Invalid input: expected array, received undefined"
+  },
+  {
+    "expected": "number",
+    "code": "invalid_type",
+    "path": [
+      "aum"
+    ],
+    "message": "Invalid input: expected number, received undefined"
+  },
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "lastAuditDate"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  }
+]
+[ProvocationEngine] ❄️ Withdrawing provocation: SIGNAL_DRIFT
+[Observability] 📡 Event: PROVOCATION_WITHDRAWN - Chaos Withdrawn: INPUT (SIGNAL_DRIFT)
+[OTel Export] 📤 Push: {"timestamp":"2026-03-12T00:26:06.289Z","traceId":"dabf55e2772188","spanId":"26999737","severity":"INFO","body":"Chaos Withdrawn: INPUT (SIGNAL_DRIFT)","attributes":{"service.name":"agentcache-ai","event.type":"PROVOCATION_WITHDRAWN","provocationId":"SIGNAL_DRIFT","type":"INPUT"}}
+
+3. Simulating Cognitive Chaos: Resonance Void...
+[ProvocationEngine] 🔥 Injecting COGNITIVE chaos: COGNITIVE_VOID (Severity: 1)
+[Observability] 📡 Event: PROVOCATION - Chaos Injected: COGNITIVE (COGNITIVE_VOID)
+[OTel Export] 📤 Push: {"timestamp":"2026-03-12T00:26:06.289Z","traceId":"6f5ea126f03bd","spanId":"fb856d64","severity":"DEBUG","body":"Chaos Injected: COGNITIVE (COGNITIVE_VOID)","attributes":{"service.name":"agentcache-ai","event.type":"PROVOCATION","provocationId":"COGNITIVE_VOID","config":{"type":"COGNITIVE","severity":1}}}
+⚠️ No OPENAI_API_KEY. Using deterministic mock embedding.
+[Resonance] 🧠 Cognitive Chaos active: Inhibiting resonance hits.
+[Observability] 📡 Event: PROVOCATION_EFFECT - Resonance Inhibited by ProvocationEngine
+[OTel Export] 📤 Push: {"timestamp":"2026-03-12T00:26:06.290Z","traceId":"89cc4e41137438","spanId":"eef00c6b","severity":"INFO","body":"Resonance Inhibited by ProvocationEngine","attributes":{"service.name":"agentcache-ai","event.type":"PROVOCATION_EFFECT","type":"COGNITIVE","effect":"inhibition"}}
+   🔸 Resonance Hits during void: 0 (Expected: 0)
+[ProvocationEngine] ❄️ Withdrawing provocation: COGNITIVE_VOID
+[Observability] 📡 Event: PROVOCATION_WITHDRAWN - Chaos Withdrawn: COGNITIVE (COGNITIVE_VOID)
+[OTel Export] 📤 Push: {"timestamp":"2026-03-12T00:26:06.290Z","traceId":"8563cbc4bf749","spanId":"2c43028f","severity":"INFO","body":"Chaos Withdrawn: COGNITIVE (COGNITIVE_VOID)","attributes":{"service.name":"agentcache-ai","event.type":"PROVOCATION_WITHDRAWN","provocationId":"COGNITIVE_VOID","type":"COGNITIVE"}}
+
+4. Verifying Self-Correction Loop (The Golden Path)...
+   🔸 STEP A: Forcing ontological rejection...
+[PolicyEngine] Ontological validation failed for LEGAL. Payload: {
+  "command": "drop"
+}
+[SLOMonitor] ⏱️ Starting correction loop for: agent_chaos_tester
+[PolicyEngine] Message REJECTED by policy "ontological-purity": Ontology Violation: [
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "documentTitle"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  },
+  {
+    "code": "invalid_value",
+    "values": [
+      "contract",
+      "regulation",
+      "opinion",
+      "filing",
+      "patent",
+      "license",
+      "policy",
+      "amendment"
+    ],
+    "path": [
+      "documentType"
+    ],
+    "message": "Invalid option: expected one of \"contract\"|\"regulation\"|\"opinion\"|\"filing\"|\"patent\"|\"license\"|\"policy\"|\"amendment\""
+  },
+  {
+    "expected": "array",
+    "code": "invalid_type",
+    "path": [
+      "parties"
+    ],
+    "message": "Invalid input: expected array, received undefined"
+  },
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "effectiveDate"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  },
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "expirationDate"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  },
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "governingLaw"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  },
+  {
+    "expected": "array",
+    "code": "invalid_type",
+    "path": [
+      "clauses"
+    ],
+    "message": "Invalid input: expected array, received undefined"
+  },
+  {
+    "expected": "number",
+    "code": "invalid_type",
+    "path": [
+      "riskScore"
+    ],
+    "message": "Invalid input: expected number, received undefined"
+  },
+  {
+    "expected": "boolean",
+    "code": "invalid_type",
+    "path": [
+      "requiresHumanReview"
+    ],
+    "message": "Invalid input: expected boolean, received undefined"
+  }
+]
+[Observability] 📡 Event: POLICY - Message rejected by policy: ontological-purity
+[OTel Export] 📤 Push: {"timestamp":"2026-03-12T00:26:06.290Z","traceId":"202683120c3d8","spanId":"07065016","severity":"WARN","body":"Message rejected by policy: ontological-purity","attributes":{"service.name":"agentcache-ai","event.type":"POLICY","policyId":"ontological-purity","reason":"Ontology Violation: [\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"documentTitle\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"code\": \"invalid_value\",\n    \"values\": [\n      \"contract\",\n      \"regulation\",\n      \"opinion\",\n      \"filing\",\n      \"patent\",\n      \"license\",\n      \"policy\",\n      \"amendment\"\n    ],\n    \"path\": [\n      \"documentType\"\n    ],\n    \"message\": \"Invalid option: expected one of \\\"contract\\\"|\\\"regulation\\\"|\\\"opinion\\\"|\\\"filing\\\"|\\\"patent\\\"|\\\"license\\\"|\\\"policy\\\"|\\\"amendment\\\"\"\n  },\n  {\n    \"expected\": \"array\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"parties\"\n    ],\n    \"message\": \"Invalid input: expected array, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"effectiveDate\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"expirationDate\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"governingLaw\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"array\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"clauses\"\n    ],\n    \"message\": \"Invalid input: expected array, received undefined\"\n  },\n  {\n    \"expected\": \"number\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"riskScore\"\n    ],\n    \"message\": \"Invalid input: expected number, received undefined\"\n  },\n  {\n    \"expected\": \"boolean\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"requiresHumanReview\"\n    ],\n    \"message\": \"Invalid input: expected boolean, received undefined\"\n  }\n]","score":0,"sector":"LEGAL"}}
+[SemanticBus] 🛑 Message blocked by policy: Ontology Violation: [
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "documentTitle"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  },
+  {
+    "code": "invalid_value",
+    "values": [
+      "contract",
+      "regulation",
+      "opinion",
+      "filing",
+      "patent",
+      "license",
+      "policy",
+      "amendment"
+    ],
+    "path": [
+      "documentType"
+    ],
+    "message": "Invalid option: expected one of \"contract\"|\"regulation\"|\"opinion\"|\"filing\"|\"patent\"|\"license\"|\"policy\"|\"amendment\""
+  },
+  {
+    "expected": "array",
+    "code": "invalid_type",
+    "path": [
+      "parties"
+    ],
+    "message": "Invalid input: expected array, received undefined"
+  },
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "effectiveDate"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  },
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "expirationDate"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  },
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "governingLaw"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  },
+  {
+    "expected": "array",
+    "code": "invalid_type",
+    "path": [
+      "clauses"
+    ],
+    "message": "Invalid input: expected array, received undefined"
+  },
+  {
+    "expected": "number",
+    "code": "invalid_type",
+    "path": [
+      "riskScore"
+    ],
+    "message": "Invalid input: expected number, received undefined"
+  },
+  {
+    "expected": "boolean",
+    "code": "invalid_type",
+    "path": [
+      "requiresHumanReview"
+    ],
+    "message": "Invalid input: expected boolean, received undefined"
+  }
+]
+   🔸 STEP B: Simulating agent self-correction after delay...
+[CognitiveEngine] 🕸️ Weaving memory into the hologram: "Valid Finance Signal..."
+⚠️ No OPENAI_API_KEY. Using deterministic mock embedding.
+[CORTEX] 🧠 Synapse Streamed [1773275167107-0]: [FINANCE] Semantic Bus: Valid Finance Signal...
+[SLOMonitor] ✅ Correction loop completed for agent_chaos_tester in 817ms
+[Observability] 📡 Event: SLO_METRIC - Self-Correction Completed: 817ms
+[OTel Export] 📤 Push: {"timestamp":"2026-03-12T00:26:07.107Z","traceId":"3fac19ad6974c8","spanId":"190aff6f","severity":"INFO","body":"Self-Correction Completed: 817ms","attributes":{"service.name":"agentcache-ai","event.type":"SLO_METRIC","metric":"self_correction_duration","value":817,"errorId":"agent_chaos_tester"}}
+[Observability] 📡 Event: BUS_PUBLISH - [FINANCE] Semantic Bus: Valid Finance Signal...
+[OTel Export] 📤 Push: {"timestamp":"2026-03-12T00:26:07.107Z","traceId":"e87eb59db0801","spanId":"e85e3832","severity":"INFO","body":"[FINANCE] Semantic Bus: Valid Finance Signal...","attributes":{"service.name":"agentcache-ai","event.type":"BUS_PUBLISH","sector":"FINANCE","originAgent":"agent_chaos_tester","circleId":"chaos_circle_1"}}
+[SemanticBus] 📡 Published message from finance. Entities found: 
+
+📊 FINAL SLO SNAPSHOT:
+   ✅ Resonance Success Rate: 100.0%
+   ✅ Mean Correction Duration: 817ms
+   ✅ P95 Latency: 817ms
+
+✨ Phase 13 Chaos Loop Verified. System autonomously recovered from intentional stress.

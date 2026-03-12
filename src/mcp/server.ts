@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**
  * @license
  * Copyright (c) 2026 AgentCache.ai. All rights reserved.
@@ -7,7 +8,6 @@
  * Unauthorized copying, distribution, or modification of this file, 
  * via any medium, is strictly prohibited.
  */
-#!/usr/bin/env node
 
 /**
  * AgentCache MCP Server
