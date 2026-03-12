@@ -157,6 +157,8 @@ export class AgentCacheCognitiveService {
         id, 
         status: result.status, 
         drift: result.drift,
+        freshVector: result.freshVector,
+        storedVector: result.storedVector,
         timestamp: Date.now() 
       }, 'cognitive');
     }

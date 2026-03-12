@@ -4,13 +4,14 @@ import ShadowGraph from './ShadowGraph.jsx';
 import SavingsDashboard from './SavingsDashboard.jsx';
 import './WorkspaceDashboard.css'; 
 import { DiscoveryFeed } from './DiscoveryFeed.jsx';
+import DriftTopography from './DriftTopography.jsx';
 
 const IntelligenceDashboard = ({ onBack }) => {
     const [data, setData] = useState({ nodes: [], links: [] });
     const [selectedNode, setSelectedNode] = useState(null);
     const [loading, setLoading] = useState(true);
     const [ingestInput, setIngestInput] = useState('');
-    const [viewMode, setViewMode] = useState('graph'); // 'graph' or 'swarm'
+    const [viewMode, setViewMode] = useState('graph'); // 'graph', 'swarm', or 'topo'
     const [boids, setBoids] = useState([]);
     const [boidsConfig, setBoidsConfig] = useState({
         separationWeight: 1.5,
@@ -149,6 +150,12 @@ const IntelligenceDashboard = ({ onBack }) => {
                     >
                         SWARM
                     </button>
+                    <button 
+                        onClick={() => setViewMode('topo')}
+                        style={{ background: viewMode === 'topo' ? 'cyan' : 'transparent', color: viewMode === 'topo' ? 'black' : 'cyan', border: 'none', padding: '5px 10px', borderRadius: '2px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                    >
+                        TOPO
+                    </button>
                 </div>
 
                 {/* Intuition Toggle */}
@@ -281,16 +288,20 @@ const IntelligenceDashboard = ({ onBack }) => {
                 </div>
             )}
 
-            {/* Main Graph/Swarm */}
+            {/* Main Graph/Swarm/Topo */}
             <div style={{ width: '100%', height: '100%' }}>
-                <ShadowGraph 
-                    nodes={data.nodes} 
-                    links={data.links} 
-                    onNodeClick={setSelectedNode} 
-                    mode={viewMode}
-                    agents={boids}
-                    intentTarget={intuitionData.intentTarget}
-                />
+                {viewMode === 'topo' ? (
+                    <DriftTopography active={viewMode === 'topo'} />
+                ) : (
+                    <ShadowGraph 
+                        nodes={data.nodes} 
+                        links={data.links} 
+                        onNodeClick={setSelectedNode} 
+                        mode={viewMode}
+                        agents={boids}
+                        intentTarget={intuitionData.intentTarget}
+                    />
+                )}
                 {loading && viewMode === 'graph' && (
                     <div style={{ color: 'cyan', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
                         <div className="loader" style={{ marginBottom: '10px' }}></div>

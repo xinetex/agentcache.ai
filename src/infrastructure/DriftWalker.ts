@@ -55,7 +55,7 @@ export class DriftWalker {
     /**
      * Scan a specific vector ID for "Semantic Rot"
      */
-    async checkDrift(id: string): Promise<{ drift: number, status: 'healthy' | 'decaying' | 'dead', originalText?: string }> {
+    async checkDrift(id: string): Promise<{ drift: number, status: 'healthy' | 'decaying' | 'dead', originalText?: string, freshVector?: number[], storedVector?: number[] }> {
         if (!this.index) throw new Error('Vector Index not configured');
 
         // 1. Fetch Stored Vector & Metadata
@@ -67,7 +67,7 @@ export class DriftWalker {
 
         const stored = results[0];
         const originalText = (stored.metadata?.query || stored.data) as string;
-        const storedMyVector = stored.vector;
+        const storedVector = stored.vector;
 
         if (!originalText) {
             return { drift: 0, status: 'healthy' };
@@ -77,14 +77,14 @@ export class DriftWalker {
         const freshVector = await generateEmbedding(originalText);
 
         // 3. Compare
-        const similarity = this.cosineSimilarity(storedMyVector, freshVector);
+        const similarity = this.cosineSimilarity(storedVector, freshVector);
         const drift = 1 - similarity;
 
         let status: 'healthy' | 'decaying' | 'dead' = 'healthy';
         if (drift > this.DRIFT_CRITICAL) status = 'dead';
         else if (drift > this.DRIFT_WARNING) status = 'decaying';
 
-        return { drift, status, originalText };
+        return { drift, status, originalText, freshVector, storedVector };
     }
 
     /**
