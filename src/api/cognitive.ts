@@ -99,6 +99,9 @@ cognitiveRouter.post('/evolve', async (c) => {
   });
 });
 
+import { streamSSE } from 'hono/streaming';
+import { eventBus, AgentEvent } from '../lib/event-bus.js';
+
 cognitiveRouter.post('/fleet/sync', async (c) => {
   const authError = await authenticateApiKey(c);
   if (authError) return authError;
@@ -115,6 +118,43 @@ cognitiveRouter.post('/fleet/sync', async (c) => {
   return c.json({
     success: true,
     ...result,
+  });
+});
+
+cognitiveRouter.get('/stream', async (c) => {
+  return streamSSE(c, async (stream) => {
+    // Send initial connection message
+    await stream.writeSSE({
+      data: JSON.stringify({ type: 'sys:connected', timestamp: Date.now() }),
+      event: 'message',
+      id: String(Date.now()),
+    });
+
+    // Callback wrapper to handle subscription
+    const listener = (event: AgentEvent) => {
+      stream.writeSSE({
+        data: JSON.stringify(event),
+        event: 'message',
+        id: String(Date.now()),
+      });
+    };
+
+    // Subscribe
+    const unsubscribe = eventBus.subscribe(listener);
+
+    // Keep-Alive Loop
+    const interval = setInterval(() => {
+      // Optional: Heartbeat
+    }, 15000);
+
+    // Cleanup when connection closes
+    stream.onAbort(() => {
+      clearInterval(interval);
+      unsubscribe();
+    });
+
+    // Wait indefinitely (until abort)
+    await new Promise(() => {});
   });
 });
 

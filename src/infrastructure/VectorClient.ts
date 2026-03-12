@@ -156,7 +156,17 @@ export class VectorClient {
                 headers: this.getHeaders(tenantId),
                 body: JSON.stringify({ vector, k, filter })
             });
-            return response.ok ? await response.json() : [];
+
+            if (!response.ok) {
+                const text = await response.text();
+                if (text.includes('<html>')) {
+                    console.error('❌ CVS Search returned HTML. Service likely down or misconfigured.');
+                    return [];
+                }
+                throw new Error(`CVS Search Error: ${response.statusText}`);
+            }
+
+            return await response.json();
         } catch (e) {
             console.error('CVS Search Failed:', e);
             return [];
@@ -203,9 +213,20 @@ export class VectorClient {
 
         try {
             const response = await fetch(`${this.baseUrl}/${id}`, { headers: this.getHeaders(tenantId) });
+            
+            if (!response.ok) {
+                const text = await response.text();
+                if (text.includes('<html>')) {
+                    console.error('❌ CVS Fetch returned HTML. Service likely down.');
+                    return [];
+                }
+                return [];
+            }
+
             const data = await response.json();
             return data.vector || []; 
         } catch (e) {
+            console.error('CVS Fetch Failed:', e);
             return [];
         }
     }

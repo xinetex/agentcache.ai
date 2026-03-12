@@ -93,6 +93,9 @@ function queryHash(query: string) {
 }
 
 describe.sequential('AgentCache cognitive claim coverage', () => {
+  // Force strict mock mode for environmental isolation
+  process.env.VECTOR_SERVICE_URL = 'mock';
+
   it('Predictive Synapse learns a transition and prefetches the likely next query', async () => {
     const redisMock = createRedisMock();
     const service = new AgentCacheCognitiveService({ redis: redisMock as any });
