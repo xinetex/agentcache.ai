@@ -12,6 +12,8 @@ import { redis } from '../lib/redis.js';
 import { queryMemory } from '../lib/vector.js';
 import { createHash } from 'crypto';
 import { observabilityService } from './ObservabilityService.js';
+import { provocationEngine } from './ProvocationEngine.js';
+import { sloMonitor } from './SLOMonitor.js';
 
 export interface ResonanceResult {
     id: string;
@@ -78,6 +80,17 @@ export class ResonanceService {
 
         // 1. Semantic Search with Metadata Scoping (Phase 7 Hardening)
         const results = await queryMemory(query, 10, { circleId: { $in: circles } });
+
+        // 1.5 Provocation: Cognitive Chaos (Inhibit Resonance)
+        if (provocationEngine.shouldInhibitResonance()) {
+            console.log(`[Resonance] 🧠 Cognitive Chaos active: Inhibiting resonance hits.`);
+            await observabilityService.track({
+                type: 'PROVOCATION_EFFECT' as any,
+                description: `Resonance Inhibited by ProvocationEngine`,
+                metadata: { type: 'COGNITIVE', effect: 'inhibition' }
+            });
+            return [];
+        }
         
         const resonanceResults: ResonanceResult[] = [];
 
@@ -111,6 +124,21 @@ export class ResonanceService {
                     }
                 }).catch(e => console.error('Observability track failed', e));
             }
+        }
+
+        if (resonanceResults.length > 0) {
+            await sloMonitor.trackResonance(true);
+            await observabilityService.track({
+                type: 'RESONANCE' as any,
+                description: `Lateral resonance found in circle ${circles[0]}`,
+                metadata: {
+                    query,
+                    hits: resonanceResults.length,
+                    circles
+                }
+            });
+        } else {
+            await sloMonitor.trackResonance(false);
         }
 
         return resonanceResults.sort((a, b) => b.normalizedScore - a.normalizedScore);

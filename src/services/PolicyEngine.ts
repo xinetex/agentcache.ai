@@ -11,6 +11,9 @@
 import { BusMessage } from './SemanticBusService.js';
 import { ontologyRegistry } from '../ontology/OntologyRegistry.js';
 import { observabilityService } from './ObservabilityService.js';
+import { sloMonitor } from './SLOMonitor.js';
+import { chaosRecoveryEngine, Sector } from './ChaosRecoveryEngine.js';
+import { reputationService } from './ReputationService.js';
 
 export interface PolicyResult {
     allowed: boolean;
@@ -48,16 +51,38 @@ export class PolicyEngine {
 
                 const schema = ontology.schema;
                 try {
-                    schema.parse(msg.payload);
+                    const validation = schema.safeParse(msg.payload);
+                    if (!validation.success) {
+                        console.log(`[PolicyEngine] Ontological validation failed for ${msg.sector}. Payload:`, JSON.stringify(msg.payload, null, 2));
+
+                        // Signal SLO Monitor that a correction loop has started for this agent
+                        if (msg.originAgent) {
+                            sloMonitor.trackCorrectionStart(msg.originAgent);
+
+                            // Compute and track a recovery plan (Phase 13 Expansion)
+                            const recoveryPlan = chaosRecoveryEngine.computePlan({
+                                sector: msg.sector.toLowerCase() as Sector,
+                                ttlMs: ontology.cacheTtlSeconds * 1000,
+                                eventAgeMs: 0, // Fresh rejection
+                                errorKind: 'schema_violation',
+                                previousAttempts: 0,
+                                maxAllowedAttempts: 3,
+                                severity: 'medium'
+                            });
+                            // Fire and forget tracking to avoid blocking the bus
+                            sloMonitor.trackRecoveryPlan(recoveryPlan).catch(e => console.error('Recovery tracking failed', e));
+                        }
+
+                        return {
+                            allowed: false,
+                            score: 0.0,
+                            reason: `Ontology Violation: ${JSON.stringify(validation.error.issues, null, 2)}`
+                        };
+                    }
                     return { allowed: true, score: 1.0 };
                 } catch (e: any) {
-                    console.log(`[PolicyEngine] Ontological validation failed for ${msg.sector}. Payload:`, JSON.stringify(msg.payload, null, 2));
-                    console.log(`[PolicyEngine] Zod Error:`, e.errors);
-                    return { 
-                        allowed: false, 
-                        score: 0.0, 
-                        reason: `Ontology Violation: ${e.message}` 
-                    };
+                    console.log(`[PolicyEngine] Critical Error during validation:`, e.message);
+                    return { allowed: false, score: 0.0, reason: `Policy System Error: ${e.message}` };
                 }
             }
         });
@@ -71,6 +96,10 @@ export class PolicyEngine {
                 const forbidden = ['system:', 'override:', 'grant access', 'drop table'];
                 
                 if (forbidden.some(p => payloadStr.includes(p))) {
+                    if (msg.originAgent) {
+                        reputationService.trackStat(msg.originAgent, 'totalTasks');
+                        reputationService.trackStat(msg.originAgent, 'cognitiveErrors');
+                    }
                     return { allowed: false, score: 0.0, reason: 'Security Violation: Adversarial Signal Pattern' };
                 }
                 return { allowed: true, score: 1.0 };
@@ -104,6 +133,30 @@ export class PolicyEngine {
         }
 
         return { allowed: true, score: 1.0 };
+    }
+
+    /**
+     * Determine if a message is a candidate for Optimistic Governance (Asynchronous Check).
+     * High-stakes or high-value signals must always be synchronous.
+     */
+    isOptimisticCandidate(msg: BusMessage): boolean {
+        const sector = msg.sector.toLowerCase();
+        
+        // 1. Sector-based hard blocks: Healthcare is NEVER optimistic (High Stakes)
+        if (sector === 'healthcare') return false;
+
+        // 2. Value-based thresholds (Example: Finance trades > $1000 are sync)
+        if (sector === 'finance' && msg.payload?.quantity && msg.payload?.price) {
+            const totalValue = msg.payload.quantity * msg.payload.price;
+            if (totalValue > 1000) return false;
+        }
+
+        // 3. Security check: messages with sensitive keywords are NEVER optimistic
+        const payloadStr = JSON.stringify(msg.payload || msg.content).toLowerCase();
+        const sensitive = ['admin', 'root', 'security', 'auth'];
+        if (sensitive.some(s => payloadStr.includes(s))) return false;
+
+        return true;
     }
 
     /**

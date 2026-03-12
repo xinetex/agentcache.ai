@@ -9,10 +9,11 @@
  */
 
 import { redis } from '../lib/redis.js';
+import { otelBridge } from './OpenTelemetryBridge.js';
 
 export interface TelemetryEvent {
     id: string;
-    type: 'RESONANCE' | 'CONFLICT' | 'POLICY' | 'MEMORY';
+    type: 'RESONANCE' | 'CONFLICT' | 'POLICY' | 'MEMORY' | 'CLAWBACK' | 'REPUTATION_UPDATE' | 'RECOVERY_PLAN';
     timestamp: number;
     sector?: string;
     description: string;
@@ -41,8 +42,11 @@ export class ObservabilityService {
         // 1. Log to console for local visibility
         console.log(`[Observability] 📡 Event: ${fullEvent.type} - ${fullEvent.description}`);
 
-        // 2. Publish to Redis for the Real-Time Dashboard
-        await redis.publish(this.CHANNEL, JSON.stringify(fullEvent));
+        // 3. Broadcast for real-time dashboard
+        await redis.publish(this.CHANNEL, JSON.stringify(event));
+
+        // 4. Export to OpenTelemetry (Phase 13)
+        await otelBridge.exportEvent(fullEvent);
 
         // 3. (Optional) Store recent history in a Redis list for Dashboard recovery
         await redis.lpush(`${this.CHANNEL}:history`, JSON.stringify(fullEvent));
