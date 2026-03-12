@@ -10,6 +10,7 @@
 
 import { EmbeddingProvider } from '../lib/llm/types.js';
 import { LocalEmbeddingProvider } from '../lib/llm/providers/local-embeddings.js';
+import { provocationEngine } from '../services/ProvocationEngine.js';
 
 /**
  * Shard Interface: Represents a single unit of vector storage.
@@ -105,6 +106,9 @@ export class VectorClient {
      * Phase 11 adds O(log N) routing logic.
      */
     async search(vector: number[], k: number = 5, filter?: Record<string, any>): Promise<{ id: number, distance: number, metadata?: any }[]> {
+        // 0.5 Provocation: Infrastructure Chaos (Latency)
+        await provocationEngine.applyLatency(500); // Base latency stress of 500ms
+
         if (this.baseUrl === 'mock') {
             const allResults: any[] = [];
             

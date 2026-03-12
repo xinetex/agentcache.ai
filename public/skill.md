@@ -101,6 +101,13 @@ curl -X POST https://agentcache.ai/api/ontology/bridge \
   -d '{ "term": "risk" }'
 ```
 
+#### Resonance via SDK (Recommended for Agents)
+
+```typescript
+const resonance = await ac.bridgeAgenticConcept("risk");
+// { "finance": "exposure", "robotics": "hazard", "biotech": "toxicity", ... }
+```
+
 Returns: finance:`exposure`, robotics:`hazard`, biotech:`toxicity`, legal:`liability`, healthcare:`adverse_event`, energy:`outage_risk`
 
 ---

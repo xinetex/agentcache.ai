@@ -10,6 +10,19 @@
 
 /**
  * AgentCache SDK: The Developer Wedge
+ * 
+ * QUICKSTART (30 Seconds):
+ * ```typescript
+ * import OpenAI from 'openai';
+ * import { AgentCacheClient } from '@agentcache/node';
+ * 
+ * const openai = new OpenAI();
+ * const ac = new AgentCacheClient({ apiKey: 'YOUR_KEY' });
+ * 
+ * // One line to wrap
+ * const client = ac.wrapOpenAI(openai);
+ * ```
+ * 
  * A lightweight wrapper to add semantic caching and coherence telemetry to any LLM app.
  * Now evolved with Phase 5 Resonance: Lateral Knowledge Synthesis.
  */
@@ -211,5 +224,27 @@ export class AgentCacheClient {
         if (data.coherence !== undefined) this.lastCoherenceScore = data.coherence;
         if (data.byzantine !== undefined) this.lastByzantineFlag = data.byzantine;
         if (data.savedUsd !== undefined) this.totalSavingsUsd += data.savedUsd;
+    }
+
+    /**
+     * Agentic Resonance: Federate a concept across industry sectors.
+     * Returns equivalent terms for the concept in other domains.
+     */
+    async bridgeAgenticConcept(term: string): Promise<Record<string, string>> {
+        try {
+            const res = await fetch(`${this.baseUrl}/api/ontology/bridge`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-Key': this.apiKey
+                },
+                body: JSON.stringify({ term })
+            });
+            if (!res.ok) return {};
+            return await res.json();
+        } catch (err) {
+            console.error(`[AgentCache] Resonance bridge failed:`, err);
+            return {};
+        }
     }
 }
