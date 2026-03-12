@@ -13,8 +13,7 @@ import { createHash } from 'crypto';
 import { stableHash } from '../lib/stable-json.js';
 import { cognitiveMemory } from './cognitive-memory.js';
 import { eventBus } from '../lib/event-bus.js';
-import { shodanService } from './ShodanService.js';
-import { bancacheService } from './BancacheService.js';
+import { shadowSentryService } from './ShadowSentryService.js';
 import { observabilityService } from './ObservabilityService.js';
 
 export interface CacheCheckResult {
@@ -140,25 +139,18 @@ export class SemanticCacheService {
         let quarantined = false;
 
         if (params.target_ip || params.target_banner) {
-            console.log(`[Cognitive] 🔍 Checking Environmental Risk for IP: ${params.target_ip || 'none'}, Banner: ${params.target_banner ? 'present' : 'none'}`);
-            const shodanRisk = params.target_ip ? (await shodanService.getRiskProfile(params.target_ip)).riskScore : 0;
-            const bannerRisk = params.target_banner ? (await bancacheService.analyzeBanner(params.target_banner)).riskScore : 0;
-            
-            environmentalRisk = Math.max(shodanRisk, bannerRisk);
-            console.log(`[Cognitive] 🛡️ Environmental Risk: ${environmentalRisk} (Shodan: ${shodanRisk}, Banner: ${bannerRisk})`);
+            const riskResult = await shadowSentryService.assessRisk({
+                target_ip: params.target_ip,
+                target_banner: params.target_banner,
+                drift,
+                sessionId: params.sessionId
+            });
 
-            // AUTO-QUARANTINE LOGIC: Drift + Environmental Risk
-            if (drift > 0.1 && environmentalRisk > 7.0) {
-                quarantined = true;
+            environmentalRisk = riskResult.riskScore;
+            quarantined = riskResult.quarantined;
+            
+            if (quarantined) {
                 driftBypass = true;
-                console.log(`[Cognitive] 🚨 AUTO-QUARANTINE: Drift (${drift}) correlated with Environmental Risk (${environmentalRisk}).`);
-                
-                eventBus.emit('quarantine_event', {
-                    sessionId: params.sessionId,
-                    drift,
-                    environmentalRisk,
-                    target_ip: params.target_ip
-                });
             }
         }
 

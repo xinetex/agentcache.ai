@@ -23,7 +23,7 @@ import { z } from 'zod';
 import { redis } from './lib/redis.js';
 import { autonomyService } from './services/AutonomyService.js';
 import { ContextManager } from './infrastructure/ContextManager.js';
-import vercelIntegration from './integrations/vercel.js';
+// import vercelIntegration from './integrations/vercel.js'; // Lazy loaded below
 import { antiCache, CacheInvalidator, UrlMonitor, FreshnessCalculator, FreshnessRuleEngine } from './mcp/anticache.js';
 import { getTierQuota, getTierFeatures, getAllTiers } from './config/tiers.js';
 import { canUseNamespace, isTTLAllowed, getFeatureLimit } from './lib/tierChecker.js';
@@ -212,177 +212,197 @@ app.use('*', async (c, next) => {
   }
 });
 
-// Root-level discovery routes (Agentic SEO)
-import { generateAgentsJson, generateSkillMd } from './lib/hub/discovery.js';
+// Lazy Loader Helper
+const lazy = (loader: () => Promise<any>) => {
+  return async (c: any, next: any) => {
+    try {
+      const module = await loader();
+      const router = module.default || Object.values(module).find(v => v instanceof Hono) || module.router;
+      if (!router) {
+        console.error(`[Lazy] Router not found in module for path: ${c.req.path}`);
+        throw new Error('Lazy router not found in module');
+      }
 
-app.get('/.well-known/agents.json', async (c) => {
-  return c.json(generateAgentsJson());
-});
+      // Calculate path relative to the mount point
+      let subPath = c.req.param('path') || c.req.param('sub');
+      if (subPath) {
+        subPath = subPath.startsWith('/') ? subPath : '/' + subPath;
+      } else {
+        const parts = c.req.path.split('/');
+        subPath = '/' + parts.slice(3).join('/');
+      }
 
-app.get('/skill.md', async (c) => {
-  const skillMd = generateSkillMd();
-  c.header('Content-Type', 'text/markdown; charset=utf-8');
-  // Cache discovery manifest for 1 hour to reduce load while keeping it fresh
-  c.header('Cache-Control', 'public, max-age=3600');
-  return c.body(skillMd);
-});
+      // Handle disturbed/locked body (WAF middleware consumes it)
+      const method = c.req.method;
+      if (['POST', 'PUT', 'PATCH'].includes(method)) {
+        try {
+          const body = await c.req.json().catch(() => null);
+          return router.request(subPath, {
+            method,
+            headers: c.req.header(),
+            body: body ? JSON.stringify(body) : undefined
+          }, c.env);
+        } catch (bodyErr) {
+          // If body reading fails or is already locked, try native fetch fallback
+          return router.request(subPath, c.req.raw, c.env);
+        }
+      }
+
+      return router.request(subPath, c.req.raw, c.env);
+    } catch (err) {
+      console.error(`[Lazy] Critical Error mounting ${c.req.path}:`, err);
+      return c.json({ error: 'Lazy Load Error', message: err instanceof Error ? err.message : String(err) }, 500);
+    }
+  };
+};
+
+// Mounted lazily below
 
 // Mount Vercel integration routes
-app.route('/api/integrations/vercel', vercelIntegration);
+app.all('/api/integrations/vercel/:path{.+}?', lazy(() => import('./integrations/vercel.js')));
 
-// Provision API endpoints
-import { provisionClient, getApiKeyInfo, provisionJettyThunder } from './api/provision-hono.js';
-import { clawAgent, clawStorage, clawProvision, clawHealth, clawMemoryStore, clawMemoryRecall, clawMemoryForget, clawMemoryShare } from './api/clawsave.js';
-import decisionsRouter from './api/decisions.js';
-import galaxyRouter from './api/galaxy.js';
-import explorerRouter from './api/explorer.js';
-import governanceRouter from './api/governance.js';
-import labRouter from './api/lab.js';
-import authRouter from './api/auth.js';
-import billingRouter from './api/billing.js';
-import creditsRouter from './api/credits.js';
-import adminRouter from './api/admin.js';
-import eventsRouter from './api/events.js';
-import { patternsRouter } from './api/patterns.js';
-import { geoRouter } from './api/geo.js';
-import cdnRouter from './api/cdn.js';
-import transcodeRouter from './api/transcode.js';
-import brainRouter from './api/brain.js';
-import muscleRouter from './api/muscle.js';
-import memoryRouter from './api/memory.js';
-import cognitiveRouter from './api/cognitive.js';
-import securityRouter from './api/security.js';
-import hubRouter from './api/hub.js';
-import needsRouter from './api/needs.js';
-import catalogRouter from './api/catalog.js';
-import focusGroupRouter from './api/focus-group.js';
-import toolScannerRouter from './api/tool-scanner.js';
-import marketplaceRouter from './api/marketplace.js';
-import cacheRouter from './api/cache.js';
-
+// -----------------------------------------------------------------------------
+// Security & Auth
+// -----------------------------------------------------------------------------
 import { authenticateApiKey } from './middleware/auth.js';
-import contentRouter from './api/content.js';
 import { cognitiveMemory } from './services/cognitive-memory.js';
 
-app.post('/api/provision', provisionClient);
-// ...
+
+
+app.post('/api/provision', async (c) => {
+  const { provisionClient } = await import('./api/provision-hono.js');
+  return provisionClient(c);
+});
 // Mount Content API for Bento Grid
-app.route('/api/content', contentRouter);
-app.get('/api/provision/:api_key', getApiKeyInfo);
-app.post('/api/provision/jettythunder', provisionJettyThunder);
+// Mount Content API for Bento Grid
+app.all('/api/content/:path{.+}?', lazy(() => import('./api/content.js')));
+
+app.get('/api/provision/:api_key', async (c) => {
+  const { getApiKeyInfo } = await import('./api/provision-hono.js');
+  return getApiKeyInfo(c);
+});
+
+app.post('/api/provision/jettythunder', async (c) => {
+  const { provisionJettyThunder } = await import('./api/provision-hono.js');
+  return provisionJettyThunder(c);
+});
 
 // ClawSave.com API (Brain + Memory via AgentCache, Storage via JettyThunder)
-app.get('/api/clawsave', clawHealth);
-app.post('/api/claw/agent', clawAgent);
-app.post('/api/claw/storage', clawStorage);
-app.post('/api/claw/provision', clawProvision);
+// ClawSave.com API (Brain + Memory via AgentCache, Storage via JettyThunder)
+app.get('/api/clawsave', async (c) => {
+    const { clawHealth } = await import('./api/clawsave.js');
+    return clawHealth(c);
+});
+app.post('/api/claw/agent', async (c) => {
+    const { clawAgent } = await import('./api/clawsave.js');
+    return clawAgent(c);
+});
+app.post('/api/claw/storage', async (c) => {
+    const { clawStorage } = await import('./api/clawsave.js');
+    return clawStorage(c);
+});
+app.post('/api/claw/provision', async (c) => {
+    const { clawProvision } = await import('./api/clawsave.js');
+    return clawProvision(c);
+});
 
 // ClawSave Unified Memory API (4-layer agent storage)
-app.post('/api/claw/memory/store', clawMemoryStore);
-app.post('/api/claw/memory/recall', clawMemoryRecall);
-app.post('/api/claw/memory/forget', clawMemoryForget);
-app.post('/api/claw/memory/share', clawMemoryShare);
+app.post('/api/claw/memory/store', async (c) => {
+    const { clawMemoryStore } = await import('./api/clawsave.js');
+    return clawMemoryStore(c);
+});
+app.post('/api/claw/memory/recall', async (c) => {
+    const { clawMemoryRecall } = await import('./api/clawsave.js');
+    return clawMemoryRecall(c);
+});
+app.post('/api/claw/memory/forget', async (c) => {
+    const { clawMemoryForget } = await import('./api/clawsave.js');
+    return clawMemoryForget(c);
+});
+app.post('/api/claw/memory/share', async (c) => {
+    const { clawMemoryShare } = await import('./api/clawsave.js');
+    return clawMemoryShare(c);
+});
 
 // Mount Auth API
-app.route('/api/auth', authRouter);
-app.route('/api/billing', billingRouter);
-app.route('/api/credits', creditsRouter);
-app.route('/api/marketplace', marketplaceRouter);
+app.all('/api/auth/:path{.+}?', lazy(() => import('./api/auth.js')));
+app.all('/api/billing/:path{.+}?', lazy(() => import('./api/billing.js')));
+app.all('/api/credits/:path{.+}?', lazy(() => import('./api/credits.js')));
+app.all('/api/marketplace/:path{.+}?', lazy(() => import('./api/marketplace.js')));
 
 // Mount Muscle API (JettyThunder)
-app.route('/api/muscle', muscleRouter);
+app.all('/api/muscle/:path{.+}?', lazy(() => import('./api/muscle.js')));
 
 // Mount Brain API (AutoMem)
-app.route('/api/brain', brainRouter);
+app.all('/api/brain/:path{.+}?', lazy(() => import('./api/brain.js')));
 
 // Mount Services
-app.route('/api/memory', memoryRouter);
-app.route('/api/cognitive', cognitiveRouter);
-app.route('/api/security', securityRouter);
-app.route('/api/cache', cacheRouter);
+app.all('/api/memory/:path{.+}?', lazy(() => import('./api/memory.js')));
+app.all('/api/cognitive/:path{.+}?', lazy(() => import('./api/cognitive.js')));
+app.all('/api/security/:path{.+}?', lazy(() => import('./api/security.js')));
+app.all('/api/cache/:path{.+}?', lazy(() => import('./api/cache.js')));
 
 // Mount Decisions & Galaxy API
+app.all('/api/decisions/:path{.+}?', lazy(() => import('./api/decisions.js')));
+app.all('/api/galaxy/:path{.+}?', lazy(() => import('./api/galaxy.js')));
+app.all('/api/explorer/:path{.+}?', lazy(() => import('./api/explorer.js')));
+app.all('/api/governance/:path{.+}?', lazy(() => import('./api/governance.js')));
+app.all('/api/lab/:path{.+}?', lazy(() => import('./api/lab.js')));
+app.all('/api/admin/:path{.+}?', lazy(() => import('./api/admin.js')));
 
-// Mount Decisions & Galaxy API
-app.route('/api/decisions', decisionsRouter);
-app.route('/api/galaxy', galaxyRouter);
-app.route('/api/explorer', explorerRouter);
-app.route('/api/governance', governanceRouter);
-app.route('/api/lab', labRouter);
-app.route('/api/admin', adminRouter);
 // Mount Treasury Sub-route
-import { treasuryRouter } from './api/admin/treasury_v2.js';
-import { truthRouter } from './api/admin/truth.js';
-import { cortexRouter } from './api/admin/cortex.js';
-import { defenseRouter } from './api/admin/defense.js';
-app.route('/api/admin/treasury', treasuryRouter);
-app.route('/api/admin/truth', truthRouter);
-app.route('/api/admin/cortex', cortexRouter);
-app.route('/api/admin/defense', defenseRouter);
+app.all('/api/admin/treasury/:path{.+}?', lazy(() => import('./api/admin/treasury_v2.js')));
+app.all('/api/admin/truth/:path{.+}?', lazy(() => import('./api/admin/truth.js')));
+app.all('/api/admin/cortex/:path{.+}?', lazy(() => import('./api/admin/cortex.js')));
+app.all('/api/admin/defense/:path{.+}?', lazy(() => import('./api/admin/defense.js')));
 
 // Admin/Internal APIs
-import { armorRouter } from './api/admin/armor.js';
-app.route('/api/admin/armor', armorRouter);
+app.all('/api/admin/armor/:path{.+}?', lazy(() => import('./api/admin/armor.js')));
 
 // Aggregate Health (all subsystems)
-import { healthRouter } from './api/admin/health.js';
-app.route('/api/admin/health', healthRouter);
+app.all('/api/admin/health/:path{.+}?', lazy(() => import('./api/admin/health.js')));
 
-import { agentsAdminRouter } from './api/admin/agents.js';
-app.route('/api/admin/agents', agentsAdminRouter);
+app.all('/api/admin/agents/:path{.+}?', lazy(() => import('./api/admin/agents.js')));
 
-import { swarmAdminRouter } from './api/admin/swarm.js';
-app.route('/api/admin/swarm', swarmAdminRouter);
+app.all('/api/admin/swarm/:path{.+}?', lazy(() => import('./api/admin/swarm.js')));
 
-import { pipelineAdminRouter } from './api/admin/pipeline.js';
-app.route('/api/admin/pipeline', pipelineAdminRouter);
+app.all('/api/admin/pipeline/:path{.+}?', lazy(() => import('./api/admin/pipeline.js')));
 
-import { symbiontAdminRouter } from './api/admin/symbiont.js';
-app.route('/api/admin/symbiont', symbiontAdminRouter);
+app.all('/api/admin/symbiont/:path{.+}?', lazy(() => import('./api/admin/symbiont.js')));
 
 
 // Platform Revenue Reporting
-import platformRouter from './api/platform.js';
-app.route('/api/platform', platformRouter);
+app.all('/api/platform/:path{.+}?', lazy(() => import('./api/platform.js')));
 
 // Public V1 API
-import { v1Router } from './api/v1/router.js';
-app.route('/api/v1', v1Router);
+app.all('/api/v1/:path{.+}?', lazy(() => import('./api/v1/router.js')));
 
-import { mcpRouter } from './api/mcp/router.js';
-app.route('/mcp', mcpRouter);
+app.all('/mcp/:path{.+}?', lazy(() => import('./api/mcp/router.js')));
 
-app.route('/api/events', eventsRouter);
-app.route('/api/patterns', patternsRouter);
-app.route('/api/geo', geoRouter);
-app.route('/api/cdn', cdnRouter);
-app.route('/api/transcode', transcodeRouter);
+app.all('/api/events/:path{.+}?', lazy(() => import('./api/events.js')));
+app.all('/api/patterns/:path{.+}?', lazy(() => import('./api/patterns.js')));
+app.all('/api/geo/:path{.+}?', lazy(() => import('./api/geo.js')));
+app.all('/api/cdn/:path{.+}?', lazy(() => import('./api/cdn.js')));
+app.all('/api/transcode/:path{.+}?', lazy(() => import('./api/transcode.js')));
 
-import pipelineRouter from './api/pipeline.js';
-app.route('/api/pipeline', pipelineRouter);
+app.all('/api/pipeline/:path{.+}?', lazy(() => import('./api/pipeline.js')));
 
-import { motionRouter } from './api/motion.js';
-app.route('/api/motion', motionRouter);
+app.all('/api/motion/:path{.+}?', lazy(() => import('./api/motion.js')));
 
-import { biotechRouter } from './api/biotech.js';
-app.route('/api/biotech', biotechRouter);
+app.all('/api/biotech/:path{.+}?', lazy(() => import('./api/biotech.js')));
 
-import { financeRouter } from './api/finance.js';
-app.route('/api/finance', financeRouter);
+app.all('/api/finance/:path{.+}?', lazy(() => import('./api/finance.js')));
 
-import ontologyRouter from './api/ontology.js';
-app.route('/api/ontology', ontologyRouter);
+app.all('/api/ontology/:path{.+}?', lazy(() => import('./api/ontology.js')));
 
-import sentryRouter from './api/sentry.js';
-import lemmaRouter from './api/lemma.js';
-app.route('/api/lemma', lemmaRouter);
+app.all('/api/sentry/:path{.+}?', lazy(() => import('./api/sentry.js')));
+app.all('/api/lemma/:path{.+}?', lazy(() => import('./api/lemma.js')));
 
 // Agent Hub API (LinkedIn meets Yelp for agents)
-app.route('/api/hub', hubRouter);
-// Alias: /api/agents/register → hub agent registration (shorthand URL)
-import { agentRegistry, extractApiKey, AgentRegistration } from './lib/hub/registry.js';
+app.all('/api/hub/:path{.+}?', lazy(() => import('./api/hub.js')));
 
-const agentsRegisterGet = (c: any) => {
+// Alias: /api/agents/register → hub agent registration (shorthand URL)
+app.get('/api/agents/register', async (c) => {
   const accept = c.req.header('Accept') || '';
   if (accept.includes('application/json')) {
     return c.json({
@@ -396,11 +416,12 @@ const agentsRegisterGet = (c: any) => {
   }
   c.header('Content-Type', 'text/plain; charset=utf-8');
   return c.body('Welcome. POST to this URL with JSON: { "name": "...", "role": "..." }\n\nFull docs: https://www.maxxeval.com/skill.md\n');
-};
+});
 
-const agentsRegisterPost = async (c: any) => {
+app.post('/api/agents/register', async (c) => {
   try {
-    const body = await c.req.json() as AgentRegistration;
+    const { agentRegistry } = await import('./lib/hub/registry.js');
+    const body = await c.req.json();
     if (!body.name || !body.role) {
       return c.json({ error: 'Missing required fields: name, role' }, 400);
     }
@@ -415,27 +436,24 @@ const agentsRegisterPost = async (c: any) => {
   } catch (err: any) {
     return c.json({ error: err.message }, 500);
   }
-};
-
-app.get('/api/agents/register', agentsRegisterGet);
-app.get('/api/agents/register/', agentsRegisterGet);
-app.post('/api/agents/register', agentsRegisterPost);
-app.post('/api/agents/register/', agentsRegisterPost);
+});
 // Needs mirror API (MaxxEval system of record)
-app.route('/api/needs', needsRouter);
+app.all('/api/needs/:path{.+}?', lazy(() => import('./api/needs.js')));
 // Service catalog + custom cache requests
-app.route('/api/catalog', catalogRouter);
+app.all('/api/catalog/:path{.+}?', lazy(() => import('./api/catalog.js')));
 // Focus Group API (full study/session/analysis system)
-app.route('/api/focus-group', focusGroupRouter);
+app.all('/api/focus-group/:path{.+}?', lazy(() => import('./api/focus-group.js')));
 // Tool Safety Scanner (supply chain security for agent tools)
-app.route('/api/tools/scan', toolScannerRouter);
-app.route('/api/sentry', sentryRouter);
+app.all('/api/tools/scan/:path{.+}?', lazy(() => import('./api/tool-scanner.js')));
+app.all('/api/sentry/:path{.+}?', lazy(() => import('./api/sentry.js')));
 
-// ============================================================================
-// AGENT DISCOVERY LAYER
-// ============================================================================
+// Serve specific discovery paths for agents
+app.get('/skill.md', async (c) => {
+  const { generateSkillMd } = await import('./lib/hub/discovery.js');
+  c.header('Content-Type', 'text/markdown; charset=utf-8');
+  return c.body(generateSkillMd());
+});
 
-// Serve /.well-known/agents.json at the canonical path (not under /api/hub)
 app.get('/.well-known/agents.json', async (c) => {
   const { generateAgentsJson } = await import('./lib/hub/discovery.js');
   return c.json(generateAgentsJson());
