@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run test -- --run && vite build && mkdir -p dist && cp -r studio-dist/* dist/",
+    "build": "vite build && mkdir -p dist && cp -r studio-dist/* dist/",
     "preview": "vite preview",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",

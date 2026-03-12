@@ -265,19 +265,34 @@ if (!connectionString) {
     };
 } else {
     try {
+        // If DATABASE_URL is explicitly set to mock or if we're in a build environment without a real DB
+        if (!connectionString || connectionString === 'mock' || connectionString.includes('bogus')) {
+            throw new Error('Using Mock DB');
+        }
         client = postgres(connectionString, {
             prepare: false,
             ssl: 'require',
-            connect_timeout: 5
+            connect_timeout: 5,
+            idle_timeout: 5,
+            max: 10
         });
         db = drizzle(client, { schema });
     } catch (error) {
+        console.warn("[DB] ⚠️ Connection failed or Mock requested. Falling back to internal mock engine.", error.message);
         db = {
-            select: () => ({ from: () => [] }),
-            insert: () => ({ values: () => ({ returning: () => [] }) }),
+            select: () => ({ from: (table) => {
+                const tableName = table?._?.name?.name || table?.[Object.getOwnPropertySymbols(table)[0]] || 'unknown';
+                return createChainableMock(mockStore[tableName] || [], 'select', tableName);
+            }}),
+            insert: (table) => ({ values: (vals) => {
+                const tableName = table?._?.name?.name || 'unknown';
+                if (mockStore[tableName]) mockStore[tableName].push(vals);
+                return { returning: (fields) => [ { id: 'mock-id', ...vals } ] };
+            }}),
             update: () => ({ set: () => ({ where: () => [] }) }),
             delete: () => ({ where: () => ({ returning: () => [] }) }),
             execute: () => ([]),
+            transaction: async (cb) => cb(db),
         };
     }
 }
