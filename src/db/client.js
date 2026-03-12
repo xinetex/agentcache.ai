@@ -38,7 +38,13 @@ if (!connectionString) {
         service_requests: [],
         needs_signals: [],
         bancache: [],
-        banner_analysis: []
+        banner_analysis: [],
+        periscope_runs: [],
+        periscope_steps: [],
+        periscope_actions: [],
+        periscope_path_stats: [],
+        patterns: [],
+        agent_alerts: []
     };
 
     function findAccount(ownerId) {
@@ -72,6 +78,10 @@ if (!connectionString) {
                 if (!currentTable && tableObj === schema.bancache) currentTable = 'bancache';
                 if (!currentTable && tableObj === schema.bannerAnalysis) currentTable = 'banner_analysis';
                 if (!currentTable && tableObj === schema.creditTransactions) currentTable = 'credit_transactions';
+                if (!currentTable && tableObj === schema.periscopeRuns) currentTable = 'periscope_runs';
+                if (!currentTable && tableObj === schema.periscopeSteps) currentTable = 'periscope_steps';
+                if (!currentTable && tableObj === schema.periscopeActions) currentTable = 'periscope_actions';
+                if (!currentTable && tableObj === schema.periscopePathStats) currentTable = 'periscope_path_stats';
 
                 if (currentTable) {
                     queryImpl = async () => {
@@ -84,6 +94,7 @@ if (!connectionString) {
                 return mock;
             },
             leftJoin: () => mock,
+            innerJoin: () => mock,
             where: (condition) => {
                 const oldQuery = queryImpl;
                 queryImpl = async () => {
@@ -165,16 +176,24 @@ if (!connectionString) {
             if (tableObj === schema.bancache) tName = 'bancache';
             if (tableObj === schema.bannerAnalysis) tName = 'banner_analysis';
             if (tableObj === schema.creditTransactions) tName = 'credit_transactions';
+            if (tableObj === schema.periscopeRuns) tName = 'periscope_runs';
+            if (tableObj === schema.periscopeSteps) tName = 'periscope_steps';
+            if (tableObj === schema.periscopeActions) tName = 'periscope_actions';
+            if (tableObj === schema.periscopePathStats) tName = 'periscope_path_stats';
+            if (tableObj === schema.patterns) tName = 'patterns';
+            if (tableObj === schema.agentAlerts) tName = 'agent_alerts';
             return createChainableMock(tName, 'insert');
         },
         update: (tableObj) => {
             let tName = '';
             if (tableObj === schema.ledgerAccounts) tName = 'ledger_accounts';
+            if (tableObj === schema.patterns) tName = 'patterns';
             return createChainableMock(tName, 'update');
         },
         delete: (tableObj) => {
             let tName = '';
             if (tableObj === schema.ledgerAccounts) tName = 'ledger_accounts';
+            if (tableObj === schema.patterns) tName = 'patterns';
             return createChainableMock(tName, 'delete');
         },
         execute: async (sqlChunk) => {

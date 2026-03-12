@@ -671,3 +671,56 @@ export const contractSignatures = pgTable('contract_signatures', {
 }, (table) => ({
     contractIdx: index('contract_sigs_contract_idx').on(table.contractId),
 }));
+
+// --- Periscope: The Foresight System (Phase 32.7) ---
+
+export const periscopeRuns = pgTable('periscope_runs', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    agentId: text('agent_id'), // Compatible with hubAgents (text IDs)
+    sessionId: text('session_id'),
+    startedAt: timestamp('started_at').defaultNow(),
+    endedAt: timestamp('ended_at'),
+}, (table) => ({
+    agentSessIdx: index('periscope_run_agent_sess_idx').on(table.agentId, table.sessionId),
+}));
+
+export const periscopeSteps = pgTable('periscope_steps', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    runId: uuid('run_id').references(() => periscopeRuns.id),
+    index: integer('index').notNull(),
+    stateSignature: jsonb('state_signature'), // { embedding: [], tags: [] }
+    goalTag: text('goal_tag'),
+    createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+    runIdx: index('periscope_step_run_idx').on(table.runId),
+}));
+
+export const periscopeActions = pgTable('periscope_actions', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    stepId: uuid('step_id').references(() => periscopeSteps.id),
+    actionType: text('action_type').notNull(), // 'tool_call', 'llm_call', 'parallel', etc.
+    toolName: text('tool_name'),
+    provider: text('provider'),
+    paramsHash: text('params_hash'),
+    cacheStatus: text('cache_status'), // 'hit', 'miss', 'bypass'
+    latencyMs: integer('latency_ms'),
+    tokenCost: integer('token_cost'),
+    success: boolean('success').default(true),
+    errorCode: text('error_code'),
+    createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+    stepIdx: index('periscope_action_step_idx').on(table.stepId),
+    lookupIdx: index('periscope_action_lookup_idx').on(table.toolName, table.provider, table.actionType),
+}));
+
+export const periscopePathStats = pgTable('periscope_path_stats', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    actionKey: text('action_key').notNull().unique(), // e.g., "tool:stripe.charge:openai:gpt-4"
+    avgLatencyMs: real('avg_latency_ms').default(0),
+    p95LatencyMs: real('p95_latency_ms').default(0),
+    avgTokenCost: real('avg_token_cost').default(0),
+    successRate: real('success_rate').default(1.0),
+    cacheHitRate: real('cache_hit_rate').default(0),
+    sampleCount: integer('sample_count').default(0),
+    updatedAt: timestamp('updated_at').defaultNow(),
+});

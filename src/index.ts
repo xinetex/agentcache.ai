@@ -397,6 +397,8 @@ app.all('/api/ontology/:path{.+}?', lazy(() => import('./api/ontology.js')));
 
 app.all('/api/sentry/:path{.+}?', lazy(() => import('./api/sentry.js')));
 app.all('/api/lemma/:path{.+}?', lazy(() => import('./api/lemma.js')));
+app.all('/api/periscope/:path{.+}?', lazy(() => import('./api/periscope.js')));
+app.all('/api/dream/:path{.+}?', lazy(() => import('./api/dream.js')));
 
 // Agent Hub API (LinkedIn meets Yelp for agents)
 app.all('/api/hub/:path{.+}?', lazy(() => import('./api/hub.js')));
