@@ -13,7 +13,12 @@ import { semanticCacheService } from '../services/SemanticCacheService.js';
 import { resonanceService } from '../services/ResonanceService.js';
 import { authenticateApiKey } from '../middleware/auth.js';
 
-const cacheRouter = new Hono();
+type Variables = {
+    user: any;
+    apiKey: string;
+};
+
+const cacheRouter = new Hono<{ Variables: Variables }>();
 
 /**
  * POST /api/cache/check
@@ -137,7 +142,7 @@ cacheRouter.post('/circle/leave', async (c) => {
 
     try {
         const { circleId } = await c.req.json();
-        if (!circleId) return c.json({ error: 'circleId required' }, 400);
+        if (!circleId || typeof circleId !== 'string') return c.json({ error: 'circleId (string) required' }, 400);
 
         await resonanceService.leaveCircle(apiKey, circleId);
         return c.json({ success: true, message: `Left circle: ${circleId}` });
