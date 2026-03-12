@@ -1,8 +1,34 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { semanticCacheService } from '../../src/services/SemanticCacheService.js';
 import { shodanService } from '../../src/services/ShodanService.js';
 import { bancacheService } from '../../src/services/BancacheService.js';
 import { redis } from '../../src/lib/redis.js';
+
+// Mock external services to avoid network/DB latency in tests
+vi.mock('../../src/services/ShodanService.js', () => ({
+    shodanService: {
+        getRiskProfile: vi.fn(async (ip: string) => ({
+            ip,
+            riskScore: 0,
+            vulnerabilities: [],
+            ports: [],
+            org: 'Mock Org',
+            lastSeen: new Date().toISOString()
+        }))
+    }
+}));
+
+vi.mock('../../src/services/BancacheService.js', () => ({
+    bancacheService: {
+        analyzeBanner: vi.fn(async (banner: string) => ({
+            riskScore: banner.includes('OpenSSH_7.4') ? 8 : 2,
+            classification: 'Mock Classification',
+            vulnerabilities: [],
+            compliance: {},
+            reasoning: 'Mocked for testing'
+        }))
+    }
+}));
 
 describe('Semantic Shadow Integration', () => {
     it('should correctly enrich context and handle auto-quarantine correlation', async () => {
@@ -41,5 +67,5 @@ describe('Semantic Shadow Integration', () => {
         expect(typeof result.hit).toBe('boolean');
 
         console.log("🚀 Semantic Shadow Verification Complete.");
-    });
+    }, 15000);
 });
