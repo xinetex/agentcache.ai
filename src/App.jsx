@@ -24,7 +24,6 @@ import NeuralGalaxy from './components/NeuralGalaxy.jsx';
 import { useTrafficSimulation } from './hooks/useTrafficSimulation.js';
 import './App.css';
 import TraceViewer from './components/TraceViewer.jsx';
-import TraceViewer from './components/TraceViewer.jsx';
 import StreamInterface from './integral/StreamInterface.jsx';
 import IntelligenceDashboard from './components/IntelligenceDashboard.jsx';
 import IndustrialDashboard from './components/dashboard/IndustrialDashboard.tsx';
