@@ -12,6 +12,7 @@ import { swarmService } from './SwarmService.js';
 import { cortexBridge } from './CortexBridge.js';
 import { invalidationService } from './InvalidationService.js';
 import { internalEconomics } from './InternalEconomicsService.js';
+import { moltAlphaService } from './MoltAlphaService.js';
 import { redis } from '../lib/redis.js';
 
 /**
@@ -60,6 +61,10 @@ export class AutonomyService {
         try {
             // Phase 4.2: Trigger Active Maintenance (Invalidation Swarm)
             await invalidationService.runMaintenanceStep();
+
+            // Phase 36.1: Moltbook Autonomous Growth
+            // Scans for viral trends and spawns engagement spirits
+            await moltAlphaService.predictNextViralTrend();
 
             const pockets = await platformReportService.detectNeedPockets();
             

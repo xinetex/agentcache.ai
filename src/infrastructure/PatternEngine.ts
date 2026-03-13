@@ -464,3 +464,5 @@ export class PatternEngine {
             .where(eq(patterns.id, id));
     }
 }
+
+export const patternEngine = new PatternEngine();

@@ -106,7 +106,7 @@ export class DreamService {
     /**
      * Reasoning: Use System 2 logic to transform a failed trace into a success strategy.
      */
-    private async synthesizeMorphism(runId: string): Promise<Morphism | null> {
+    public async synthesizeMorphism(runId: string): Promise<Morphism | null> {
         // Fetch full trace details
         // Split join for mock compatibility
         const steps = await db.select()
