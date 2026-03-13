@@ -8,6 +8,7 @@
 
 import { vacuumHunterService, VacuumZone } from './VacuumHunterService.js';
 import { redis } from '../lib/redis.js';
+import { emailService } from './EmailService.js';
 
 export interface SalesProbeStatus {
     id: string;
@@ -42,6 +43,14 @@ export class SalesProbeOrchestrator {
                 };
                 
                 console.log(`[SalesProbe] SENT: Probe for sector "${zone.sector}" using draft.`);
+                
+                // Real Outbound Integration
+                await emailService.sendEmail({
+                    to: 'leads@market-vacuum.io', // Proxy for target leads
+                    subject: `B2B Optimization Proposal: ${zone.sector}`,
+                    text: zone.sales_probe_draft
+                });
+
                 newProbes.push(probe);
             }
         }

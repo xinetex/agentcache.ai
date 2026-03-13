@@ -8,6 +8,9 @@
 
 import { moltbookCrawler } from './MoltbookCrawler.js';
 import { redis } from '../lib/redis.js';
+import { MoonshotClient } from '../lib/moonshot.js';
+
+const moonshot = new MoonshotClient();
 
 export interface VacuumZone {
     id: string;
@@ -40,11 +43,24 @@ export class VacuumHunterService {
         
         const vibes = await moltbookCrawler.fetchVibes();
         
-        // HEURISTIC: In a real implementation, we'd pipe 'vibes' into an LLM
-        // to identify sectors with high activity but low solution presence.
-        // For now, we utilize our heuristic set and dynamic vibe matching.
-        
-        const foundZones = [...this.MOCK_VACUUMS];
+        let foundZones = [...this.MOCK_VACUUMS];
+
+        // LLM Synthesis Layer
+        try {
+            const llmResponse = await moonshot.chat([
+                { role: 'system', content: 'You are a B2B Market Analyst. Identify market gaps (Vacuum Zones) from trending social vibes.' },
+                { role: 'user', content: `Current Moltbook Vibes: ${JSON.stringify(vibes)}. Identify one high-potential B2B vacuum zone.` }
+            ]);
+
+            const synthesis = llmResponse.choices[0].message.content;
+            console.log(`[VacuumHunter] 🧠 LLM Gap Synthesis: ${synthesis.substring(0, 50)}...`);
+
+            // In a real implementation, we'd parse the LLM JSON output.
+            // For the offensive launch, we augment our mock set with the synthesis signal.
+            foundZones[0].gap_description = `LLM Augmented: ${synthesis.substring(0, 100)}...`;
+        } catch (e) {
+            console.warn('[VacuumHunter] ⚠️ LLM Synthesis failed. Falling back to heuristic defaults.');
+        }
         
         // Persist to Redis for the dashboard radar
         await redis.set('b2b:detected-vacuums', JSON.stringify(foundZones));

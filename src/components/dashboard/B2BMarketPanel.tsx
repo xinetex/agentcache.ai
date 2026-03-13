@@ -7,6 +7,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Briefcase, TrendingUp, BarChart, Globe, Shield, Zap, ShieldCheck } from 'lucide-react';
+import { VacuumRadar } from './VacuumRadar.js';
 
 export function B2BMarketPanel() {
     const [stats, setStats] = useState<any>(null);
@@ -82,6 +83,9 @@ export function B2BMarketPanel() {
                         <div className="text-[8px] font-mono text-white/20 uppercase">
                             Probes Sent: {stats.outreach_stats.total_sent}
                         </div>
+                    </div>
+                    <div className="mb-4">
+                        <VacuumRadar vacuums={stats.detected_vacuums} />
                     </div>
                     <div className="space-y-2">
                         {stats.detected_vacuums.map((v: any) => (

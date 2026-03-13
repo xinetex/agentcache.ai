@@ -63,9 +63,17 @@ export class A2ANegotiationEngine {
         
         session.currentStage = next;
         
-        // Dynamic valuation logic
         if (next === 'COUNTER_OFFER') session.valuationOffer += 1500;
         if (next === 'ACCEPTED') session.valuationOffer += 500;
+        
+        if (next === 'REJECTED') {
+            console.log(`[A2A-Feedback] 📉 Negotiation ${sessionId} rejected. Logged feedback for strategy optimization.`);
+            await redis.lpush('b2b:negotiation:feedback', JSON.stringify({
+                sector: session.targetSector,
+                valuation: session.valuationOffer,
+                reason: 'Price Ceiling Hit'
+            }));
+        }
 
         session.history.push({
             stage: next,
