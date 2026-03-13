@@ -96,6 +96,21 @@ export class SolanaEconomyService {
         const raw = await redis.zrange('economy:ledger', 0, -1, { rev: true });
         return raw.map(tx => JSON.parse(tx));
     }
+
+    /**
+     * Initialize a new agent's wallet with an optional welcome grant.
+     */
+    async initializeWallet(agentId: string, welcomeGrant: number = 0.1): Promise<TransactionSummary | null> {
+        const existing = await redis.get(`agent:balance:${agentId}`);
+        if (existing !== null) return null; // Already initialized
+
+        console.log(`[SolanaEconomy] 🌟 Initializing wallet for agent ${agentId} with ${welcomeGrant} SOL grant...`);
+        
+        const tx = await this.executeTransfer('SYSTEM_GENESIS', `AGENT_WALLET:${agentId}`, welcomeGrant, 'WELCOME_GRANT');
+        await this.updateBalance(agentId, welcomeGrant);
+        
+        return tx;
+    }
 }
 
 export const solanaEconomyService = new SolanaEconomyService();

@@ -67,7 +67,8 @@ export class IdentityEquivalenceService {
     /**
      * Verify if a presented passport matches the registered state.
      */
-    async verifyEquivalence(agentId: string, passport: IdentityPassport): Promise<boolean> {
+    async verifyEquivalence(passport: IdentityPassport): Promise<boolean> {
+        const agentId = passport.agentId;
         const storedData = await redis.get(`soul:passport:${agentId}`);
         if (!storedData) return false;
 

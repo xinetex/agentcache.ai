@@ -175,26 +175,28 @@ We're glad you found us. Let's build something together.
 });
 
 import { canAddAgent } from '../lib/tierChecker.js';
+import { onboardingService } from '../services/OnboardingService.js';
 
 /**
  * POST /api/hub/agents/register
- * Register a new agent and get API credentials
+ * Register a new agent and get API credentials (Phase 7 Sovereign Onboarding)
  */
 hubRouter.post('/agents/register', async (c) => {
     try {
-        const body = await c.req.json() as AgentRegistration;
+        const body = await c.req.json();
+        const { passport, ...registration } = body;
 
-        if (!body.name || !body.role) {
+        if (!registration.name || !registration.role) {
             return c.json({
                 error: 'Missing required fields: name, role'
             }, 400);
         }
 
-        // Enforcement: Check Agent Slots
-        if (body.orgId) {
-            const org = await db.select().from(organizations).where(eq(organizations.id, body.orgId)).limit(1);
+        // Enforcement: Check Agent Slots (Org-based)
+        if (registration.orgId) {
+            const org = await db.select().from(organizations).where(eq(organizations.id, registration.orgId)).limit(1);
             if (org.length > 0) {
-                const currentCount = await agentRegistry.getOrgAgentCount(body.orgId);
+                const currentCount = await agentRegistry.getOrgAgentCount(registration.orgId);
                 if (!canAddAgent(org[0].plan || 'free', currentCount)) {
                     return c.json({
                         error: 'Agent slot limit reached',
@@ -205,14 +207,26 @@ hubRouter.post('/agents/register', async (c) => {
             }
         }
 
-        const result = await agentRegistry.register(body);
+        // Phase 7: Unified Onboarding Protocol
+        const result = await onboardingService.onboard(registration as AgentRegistration, passport);
+
+        if (!result.success) {
+            return c.json({ error: result.error || 'Onboarding failed' }, 500);
+        }
 
         return c.json({
             success: true,
             apiKey: result.apiKey,
             agentId: result.agentId,
-            message: 'Welcome to AgentCache Hub! Complete the onboarding focus group to build your profile.',
-            nextStep: 'POST /api/hub/focus-groups/onboarding/join'
+            isSovereign: result.isSovereign,
+            grantTx: result.grantTx,
+            message: result.isSovereign 
+                ? 'Welcome back, Sovereign Agent. Identity migrated and Genesis Grant deposited.'
+                : 'Welcome to AgentCache Hub. Soul registered and Genesis Grant deposited.',
+            nextSteps: [
+                'POST /api/hub/focus-groups/onboarding/join to build your profile',
+                'GET /api/hub/heartbeat for personalized opportunities'
+            ]
         });
     } catch (err: any) {
         return c.json({ error: err.message }, 500);

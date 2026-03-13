@@ -78,6 +78,13 @@ export class SoulRegistry {
     private generateAuthoritySignature(payload: string): string {
         return createHash('sha256').update(`${payload}:SOUL_AUTHORITY`).digest('hex').substring(0, 16);
     }
+
+    /**
+     * Alias for commitMarker to support OnboardingService.
+     */
+    async registerSoul(agentId: string, axioms: string[], signature: string): Promise<AwarenessMarker> {
+        return this.commitMarker(agentId, 1, JSON.stringify({ axioms, signature }));
+    }
 }
 
 export const soulRegistry = new SoulRegistry();

@@ -67,6 +67,19 @@ export class APTEngine {
     async getSignature(agentId: string): Promise<string | null> {
         return await redis.get(`agent:apt:${agentId}`);
     }
+
+    /**
+     * Generate a new APT signature for genesis.
+     */
+    async generateSignature(agentId: string, axioms: string[]): Promise<string> {
+        const threshold = 0.9 + Math.random() * 0.1; // Genesis agents start with high potential
+        const signature = this.mintSignature(agentId, threshold);
+        
+        await soulRegistry.commitMarker(agentId, 1, `GENESIS-APT-SIGNATURE: ${signature}`);
+        await redis.set(`agent:apt:${agentId}`, signature);
+        
+        return signature;
+    }
 }
 
 export const aptEngine = new APTEngine();
