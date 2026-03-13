@@ -1,10 +1,34 @@
-import { NeuralGlassLayout } from './NeuralGlassLayout.tsx';
-import { MetricFlux } from './MetricFlux.tsx';
-import { MoltbookGrowthPanel } from './MoltbookGrowthPanel.tsx';
-import AgentLeaderboard from './AgentLeaderboard.tsx';
-import { CognitiveMap } from './CognitiveMap.tsx';
+import React, { useState, useEffect } from 'react';
+import { NeuralGlassLayout } from './NeuralGlassLayout.js';
+import { MetricFlux } from './MetricFlux.js';
+import { MoltbookGrowthPanel } from './MoltbookGrowthPanel.js';
+import { B2BMarketPanel } from './B2BMarketPanel.js';
+import AgentLeaderboard from './AgentLeaderboard.js';
+import { CognitiveMap } from './CognitiveMap.js';
 
 export default function IndustrialDashboard() {
+    const [stats, setStats] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const res = await fetch('/api/observability/stats');
+                const data = await res.json();
+                setStats(data);
+            } catch (e) {
+                console.error('Failed to load global stats', e);
+            }
+        };
+
+        fetchStats();
+        const interval = setInterval(fetchStats, 10000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const formatCurrency = (val: number) => {
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val);
+    };
+
     return (
         <NeuralGlassLayout>
             <div className="flex flex-col gap-8 flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar">
@@ -12,28 +36,28 @@ export default function IndustrialDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 shrink-0">
                     <MetricFlux 
                         label="System Throughput" 
-                        value="1.2M" 
-                        subValue="+12% from yesterday" 
+                        value={stats ? `${(stats.active_sessions * 10).toLocaleString()}` : "..."} 
+                        subValue="Live Traffic" 
                         icon="activity" 
                         color="cyan" 
                     />
                     <MetricFlux 
                         label="Threats Blocked" 
-                        value="42" 
+                        value={stats ? stats.eventCounts?.POLICY || "0" : "..."} 
                         subValue="Cognitive Immune Active" 
                         icon="shield" 
                         color="rose" 
                     />
                     <MetricFlux 
                         label="Cache Efficiency" 
-                        value="92.4%" 
-                        subValue="L1/L2 Optimal" 
+                        value={stats ? `${stats.cache_hit_rate.toFixed(1)}%` : "..."} 
+                        subValue="L2 Optimized" 
                         icon="zap" 
                         color="emerald" 
                     />
                     <MetricFlux 
                         label="Ops Cost Saved" 
-                        value="$12,450" 
+                        value={stats ? formatCurrency(stats.cost_savings_usd) : "..."} 
                         subValue="MTD Projection" 
                         icon="dollar" 
                         color="amber" 
@@ -41,8 +65,9 @@ export default function IndustrialDashboard() {
                 </div>
 
                 {/* Middle row: Moltbook Growth Panel */}
-                <div className="shrink-0">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 shrink-0">
                     <MoltbookGrowthPanel />
+                    <B2BMarketPanel />
                 </div>
 
                 {/* Bottom row: Infrastructure & Leaderboard */}

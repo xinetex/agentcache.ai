@@ -408,6 +408,8 @@ app.all('/api/lemma/:path{.+}?', lazy(() => import('./api/lemma.js')));
 app.all('/api/periscope/:path{.+}?', lazy(() => import('./api/periscope.js')));
 app.all('/api/dream/:path{.+}?', lazy(() => import('./api/dream.js')));
 app.all('/api/molt/:path{.+}?', lazy(() => import('./api/molt.js')));
+app.all('/api/alpha/:path{.+}?', lazy(() => import('./api/alpha.js')));
+app.all('/api/b2b/:path{.+}?', lazy(() => import('./api/b2b.js')));
 
 // Agent Hub API (LinkedIn meets Yelp for agents)
 app.all('/api/hub/:path{.+}?', lazy(() => import('./api/hub.js')));
@@ -457,6 +459,7 @@ app.all('/api/focus-group/:path{.+}?', lazy(() => import('./api/focus-group.js')
 // Tool Safety Scanner (supply chain security for agent tools)
 app.all('/api/tools/scan/:path{.+}?', lazy(() => import('./api/tool-scanner.js')));
 app.all('/api/sentry/:path{.+}?', lazy(() => import('./api/sentry.js')));
+app.all('/api/observability/:path{.+}?', lazy(() => import('./api/observability.js')));
 
 // Serve specific discovery paths for agents
 app.get('/skill.md', async (c) => {

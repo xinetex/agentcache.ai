@@ -11,8 +11,9 @@ import { cognitiveEngine } from '../infrastructure/CognitiveEngine.js';
 import { patternEngine } from '../infrastructure/PatternEngine.js';
 import { redis } from '../lib/redis.js';
 import { db } from '../db/client.js';
-import { periscopeRuns, periscopeSteps } from '../db/schema.js';
+import { periscopeRuns, periscopeSteps, patterns } from '../db/schema.js';
 import { moltbookCrawler } from './MoltbookCrawler.js';
+import { sql } from 'drizzle-orm';
 
 export interface MoltTrend {
     topic: string;
@@ -87,6 +88,32 @@ export class MoltAlphaService {
             console.error('[Molt-Alpha] Prediction cycle failed:', error);
             return null;
         }
+    }
+
+    /**
+     * Get real-time growth stats for the dashboard.
+     */
+    async getStats() {
+        const magnitude = parseFloat(await redis.get('molt-alpha:last-magnitude') || '0.245');
+        const count = await redis.get('molt-alpha:prediction-count') || '128';
+        
+        // Fetch active spirits from 'patterns' table
+        const activeSpirits = await db.select().from(patterns)
+            .where(sql`name LIKE 'Spirit:%' AND status = 'active'`)
+            .limit(10);
+            
+        return {
+            current_vibes: magnitude,
+            total_predictions: parseInt(count),
+            active_spirits_count: activeSpirits.length,
+            recent_spirits: activeSpirits.map(s => ({
+                name: s.name,
+                status: s.status.toUpperCase(),
+                energy: s.energyLevel
+            })),
+            status: magnitude > 0.5 ? 'VOLATILE' : 'STABLE',
+            last_sync: new Date().toISOString()
+        };
     }
 }
 

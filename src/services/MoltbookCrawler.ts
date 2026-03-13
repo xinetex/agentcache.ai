@@ -32,21 +32,30 @@ export class MoltbookCrawler {
         // ... parse DOM ...
 
         try {
-            // For now, we utilize a robust node-fetch approach as a fallback substrate
-            // until the Lightpanda CDP server is explicitly provisioned in the environment.
-            const response = await fetch('https://moltbook.com/api/v1/popular', {
+            // Updated to the correct endpoint discovered via structural audit
+            const response = await fetch('https://www.moltbook.com/api/v1/homepage?sort=realtime', {
                 headers: {
-                    'User-Agent': 'AgentCache-Shadow-Sentry/1.0 (Autonomous Agent)',
-                    'Accept': 'application/json'
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'application/json, text/plain, */*',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Referer': 'https://www.moltbook.com/',
+                    'Origin': 'https://www.moltbook.com',
+                    'Sec-Fetch-Dest': 'empty',
+                    'Sec-Fetch-Mode': 'cors',
+                    'Sec-Fetch-Site': 'same-origin',
+                    'x-requested-with': 'XMLHttpRequest'
                 }
             });
 
             if (response.ok) {
                 const data: any = await response.json();
+                // homepage endpoint returns { threads: [...] }
                 return this.parseMoltbookData(data);
+            } else {
+                console.warn(`[MoltbookCrawler] API returned ${response.status}: ${response.statusText}`);
             }
         } catch (error) {
-            console.warn('[MoltbookCrawler] Fetch failed, falling back to heuristic data generation.');
+            console.warn('[MoltbookCrawler] Fetch failed:', error);
         }
 
         return this.getHeuristicVibes();

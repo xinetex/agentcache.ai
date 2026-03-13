@@ -44,8 +44,18 @@ export function CognitiveMap() {
             const networkData = await networkRes.json();
             const telemetryData = await telemetryRes.json();
 
-            if (Array.isArray(clusterData)) {
-                setClusters(clusterData);
+            if (clusterData.clusters) {
+                setClusters(clusterData.clusters.map((c: any) => ({
+                    id: c.id,
+                    label: c.name,
+                    size: c.size,
+                    state: 'liquid',
+                    value: c.size * 1000,
+                    color: 'bg-rose-500',
+                    x: 50 + c.x,
+                    y: 50 + c.y,
+                    count: c.size * 5
+                })));
             }
             setNetwork(networkData);
             setTelemetry(telemetryData);
@@ -62,11 +72,27 @@ export function CognitiveMap() {
         return () => clearInterval(interval);
     }, []);
 
-    const crystallize = (id: string) => {
-        // TODO: Call API to pin
-        setClusters(prev => prev.map(c =>
-            c.id === id ? { ...c, state: 'crystallized', color: 'bg-cyan-400', value: c.value * 1.5 } : c
-        ));
+    const crystallize = async (cluster: Cluster) => {
+        try {
+            const res = await fetch('/api/observability/crystallize', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: `Spirit: ${cluster.label}`,
+                    intent: `Automated refinement of ${cluster.label}`,
+                    trigger: { type: 'event', value: 'cluster_surge' },
+                    sequence: [{ type: 'log', message: `Frozen pattern ${cluster.label}` }]
+                })
+            });
+            
+            if (res.ok) {
+                setClusters(prev => prev.map(c =>
+                    c.id === cluster.id ? { ...c, state: 'crystallized', color: 'bg-cyan-400', value: c.value * 1.5 } : c
+                ));
+            }
+        } catch (err) {
+            console.error("Crystallization failed:", err);
+        }
     };
 
     // Helper: Map Lat/Long to % for Cyber Projection
@@ -260,7 +286,7 @@ export function CognitiveMap() {
                         <div className="mt-auto">
                             {selectedCluster.state === 'liquid' ? (
                                 <button
-                                    onClick={() => crystallize(selectedCluster.id)}
+                                    onClick={() => crystallize(selectedCluster)}
                                     className="w-full py-4 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 group transition-all"
                                 >
                                     <Snowflake className="group-hover:rotate-12 transition-transform" />

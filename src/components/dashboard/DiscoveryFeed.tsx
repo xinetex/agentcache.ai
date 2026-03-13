@@ -38,30 +38,27 @@ export default function DiscoveryFeed() {
             <div className="flex flex-col gap-2 relative h-full">
                 <AnimatePresence mode="popLayout">
                     {discoveries.map((item) => (
-                        <motion.a
+                        <motion.div
                             key={item.id}
-                            href={item.value.startsWith('http') ? item.value : '#'}
-                            target="_blank"
-                            rel="noopener noreferrer"
                             layout
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0 }}
-                            className="flex items-center gap-3 p-3 rounded-lg bg-indigo-500/5 border border-indigo-500/10 hover:bg-indigo-500/20 transition-colors cursor-pointer group"
+                            className="flex items-center gap-3 p-3 rounded-lg bg-indigo-500/5 border border-indigo-500/10 hover:bg-indigo-500/20 transition-colors group"
                         >
                             <div className="p-2 bg-black/40 rounded-md border border-white/5 text-indigo-400 group-hover:text-white transition-colors">
                                 {getIcon(item.type)}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <div className="text-white text-xs font-bold truncate group-hover:text-cyan-400 transition-colors">{item.label}</div>
+                                <div className="text-white text-xs font-bold truncate group-hover:text-cyan-400 transition-colors">{item.title}</div>
                                 <div className="text-[10px] text-white/40 font-mono truncate">
                                     via <span className="text-white/70">{item.agent}</span>
                                 </div>
                             </div>
                             <div className="text-[9px] text-white/20 font-mono">
-                                LIVE
+                                {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </div>
-                        </motion.a>
+                        </motion.div>
                     ))}
                 </AnimatePresence>
 

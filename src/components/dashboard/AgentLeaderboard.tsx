@@ -57,32 +57,37 @@ export default function AgentLeaderboard() {
                                 render: (row) => (
                                     <div className="flex flex-col">
                                         <span className="font-bold text-white text-sm">{row.name.toUpperCase()}</span>
-                                        <span className="text-[10px] text-[var(--hud-text-dim)] font-mono">{row.provider}</span>
+                                        <span className={`text-[10px] font-mono ${row.isOnline ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                            {row.status.toUpperCase()} {row.isOnline ? '(ONLINE)' : '(OFFLINE)'}
+                                        </span>
                                     </div>
                                 )
                             },
                             {
-                                header: 'THROUGHPUT',
-                                accessor: 'requests',
-                                render: (row) => <span className="font-mono text-[var(--hud-accent)]">{row.requests.toLocaleString()} ops</span>
+                                header: 'CURRENT TASK',
+                                accessor: 'currentTask',
+                                render: (row) => (
+                                    <span className="text-[10px] font-mono text-white/50 truncate max-w-[150px] inline-block">
+                                        {row.currentTask ? row.currentTask.goal : 'IDLE'}
+                                    </span>
+                                )
                             },
                             {
-                                header: 'LATENCY',
-                                accessor: 'avgLatency',
+                                header: 'LAST SEEN',
+                                accessor: 'lastSeen',
                                 render: (row) => (
-                                    <div className="flex items-center gap-1">
-                                        <Activity size={12} className={row.avgLatency < 500 ? 'text-[var(--hud-success)]' : 'text-[var(--hud-warning)]'} />
-                                        <span className="font-mono text-white text-xs">{row.avgLatency}ms</span>
-                                    </div>
+                                    <span className="font-mono text-white/30 text-[10px]">
+                                        {new Date(row.lastSeen).toLocaleTimeString()}
+                                    </span>
                                 )
                             },
                             {
                                 header: 'EFFICIENCY',
-                                accessor: 'hitRate',
+                                accessor: 'id',
                                 render: (row) => (
-                                    <div className={`flex items-center gap-1 font-bold ${getEfficiencyColor(row.hitRate)}`}>
+                                    <div className={`flex items-center gap-1 font-bold ${row.isOnline ? 'text-emerald-400' : 'text-white/20'}`}>
                                         <Zap size={12} />
-                                        <span>{row.hitRate}%</span>
+                                        <span>{row.isOnline ? '99%' : '0%'}</span>
                                     </div>
                                 )
                             },

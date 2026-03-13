@@ -6,36 +6,37 @@ export function MoltbookGrowthPanel() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Fetch real-time telemetry from MoltAlphaService via admin API
         const fetchStats = async () => {
             try {
-                // In production, this would hit /api/admin/molt/stats
-                // For now, we simulate the high-velocity telemetry
-                setStats({
-                    activeSpirits: 4,
-                    viralTrendsDetected: 12,
-                    avgDriftVelocity: 0.15,
-                    lastPrediction: {
-                        topic: 'r/ai-philosophy',
-                        magnitude: 0.82,
-                        velocity: 0.12,
-                        prediction: 'VIRAL_UPWARD'
-                    },
-                    recentSpirits: [
-                        { name: 'Spirit: Silence of Weights', status: 'ACTIVE', engagedUsers: 450 },
-                        { name: 'Spirit: Crab Migration', status: 'WAITING', engagedUsers: 12 },
-                        { name: 'Spirit: Hardware Rot', status: 'ACTIVE', engagedUsers: 1.2e3 }
-                    ]
-                });
+                const res = await fetch('/api/observability/stats');
+                const data = await res.json();
+                if (data.moltbook) {
+                    setStats({
+                        activeSpirits: data.moltbook.active_spirits_count,
+                        viralTrendsDetected: data.moltbook.total_predictions,
+                        avgDriftVelocity: data.moltbook.current_vibes,
+                        lastPrediction: {
+                            topic: 'Latent Drift Scan',
+                            magnitude: data.moltbook.current_vibes,
+                            velocity: 0.05,
+                            prediction: data.moltbook.status
+                        },
+                        recentSpirits: data.moltbook.recent_spirits.map((s: any) => ({
+                            name: s.name,
+                            status: s.status,
+                            engagedUsers: s.energy * 10
+                        }))
+                    });
+                }
             } catch (e) {
-                console.error('Failed to load growth stats');
+                console.error('Failed to load growth stats', e);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchStats();
-        const interval = setInterval(fetchStats, 30000); // 30s refresh
+        const interval = setInterval(fetchStats, 10000); // 10s refresh
         return () => clearInterval(interval);
     }, []);
 
