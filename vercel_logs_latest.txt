@@ -1,0 +1,28 @@
+Vercel CLI 48.4.0
+WARN! Did you mean to deploy the subdirectory "logs"? Use `vc --cwd logs` instead.
+Fetching deployment "agentcache-ai-git-codex-workspace-onboard-65369b-drgnflai-jetty.vercel.app" in drgnflai-jetty
+Displaying runtime logs for deployment agentcache-owbpkzlcn-drgnflai-jetty.vercel.app (dpl_7XULBtyS9U4ViDTYGX1WaEubAMkE) starting from Mar Th 19:34:14.53
+
+waiting for new logs...
+19:38:33.08  ℹ️  POST  ---  agentcache-ai-git-codex-workspace-onboard-65369b-drgnflai-jetty.vercel.app  ƒ  /api/dream/invoke
+----------------------------------------------------------------------------------------------------------------------------
+🧠 [AutonomyService] Observing sector health and maintenance cues...
+
+waiting for new logs...
+19:38:33.14  ℹ️  POST  ---  agentcache-ai-git-codex-workspace-onboard-65369b-drgnflai-jetty.vercel.app  ƒ  /api/dream/invoke
+----------------------------------------------------------------------------------------------------------------------------
+[Invalidation] 🌊 Semantic change detected at https://raw.githubusercontent.com/openai/openai-openapi/master/openapi.yaml. Evaluating drift...
+
+waiting for new logs...
+19:38:33.14  ℹ️  POST  ---  agentcache-ai-git-codex-workspace-onboard-65369b-drgnflai-jetty.vercel.app  ƒ  /api/dream/invoke
+----------------------------------------------------------------------------------------------------------------------------
+🧠 [AutonomyService] All sectors balanced. No intervention required.
+
+waiting for new logs...
+19:38:33.14  ℹ️  POST  ---  agentcache-ai-git-codex-workspace-onboard-65369b-drgnflai-jetty.vercel.app  ƒ  /api/dream/invoke
+----------------------------------------------------------------------------------------------------------------------------
+🧠 [AutonomyService] All sectors balanced. No intervention required.
+
+waiting for new logs...
+WARN! Exceeded query duration limit of 5 minutes
+

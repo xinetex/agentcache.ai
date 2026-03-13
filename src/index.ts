@@ -264,7 +264,8 @@ app.all('/api/integrations/vercel/:path{.+}?', lazy(() => import('./integrations
 // -----------------------------------------------------------------------------
 // Security & Auth
 // -----------------------------------------------------------------------------
-import { authenticateApiKey } from './middleware/auth.js';
+import { authenticateApiKey, authenticateAdmin } from './middleware/auth.js';
+import { rateLimiter } from './middleware/rate-limiter.js';
 import { cognitiveMemory } from './services/cognitive-memory.js';
 
 
@@ -347,6 +348,13 @@ app.all('/api/decisions/:path{.+}?', lazy(() => import('./api/decisions.js')));
 app.all('/api/galaxy/:path{.+}?', lazy(() => import('./api/galaxy.js')));
 app.all('/api/explorer/:path{.+}?', lazy(() => import('./api/explorer.js')));
 app.all('/api/governance/:path{.+}?', lazy(() => import('./api/governance.js')));
+// --- SECURE INDUSTRIAL ADMIN SURFACE ---
+app.use('/api/admin/*', async (c, next) => {
+  const authError = await authenticateAdmin(c);
+  if (authError) return authError;
+  await next();
+});
+
 app.all('/api/lab/:path{.+}?', lazy(() => import('./api/lab.js')));
 app.all('/api/admin/:path{.+}?', lazy(() => import('./api/admin.js')));
 

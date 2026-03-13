@@ -27,6 +27,7 @@ import TraceViewer from './components/TraceViewer.jsx';
 import TraceViewer from './components/TraceViewer.jsx';
 import StreamInterface from './integral/StreamInterface.jsx';
 import IntelligenceDashboard from './components/IntelligenceDashboard.jsx';
+import IndustrialDashboard from './components/dashboard/IndustrialDashboard.tsx';
 
 const edgeTypes = {
   traffic: TrafficEdge,
@@ -54,7 +55,7 @@ function App() {
     if (tid) setTraceId(tid);
 
     const v = params.get('view');
-    if (v === 'topo' || v === 'galaxy' || v === 'intelligence') {
+    if (v === 'topo' || v === 'galaxy' || v === 'intelligence' || v === 'admin') {
       setView(v === 'topo' ? 'intelligence' : v);
       // We'll need another way to pass 'topo' down to IntelligenceDashboard if needed, 
       // but for now setting the view is a good start.
@@ -63,6 +64,9 @@ function App() {
     // Simple manual routing for /stream
     if (window.location.pathname === '/stream') {
       setView('stream');
+    }
+    if (window.location.pathname === '/admin') {
+      setView('admin');
     }
   }, []);
 
@@ -396,6 +400,15 @@ function App() {
           }} 
           initialView={initialView}
         />
+      </div>
+    );
+  }
+
+  // Show Industrial Admin Dashboard
+  if (view === 'admin') {
+    return (
+      <div className="app">
+        <IndustrialDashboard />
       </div>
     );
   }

@@ -225,3 +225,23 @@ export async function authenticateApiKey(c: any) {
         }, 503);
     }
 }
+
+/**
+ * Admin: Hardened internal access for the Industrial Ops Center.
+ */
+export async function authenticateAdmin(c: any) {
+    const adminToken = c.req.header('X-Admin-Token') || c.req.header('Authorization')?.replace('Bearer ', '');
+    const expectedToken = process.env.ADMIN_TOKEN;
+
+    if (!expectedToken) {
+        console.warn('[Auth] ADMIN_TOKEN not set in environment. Admin access is disabled.');
+        return c.json({ error: 'Admin access disabled (Configuration Error)' }, 503);
+    }
+
+    if (adminToken !== expectedToken) {
+        // Prevent brute force or exploration by returning generic 403
+        return c.json({ error: 'Unauthorized: Admin access required' }, 403);
+    }
+
+    return null; // Next
+}

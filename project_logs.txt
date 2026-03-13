@@ -1,0 +1,5 @@
+Vercel CLI 48.4.0
+WARN! Did you mean to deploy the subdirectory "logs"? Use `vc --cwd logs` instead.
+The "--limit" option was ignored because it is now deprecated. Please remove it.
+Fetching deployment "agentcache-ai" in drgnflai-jetty
+Error: Can't find the deployment "agentcache-ai" under the context "drgnflai-jetty"

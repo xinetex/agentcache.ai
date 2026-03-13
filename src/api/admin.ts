@@ -15,8 +15,7 @@ import { redis } from '../lib/redis.js';
 
 const app = new Hono();
 
-// Auth Middleware (Optional for now as discussed)
-// app.use('*', authMiddleware); 
+// Global Admin Auth is handled in src/index.ts for all /api/admin/* routes
 
 app.get('/settings', async (c) => {
     try {

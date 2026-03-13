@@ -1,0 +1,606 @@
+Vercel CLI 48.4.0
+WARN! Build not running on Vercel. System environment variables will not be available.
+[vc] PATH TO REGEXP ERROR @ #632: {"path":":path*","error":"Can not repeat \"path\" without a prefix and suffix"}
+Installing dependencies...
+npm warn Unknown cli config "--unsafe-perm". This will stop working in the next major version of npm.
+
+up to date in 1s
+
+130 packages are looking for funding
+  run `npm fund` for details
+Running "npm run build"
+
+> agentcache-ai@1.0.0 build
+> npm run test -- --run && vite build && mkdir -p dist && cp -r studio-dist/* dist/
+
+
+> agentcache-ai@1.0.0 test
+> vitest --run
+
+
+[1m[46m RUN [49m[22m [36mv4.0.14 [39m[90m/Users/letstaco/Documents/agentcache-ai[39m
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts
+[22m[39m⚠️ Redis Credentials Missing. Using In-Memory Mock.
+
+ [32m✓[39m tests/unit/upgrade-response.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 107[2mms[22m[39m
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System
+[22m[39m⚡ Using Upstash Redis (HTTP)
+
+[90mstdout[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration
+[22m[39m⚡ Using Upstash Redis (HTTP)
+
+[90mstderr[2m | tests/integration/antibody_hardening.test.ts
+[22m[39mShodanClient: No API key provided. Sentry checks will fail.
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts
+[22m[39m⚡ Using Upstash Redis (HTTP)
+
+[90mstdout[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol
+[22m[39m⚡ Using Upstash Redis (HTTP)
+
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts[2m > [22m[2mAgentCache cognitive claim coverage[2m > [22m[2mDriftWalker detects semantic rot and heals the memory back to healthy state
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts[2m > [22m[2mAgentCache cognitive claim coverage[2m > [22m[2mDriftWalker detects semantic rot and heals the memory back to healthy state
+[22m[39m⚠️ No OPENAI_API_KEY. Using deterministic mock embedding.
+
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts[2m > [22m[2mAgentCache cognitive claim coverage[2m > [22m[2mDriftWalker detects semantic rot and heals the memory back to healthy state
+[22m[39m⚠️ No OPENAI_API_KEY. Using deterministic mock embedding.
+
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts[2m > [22m[2mAgentCache cognitive claim coverage[2m > [22m[2mDriftWalker detects semantic rot and heals the memory back to healthy state
+[22m[39m⚠️ No OPENAI_API_KEY. Using deterministic mock embedding.
+
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts[2m > [22m[2mAgentCache cognitive claim coverage[2m > [22m[2mDriftWalker detects semantic rot and heals the memory back to healthy state
+[22m[39m⚠️ No OPENAI_API_KEY. Using deterministic mock embedding.
+
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts[2m > [22m[2mAgentCache cognitive claim coverage[2m > [22m[2mDriftWalker detects semantic rot and heals the memory back to healthy state
+[22m[39m⚠️ No OPENAI_API_KEY. Using deterministic mock embedding.
+
+ [32m✓[39m tests/claims/cognitive-claims.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+[90mstderr[2m | tests/unit/cognitive-memory.test.ts
+[22m[39m⚠️ Redis Credentials Missing. Using In-Memory Mock.
+
+[90mstderr[2m | tests/unit/cognitive-memory.test.ts
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+ [32m✓[39m tests/unit/cognitive-memory.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/unit/wizard-framework.test.js [2m([22m[2m7 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/integration/periscope-integration.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)
+[22m[39m⚡ Using Upstash Redis (HTTP)
+
+[90mstderr[2m | tests/integration/semantic_shadow.test.ts
+[22m[39m⚠️ Redis Credentials Missing. Using In-Memory Mock.
+
+[90mstderr[2m | tests/integration/semantic_shadow.test.ts
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstdout[2m | tests/integration/semantic_shadow.test.ts[2m > [22m[2mSemantic Shadow Integration[2m > [22m[2mshould correctly enrich context and handle auto-quarantine correlation
+[22m[39m🧪 Testing Phase 32.5: Semantic Shadow Integration...
+- Verifying Shodan context enrichment...
+
+[90mstdout[2m | tests/integration/semantic_shadow.test.ts[2m > [22m[2mSemantic Shadow Integration[2m > [22m[2mshould correctly enrich context and handle auto-quarantine correlation
+[22m[39m  IP: 1.2.3.4, Risk: 0
+- Testing Drift + Environmental Risk Correlation...
+
+[90mstdout[2m | tests/integration/semantic_shadow.test.ts[2m > [22m[2mSemantic Shadow Integration[2m > [22m[2mshould correctly enrich context and handle auto-quarantine correlation
+[22m[39m[Cognitive] ⚠️ Cache DRIFT detected (100.0%). Threshold: 0.15. Bypassing for safety.
+[ShadowSentry] 🔍 Assessing IP: 1.2.3.4, Banner: present
+
+[90mstdout[2m | tests/integration/semantic_shadow.test.ts[2m > [22m[2mSemantic Shadow Integration[2m > [22m[2mshould correctly enrich context and handle auto-quarantine correlation
+[22m[39m[ShadowSentry] 🛡️ Checks took 0ms (Shodan: 0, Banner: 8)
+[ShadowSentry] 🚨 AUTO-QUARANTINE: Drift (1.00) correlated with Risk (8).
+
+[90mstdout[2m | tests/integration/semantic_shadow.test.ts[2m > [22m[2mSemantic Shadow Integration[2m > [22m[2mshould correctly enrich context and handle auto-quarantine correlation
+[22m[39m[Observability] 📡 Event: CACHE_OPERATION - Cache MISS: DRIFT BYPASS
+
+[90mstdout[2m | tests/integration/semantic_shadow.test.ts[2m > [22m[2mSemantic Shadow Integration[2m > [22m[2mshould correctly enrich context and handle auto-quarantine correlation
+[22m[39m[OTel Export] 📤 Push: {"timestamp":"2026-03-12T23:44:23.509Z","traceId":"633ad46e3eb5f8","spanId":"6814716b","severity":"INFO","body":"Cache MISS: DRIFT BYPASS","attributes":{"service.name":"agentcache-ai","event.type":"CACHE_OPERATION","sessionId":"shadow-test-1773359063487","drift":1,"hit":false,"reason":"drift_bypass"}}
+
+[90mstdout[2m | tests/integration/semantic_shadow.test.ts[2m > [22m[2mSemantic Shadow Integration[2m > [22m[2mshould correctly enrich context and handle auto-quarantine correlation
+[22m[39m  Result Key: 9154224237c12843
+  Environmental Risk: 8
+  Quarantined: true
+🚀 Semantic Shadow Verification Complete.
+
+ [32m✓[39m tests/integration/semantic_shadow.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 31[2mms[22m[39m
+[90mstdout[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/unit/integral_operator.test.ts[2m > [22m[2mUniversalOperator[2m > [22m[2mshould warn on high-risk actions
+[22m[39m
+[Operator] Received Goal: "manage memory"
+
+[90mstdout[2m | tests/unit/integral_operator.test.ts[2m > [22m[2mUniversalOperator[2m > [22m[2mshould warn on high-risk actions
+[22m[39m[Operator] World Model Abstraction: System is stable.
+
+[90mstdout[2m | tests/unit/integral_operator.test.ts[2m > [22m[2mUniversalOperator[2m > [22m[2mshould warn on high-risk actions
+[22m[39m[Operator] Formulated Plan with 2 steps
+  > Step 1: Check current memory status (Tool: agentcache_stats)
+
+[90mstdout[2m | tests/unit/integral_operator.test.ts[2m > [22m[2mUniversalOperator[2m > [22m[2mshould warn on high-risk actions
+[22m[39m    [!] Proceeding with caution...
+    [√] Execution Successful
+
+[90mstdout[2m | tests/unit/integral_operator.test.ts[2m > [22m[2mUniversalOperator[2m > [22m[2mshould warn on high-risk actions
+[22m[39m  > Step 2: Optimize context (Tool: agentcache_compress_context)
+
+[90mstdout[2m | tests/unit/integral_operator.test.ts[2m > [22m[2mUniversalOperator[2m > [22m[2mshould warn on high-risk actions
+[22m[39m    [!] Proceeding with caution...
+    [√] Execution Successful
+
+[90mstdout[2m | tests/unit/integral_operator.test.ts[2m > [22m[2mUniversalOperator[2m > [22m[2mshould warn on high-risk actions
+[22m[39m[Operator] Goal Complete
+
+ [32m✓[39m tests/unit/integral_operator.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+[90mstdout[2m | tests/integration/antibody_hardening.test.ts[2m > [22m[2mAntibody Hardening & Pathology Sandbox[2m > [22m[2mshould use a stricter threshold after receiving an antibody pulse
+[22m[39m[Cognitive] ✅ Drift nominal (10.0%). Threshold: 0.15.
+
+[90mstdout[2m | tests/integration/antibody_hardening.test.ts[2m > [22m[2mAntibody Hardening & Pathology Sandbox[2m > [22m[2mshould use a stricter threshold after receiving an antibody pulse
+[22m[39m[Observability] 📡 Event: CACHE_OPERATION - Cache HIT: turn 0 (Drift: 10.0%)
+
+[90mstdout[2m | tests/integration/antibody_hardening.test.ts[2m > [22m[2mAntibody Hardening & Pathology Sandbox[2m > [22m[2mshould use a stricter threshold after receiving an antibody pulse
+[22m[39m[OTel Export] 📤 Push: {"timestamp":"2026-03-12T23:44:23.646Z","traceId":"475ac4b1accac8","spanId":"0e573eb0","severity":"INFO","body":"Cache HIT: turn 0 (Drift: 10.0%)","attributes":{"service.name":"agentcache-ai","event.type":"CACHE_OPERATION","sessionId":"session-A","drift":0.1,"hit":true,"key":"963bdbea8ae778f3"}}
+
+[90mstdout[2m | tests/integration/antibody_hardening.test.ts[2m > [22m[2mAntibody Hardening & Pathology Sandbox[2m > [22m[2mshould use a stricter threshold after receiving an antibody pulse
+[22m[39m[SemanticCache] 🛡️ Antibody pulse received for session session-A. Hardening defenses.
+
+[90mstdout[2m | tests/integration/antibody_hardening.test.ts[2m > [22m[2mAntibody Hardening & Pathology Sandbox[2m > [22m[2mshould use a stricter threshold after receiving an antibody pulse
+[22m[39m[Cognitive] ⚠️ Cache ANTIBODY_HARDENING detected (10.0%). Threshold: 0.05. Bypassing for safety.
+
+[90mstdout[2m | tests/integration/antibody_hardening.test.ts[2m > [22m[2mAntibody Hardening & Pathology Sandbox[2m > [22m[2mshould use a stricter threshold after receiving an antibody pulse
+[22m[39m[Observability] 📡 Event: CACHE_OPERATION - Cache MISS: DRIFT BYPASS
+
+[90mstdout[2m | tests/integration/antibody_hardening.test.ts[2m > [22m[2mAntibody Hardening & Pathology Sandbox[2m > [22m[2mshould use a stricter threshold after receiving an antibody pulse
+[22m[39m[OTel Export] 📤 Push: {"timestamp":"2026-03-12T23:44:23.649Z","traceId":"6a65ce46d0218","spanId":"9c37e5f0","severity":"INFO","body":"Cache MISS: DRIFT BYPASS","attributes":{"service.name":"agentcache-ai","event.type":"CACHE_OPERATION","sessionId":"session-A","drift":0.1,"hit":false,"reason":"drift_bypass"}}
+
+[90mstdout[2m | tests/integration/antibody_hardening.test.ts[2m > [22m[2mAntibody Hardening & Pathology Sandbox[2m > [22m[2mshould successfully start a logic duel in the sandbox
+[22m[39m[Pathology] ⚔️ Logic Duel Started: agent-1 vs The Zeno Paradoxer
+
+ [32m✓[39m tests/integration/antibody_hardening.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+[90mstderr[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+ [32m✓[39m tests/unit/platform-memory-l3.test.js [2m([22m[2m5 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+[90mstdout[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration
+[22m[39m[Startup] PatternEngine: SKIPPED (Local Dev Mode)
+
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)
+[22m[39m[Startup] PatternEngine: SKIPPED (Local Dev Mode)
+
+[90mstdout[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol
+[22m[39m[Startup] PatternEngine: SKIPPED (Local Dev Mode)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System
+[22m[39m[Startup] PatternEngine: SKIPPED (Local Dev Mode)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mSchema Registry[2m > [22m[2mresolves all 6 built-in sectors
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mSchema Registry[2m > [22m[2mlists all schemas with field names
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mSchema Registry[2m > [22m[2mindexes vocabulary terms for cross-sector lookup
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mSchema Registry[2m > [22m[2mreturns empty for unknown sector
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts
+[22m[39m[Startup] PatternEngine: SKIPPED (Local Dev Mode)
+
+ [32m✓[39m tests/unit/complexity-calculator.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+[90mstderr[2m | tests/integration/topological_healing.test.ts
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+ [32m✓[39m tests/integration/topological_healing.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)[2m > [22m[2mtraces a mission through the LemmaService
+[22m[39m[MissionTracer] 🛰️ Mission Started: test-trace-id
+
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)[2m > [22m[2mtraces a mission through the LemmaService
+[22m[39m[MissionTracer] ✅ Mission Complete: test-trace-id
+
+[90mstderr[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol[2m > [22m[2mreturns x402 headers on 402 Payment Required for unfunded agents
+[22m[39m⚠️ Redis Auth Failed during op. Switching to In-Memory Mock.
+
+[90mstderr[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration[2m > [22m[2mshould bypass cache hit when drift is high (> 0.15)
+[22m[39m⚠️ Redis Auth Failed during op. Switching to In-Memory Mock.
+
+[90mstderr[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mAPI: GET /api/ontology/schemas[2m > [22m[2mreturns all registered schema listings
+[22m[39m⚠️ Redis Auth Failed during op. Switching to In-Memory Mock.
+
+ [32m✓[39m tests/unit/periscope-optics.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+[90mstdout[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration[2m > [22m[2mshould bypass cache hit when drift is high (> 0.15)
+[22m[39m[Test Request] POST /api/cache/set -> Status: 200, Payload: {"success":true}
+
+[90mstdout[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration[2m > [22m[2mshould bypass cache hit when drift is high (> 0.15)
+[22m[39m[Cognitive] ⚠️ Cache DRIFT detected (80.0%). Threshold: 0.15. Bypassing for safety.
+
+[90mstdout[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration[2m > [22m[2mshould bypass cache hit when drift is high (> 0.15)
+[22m[39m[Test Request] POST /api/cache/check -> Status: 200, Payload: {"cached":false,"hit":false,"key":"f5f2359faaa94295","predictive_prefetch":[],"drift":0.8,"reason":"drift_bypass","sessionId":"test-session-123","turnIndex":2,"environmental_risk":0,"quarantined":false}
+
+[90mstderr[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol[2m > [22m[2mreturns x402 headers on 402 Payment Required for unfunded agents
+[22m[39m[FirecrawlService] FIRECRAWL_API_KEY is not set. Scraping will fail.
+
+[90mstdout[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration[2m > [22m[2mshould allow cache hit when drift is low (<= 0.15)
+[22m[39m[Test Request] POST /api/cache/set -> Status: 200, Payload: {"success":true}
+
+[90mstdout[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration[2m > [22m[2mshould allow cache hit when drift is low (<= 0.15)
+[22m[39m[Cognitive] ✅ Drift nominal (1.0%). Threshold: 0.15.
+
+[90mstdout[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration[2m > [22m[2mshould allow cache hit when drift is low (<= 0.15)
+[22m[39m[Test Request] POST /api/cache/check -> Status: 200, Payload: {"cached":true,"hit":true,"response":"stable-response","key":"9d466f3402e3f361","ttl":-1,"type":"exact","similarity":1,"savedUsd":0.05,"coherence":0.99,"predictive_prefetch":[],"drift":0.01,"reason":"exact","environmental_risk":0,"quarantined":false}
+
+ [32m✓[39m tests/integration/drift_bypass.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 2748[2mms[22m[39m
+     [33m[2m✓[22m[39m should bypass cache hit when drift is high (> 0.15) [33m 756[2mms[22m[39m
+ [32m✓[39m tests/unit/platform-memory-decay.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+[90mstderr[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)[2m > [22m[2msettles an x402 payment via AgentSettlementService
+[22m[39m⚠️ Redis Auth Failed during op. Switching to In-Memory Mock.
+
+[90mstderr[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)[2m > [22m[2msettles an x402 payment via AgentSettlementService
+[22m[39m[FirecrawlService] FIRECRAWL_API_KEY is not set. Scraping will fail.
+
+ [32m✓[39m tests/unit/billing-plans.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+[90mstderr[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m⚠️ Redis Auth Failed during op. Switching to In-Memory Mock.
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[Cognitive] ✅ Drift nominal (0.0%). Threshold: 0.15.
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[Observability] 📡 Event: CACHE_OPERATION - Cache MISS: NOT FOUND
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[OTel Export] 📤 Push: {"timestamp":"2026-03-12T23:44:24.833Z","traceId":"3f04ed37f3dff","spanId":"71059956","severity":"INFO","body":"Cache MISS: NOT FOUND","attributes":{"service.name":"agentcache-ai","event.type":"CACHE_OPERATION","drift":0,"hit":false,"reason":"miss"}}
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[Cognitive] ✅ Drift nominal (0.0%). Threshold: 0.15.
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[Observability] 📡 Event: CACHE_OPERATION - Cache MISS: NOT FOUND
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[OTel Export] 📤 Push: {"timestamp":"2026-03-12T23:44:24.844Z","traceId":"adccac13e718b","spanId":"168d033a","severity":"INFO","body":"Cache MISS: NOT FOUND","attributes":{"service.name":"agentcache-ai","event.type":"CACHE_OPERATION","drift":0,"hit":false,"reason":"miss"}}
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[Cognitive] ✅ Drift nominal (0.0%). Threshold: 0.15.
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[Observability] 📡 Event: CACHE_OPERATION - Cache MISS: NOT FOUND
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[OTel Export] 📤 Push: {"timestamp":"2026-03-12T23:44:24.848Z","traceId":"a942eda7e6edf","spanId":"8bd37a9d","severity":"INFO","body":"Cache MISS: NOT FOUND","attributes":{"service.name":"agentcache-ai","event.type":"CACHE_OPERATION","drift":0,"hit":false,"reason":"miss"}}
+
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)[2m > [22m[2msettles an x402 payment via AgentSettlementService
+[22m[39m[Settlement] 💳 Processing settlement for agent 297632a3-5146-4f64-b88b-2d289d39901b via token 0xTestSettlementHash...
+
+[90mstderr[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)[2m > [22m[2msettles an x402 payment via AgentSettlementService
+[22m[39m[Armor] Atomic Settlement Velocity Check Failed (Fail Open): __vite_ssr_import_0__.redis.eval is not a function
+
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)[2m > [22m[2msettles an x402 payment via AgentSettlementService
+[22m[39m[Settlement] 💸 Transferring 10 from 297632a3-5146-4f64-b88b-2d289d39901b to 00000000-0000-0000-0000-000000000000...
+
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)[2m > [22m[2msettles an x402 payment via AgentSettlementService
+[22m[39m[Settlement] ✅ Settlement successful. New Balance: 90
+
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)[2m > [22m[2msettles an x402 payment via AgentSettlementService
+[22m[39m[Test] 💰 Initial: 100, Final: 90
+
+ [32m✓[39m tests/integration/agentic-governance.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 1682[2mms[22m[39m
+     [33m[2m✓[22m[39m traces a mission through the LemmaService [33m 345[2mms[22m[39m
+     [33m[2m✓[22m[39m settles an x402 payment via AgentSettlementService [33m 630[2mms[22m[39m
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[Observability] 📡 Event: CACHE_OPERATION - Cache SET: turn 0
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[OTel Export] 📤 Push: {"timestamp":"2026-03-12T23:44:24.921Z","traceId":"8a85db5028ba","spanId":"42e90687","severity":"INFO","body":"Cache SET: turn 0","attributes":{"service.name":"agentcache-ai","event.type":"CACHE_OPERATION","key":"b19b6f4aad43b29d"}}
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[Cognitive] ✅ Drift nominal (0.0%). Threshold: 0.15.
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[Observability] 📡 Event: CACHE_OPERATION - Cache HIT: turn 0 (Drift: 0.0%)
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[OTel Export] 📤 Push: {"timestamp":"2026-03-12T23:44:24.923Z","traceId":"1166fab9948ac8","spanId":"6c881ee5","severity":"INFO","body":"Cache HIT: turn 0 (Drift: 0.0%)","attributes":{"service.name":"agentcache-ai","event.type":"CACHE_OPERATION","drift":0,"hit":true,"key":"b19b6f4aad43b29d"}}
+
+ [32m✓[39m tests/contracts/public-api.contract.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 3228[2mms[22m[39m
+     [33m[2m✓[22m[39m cache endpoints expose predictive prefetch on miss and hit flows [33m 1009[2mms[22m[39m
+[90mstderr[2m | tests/unit/lemma-caching.test.ts
+[22m[39m⚠️ Redis Credentials Missing. Using In-Memory Mock.
+
+ [32m✓[39m tests/unit/workspace-provisioning.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/unit/lemma-caching.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 3[2mms[22m[39m
+ [2m[90m↓[39m[22m tests/integration/audio1tv.test.ts [2m([22m[2m19 tests[22m[2m | [22m[33m19 skipped[39m[2m)[22m
+ [2m[90m↓[39m[22m tests/integration/jettythunder.test.ts [2m([22m[2m30 tests[22m[2m | [22m[33m30 skipped[39m[2m)[22m
+ [32m✓[39m tests/unit/stream_logic.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+[90mstdout[2m | tests/integration/dream.test.ts[2m > [22m[2mPhase 33: Functorial Dream Orchestrator Integration[2m > [22m[2mshould extract morphisms from failed traces and manifest them as patterns
+[22m[39m🧪 Starting Functorial Dream Integration Test...
+- Seeding nightmare traces...
+
+[90mstdout[2m | tests/integration/dream.test.ts[2m > [22m[2mPhase 33: Functorial Dream Orchestrator Integration[2m > [22m[2mshould extract morphisms from failed traces and manifest them as patterns
+[22m[39m- Invoking Delta-Sleep synthesis...
+[DreamService] 💤 Entering Delta-Sleep. Processing experience clusters...
+
+[90mstdout[2m | tests/integration/dream.test.ts[2m > [22m[2mPhase 33: Functorial Dream Orchestrator Integration[2m > [22m[2mshould extract morphisms from failed traces and manifest them as patterns
+[22m[39m[DreamService] 🧠 Found 1 failure clusters. Synthesizing morphisms...
+
+[90mstdout[2m | tests/integration/dream.test.ts[2m > [22m[2mPhase 33: Functorial Dream Orchestrator Integration[2m > [22m[2mshould extract morphisms from failed traces and manifest them as patterns
+[22m[39m[DreamService] ✅ Awakening. Created 1 new patterns.
+
+[90mstdout[2m | tests/integration/dream.test.ts[2m > [22m[2mPhase 33: Functorial Dream Orchestrator Integration[2m > [22m[2mshould extract morphisms from failed traces and manifest them as patterns
+[22m[39m  Patterns Manifested: 1
+- Verifying wisdom manifestation in DB...
+
+[90mstdout[2m | tests/integration/dream.test.ts[2m > [22m[2mPhase 33: Functorial Dream Orchestrator Integration[2m > [22m[2mshould extract morphisms from failed traces and manifest them as patterns
+[22m[39m🚀 Functorial Dream Integration Successful.
+
+ [2m[90m↓[39m[22m tests/integration/system2_bridge.test.ts [2m([22m[2m1 test[22m[2m | [22m[33m1 skipped[39m[2m)[22m
+ [32m✓[39m tests/integration/dream.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 5[2mms[22m[39m
+(node:6503) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ [32m✓[39m tests/unit/periscope-lens.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 45[2mms[22m[39m
+[90mstdout[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol[2m > [22m[2mallows agent access instantly if Preauthorization is provided (x402 payment success)
+[22m[39m[Settlement] 💳 Processing settlement for agent ac_demo_test_x402 via token 0xABC123MockHash...
+
+[90mstdout[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol[2m > [22m[2mallows agent access instantly if Preauthorization is provided (x402 payment success)
+[22m[39m[Settlement] ♻️ Token 0xABC123MockHash already settled. Returning cached receipt.
+
+ [32m✓[39m tests/integration/x402-payment.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 4698[2mms[22m[39m
+     [33m[2m✓[22m[39m returns x402 headers on 402 Payment Required for unfunded agents [33m 2473[2mms[22m[39m
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mData Lake Ingestion (Raw Connector)[2m > [22m[2mingests inline JSON and maps to finance ontology
+[22m[39m[RawConnector] Ingested 70 chars of inline object data.
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mQ1: Schema Version Coexistence[2m > [22m[2mresolves pinned schema versions separately from latest
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mQ1: Schema Version Coexistence[2m > [22m[2mlists available versions per sector
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mQ1: Schema Version Coexistence[2m > [22m[2msupports registering a new version without breaking the old
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+[OntologyRegistry] Registered: finance v2.0.0 (2 terms)
+
+ [32m✓[39m tests/integration/ontology-datalake.test.ts [2m([22m[2m20 tests[22m[2m)[22m[33m 5560[2mms[22m[39m
+       [33m[2m✓[22m[39m returns all registered schema listings [33m 955[2mms[22m[39m
+       [33m[2m✓[22m[39m returns federated results for "compliance" [33m 1528[2mms[22m[39m
+       [33m[2m✓[22m[39m bridges a term between two specific sectors [33m 965[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m24 passed[39m[22m[2m | [22m[33m3 skipped[39m[90m (27)[39m
+[2m      Tests [22m [1m[32m92 passed[39m[22m[2m | [22m[33m50 skipped[39m[90m (142)[39m
+[2m   Start at [22m 19:44:21
+[2m   Duration [22m 6.50s[2m (transform 5.54s, setup 0ms, import 10.80s, tests 18.26s, environment 6ms)[22m
+
+NODE_ENV=production is not supported in the .env file. Only NODE_ENV=development is supported to create a development build of your project. If you need to set process.env.NODE_ENV, you can set it in the Vite config instead.
+vite v7.2.4 building client environment for production...
+transforming...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+
+/assets/grid.svg referenced in /assets/grid.svg didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+/assets/noise.png referenced in /assets/noise.png didn't resolve at build time, it will remain unchanged to be resolved at runtime
+✓ 3422 modules transformed.
+rendering chunks...
+computing gzip size...
+studio-dist/dashboard.html                        0.71 kB │ gzip:   0.37 kB
+studio-dist/onboarding.html                       0.78 kB │ gzip:   0.49 kB
+studio-dist/gov-portal.html                       8.95 kB │ gzip:   2.88 kB
+studio-dist/analytics.html                       15.55 kB │ gzip:   3.80 kB
+studio-dist/index.html                           38.01 kB │ gzip:   9.16 kB
+studio-dist/pipeline-studio.html                 48.75 kB │ gzip:  10.57 kB
+studio-dist/assets/dashboard-Fd0xVSp_.css         7.04 kB │ gzip:   1.58 kB
+studio-dist/assets/gov_portal-Cewp29IR.css        7.52 kB │ gzip:   1.93 kB
+studio-dist/assets/onboarding-CVDkYzXw.css        7.71 kB │ gzip:   1.79 kB
+studio-dist/assets/index-P_evgnO3.css           151.56 kB │ gzip:  21.69 kB
+studio-dist/assets/onboarding-CBuTpFxs.js        16.38 kB │ gzip:   4.69 kB
+studio-dist/assets/client-CJWdlQ9l.js           193.39 kB │ gzip:  60.61 kB
+studio-dist/assets/gov_portal-3MeKxYOn.js       277.45 kB │ gzip:  82.94 kB
+studio-dist/assets/with-selector-3VWWqh8U.js    722.53 kB │ gzip: 189.24 kB
+studio-dist/assets/dashboard-BHE-YEkm.js      1,147.48 kB │ gzip: 335.06 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 8.92s
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+src/api/hub.ts(195,48): error TS2304: Cannot find name 'organizations'.
+src/api/hub.ts(195,72): error TS2304: Cannot find name 'organizations'.
+
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Using TypeScript 5.9.3 (local user-provided)
+Build Completed in .vercel/output [2m]

@@ -1,0 +1,745 @@
+
+> agentcache-ai@1.0.0 test
+> vitest --run
+
+
+[1m[46m RUN [49m[22m [36mv4.0.14 [39m[90m/Users/letstaco/Documents/agentcache-ai[39m
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ [32m✓[39m tests/unit/complexity-calculator.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/unit/upgrade-response.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 83[2mms[22m[39m
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System
+[22m[39m⚡ Using Upstash Redis (HTTP)
+
+[90mstdout[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration
+[22m[39m⚡ Using Upstash Redis (HTTP)
+
+[90mstderr[2m | tests/integration/semantic_shadow.test.ts
+[22m[39m⚠️ Redis Credentials Missing. Using In-Memory Mock.
+
+[90mstdout[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol
+[22m[39m⚡ Using Upstash Redis (HTTP)
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts
+[22m[39m⚡ Using Upstash Redis (HTTP)
+
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts
+[22m[39m⚠️ Redis Credentials Missing. Using In-Memory Mock.
+
+[90mstderr[2m | tests/integration/semantic_shadow.test.ts
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts[2m > [22m[2mAgentCache cognitive claim coverage[2m > [22m[2mDriftWalker detects semantic rot and heals the memory back to healthy state
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts[2m > [22m[2mAgentCache cognitive claim coverage[2m > [22m[2mDriftWalker detects semantic rot and heals the memory back to healthy state
+[22m[39m⚠️ No OPENAI_API_KEY. Using deterministic mock embedding.
+
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts[2m > [22m[2mAgentCache cognitive claim coverage[2m > [22m[2mDriftWalker detects semantic rot and heals the memory back to healthy state
+[22m[39m⚠️ No OPENAI_API_KEY. Using deterministic mock embedding.
+
+ [32m✓[39m tests/unit/wizard-framework.test.js [2m([22m[2m7 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts[2m > [22m[2mAgentCache cognitive claim coverage[2m > [22m[2mDriftWalker detects semantic rot and heals the memory back to healthy state
+[22m[39m⚠️ No OPENAI_API_KEY. Using deterministic mock embedding.
+
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts[2m > [22m[2mAgentCache cognitive claim coverage[2m > [22m[2mDriftWalker detects semantic rot and heals the memory back to healthy state
+[22m[39m⚠️ No OPENAI_API_KEY. Using deterministic mock embedding.
+
+[90mstderr[2m | tests/claims/cognitive-claims.test.ts[2m > [22m[2mAgentCache cognitive claim coverage[2m > [22m[2mDriftWalker detects semantic rot and heals the memory back to healthy state
+[22m[39m⚠️ No OPENAI_API_KEY. Using deterministic mock embedding.
+
+ [32m✓[39m tests/claims/cognitive-claims.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 47[2mms[22m[39m
+[90mstdout[2m | tests/integration/semantic_shadow.test.ts[2m > [22m[2mSemantic Shadow Integration[2m > [22m[2mshould correctly enrich context and handle auto-quarantine correlation
+[22m[39m🧪 Testing Phase 32.5: Semantic Shadow Integration...
+- Verifying Shodan context enrichment...
+
+[90mstdout[2m | tests/integration/semantic_shadow.test.ts[2m > [22m[2mSemantic Shadow Integration[2m > [22m[2mshould correctly enrich context and handle auto-quarantine correlation
+[22m[39m  IP: 1.2.3.4, Risk: 0
+- Testing Drift + Environmental Risk Correlation...
+
+[90mstdout[2m | tests/integration/semantic_shadow.test.ts[2m > [22m[2mSemantic Shadow Integration[2m > [22m[2mshould correctly enrich context and handle auto-quarantine correlation
+[22m[39m[Cognitive] ⚠️ Cache DRIFT detected (100.0%). Threshold: 0.15. Bypassing for safety.
+[ShadowSentry] 🔍 Assessing IP: 1.2.3.4, Banner: present
+
+[90mstdout[2m | tests/integration/semantic_shadow.test.ts[2m > [22m[2mSemantic Shadow Integration[2m > [22m[2mshould correctly enrich context and handle auto-quarantine correlation
+[22m[39m[ShadowSentry] 🛡️ Checks took 0ms (Shodan: 0, Banner: 8)
+[ShadowSentry] 🚨 AUTO-QUARANTINE: Drift (1.00) correlated with Risk (8).
+
+[90mstdout[2m | tests/integration/semantic_shadow.test.ts[2m > [22m[2mSemantic Shadow Integration[2m > [22m[2mshould correctly enrich context and handle auto-quarantine correlation
+[22m[39m[Observability] 📡 Event: CACHE_OPERATION - Cache MISS: DRIFT BYPASS
+
+[90mstdout[2m | tests/integration/semantic_shadow.test.ts[2m > [22m[2mSemantic Shadow Integration[2m > [22m[2mshould correctly enrich context and handle auto-quarantine correlation
+[22m[39m[OTel Export] 📤 Push: {"timestamp":"2026-03-12T23:46:23.266Z","traceId":"08fe83bc90c5b8","spanId":"7f5aee7c","severity":"INFO","body":"Cache MISS: DRIFT BYPASS","attributes":{"service.name":"agentcache-ai","event.type":"CACHE_OPERATION","sessionId":"shadow-test-1773359183262","drift":1,"hit":false,"reason":"drift_bypass"}}
+
+[90mstdout[2m | tests/integration/semantic_shadow.test.ts[2m > [22m[2mSemantic Shadow Integration[2m > [22m[2mshould correctly enrich context and handle auto-quarantine correlation
+[22m[39m  Result Key: 9154224237c12843
+  Environmental Risk: 8
+  Quarantined: true
+🚀 Semantic Shadow Verification Complete.
+
+ [32m✓[39m tests/integration/semantic_shadow.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 9[2mms[22m[39m
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)
+[22m[39m⚡ Using Upstash Redis (HTTP)
+
+ [32m✓[39m tests/unit/platform-memory-decay.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m tests/unit/platform-memory-l3.test.js [2m([22m[2m5 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+[90mstdout[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+ [31m❯[39m tests/integration/periscope-integration.test.ts [2m([22m[2m3 tests[22m[2m | [22m[31m3 failed[39m[2m)[22m[33m 308[2mms[22m[39m
+[31m     [31m×[31m should capture a full agent run trace[39m[32m 241[2mms[22m[39m
+[31m     [31m×[31m should distill raw traces into path statistics[39m[32m 22[2mms[22m[39m
+[31m     [31m×[31m should score candidates based on distilled statistics[39m[32m 41[2mms[22m[39m
+[90mstderr[2m | tests/unit/cognitive-memory.test.ts
+[22m[39m⚠️ Redis Credentials Missing. Using In-Memory Mock.
+
+[90mstderr[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/integration/antibody_hardening.test.ts
+[22m[39mShodanClient: No API key provided. Sentry checks will fail.
+
+[90mstderr[2m | tests/unit/cognitive-memory.test.ts
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+ [32m✓[39m tests/unit/cognitive-memory.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+[90mstderr[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration
+[22m[39m[Startup] Neon init failed: Error: Database connection string format for `neon()` should be: postgresql://user:password@host.tld/dbname?option=value
+    at neon [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4m@neondatabase/serverless[24m/index.mjs:1274:14[90m)[39m
+    at [90m/Users/letstaco/Documents/agentcache-ai/[39msrc/index.ts:45:11
+[90m    at processTicksAndRejections (node:internal/process/task_queues:104:5)[39m
+    at VitestModuleEvaluator._runInlinedModule [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mvitest[24m/dist/module-evaluator.js:190:4[90m)[39m
+    at VitestModuleRunner.directRequest [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mvite[24m/dist/node/module-runner.js:1146:59[90m)[39m
+    at VitestModuleRunner.cachedRequest [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mvite[24m/dist/node/module-runner.js:1053:73[90m)[39m
+    at [90m/Users/letstaco/Documents/agentcache-ai/[39mtests/integration/drift_bypass.test.ts:52:16
+
+[90mstdout[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration
+[22m[39m[Startup] PatternEngine: SKIPPED (Local Dev Mode)
+
+[90mstderr[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)
+[22m[39m[Startup] Neon init failed: Error: Database connection string format for `neon()` should be: postgresql://user:password@host.tld/dbname?option=value
+    at neon [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4m@neondatabase/serverless[24m/index.mjs:1274:14[90m)[39m
+    at [90m/Users/letstaco/Documents/agentcache-ai/[39msrc/index.ts:45:11
+[90m    at processTicksAndRejections (node:internal/process/task_queues:104:5)[39m
+    at VitestModuleEvaluator._runInlinedModule [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mvitest[24m/dist/module-evaluator.js:190:4[90m)[39m
+    at VitestModuleRunner.directRequest [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mvite[24m/dist/node/module-runner.js:1146:59[90m)[39m
+    at VitestModuleRunner.cachedRequest [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mvite[24m/dist/node/module-runner.js:1053:73[90m)[39m
+    at [90m/Users/letstaco/Documents/agentcache-ai/[39mtests/integration/agentic-governance.test.ts:47:20
+
+[90mstdout[2m | tests/integration/agentic-governance.test.ts[2m > [22m[2mAgentic Governance (The 2030 Leap)
+[22m[39m[Startup] PatternEngine: SKIPPED (Local Dev Mode)
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts
+[22m[39m[Startup] PatternEngine: SKIPPED (Local Dev Mode)
+
+[90mstderr[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts
+[22m[39m[Startup] Neon init failed: Error: Database connection string format for `neon()` should be: postgresql://user:password@host.tld/dbname?option=value
+    at neon [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4m@neondatabase/serverless[24m/index.mjs:1274:14[90m)[39m
+    at [90m/Users/letstaco/Documents/agentcache-ai/[39msrc/index.ts:45:11
+[90m    at processTicksAndRejections (node:internal/process/task_queues:104:5)[39m
+    at VitestModuleEvaluator._runInlinedModule [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mvitest[24m/dist/module-evaluator.js:190:4[90m)[39m
+    at VitestModuleRunner.directRequest [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mvite[24m/dist/node/module-runner.js:1146:59[90m)[39m
+    at VitestModuleRunner.cachedRequest [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mvite[24m/dist/node/module-runner.js:1053:73[90m)[39m
+    at [90m/Users/letstaco/Documents/agentcache-ai/[39mtests/contracts/public-api.contract.test.ts:87:16
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System
+[22m[39m[Startup] PatternEngine: SKIPPED (Local Dev Mode)
+
+[90mstderr[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System
+[22m[39m[Startup] Neon init failed: Error: Database connection string format for `neon()` should be: postgresql://user:password@host.tld/dbname?option=value
+    at neon [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4m@neondatabase/serverless[24m/index.mjs:1274:14[90m)[39m
+    at [90m/Users/letstaco/Documents/agentcache-ai/[39msrc/index.ts:45:11
+[90m    at processTicksAndRejections (node:internal/process/task_queues:104:5)[39m
+    at VitestModuleEvaluator._runInlinedModule [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mvitest[24m/dist/module-evaluator.js:190:4[90m)[39m
+    at VitestModuleRunner.directRequest [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mvite[24m/dist/node/module-runner.js:1146:59[90m)[39m
+    at VitestModuleRunner.cachedRequest [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mvite[24m/dist/node/module-runner.js:1053:73[90m)[39m
+    at [90m/Users/letstaco/Documents/agentcache-ai/[39mtests/integration/ontology-datalake.test.ts:76:20
+
+[90mstderr[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol
+[22m[39m[Startup] Neon init failed: Error: Database connection string format for `neon()` should be: postgresql://user:password@host.tld/dbname?option=value
+    at neon [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4m@neondatabase/serverless[24m/index.mjs:1274:14[90m)[39m
+    at [90m/Users/letstaco/Documents/agentcache-ai/[39msrc/index.ts:45:11
+[90m    at processTicksAndRejections (node:internal/process/task_queues:104:5)[39m
+    at VitestModuleEvaluator._runInlinedModule [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mvitest[24m/dist/module-evaluator.js:190:4[90m)[39m
+    at VitestModuleRunner.directRequest [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mvite[24m/dist/node/module-runner.js:1146:59[90m)[39m
+    at VitestModuleRunner.cachedRequest [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mvite[24m/dist/node/module-runner.js:1053:73[90m)[39m
+    at [90m/Users/letstaco/Documents/agentcache-ai/[39mtests/integration/x402-payment.test.ts:47:20
+
+[90mstdout[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol
+[22m[39m[Startup] PatternEngine: SKIPPED (Local Dev Mode)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mSchema Registry[2m > [22m[2mresolves all 6 built-in sectors
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mSchema Registry[2m > [22m[2mlists all schemas with field names
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mSchema Registry[2m > [22m[2mindexes vocabulary terms for cross-sector lookup
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mSchema Registry[2m > [22m[2mreturns empty for unknown sector
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+ [31m❯[39m tests/integration/agentic-governance.test.ts [2m([22m[2m2 tests[22m[2m | [22m[33m2 skipped[39m[2m)[22m[33m 507[2mms[22m[39m
+     [2m[90m↓[39m[22m traces a mission through the LemmaService
+     [2m[90m↓[39m[22m settles an x402 payment via AgentSettlementService
+ [32m✓[39m tests/unit/workspace-provisioning.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/unit/stream_logic.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [31m❯[39m tests/unit/periscope-lens.test.ts [2m([22m[2m3 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 102[2mms[22m[39m
+[31m     [31m×[31m should resolve and use the "wide" profile[39m[32m 58[2mms[22m[39m
+     [32m✓[39m should favor success in "tele" profile[32m 0[2mms[22m[39m
+[31m     [31m×[31m should fallback to "normal" weights by default[39m[32m 43[2mms[22m[39m
+[90mstderr[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mAPI: GET /api/ontology/schemas[2m > [22m[2mreturns all registered schema listings
+[22m[39m⚠️ Redis Auth Failed during op. Switching to In-Memory Mock.
+
+[90mstderr[2m | tests/integration/topological_healing.test.ts
+[22m[39m⚠️ No Vector Credentials. Using In-Memory Elastic Sharded Mock.
+
+[90mstderr[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol[2m > [22m[2mreturns x402 headers on 402 Payment Required for unfunded agents
+[22m[39m⚠️ Redis Auth Failed during op. Switching to In-Memory Mock.
+
+ [32m✓[39m tests/integration/topological_healing.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+[90mstderr[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration[2m > [22m[2mshould bypass cache hit when drift is high (> 0.15)
+[22m[39m⚠️ Redis Auth Failed during op. Switching to In-Memory Mock.
+
+[90mstderr[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol[2m > [22m[2mreturns x402 headers on 402 Payment Required for unfunded agents
+[22m[39m[FirecrawlService] FIRECRAWL_API_KEY is not set. Scraping will fail.
+
+[90mstderr[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m⚠️ Redis Auth Failed during op. Switching to In-Memory Mock.
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[Cognitive] ✅ Drift nominal (0.0%). Threshold: 0.15.
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[Observability] 📡 Event: CACHE_OPERATION - Cache MISS: NOT FOUND
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[OTel Export] 📤 Push: {"timestamp":"2026-03-12T23:46:24.458Z","traceId":"68b92d7019312","spanId":"2c77cca0","severity":"INFO","body":"Cache MISS: NOT FOUND","attributes":{"service.name":"agentcache-ai","event.type":"CACHE_OPERATION","drift":0,"hit":false,"reason":"miss"}}
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[Cognitive] ✅ Drift nominal (0.0%). Threshold: 0.15.
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[Observability] 📡 Event: CACHE_OPERATION - Cache MISS: NOT FOUND
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[OTel Export] 📤 Push: {"timestamp":"2026-03-12T23:46:24.464Z","traceId":"c77e2dc10d24","spanId":"aba9fc1b","severity":"INFO","body":"Cache MISS: NOT FOUND","attributes":{"service.name":"agentcache-ai","event.type":"CACHE_OPERATION","drift":0,"hit":false,"reason":"miss"}}
+
+[90mstdout[2m | tests/integration/antibody_hardening.test.ts[2m > [22m[2mAntibody Hardening & Pathology Sandbox[2m > [22m[2mshould use a stricter threshold after receiving an antibody pulse
+[22m[39m[Cognitive] ✅ Drift nominal (10.0%). Threshold: 0.15.
+
+[90mstdout[2m | tests/integration/antibody_hardening.test.ts[2m > [22m[2mAntibody Hardening & Pathology Sandbox[2m > [22m[2mshould use a stricter threshold after receiving an antibody pulse
+[22m[39m[Observability] 📡 Event: CACHE_OPERATION - Cache HIT: turn 0 (Drift: 10.0%)
+
+[90mstdout[2m | tests/integration/antibody_hardening.test.ts[2m > [22m[2mAntibody Hardening & Pathology Sandbox[2m > [22m[2mshould use a stricter threshold after receiving an antibody pulse
+[22m[39m[OTel Export] 📤 Push: {"timestamp":"2026-03-12T23:46:24.466Z","traceId":"224574787936d8","spanId":"71f13226","severity":"INFO","body":"Cache HIT: turn 0 (Drift: 10.0%)","attributes":{"service.name":"agentcache-ai","event.type":"CACHE_OPERATION","sessionId":"session-A","drift":0.1,"hit":true,"key":"963bdbea8ae778f3"}}
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[Cognitive] ✅ Drift nominal (0.0%). Threshold: 0.15.
+
+[90mstdout[2m | tests/integration/antibody_hardening.test.ts[2m > [22m[2mAntibody Hardening & Pathology Sandbox[2m > [22m[2mshould use a stricter threshold after receiving an antibody pulse
+[22m[39m[SemanticCache] 🛡️ Antibody pulse received for session session-A. Hardening defenses.
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[Observability] 📡 Event: CACHE_OPERATION - Cache MISS: NOT FOUND
+
+[90mstdout[2m | tests/integration/antibody_hardening.test.ts[2m > [22m[2mAntibody Hardening & Pathology Sandbox[2m > [22m[2mshould use a stricter threshold after receiving an antibody pulse
+[22m[39m[Cognitive] ⚠️ Cache ANTIBODY_HARDENING detected (10.0%). Threshold: 0.05. Bypassing for safety.
+
+[90mstdout[2m | tests/integration/antibody_hardening.test.ts[2m > [22m[2mAntibody Hardening & Pathology Sandbox[2m > [22m[2mshould use a stricter threshold after receiving an antibody pulse
+[22m[39m[Observability] 📡 Event: CACHE_OPERATION - Cache MISS: DRIFT BYPASS
+
+[90mstdout[2m | tests/integration/antibody_hardening.test.ts[2m > [22m[2mAntibody Hardening & Pathology Sandbox[2m > [22m[2mshould use a stricter threshold after receiving an antibody pulse
+[22m[39m[OTel Export] 📤 Push: {"timestamp":"2026-03-12T23:46:24.468Z","traceId":"b97f61d5961c98","spanId":"d0812630","severity":"INFO","body":"Cache MISS: DRIFT BYPASS","attributes":{"service.name":"agentcache-ai","event.type":"CACHE_OPERATION","sessionId":"session-A","drift":0.1,"hit":false,"reason":"drift_bypass"}}
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[OTel Export] 📤 Push: {"timestamp":"2026-03-12T23:46:24.467Z","traceId":"ff9c0457a4dae","spanId":"e6ac64cd","severity":"INFO","body":"Cache MISS: NOT FOUND","attributes":{"service.name":"agentcache-ai","event.type":"CACHE_OPERATION","drift":0,"hit":false,"reason":"miss"}}
+
+[90mstdout[2m | tests/integration/antibody_hardening.test.ts[2m > [22m[2mAntibody Hardening & Pathology Sandbox[2m > [22m[2mshould successfully start a logic duel in the sandbox
+[22m[39m[Pathology] ⚔️ Logic Duel Started: agent-1 vs The Zeno Paradoxer
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[Observability] 📡 Event: CACHE_OPERATION - Cache SET: turn 0
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[OTel Export] 📤 Push: {"timestamp":"2026-03-12T23:46:24.471Z","traceId":"4cd11cabc2e12","spanId":"3a70f320","severity":"INFO","body":"Cache SET: turn 0","attributes":{"service.name":"agentcache-ai","event.type":"CACHE_OPERATION","key":"68ba9e8efdcc532c"}}
+
+[90mstdout[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration[2m > [22m[2mshould bypass cache hit when drift is high (> 0.15)
+[22m[39m[Test Request] POST /api/cache/set -> Status: 200, Payload: {"success":true}
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[Cognitive] ✅ Drift nominal (0.0%). Threshold: 0.15.
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[Observability] 📡 Event: CACHE_OPERATION - Cache HIT: turn 0 (Drift: 0.0%)
+
+[90mstdout[2m | tests/contracts/public-api.contract.test.ts[2m > [22m[2mAgentCache public API contracts[2m > [22m[2mcache endpoints expose predictive prefetch on miss and hit flows
+[22m[39m[OTel Export] 📤 Push: {"timestamp":"2026-03-12T23:46:24.473Z","traceId":"7c93c7416b16d","spanId":"8eefaa28","severity":"INFO","body":"Cache HIT: turn 0 (Drift: 0.0%)","attributes":{"service.name":"agentcache-ai","event.type":"CACHE_OPERATION","drift":0,"hit":true,"key":"68ba9e8efdcc532c"}}
+
+[90mstdout[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration[2m > [22m[2mshould bypass cache hit when drift is high (> 0.15)
+[22m[39m[Cognitive] ⚠️ Cache DRIFT detected (80.0%). Threshold: 0.15. Bypassing for safety.
+
+[90mstdout[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration[2m > [22m[2mshould bypass cache hit when drift is high (> 0.15)
+[22m[39m[Test Request] POST /api/cache/check -> Status: 200, Payload: {"cached":false,"hit":false,"key":"f5f2359faaa94295","predictive_prefetch":[],"drift":0.8,"reason":"drift_bypass","sessionId":"test-session-123","turnIndex":2,"environmental_risk":0,"quarantined":false}
+
+ [32m✓[39m tests/integration/antibody_hardening.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+[90mstderr[2m | tests/unit/lemma-caching.test.ts
+[22m[39m⚠️ Redis Credentials Missing. Using In-Memory Mock.
+
+[90mstdout[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration[2m > [22m[2mshould allow cache hit when drift is low (<= 0.15)
+[22m[39m[Test Request] POST /api/cache/set -> Status: 200, Payload: {"success":true}
+
+[90mstdout[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration[2m > [22m[2mshould allow cache hit when drift is low (<= 0.15)
+[22m[39m[Cognitive] ✅ Drift nominal (1.0%). Threshold: 0.15.
+
+[90mstdout[2m | tests/integration/drift_bypass.test.ts[2m > [22m[2mDrift-Aware Cache Bypass Integration[2m > [22m[2mshould allow cache hit when drift is low (<= 0.15)
+[22m[39m[Test Request] POST /api/cache/check -> Status: 200, Payload: {"cached":true,"hit":true,"response":"stable-response","key":"9d466f3402e3f361","ttl":-1,"type":"exact","similarity":1,"savedUsd":0.05,"coherence":0.99,"predictive_prefetch":[],"drift":0.01,"reason":"exact","environmental_risk":0,"quarantined":false}
+
+ [32m✓[39m tests/integration/drift_bypass.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 1912[2mms[22m[39m
+     [33m[2m✓[22m[39m should bypass cache hit when drift is high (> 0.15) [33m 462[2mms[22m[39m
+[90mstdout[2m | tests/unit/integral_operator.test.ts[2m > [22m[2mUniversalOperator[2m > [22m[2mshould warn on high-risk actions
+[22m[39m
+[Operator] Received Goal: "manage memory"
+
+[90mstdout[2m | tests/unit/integral_operator.test.ts[2m > [22m[2mUniversalOperator[2m > [22m[2mshould warn on high-risk actions
+[22m[39m[Operator] World Model Abstraction: System is stable.
+
+[90mstdout[2m | tests/unit/integral_operator.test.ts[2m > [22m[2mUniversalOperator[2m > [22m[2mshould warn on high-risk actions
+[22m[39m[Operator] Formulated Plan with 2 steps
+  > Step 1: Check current memory status (Tool: agentcache_stats)
+
+[90mstdout[2m | tests/unit/integral_operator.test.ts[2m > [22m[2mUniversalOperator[2m > [22m[2mshould warn on high-risk actions
+[22m[39m    [!] Proceeding with caution...
+    [√] Execution Successful
+
+[90mstdout[2m | tests/unit/integral_operator.test.ts[2m > [22m[2mUniversalOperator[2m > [22m[2mshould warn on high-risk actions
+[22m[39m  > Step 2: Optimize context (Tool: agentcache_compress_context)
+
+[90mstdout[2m | tests/unit/integral_operator.test.ts[2m > [22m[2mUniversalOperator[2m > [22m[2mshould warn on high-risk actions
+[22m[39m    [!] Proceeding with caution...
+    [√] Execution Successful
+
+[90mstdout[2m | tests/unit/integral_operator.test.ts[2m > [22m[2mUniversalOperator[2m > [22m[2mshould warn on high-risk actions
+[22m[39m[Operator] Goal Complete
+
+ [32m✓[39m tests/unit/integral_operator.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/unit/lemma-caching.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m tests/contracts/public-api.contract.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 1916[2mms[22m[39m
+     [33m[2m✓[22m[39m cache endpoints expose predictive prefetch on miss and hit flows [33m 443[2mms[22m[39m
+[90mstderr[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mAPI: POST /api/ontology/bridge[2m > [22m[2mreturns federated results for "compliance"
+[22m[39m[Auth] Error: DrizzleQueryError: Failed query: select "api_keys"."key_hash", "organizations"."plan", "api_keys"."is_active" from "api_keys" left join "organizations" on "api_keys"."organization_id" = "organizations"."id" where "api_keys"."is_active" = $1
+params: true
+    at PostgresJsPreparedQuery.queryWithCache [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mdrizzle-orm[24m/pg-core/session.js:41:15[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:104:5)[39m
+    at [90mfile:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mdrizzle-orm[24m/postgres-js/session.js:37:20
+    at authenticateApiKey [90m(/Users/letstaco/Documents/agentcache-ai/[39msrc/middleware/auth.ts:145:29[90m)[39m
+    at Array.<anonymous> [90m(/Users/letstaco/Documents/agentcache-ai/[39msrc/api/ontology.ts:205:23[90m)[39m
+    at dispatch [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mhono[24m/dist/compose.js:22:17[90m)[39m
+    at [90m/Users/letstaco/Documents/agentcache-ai/[39msrc/index.ts:206:3
+    at dispatch [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mhono[24m/dist/compose.js:22:17[90m)[39m
+    at cors2 [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mhono[24m/dist/middleware/cors/index.js:79:5[90m)[39m
+    at dispatch [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mhono[24m/dist/compose.js:22:17[90m)[39m {
+  query: [32m'select "api_keys"."key_hash", "organizations"."plan", "api_keys"."is_active" from "api_keys" left join "organizations" on "api_keys"."organization_id" = "organizations"."id" where "api_keys"."is_active" = $1'[39m,
+  params: [ [33mtrue[39m ],
+  cause: Error: Client network socket disconnected before secure TLS connection was established
+  [90m    at TLSSocket.onConnectEnd (node:internal/tls/wrap:1701:19)[39m
+  [90m    at TLSSocket.emit (node:events:520:22)[39m
+  [90m    at endReadableNT (node:internal/streams/readable:1729:12)[39m
+  [90m    at processTicksAndRejections (node:internal/process/task_queues:90:21)[39m {
+    code: [32m'ECONNRESET'[39m,
+    path: [90mundefined[39m,
+    host: [90mundefined[39m,
+    port: [90mundefined[39m,
+    localAddress: [90mundefined[39m
+  }
+}
+
+[90mstderr[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol[2m > [22m[2mreturns x402 headers on 402 Payment Required for unfunded agents
+[22m[39m[Auth] Error: DrizzleQueryError: Failed query: select "api_keys"."key_hash", "organizations"."plan", "api_keys"."is_active" from "api_keys" left join "organizations" on "api_keys"."organization_id" = "organizations"."id" where "api_keys"."is_active" = $1
+params: true
+    at PostgresJsPreparedQuery.queryWithCache [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mdrizzle-orm[24m/pg-core/session.js:41:15[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:104:5)[39m
+    at [90mfile:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mdrizzle-orm[24m/postgres-js/session.js:37:20
+    at authenticateApiKey [90m(/Users/letstaco/Documents/agentcache-ai/[39msrc/middleware/auth.ts:145:29[90m)[39m
+    at Array.<anonymous> [90m(/Users/letstaco/Documents/agentcache-ai/[39msrc/api/ontology.ts:36:23[90m)[39m
+    at dispatch [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mhono[24m/dist/compose.js:22:17[90m)[39m
+    at [90m/Users/letstaco/Documents/agentcache-ai/[39msrc/index.ts:206:3
+    at dispatch [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mhono[24m/dist/compose.js:22:17[90m)[39m
+    at cors2 [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mhono[24m/dist/middleware/cors/index.js:79:5[90m)[39m
+    at dispatch [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mhono[24m/dist/compose.js:22:17[90m)[39m {
+  query: [32m'select "api_keys"."key_hash", "organizations"."plan", "api_keys"."is_active" from "api_keys" left join "organizations" on "api_keys"."organization_id" = "organizations"."id" where "api_keys"."is_active" = $1'[39m,
+  params: [ [33mtrue[39m ],
+  cause: Error: Client network socket disconnected before secure TLS connection was established
+  [90m    at TLSSocket.onConnectEnd (node:internal/tls/wrap:1701:19)[39m
+  [90m    at TLSSocket.emit (node:events:520:22)[39m
+  [90m    at endReadableNT (node:internal/streams/readable:1729:12)[39m
+  [90m    at processTicksAndRejections (node:internal/process/task_queues:90:21)[39m {
+    code: [32m'ECONNRESET'[39m,
+    path: [90mundefined[39m,
+    host: [90mundefined[39m,
+    port: [90mundefined[39m,
+    localAddress: [90mundefined[39m
+  }
+}
+
+[90mstdout[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol[2m > [22m[2mallows agent access instantly if Preauthorization is provided (x402 payment success)
+[22m[39m[Settlement] 💳 Processing settlement for agent ac_demo_test_x402 via token 0xABC123MockHash...
+
+[90mstderr[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mAPI: POST /api/ontology/bridge[2m > [22m[2mbridges a term between two specific sectors
+[22m[39m[Auth] Error: DrizzleQueryError: Failed query: select "api_keys"."key_hash", "organizations"."plan", "api_keys"."is_active" from "api_keys" left join "organizations" on "api_keys"."organization_id" = "organizations"."id" where "api_keys"."is_active" = $1
+params: true
+    at PostgresJsPreparedQuery.queryWithCache [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mdrizzle-orm[24m/pg-core/session.js:41:15[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:104:5)[39m
+    at [90mfile:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mdrizzle-orm[24m/postgres-js/session.js:37:20
+    at authenticateApiKey [90m(/Users/letstaco/Documents/agentcache-ai/[39msrc/middleware/auth.ts:145:29[90m)[39m
+    at Array.<anonymous> [90m(/Users/letstaco/Documents/agentcache-ai/[39msrc/api/ontology.ts:205:23[90m)[39m
+    at dispatch [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mhono[24m/dist/compose.js:22:17[90m)[39m
+    at [90m/Users/letstaco/Documents/agentcache-ai/[39msrc/index.ts:206:3
+    at dispatch [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mhono[24m/dist/compose.js:22:17[90m)[39m
+    at cors2 [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mhono[24m/dist/middleware/cors/index.js:79:5[90m)[39m
+    at dispatch [90m(file:///Users/letstaco/Documents/agentcache-ai/[39mnode_modules/[4mhono[24m/dist/compose.js:22:17[90m)[39m {
+  query: [32m'select "api_keys"."key_hash", "organizations"."plan", "api_keys"."is_active" from "api_keys" left join "organizations" on "api_keys"."organization_id" = "organizations"."id" where "api_keys"."is_active" = $1'[39m,
+  params: [ [33mtrue[39m ],
+  cause: Error: Client network socket disconnected before secure TLS connection was established
+  [90m    at TLSSocket.onConnectEnd (node:internal/tls/wrap:1701:19)[39m
+  [90m    at TLSSocket.emit (node:events:520:22)[39m
+  [90m    at endReadableNT (node:internal/streams/readable:1729:12)[39m
+  [90m    at processTicksAndRejections (node:internal/process/task_queues:90:21)[39m {
+    code: [32m'ECONNRESET'[39m,
+    path: [90mundefined[39m,
+    host: [90mundefined[39m,
+    port: [90mundefined[39m,
+    localAddress: [90mundefined[39m
+  }
+}
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mData Lake Ingestion (Raw Connector)[2m > [22m[2mingests inline JSON and maps to finance ontology
+[22m[39m[RawConnector] Ingested 70 chars of inline object data.
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mQ1: Schema Version Coexistence[2m > [22m[2mresolves pinned schema versions separately from latest
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mQ1: Schema Version Coexistence[2m > [22m[2mlists available versions per sector
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+
+[90mstdout[2m | tests/integration/ontology-datalake.test.ts[2m > [22m[2mData Lake Ontology System[2m > [22m[2mQ1: Schema Version Coexistence[2m > [22m[2msupports registering a new version without breaking the old
+[22m[39m[OntologyRegistry] Registered: finance v1.0.0 (7 terms)
+[OntologyRegistry] Registered: biotech v1.0.0 (7 terms)
+[OntologyRegistry] Registered: legal v1.0.0 (7 terms)
+[OntologyRegistry] Registered: robotics v1.0.0 (7 terms)
+[OntologyRegistry] Registered: healthcare v1.0.0 (7 terms)
+[OntologyRegistry] Registered: energy v1.0.0 (7 terms)
+[OntologyRegistry] Registered: finance v2.0.0 (2 terms)
+
+[90mstderr[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol[2m > [22m[2mallows agent access instantly if Preauthorization is provided (x402 payment success)
+[22m[39m[Settlement] ❌ Settlement failed: Failed query: select "id", "from_account_id", "to_account_id", "amount", "currency", "reference_type", "reference_id", "description", "created_at" from "ledger_transactions" where "ledger_transactions"."description" = $1 limit $2
+params: x402_settlement:0xABC123MockHash,1
+
+[90mstderr[2m | tests/integration/x402-payment.test.ts[2m > [22m[2mx402 Agentic Payment Protocol[2m > [22m[2mallows agent access instantly if Preauthorization is provided (x402 payment success)
+[22m[39m[Auth] x402 Settlement Failed for ac_demo_test_x402: Failed query: select "id", "from_account_id", "to_account_id", "amount", "currency", "reference_type", "reference_id", "description", "created_at" from "ledger_transactions" where "ledger_transactions"."description" = $1 limit $2
+params: x402_settlement:0xABC123MockHash,1
+
+ [31m❯[39m tests/integration/x402-payment.test.ts [2m([22m[2m2 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 2009[2mms[22m[39m
+[31m     [31m×[31m returns x402 headers on 402 Payment Required for unfunded agents[39m[33m 496[2mms[22m[39m
+[31m     [31m×[31m allows agent access instantly if Preauthorization is provided (x402 payment success)[39m[32m 43[2mms[22m[39m
+ [32m✓[39m tests/integration/ontology-datalake.test.ts [2m([22m[2m20 tests[22m[2m)[22m[33m 2003[2mms[22m[39m
+       [33m[2m✓[22m[39m returns all registered schema listings [33m 445[2mms[22m[39m
+ [32m✓[39m tests/unit/billing-plans.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [2m[90m↓[39m[22m tests/integration/audio1tv.test.ts [2m([22m[2m19 tests[22m[2m | [22m[33m19 skipped[39m[2m)[22m
+ [2m[90m↓[39m[22m tests/integration/jettythunder.test.ts [2m([22m[2m30 tests[22m[2m | [22m[33m30 skipped[39m[2m)[22m
+ [2m[90m↓[39m[22m tests/integration/system2_bridge.test.ts [2m([22m[2m1 test[22m[2m | [22m[33m1 skipped[39m[2m)[22m
+(node:7246) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ [31m❯[39m tests/unit/periscope-optics.test.ts [2m([22m[2m3 tests[22m[2m | [22m[33m3 skipped[39m[2m)[22m[32m 33[2mms[22m[39m
+     [2m[90m↓[39m[22m should use avg latency when ED is inactive (wide profile)
+     [2m[90m↓[39m[22m should use p95 latency when ED is active (tele profile)
+     [2m[90m↓[39m[22m should stabilize scores when VR is active (normal profile)
+[90mstdout[2m | tests/integration/dream.test.ts[2m > [22m[2mPhase 33: Functorial Dream Orchestrator Integration[2m > [22m[2mshould extract morphisms from failed traces and manifest them as patterns
+[22m[39m🧪 Starting Functorial Dream Integration Test...
+- Seeding nightmare traces...
+
+ [31m❯[39m tests/integration/dream.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 34[2mms[22m[39m
+[31m     [31m×[31m should extract morphisms from failed traces and manifest them as patterns[39m[32m 33[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Suites 2 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/agentic-governance.test.ts[2m > [22mAgentic Governance (The 2030 Leap)
+[31m[1mError[22m: Failed query: delete from "ledger_transactions"
+params: [39m
+[90m [2m❯[22m PostgresJsPreparedQuery.queryWithCache node_modules/drizzle-orm/pg-core/session.js:[2m41:15[22m[39m
+[36m [2m❯[22m tests/integration/agentic-governance.test.ts:[2m51:9[22m[39m
+    [90m 49| [39m        const { ledgerAccounts, ledgerTransactions } = await import('.…
+    [90m 50| [39m        // Clear previous test garbage (child table first to respect F…
+    [90m 51| [39m        [35mawait[39m db[33m.[39m[35mdelete[39m(ledgerTransactions)[33m;[39m
+    [90m   | [39m        [31m^[39m
+    [90m 52| [39m        [35mawait[39m db[33m.[39m[35mdelete[39m(ledgerAccounts)[33m;[39m
+    [90m 53| [39m
+
+[31m[1mCaused by: Error[22m: Client network socket disconnected before secure TLS connection was established[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ECONNRESET', path: undefined, host: undefined, port: undefined, localAddress: undefined, query: undefined, parameters: undefined, args: [], types: null }[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/unit/periscope-optics.test.ts[2m > [22mPeriscope Optical Refinement Unit Tests
+[31m[1mError[22m: Failed query: insert into "periscope_path_stats" ("id", "action_key", "avg_latency_ms", "p95_latency_ms", "avg_token_cost", "success_rate", "cache_hit_rate", "sample_count", "updated_at") values (default, $1, $2, $3, $4, $5, $6, $7, $8)
+params: tool_call:test_tool:test_provider,100,500,1000,1,0,10,2026-03-12T23:46:24.809Z[39m
+[90m [2m❯[22m PostgresJsPreparedQuery.queryWithCache node_modules/drizzle-orm/pg-core/session.js:[2m41:15[22m[39m
+[36m [2m❯[22m tests/unit/periscope-optics.test.ts:[2m14:9[22m[39m
+    [90m 12| [39m        [90m// Mock stats in DB[39m
+    [90m 13| [39m        [90m// Avg: 100, p95: 500[39m
+    [90m 14| [39m        [35mawait[39m db[33m.[39m[34minsert[39m(periscopePathStats)[33m.[39m[34mvalues[39m({
+    [90m   | [39m        [31m^[39m
+    [90m 15| [39m            actionKey[33m:[39m [32m'tool_call:test_tool:test_provider'[39m[33m,[39m
+    [90m 16| [39m            avgLatencyMs[33m:[39m [34m100[39m[33m,[39m
+
+[31m[1mCaused by: Error[22m: Client network socket disconnected before secure TLS connection was established[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ECONNRESET', path: undefined, host: undefined, port: undefined, localAddress: undefined, query: undefined, parameters: undefined, args: [ 'tool_call:test_tool:test_provider', 100, 500, 1000, 1, +0, 10, '2026-03-12T23:46:24.809Z' ], types: null }[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 8 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/dream.test.ts[2m > [22mPhase 33: Functorial Dream Orchestrator Integration[2m > [22mshould extract morphisms from failed traces and manifest them as patterns
+[31m[1mError[22m: Failed query: insert into "periscope_runs" ("id", "agent_id", "session_id", "started_at", "ended_at") values (default, $1, $2, default, default) returning "id", "agent_id", "session_id", "started_at", "ended_at"
+params: dream-test-agent,sess-1773359185015[39m
+[90m [2m❯[22m PostgresJsPreparedQuery.queryWithCache node_modules/drizzle-orm/pg-core/session.js:[2m41:15[22m[39m
+[90m [2m❯[22m node_modules/drizzle-orm/postgres-js/session.js:[2m37:20[22m[39m
+[36m [2m❯[22m tests/integration/dream.test.ts:[2m45:23[22m[39m
+    [90m 43| [39m        [90m// 1. Setup: Seed a failed trace in the database[39m
+    [90m 44| [39m        console[33m.[39m[34mlog[39m([32m"- Seeding nightmare traces..."[39m)[33m;[39m
+    [90m 45| [39m        [35mconst[39m [run] [33m=[39m [35mawait[39m db[33m.[39m[34minsert[39m(periscopeRuns)[33m.[39m[34mvalues[39m({
+    [90m   | [39m                      [31m^[39m
+    [90m 46| [39m            agentId[33m:[39m [32m'dream-test-agent'[39m[33m,[39m
+    [90m 47| [39m            sessionId[33m:[39m [32m'sess-'[39m [33m+[39m [33mDate[39m[33m.[39m[34mnow[39m()
+
+[31m[1mCaused by: Error[22m: Client network socket disconnected before secure TLS connection was established[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ECONNRESET', path: undefined, host: undefined, port: undefined, localAddress: undefined, query: undefined, parameters: undefined, args: [ 'dream-test-agent', 'sess-1773359185015' ], types: null }[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/periscope-integration.test.ts[2m > [22mPeriscope Predictive Pathing Integration[2m > [22mshould capture a full agent run trace
+[31m[1mError[22m: Failed query: insert into "periscope_runs" ("id", "agent_id", "session_id", "started_at", "ended_at") values (default, $1, $2, default, default) returning "id", "agent_id", "session_id", "started_at", "ended_at"
+params: test-agent,test-session-123[39m
+[90m [2m❯[22m PostgresJsPreparedQuery.queryWithCache node_modules/drizzle-orm/pg-core/session.js:[2m41:15[22m[39m
+[90m [2m❯[22m node_modules/drizzle-orm/postgres-js/session.js:[2m37:20[22m[39m
+[36m [2m❯[22m PeriscopeService.startRun src/services/PeriscopeService.ts:[2m173:23[22m[39m
+    [90m171| [39m     */[39m
+    [90m172| [39m    async startRun(agentId: string, sessionId: string): Promise<string…
+    [90m173| [39m        [35mconst[39m [run] [33m=[39m [35mawait[39m db[33m.[39m[34minsert[39m(periscopeRuns)
+    [90m   | [39m                      [31m^[39m
+    [90m174| [39m            [33m.[39m[34mvalues[39m({
+    [90m175| [39m                agentId[33m,[39m
+[90m [2m❯[22m tests/integration/periscope-integration.test.ts:[2m17:17[22m[39m
+
+[31m[1mCaused by: Error[22m: Client network socket disconnected before secure TLS connection was established[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ECONNRESET', path: undefined, host: undefined, port: undefined, localAddress: undefined, query: undefined, parameters: undefined, args: [ 'test-agent', 'test-session-123' ], types: null }[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/periscope-integration.test.ts[2m > [22mPeriscope Predictive Pathing Integration[2m > [22mshould distill raw traces into path statistics
+[31m[1mError[22m: Failed query: insert into "periscope_path_stats" ("id", "action_key", "avg_latency_ms", "p95_latency_ms", "avg_token_cost", "success_rate", "cache_hit_rate", "sample_count", "updated_at") values (default, $1, $2, $3, $4, $5, $6, $7, $8)
+params: tool_call:stripe.charge:openai:gpt-4,800,1200,2000,1,0,1,2026-03-12T23:46:23.807Z[39m
+[90m [2m❯[22m PostgresJsPreparedQuery.queryWithCache node_modules/drizzle-orm/pg-core/session.js:[2m41:15[22m[39m
+[36m [2m❯[22m tests/integration/periscope-integration.test.ts:[2m53:9[22m[39m
+    [90m 51| [39m        [90m// In a real DB, pathDistiller.distillAll() would work.[39m
+    [90m 52| [39m        // In this mock environment, we'll manually insert the expecte…
+    [90m 53| [39m        [35mawait[39m db[33m.[39m[34minsert[39m(periscopePathStats)[33m.[39m[34mvalues[39m({
+    [90m   | [39m        [31m^[39m
+    [90m 54| [39m            actionKey[33m:[39m [32m'tool_call:stripe.charge:openai:gpt-4'[39m[33m,[39m
+    [90m 55| [39m            avgLatencyMs[33m:[39m [34m800[39m[33m,[39m
+
+[31m[1mCaused by: Error[22m: Client network socket disconnected before secure TLS connection was established[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ECONNRESET', path: undefined, host: undefined, port: undefined, localAddress: undefined, query: undefined, parameters: undefined, args: [ 'tool_call:stripe.charge:openai:gpt-4', 800, 1200, 2000, 1, +0, 1, '2026-03-12T23:46:23.807Z' ], types: null }[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/periscope-integration.test.ts[2m > [22mPeriscope Predictive Pathing Integration[2m > [22mshould score candidates based on distilled statistics
+[31m[1mError[22m: Failed query: select "id", "action_key", "avg_latency_ms", "p95_latency_ms", "avg_token_cost", "success_rate", "cache_hit_rate", "sample_count", "updated_at" from "periscope_path_stats" where "periscope_path_stats"."action_key" = $1 limit $2
+params: tool_call:stripe.charge:openai:gpt-4,1[39m
+[90m [2m❯[22m PostgresJsPreparedQuery.queryWithCache node_modules/drizzle-orm/pg-core/session.js:[2m41:15[22m[39m
+[90m [2m❯[22m node_modules/drizzle-orm/postgres-js/session.js:[2m37:20[22m[39m
+[36m [2m❯[22m src/services/PeriscopeService.ts:[2m117:30[22m[39m
+    [90m115| [39m            
+    [90m116| [39m            [90m// 1. Try to get stats from path_stats table[39m
+    [90m117| [39m            [35mconst[39m statsArr [33m=[39m [35mawait[39m db[33m.[39m[34mselect[39m()
+    [90m   | [39m                             [31m^[39m
+    [90m118| [39m                [33m.[39m[35mfrom[39m(periscopePathStats)
+    [90m119| [39m                [33m.[39m[34mwhere[39m([34meq[39m(periscopePathStats[33m.[39mactionKey[33m,[39m actionKey))
+[90m [2m❯[22m PeriscopeService.scoreCandidates src/services/PeriscopeService.ts:[2m113:25[22m[39m
+[90m [2m❯[22m tests/integration/periscope-integration.test.ts:[2m78:24[22m[39m
+
+[31m[1mCaused by: Error[22m: Client network socket disconnected before secure TLS connection was established[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ECONNRESET', path: undefined, host: undefined, port: undefined, localAddress: undefined, query: undefined, parameters: undefined, args: [ 'tool_call:stripe.charge:openai:gpt-4', 1 ], types: null }[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/x402-payment.test.ts[2m > [22mx402 Agentic Payment Protocol[2m > [22mreturns x402 headers on 402 Payment Required for unfunded agents
+[31m[1mAssertionError[22m: expected 200 to be 402 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 402[39m
+[31m+ 200[39m
+
+[36m [2m❯[22m tests/integration/x402-payment.test.ts:[2m66:46[22m[39m
+    [90m 64| [39m
+    [90m 65| [39m        [90m// It should immediately hit the 402 Payment Required[39m
+    [90m 66| [39m        [34mexpect[39m(lastResponse[33m.[39mresponse[33m.[39mstatus)[33m.[39m[34mtoBe[39m([34m402[39m)[33m;[39m
+    [90m   | [39m                                             [31m^[39m
+    [90m 67| [39m
+    [90m 68| [39m        [90m// Ensure the JSON response is still intact for humans[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/x402-payment.test.ts[2m > [22mx402 Agentic Payment Protocol[2m > [22mallows agent access instantly if Preauthorization is provided (x402 payment success)
+[31m[1mAssertionError[22m: expected 402 not to be 402 // Object.is equality[39m
+[36m [2m❯[22m tests/integration/x402-payment.test.ts:[2m92:41[22m[39m
+    [90m 90| [39m        [90m// but it should NOT return 401 or 402.[39m
+    [90m 91| [39m        [34mexpect[39m(res[33m.[39mresponse[33m.[39mstatus)[33m.[39mnot[33m.[39m[34mtoBe[39m([34m401[39m)[33m;[39m
+    [90m 92| [39m        [34mexpect[39m(res[33m.[39mresponse[33m.[39mstatus)[33m.[39mnot[33m.[39m[34mtoBe[39m([34m402[39m)[33m;[39m
+    [90m   | [39m                                        [31m^[39m
+    [90m 93| [39m    }[33m,[39m [34m15000[39m)[33m;[39m
+    [90m 94| [39m})[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/unit/periscope-lens.test.ts[2m > [22mPeriscope Lens Profiles Unit Tests[2m > [22mshould resolve and use the "wide" profile
+[31m[1mError[22m: Failed query: select "id", "action_key", "avg_latency_ms", "p95_latency_ms", "avg_token_cost", "success_rate", "cache_hit_rate", "sample_count", "updated_at" from "periscope_path_stats" where "periscope_path_stats"."action_key" = $1 limit $2
+params: tool_call:high_latency_tool:none,1[39m
+[90m [2m❯[22m PostgresJsPreparedQuery.queryWithCache node_modules/drizzle-orm/pg-core/session.js:[2m41:15[22m[39m
+[90m [2m❯[22m node_modules/drizzle-orm/postgres-js/session.js:[2m37:20[22m[39m
+[36m [2m❯[22m src/services/PeriscopeService.ts:[2m117:30[22m[39m
+    [90m115| [39m            
+    [90m116| [39m            [90m// 1. Try to get stats from path_stats table[39m
+    [90m117| [39m            [35mconst[39m statsArr [33m=[39m [35mawait[39m db[33m.[39m[34mselect[39m()
+    [90m   | [39m                             [31m^[39m
+    [90m118| [39m                [33m.[39m[35mfrom[39m(periscopePathStats)
+    [90m119| [39m                [33m.[39m[34mwhere[39m([34meq[39m(periscopePathStats[33m.[39mactionKey[33m,[39m actionKey))
+[90m [2m❯[22m PeriscopeService.scoreCandidates src/services/PeriscopeService.ts:[2m113:25[22m[39m
+[90m [2m❯[22m tests/unit/periscope-lens.test.ts:[2m18:24[22m[39m
+
+[31m[1mCaused by: Error[22m: Client network socket disconnected before secure TLS connection was established[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ECONNRESET', path: undefined, host: undefined, port: undefined, localAddress: undefined, query: undefined, parameters: undefined, args: [ 'tool_call:high_latency_tool:none', 1 ], types: null }[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/unit/periscope-lens.test.ts[2m > [22mPeriscope Lens Profiles Unit Tests[2m > [22mshould fallback to "normal" weights by default
+[31m[1mError[22m: Failed query: select "id", "action_key", "avg_latency_ms", "p95_latency_ms", "avg_token_cost", "success_rate", "cache_hit_rate", "sample_count", "updated_at" from "periscope_path_stats" where "periscope_path_stats"."action_key" = $1 limit $2
+params: tool_call:high_latency_tool:none,1[39m
+[90m [2m❯[22m PostgresJsPreparedQuery.queryWithCache node_modules/drizzle-orm/pg-core/session.js:[2m41:15[22m[39m
+[90m [2m❯[22m node_modules/drizzle-orm/postgres-js/session.js:[2m37:20[22m[39m
+[36m [2m❯[22m src/services/PeriscopeService.ts:[2m117:30[22m[39m
+    [90m115| [39m            
+    [90m116| [39m            [90m// 1. Try to get stats from path_stats table[39m
+    [90m117| [39m            [35mconst[39m statsArr [33m=[39m [35mawait[39m db[33m.[39m[34mselect[39m()
+    [90m   | [39m                             [31m^[39m
+    [90m118| [39m                [33m.[39m[35mfrom[39m(periscopePathStats)
+    [90m119| [39m                [33m.[39m[34mwhere[39m([34meq[39m(periscopePathStats[33m.[39mactionKey[33m,[39m actionKey))
+[90m [2m❯[22m PeriscopeService.scoreCandidates src/services/PeriscopeService.ts:[2m113:25[22m[39m
+[90m [2m❯[22m tests/unit/periscope-lens.test.ts:[2m33:24[22m[39m
+
+[31m[1mCaused by: Error[22m: Client network socket disconnected before secure TLS connection was established[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ECONNRESET', path: undefined, host: undefined, port: undefined, localAddress: undefined, query: undefined, parameters: undefined, args: [ 'tool_call:high_latency_tool:none', 1 ], types: null }[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m6 failed[39m[22m[2m | [22m[1m[32m18 passed[39m[22m[2m | [22m[33m3 skipped[39m[90m (27)[39m
+[2m      Tests [22m [1m[31m8 failed[39m[22m[2m | [22m[1m[32m79 passed[39m[22m[2m | [22m[33m55 skipped[39m[90m (142)[39m
+[2m   Start at [22m 19:46:22
+[2m   Duration [22m 2.99s[2m (transform 3.52s, setup 0ms, import 6.53s, tests 9.07s, environment 2ms)[22m
+
