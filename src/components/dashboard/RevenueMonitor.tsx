@@ -71,7 +71,7 @@ export function RevenueMonitor() {
                 <div className="h-1 bg-white/5 rounded-full overflow-hidden">
                     <div 
                         className="h-full bg-gradient-to-r from-cyan-500 via-emerald-500 to-amber-500 transition-all duration-1000"
-                        style={{ width: `${Math.min(100, (data.totalVolume / 100) * 100)}%` }}
+                        style={{ width: `${Math.min(100, ((typeof data.totalVolume === 'number' ? data.totalVolume : 0) / 100) * 100)}%` }}
                     />
                 </div>
                 <p className="text-white/20 text-[9px] mt-2 text-center uppercase tracking-widest">Substrate Saturation Index</p>

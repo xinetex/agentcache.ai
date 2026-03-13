@@ -39,6 +39,8 @@ export class StatsService {
             db_latency: '0ms',
             cache_hits_today: 0,
             cache_misses_today: 0,
+            cache_hit_rate: 0,
+            cost_savings_usd: 0,
             hit_rate: 0,
             cost_saved_today: `$0.00`,
             top_users: [],

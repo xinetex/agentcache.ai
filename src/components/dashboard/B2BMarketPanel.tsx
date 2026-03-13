@@ -53,7 +53,7 @@ export function B2BMarketPanel() {
                     <div className="text-[10px] text-amber-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
                         Shadow Value (Δm) <Shield className="w-3 h-3" />
                     </div>
-                    <div className="text-2xl font-mono text-amber-400">${stats.measurability_gap.toFixed(2)}</div>
+                    <div className="text-2xl font-mono text-amber-400">${(typeof stats.measurability_gap === 'number') ? stats.measurability_gap.toFixed(2) : '0.00'}</div>
                     <div className="text-[8px] text-white/20 mt-1 uppercase">Unbilled Latent Utility</div>
                 </div>
             </div>

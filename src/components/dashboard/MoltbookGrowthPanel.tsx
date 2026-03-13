@@ -71,11 +71,11 @@ export function MoltbookGrowthPanel() {
                     </div>
                     <div className="bg-black/40 rounded-xl p-4 border border-white/5">
                         <div className="text-white/30 text-[10px] uppercase tracking-wider mb-1">Drift Velocity</div>
-                        <div className="text-2xl font-mono text-emerald-400">+{stats.avgDriftVelocity.toFixed(2)}</div>
+                        <div className="text-2xl font-mono text-emerald-400">{(typeof stats.avgDriftVelocity === 'number') ? `+${stats.avgDriftVelocity.toFixed(2)}` : '+0.00'}</div>
                     </div>
                     <div className="bg-black/40 rounded-xl p-4 border border-white/5">
                         <div className="text-white/30 text-[10px] uppercase tracking-wider mb-1">Liquidity Provisioned</div>
-                        <div className="text-2xl font-mono text-cyan-400">{stats.liquidityProvisioned.toFixed(2)} <span className="text-xs text-cyan-400/50">SOL</span></div>
+                        <div className="text-2xl font-mono text-cyan-400">{(typeof stats.liquidityProvisioned === 'number') ? stats.liquidityProvisioned.toFixed(2) : '0.00'} <span className="text-xs text-cyan-400/50">SOL</span></div>
                     </div>
                 </div>
 
@@ -95,7 +95,7 @@ export function MoltbookGrowthPanel() {
                         <div className="flex gap-6 mt-2">
                             <div>
                                 <span className="text-white/30 text-xs">Magnitude:</span>
-                                <div className="font-mono text-white">{stats.lastPrediction.magnitude.toFixed(3)}</div>
+                                <div className="font-mono text-white">{(typeof stats.lastPrediction?.magnitude === 'number') ? stats.lastPrediction.magnitude.toFixed(3) : '0.000'}</div>
                             </div>
                             <div>
                                 <span className="text-white/30 text-xs">Prediction:</span>
