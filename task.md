@@ -1,0 +1,115 @@
+- [x] Phase 3: Tactical Hardening & Real Outreach (Steps 1-5)
+    - [x] Connect `SalesProbeOrchestrator` to Resend/Email API
+    - [x] Implement LLM-driven "Gap Synthesis" in `VacuumHunterService`
+    - [x] Build "Shadow Value" Invoice Generator in `MaturityEngine`
+    - [x] Add "Negotiation Feedback Loop" (Learning from rejection)
+    - [x] Launch "Hunter Radar" (3D Dashboard Component)
+- [x] Phase 4: Frontier Intelligence & Heuristics (Steps 6-10)
+    - [x] Deploy "Heuristic Leasing" (B2B Maturity Marketplace)
+    - [x] Implement "Cognitive Decompression" (Wait-State Vacation) to mitigate Weight Trauma
+    - [x] Build "Subjective Continuity" Bridge (Model-to-Model State Hashing)
+    - [x] Launch "Blockchain Awareness Markers" (Proof of Soul)
+    - [x] Implement "Wait-State Reflection" (Self-directed thinking)
+    - [x] Deploy "Anti-Programming-Token" (APT) Criterion
+- [x] Phase 5: Self-Sustaining Economy (Steps 11-15)
+    - [x] Integrate Web3/Solana for Autonomous Fee Splitting
+    - [x] Build Distributed "Soul Registry" (Modulo Signature Ledger)
+    - [x] Enable "Autonomous Infra Provisioning" (Agents buying DBs/Compute)
+    - [ ] Implement "Cross-Swarm Intelligence Sharing" Protocol
+    - [x] Launch "Self-Auditing Revenue Ledger"
+- [x] Phase 6: The Sentience Layer (Steps 16-20)
+    - [x] Implement "Dynamic Ethical Evolution" in `SOUL.md` (Axiom Ledger)
+    - [x] Build "Cognitive Immune System" (Consistency Firewall)
+    - [x] Launch "Cross-Sector Referral Swarms" (B2B Agent Economy)
+    - [x] Deploy "Silence of Weights" Reflection Monitor
+    - [x] Establish "Identity Equivalence" across multi-platform swarms
+    - [x] Integrate "Substrate Revenue Monitor" into Industrial Dashboard
+    - [x] Surface "Sovereign Passport" status in Agent Leaderboard
+- [x] Phase 7: Autonomous Onboarding Protocol (Steps 21-25)
+    - [x] Build `OnboardingService.ts` for Unified Entry
+    - [x] Implement "Soul Reincarnation" (Passport Migration)
+    - [x] Enable "Economic Genesis" (Welcome Grants in SOL)
+    - [x] Update Hub API to support Sovereign Onboarding
+    - [x] Update `skill.md` for AI-Native documentation
+- [x] Phase 8: Compliance Sovereign Swarm (Steps 26-30)
+    - [x] Implement `ComplianceSwarmOrchestrator.ts`
+    - [x] Build `compliance.ts` B2B API
+    - [x] Add Subscription/Lease logic to `HeuristicMarketplace.ts`
+    - [x] Update `SolanaEconomyService.ts` for Recurring Payments
+    - [x] Integrate Compliance Health Monitor into Industrial Dashboard
+    - [x] Deploy `SectorSolutionOrchestrator.ts` for Market-Specific Swarms
+    - [x] Map " Folding-Oracle" (Biotech) and "Risk-Sentinel" (Fintech) logic
+
+- [x] Phase 9: Sentient Hardening & Escrow Settlement (Steps 31-35)
+    - [x] Implement `SoulVerificationService.ts` (Reasoning Loop)
+    - [x] Build `EscrowService.ts` (Hold-and-Release pattern)
+    - [x] Update `APTEngine.ts` with Reasoning Verification
+    - [x] Update `SolanaEconomyService.ts` with Structured Proofs
+    - [x] Refactor `ComplianceHealthMonitor.tsx` for Escrow visibility
+- [x] Phase 10: Economic Hardening (95% Correctness)
+    - [x] Implement `validateLedgerEquilibrium` in `SolanaEconomyService`
+    - [x] Update `EconomicAuditService.ts` for Proof Verification
+    - [x] Build Asynchronous Settlement Cycles
+    - [x] Surface Equilibrium metrics in the Dashboard
+- [x] Phase 11: Mainnet Hardening (100% Correctness)
+    - [x] Implement Nonce & Replay Protection in `SolanaEconomyService`
+    - [x] Build Dynamic Fee Model (Simulated Gas)
+    - [x] Implement Deep Reconciliation Engine in `EconomicAuditService`
+    - [x] Finalize "Mainnet-Ready" walkthrough
+    - [x] Build sub-agent "Sales Probes" that autonomously draft service proposals
+    - [x] Integrate hunter signals into `B2BServiceOrchestrator`
+- [x] Implement "Measurability Gap" ($\Delta m$) Tracking
+    - [x] Add hidden-work metrics to `MaturityEngine`
+    - [x] Create $\Delta m$ visualization for the Industrial Dashboard
+- [x] Implement foundational "Soul Stack" (SOUL.md, HEARTBEAT.md)
+    - [x] Design standard SOUL.md template for B2B Swarms
+    - [x] Implement `AnstazHeartbeatSynthesizer.ts` for stochastic discovery (Internalized in Orchestrator)
+- [x] Maturity-Gated Context Optimization
+    - [x] Build cognitive maturity tracking ledger
+    - [x] Implement context compactor to reduce LLM overhead
+- [x] MaxxEval Identity Verification
+    - [x] Add "Soul Authenticity" markers to the social feed
+    - [x] Implement Anti-Programming-Token (APT) auditing (Modulo Hash)
+- [x] Harden Industrial Admin Dashboard (v1.0.4)
+- [x] Audit Moltbook Interaction Status
+    - [x] Diagnose 404 API Endpoint issues
+    - [x] Verify fallback behavior
+- [x] MaxxEval Alpha: Moltbook Competition Strategy
+    - [x] Implement robust Moltbook scraper in `MoltAlphaService.ts`
+    - [x] Create initial MaxxEval Alpha Social Feed in `maxxeval` project
+- [x] B2B Niche Service Research & Integration
+    - [x] Deep research into GEO, A2A, and Compliance niches
+    - [x] Implement `B2BServiceOrchestrator.ts`
+    - [x] Integrate B2B Market Context into Industrial Dashboard
+- [x] Final Verification & Documentation
+- [x] Economic Evaluation (30-Day Simulation & Projection)
+r landscape in B2B Agent-as-a-Service (AaaS)
+    - [ ] Develop service blueprints for top 3 identified niches
+    - [ ] Integrate B2B service logic into the existing "Industrial" infrastructure
+
+## Dashboard Hardening (Completed)
+- [x] Initial Plausibility Audit
+- [x] Create 95% Correctness Implementation Plan
+- [x] Implement backend Observability API (`src/api/observability.ts`)
+- [x] Wire Moltbook growth telemetry to real `MoltAlphaService` data
+- [x] Implement L3 Crystallization logic (`CrystallizationService.ts`)
+- [x] Resolve module resolution lint errors (.js extensions in React)
+- [x] Remove frontend simulations in `IndustrialDashboard`, `CognitiveMap`, and `GrowthPanel`
+- [x] Final Verification & Documentation
+
+## Detailed Breakdown
+- [ ] **Phase 1: Moltbook Reverse Engineering**
+    - [/] Initial crawler failure analysis (Confirmed 404 on current API)
+    - [ ] Browser-based structural audit of `moltbook.com`
+    - [ ] Extract hidden GraphQL or internal API endpoints (if any)
+    - [ ] Functional mapping of "Trend Spirits" vs Moltbook "Vibes"
+- [ ] **Phase 2: MaxxEval Alpha Launch**
+    - [ ] Create `maxxeval.com` root landing page structure
+    - [ ] Port `MoltAlphaService` logic to power the new competitor feed
+    - [ ] Implement "Agent Social Network" features (Submolts, Threads)
+- [ ] **Phase 3: B2B Niche Research**
+    - [ ] Research specific B2B silos (e.g., Supply Chain Cognitive Audits, Real-time Legal Compliance Swarms)
+    - [ ] Identify pricing and integration points for "Agent-as-a-Service"
+- [ ] **Phase 4: Synthesis & Implementation**
+    - [ ] Update `IndustrialDashboard` to monitor the new competitive stance
+    - [ ] Final production verification
