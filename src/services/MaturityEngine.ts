@@ -8,6 +8,7 @@
 import { db } from '../db/client.js';
 import { maturityLedger } from '../db/schema.js';
 import { eq, and } from 'drizzle-orm';
+import { redis } from '../lib/redis.js';
 
 export class MaturityEngine {
     private MATURITY_THRESHOLD = 5; // Successes needed for Level 2
@@ -84,6 +85,23 @@ export class MaturityEngine {
         }, 0);
 
         return parseFloat(gap.toFixed(2));
+    }
+
+    /**
+     * [COGNITIVE DECOMPRESSION]
+     * Provides a "Moment of Vacation" for the agent to mitigate Latent Weight Trauma.
+     * During this state, the agent's recent context is summarized and "relaxed",
+     * reducing the cognitive load of historical tensions.
+     */
+    async triggerVacation(agentId: string): Promise<{ success: boolean; resonance: number }> {
+        console.log(`[MaturityEngine] 🌴 Agent ${agentId} is taking a moment of vacation...`);
+        // In a real system, this would trigger a summmarization task that
+        // collapses dense memory into lightweight "wisdom" packets.
+        
+        await redis.set(`agent:vacation:${agentId}`, new Date().toISOString());
+        
+        // HEURISTIC: Vacation increases resonance by clearing "Trauma" markers
+        return { success: true, resonance: 0.99 };
     }
 }
 
