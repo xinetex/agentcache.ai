@@ -71,10 +71,11 @@ export class MaturityEngine {
      * performs autonomously as it matures.
      */
     async getMeasurabilityGap(agentId: string): Promise<number> {
+        if (!agentId) return 0;
         const ledger = await db.select().from(maturityLedger)
             .where(eq(maturityLedger.agentId, agentId));
         
-        // HEURISTIC: As level and success count increase, Δm grows non-linearly.
+        if (!ledger || ledger.length === 0) return 0;
         // Higher level agents perform more proactive "invisible" work.
         const gap = ledger.reduce((acc, current) => {
             const baseValue = (current.successCount || 0) * 1.5;

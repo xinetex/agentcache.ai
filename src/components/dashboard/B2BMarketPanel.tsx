@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Briefcase, TrendingUp, BarChart, Globe, Shield, Zap } from 'lucide-react';
+import { Briefcase, TrendingUp, BarChart, Globe, Shield, Zap, ShieldCheck } from 'lucide-react';
 
 export function B2BMarketPanel() {
     const [stats, setStats] = useState<any>(null);
@@ -75,8 +75,13 @@ export function B2BMarketPanel() {
                 </div>
 
                 <div>
-                    <div className="flex items-center gap-2 text-[10px] text-red-400 uppercase font-bold tracking-widest px-1 mb-3">
-                        <Zap className="w-3 h-3" /> Detected Vacuum Zones
+                    <div className="flex items-center justify-between px-1 mb-3">
+                        <div className="flex items-center gap-2 text-[10px] text-red-400 uppercase font-bold tracking-widest">
+                            <Zap className="w-3 h-3" /> Detected Vacuum Zones
+                        </div>
+                        <div className="text-[8px] font-mono text-white/20 uppercase">
+                            Probes Sent: {stats.outreach_stats.total_sent}
+                        </div>
                     </div>
                     <div className="space-y-2">
                         {stats.detected_vacuums.map((v: any) => (
@@ -90,11 +95,38 @@ export function B2BMarketPanel() {
                         ))}
                     </div>
                 </div>
+
+                {stats.active_negotiations.length > 0 && (
+                    <div>
+                        <div className="flex items-center gap-2 text-[10px] text-blue-400 uppercase font-bold tracking-widest px-1 mb-3">
+                            <ShieldCheck className="w-3 h-3" /> A2A Negotiation Monitor
+                        </div>
+                        <div className="space-y-2">
+                            {stats.active_negotiations.map((n: any) => (
+                                <div key={n.id} className="p-3 bg-blue-500/5 border border-blue-500/10 rounded-lg group transition-all hover:bg-blue-500/10">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-xs font-bold text-blue-400 uppercase">{n.targetSector}</span>
+                                        <span className="text-[10px] font-mono text-blue-400">${n.valuationOffer.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-1 w-full bg-blue-500/10 rounded-full overflow-hidden">
+                                            <div 
+                                                className="h-full bg-blue-400 transition-all duration-1000" 
+                                                style={{ width: n.currentStage === 'SIGNED' ? '100%' : n.currentStage === 'ACCEPTED' ? '80%' : '40%' }}
+                                            />
+                                        </div>
+                                        <span className="text-[8px] font-bold text-blue-400/60 uppercase whitespace-nowrap">{n.currentStage}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className="mt-8 pt-6 border-t border-white/5">
                 <button className="w-full h-10 flex items-center justify-center gap-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all">
-                    <Globe className="w-3 h-3" /> Deploy Hunter Sentry
+                    <Globe className="w-3 h-3" /> Launch Global Outreach
                 </button>
             </div>
         </div>

@@ -11,6 +11,8 @@ import { cognitiveEngine } from '../infrastructure/CognitiveEngine.js';
 import { redis } from '../lib/redis.js';
 import { maturityEngine } from './MaturityEngine.js';
 import { vacuumHunterService } from './VacuumHunterService.js';
+import { salesProbeOrchestrator } from './SalesProbeOrchestrator.js';
+import { a2aNegotiationEngine } from './A2ANegotiationEngine.js';
 import * as fs from 'fs/promises';
 
 export type B2BServiceType = 'GEO' | 'A2A_NEGOTIATION' | 'COMPLIANCE_SENTINEL';
@@ -108,7 +110,9 @@ export class B2BServiceOrchestrator {
         const totalSwarms = await redis.get('b2b:active-swarms-count') || '0';
         const revenueYield = await redis.get('b2b:daily-revenue-yield') || '0';
         const detectedVacuums = await vacuumHunterService.getDetectedVacuums();
-        
+        const probeStats = await salesProbeOrchestrator.getProbeStats();
+        const activeNegotiations = await a2aNegotiationEngine.getActiveSessions();
+
         // Calculate Δm if clientId is provided
         const shadowValue = clientId ? await maturityEngine.getMeasurabilityGap(clientId) : 0;
 
@@ -118,7 +122,9 @@ export class B2BServiceOrchestrator {
             top_niches: ['GEO', 'FINTECH_COMPLIANCE'],
             market_sentiment: 'BULLISH_ON_AGENTS',
             detected_vacuums: detectedVacuums,
-            measurability_gap: shadowValue
+            measurability_gap: shadowValue,
+            outreach_stats: probeStats,
+            active_negotiations: activeNegotiations
         };
     }
 }
