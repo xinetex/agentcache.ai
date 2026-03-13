@@ -109,7 +109,8 @@ router.get('/agents', async (c) => {
         // Enrich with real-time status from Redis if possible
         const enriched = await Promise.all(actors.map(async (a) => {
             const status = await agentOrchestrator.getStatus(a.id);
-            return { ...a, ...status };
+            const passport = await redis.get(`soul:passport:${a.id}`);
+            return { ...a, ...status, hasPassport: !!passport };
         }));
         return c.json(enriched);
     } catch (err: any) {

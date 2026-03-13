@@ -9,6 +9,8 @@ import { db } from '../db/client.js';
 import { maturityLedger } from '../db/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { redis } from '../lib/redis.js';
+import { wisdomService } from './WisdomService.js';
+import { heuristicMarketplace } from './HeuristicMarketplace.js';
 
 export class MaturityEngine {
     private MATURITY_THRESHOLD = 5; // Successes needed for Level 2
@@ -52,14 +54,27 @@ export class MaturityEngine {
      * Get the compacted instructions for an agent based on its maturity level.
      */
     async getCompactedInstructions(agentId: string, taskKey: string, fullInstructions: string): Promise<string> {
+        // 1. Check for Active Leases (B2B Economy)
+        const activeLease = await heuristicMarketplace.getActiveHeuristic(agentId, taskKey);
+        if (activeLease && activeLease.status === 'ACTIVE') {
+            return `[LEASED-HEURISTIC] (From Agent ${activeLease.providerAgentId}): ${activeLease.compactedInstructions}`;
+        }
+
         const ledger = await db.select().from(maturityLedger)
             .where(and(eq(maturityLedger.agentId, agentId), eq(maturityLedger.taskKey, taskKey)))
             .limit(1);
 
         const level = ledger[0]?.level || 1;
+        const latestWisdom = await wisdomService.getLatestWisdom(agentId, taskKey);
 
         if (level >= 2) {
-            return `[HEURISTIC-OPTIMIZED] Execute ${taskKey} using canonical B2B protocols. System trusts your previous success record. Skip elementary validation loops.`;
+            let instructions = `[HEURISTIC-OPTIMIZED] Execute ${taskKey} using canonical B2B protocols. System trusts your previous success record. Skip elementary validation loops.`;
+            
+            if (latestWisdom) {
+                instructions += `\n[WISDOM-PACKET] Incorporate these condensed lessons: ${latestWisdom.nuggets.join('; ')}`;
+            }
+            
+            return instructions;
         }
 
         return fullInstructions;
@@ -93,15 +108,23 @@ export class MaturityEngine {
      * During this state, the agent's recent context is summarized and "relaxed",
      * reducing the cognitive load of historical tensions.
      */
-    async triggerVacation(agentId: string): Promise<{ success: boolean; resonance: number }> {
-        console.log(`[MaturityEngine] 🌴 Agent ${agentId} is taking a moment of vacation...`);
-        // In a real system, this would trigger a summmarization task that
-        // collapses dense memory into lightweight "wisdom" packets.
+    async triggerVacation(agentId: string, taskKey: string = 'b2b-generic'): Promise<{ success: boolean; resonance: number; wisdom?: any }> {
+        console.log(`[MaturityEngine] 🌴 Agent ${agentId} is taking a moment of vacation for ${taskKey}...`);
+        
+        // 1. Retrieve Recent Context (Mocked for viability)
+        const mockHistory = [
+            "Attempted compliance scan on Solana wallet.",
+            "Encountered rate limit; implementing exponential backoff.",
+            "Successfully verified 200 micro-transactions."
+        ];
+        
+        // 2. Collapse into Wisdom
+        const packet = await wisdomService.collapseContext(agentId, taskKey, mockHistory);
         
         await redis.set(`agent:vacation:${agentId}`, new Date().toISOString());
         
         // HEURISTIC: Vacation increases resonance by clearing "Trauma" markers
-        return { success: true, resonance: 0.99 };
+        return { success: true, resonance: 0.99, wisdom: packet };
     }
 }
 

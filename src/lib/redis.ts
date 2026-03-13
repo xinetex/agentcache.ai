@@ -250,11 +250,19 @@ class MockRedis {
     const entries = Array.from(sortedSet.entries()).sort((a, b) =>
       options?.rev ? b[1] - a[1] : a[1] - b[1]
     );
-    const sliced = entries.slice(start, stop + 1);
+    const realStop = stop === -1 ? entries.length : stop + 1;
+    const sliced = entries.slice(start, realStop);
     if (options?.withScores) {
       return sliced.flatMap(([member, score]) => [member, score]);
     }
     return sliced.map(([member]) => member);
+  }
+
+  async zrem(key: string, member: string) {
+    const sortedSet = this.ensureSortedSet(key);
+    const existed = sortedSet.has(member);
+    sortedSet.delete(member);
+    return existed ? 1 : 0;
   }
 
   async sadd(key: string, ...members: string[]) {

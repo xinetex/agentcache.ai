@@ -400,6 +400,7 @@ app.all('/api/motion/:path{.+}?', lazy(() => import('./api/motion.js')));
 app.all('/api/biotech/:path{.+}?', lazy(() => import('./api/biotech.js')));
 
 app.all('/api/finance/:path{.+}?', lazy(() => import('./api/finance.js')));
+app.all('/api/economy/:path{.+}?', lazy(() => import('./api/economy.js')));
 
 app.all('/api/ontology/:path{.+}?', lazy(() => import('./api/ontology.js')));
 

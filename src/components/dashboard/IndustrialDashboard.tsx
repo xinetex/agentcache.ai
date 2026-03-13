@@ -3,6 +3,7 @@ import { NeuralGlassLayout } from './NeuralGlassLayout.js';
 import { MetricFlux } from './MetricFlux.js';
 import { MoltbookGrowthPanel } from './MoltbookGrowthPanel.js';
 import { B2BMarketPanel } from './B2BMarketPanel.js';
+import { RevenueMonitor } from './RevenueMonitor.js';
 import AgentLeaderboard from './AgentLeaderboard.js';
 import { CognitiveMap } from './CognitiveMap.js';
 
@@ -64,10 +65,11 @@ export default function IndustrialDashboard() {
                     />
                 </div>
 
-                {/* Middle row: Moltbook Growth Panel */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 shrink-0">
+                {/* Middle row: Substrate Health & Market */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 shrink-0">
                     <MoltbookGrowthPanel />
                     <B2BMarketPanel />
+                    <RevenueMonitor />
                 </div>
 
                 {/* Bottom row: Infrastructure & Leaderboard */}

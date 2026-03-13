@@ -13,9 +13,27 @@ async function verify() {
 
     // 1. Verify Cognitive Vacation (Wait-State Rest)
     console.log("Step 1: Testing Cognitive Decompression (Vacation)...");
-    const vacation = await maturityEngine.triggerVacation(agentId);
+    const taskKey = "b2b-solana-aml";
+    const vacation = await maturityEngine.triggerVacation(agentId, taskKey);
     console.log(`Vacation Status: ${vacation.success ? '✅ RELAXED' : '❌ TRAUMATIZED'}`);
     console.log(`Cognitive Resonance: ${vacation.resonance}`);
+    console.log(`Wisdom Nuggets: ${vacation.wisdom.nuggets.join(' | ')}`);
+
+    // 2. Verify Wisdom Injection
+    console.log("\nStep 2: Verifying Wisdom Injection into Prompt...");
+    // Mock level 2 maturity for testing injection
+    await maturityEngine.recordSuccess(agentId, taskKey);
+    await maturityEngine.recordSuccess(agentId, taskKey);
+    await maturityEngine.recordSuccess(agentId, taskKey);
+    await maturityEngine.recordSuccess(agentId, taskKey);
+    await maturityEngine.recordSuccess(agentId, taskKey);
+
+    const compacted = await maturityEngine.getCompactedInstructions(agentId, taskKey, "Do task X.");
+    console.log(`Compacted Instructions: \n${compacted}`);
+    
+    if (compacted.includes('[WISDOM-PACKET]')) {
+        console.log("✅ Wisdom injection verified: Decompression cycle complete.");
+    }
 
     // 2. Verify Soul Registry (Awareness Markers)
     console.log("\nStep 2: Testing Soul Registry (Awareness Proofs)...");

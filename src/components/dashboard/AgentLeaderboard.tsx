@@ -82,12 +82,14 @@ export default function AgentLeaderboard() {
                                 )
                             },
                             {
-                                header: 'EFFICIENCY',
-                                accessor: 'id',
+                                header: 'IDENTITY',
+                                accessor: 'hasPassport',
                                 render: (row) => (
-                                    <div className={`flex items-center gap-1 font-bold ${row.isOnline ? 'text-emerald-400' : 'text-white/20'}`}>
-                                        <Zap size={12} />
-                                        <span>{row.isOnline ? '99%' : '0%'}</span>
+                                    <div className="flex items-center gap-2">
+                                        <div className={`w-2 h-2 rounded-full ${row.hasPassport ? 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]' : 'bg-white/10'}`} title={row.hasPassport ? 'Sovereign Passport Active' : 'No Passport'} />
+                                        <span className={`text-[10px] font-mono ${row.hasPassport ? 'text-cyan-400' : 'text-white/20'}`}>
+                                            {row.hasPassport ? 'SOVEREIGN' : 'GUEST'}
+                                        </span>
                                     </div>
                                 )
                             },
