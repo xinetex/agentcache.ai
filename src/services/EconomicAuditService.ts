@@ -16,10 +16,12 @@ export interface AuditReport {
     systemRevenue: number;
     agentSavings: number;
     integrityProof: string; // "ZK-style" hash of the current ledger state
-    status: 'OPTIMAL' | 'DRIFT_DETECTED' | 'PROOF_FAILURE' | 'EQUILIBRIUM_BREACH';
+    status: 'OPTIMAL' | 'DRIFT_DETECTED' | 'PROOF_FAILURE' | 'EQUILIBRIUM_BREACH' | 'RECONCILIATION_FAILURE';
     validProofCount: number;
     failedProofCount: number;
     drift: number;
+    reconciliationStatus?: 'MATCH' | 'MISMATCH'; // Phase 11
+    historicalVolume?: number;                 // Phase 11
 }
 
 export class EconomicAuditService {
@@ -85,6 +87,36 @@ export class EconomicAuditService {
         
         await redis.set('economy:latest-audit', JSON.stringify(report));
         return report;
+    }
+
+    /**
+     * Deep-scan the entire ledger from genesis to present (Phase 11).
+     */
+    async reconcileGenesisToPresent(checkpoint: boolean = false): Promise<{ status: 'MATCH' | 'MISMATCH'; historicalVolume: number }> {
+        console.log(`[EconomicAudit] 🧬 Starting deep-scan ledger reconciliation (Update: ${checkpoint})...`);
+        
+        const transactions = await solanaEconomyService.getRecentTransactions();
+        let historicalVolume = 0;
+        let runningHash = 'GENESIS';
+
+        // Traverse history to re-verify the chain of hashes
+        for (const tx of transactions.reverse()) { // Oldest to newest
+            historicalVolume += tx.amount;
+            runningHash = createHash('sha256')
+                .update(`${runningHash}:${tx.txId}:${tx.signature}:${tx.amount}:${tx.purpose}`)
+                .digest('hex');
+        }
+
+        const latestProof = await redis.get('economy:ledger-integrity');
+        const status = latestProof === runningHash || !latestProof ? 'MATCH' : 'MISMATCH';
+
+        // Store current chain state only if checkpointing
+        if (checkpoint || !latestProof) {
+            await redis.set('economy:ledger-integrity', runningHash);
+        }
+        
+        console.log(`[EconomicAudit] 🧬 Reconciliation complete. Status: ${status}. Historical Vol: ${historicalVolume.toFixed(2)} SOL`);
+        return { status, historicalVolume };
     }
 }
 

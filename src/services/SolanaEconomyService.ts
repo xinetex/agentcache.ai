@@ -17,8 +17,10 @@ export interface TransactionSummary {
     purpose: string;
     timestamp: string;
     signature?: string;
-    status: 'PENDING' | 'CONFIRMED' | 'FAILED'; // Phase 10: Asynchronous Settlement
+    status: 'PENDING' | 'CONFIRMED' | 'FAILED';
     confirmations: number;
+    nonce: number; // Phase 11: Replay protection
+    networkFee: number; // Phase 11: Dynamic Gas
 }
 
 export class SolanaEconomyService {
@@ -78,9 +80,34 @@ export class SolanaEconomyService {
     }
 
     /**
+     * Get the next expected nonce for an agent (Phase 11).
+     */
+    async getNonce(agentId: string): Promise<number> {
+        const nonce = await redis.get(`agent:nonce:${agentId}`) || '0';
+        return parseInt(nonce);
+    }
+
+    /**
+     * Calculate a dynamic network fee based on simulated complexity (Phase 11).
+     */
+    async calculateNetworkFee(purpose: string): Promise<number> {
+        const base = 0.0005; // Base fee
+        const multiplier = purpose.includes('ESCROW') ? 2.5 : 1;
+        return base * multiplier;
+    }
+
+    /**
      * Internal: Executes a virtual transfer and returns a summary.
      */
-    async executeTransfer(from: string, to: string, amount: number, purpose: string): Promise<TransactionSummary> {
+    async executeTransfer(from: string, to: string, amount: number, purpose: string, providedNonce?: number): Promise<TransactionSummary> {
+        const currentNonce = await this.getNonce(from);
+        
+        // Nonce Validation (System Genesis ignores nonces)
+        if (from !== 'SYSTEM_GENESIS' && from !== 'SYSTEM_ESCROW' && providedNonce !== undefined && providedNonce !== currentNonce) {
+            throw new Error(`Invalid Nonce for agent ${from}. Expected ${currentNonce}, got ${providedNonce}`);
+        }
+
+        const networkFee = await this.calculateNetworkFee(purpose);
         const txId = createHash('sha256').update(`${from}:${to}:${amount}:${Date.now()}:${Math.random()}`).digest('hex').substring(0, 32);
         const signature = await this.createTransactionProof(from, to, amount, purpose);
         
@@ -93,15 +120,24 @@ export class SolanaEconomyService {
             timestamp: new Date().toISOString(),
             signature,
             status: 'PENDING',
-            confirmations: 0
+            confirmations: 0,
+            nonce: currentNonce,
+            networkFee
         };
 
-        console.log(`[SolanaEconomy] ⏳ TX ${txId.substring(0, 8)} PENDING | ${amount} SOL -> ${to}`);
+        console.log(`[SolanaEconomy] ⏳ TX ${txId.substring(0, 8)} PENDING | ${amount} SOL -> ${to} (Fee: ${networkFee} | Nonce: ${currentNonce})`);
         
         // Ledger persistence
         await redis.set(`tx:${txId}`, JSON.stringify(summary));
         await redis.zadd('economy:ledger', { score: Date.now(), member: txId });
         
+        // Increment nonce and deduct fee immediately
+        if (from !== 'SYSTEM_GENESIS' && from !== 'SYSTEM_ESCROW') {
+            await redis.incr(`agent:nonce:${from}`);
+            await this.updateBalance(from, -networkFee);
+            await this.updateBalance('SYSTEM_TREASURY', networkFee);
+        }
+
         return summary;
     }
 
