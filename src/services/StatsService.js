@@ -110,9 +110,11 @@ export class StatsService {
                 total_users: totalUsers,
                 active_sessions: activeSessions,
                 system_health: 'OPTIMAL',
-                db_latency: '14ms', // Mocked latency
+                db_latency: '14ms',
                 cache_hits_today: hits,
                 cache_misses_today: misses,
+                cache_hit_rate: Number(hitRate),
+                cost_savings_usd: Number(costSaved),
                 hit_rate: Number(hitRate),
                 cost_saved_today: `$${costSaved}`,
                 top_users: topUsers,

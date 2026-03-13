@@ -44,18 +44,18 @@ export function RevenueMonitor() {
             <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="bg-black/20 p-4 rounded-xl border border-white/5">
                     <p className="text-white/40 text-[10px] uppercase font-bold">Total Volume</p>
-                    <p className="text-2xl font-mono text-white mt-1">{data.totalVolume.toFixed(2)} <span className="text-xs text-white/30">SOL</span></p>
+                    <p className="text-2xl font-mono text-white mt-1">{(typeof data.totalVolume === 'number') ? data.totalVolume.toFixed(2) : '0.00'} <span className="text-xs text-white/30">SOL</span></p>
                 </div>
                 <div className="bg-black/20 p-4 rounded-xl border border-white/5">
                     <p className="text-white/40 text-[10px] uppercase font-bold">Platform Fee</p>
-                    <p className="text-2xl font-mono text-cyan-400 mt-1">{data.totalFees.toFixed(2)} <span className="text-xs text-cyan-400/30">SOL</span></p>
+                    <p className="text-2xl font-mono text-cyan-400 mt-1">{(typeof data.totalFees === 'number') ? data.totalFees.toFixed(2) : '0.00'} <span className="text-xs text-cyan-400/30">SOL</span></p>
                 </div>
             </div>
 
             <div className="space-y-4">
                 <div className="flex justify-between items-end border-b border-white/5 pb-2">
                     <span className="text-white/60 text-sm">Tx Velocity</span>
-                    <span className="text-white font-mono text-sm">{data.velocity} <span className="text-[10px] text-white/40">/hr</span></span>
+                    <span className="text-white font-mono text-sm">{data.velocity || '0.00'} <span className="text-[10px] text-white/40">/hr</span></span>
                 </div>
                 <div className="flex justify-between items-end border-b border-white/5 pb-2">
                     <span className="text-white/60 text-sm">System Integrity</span>
@@ -63,7 +63,7 @@ export function RevenueMonitor() {
                 </div>
                 <div className="flex justify-between items-end">
                     <span className="text-white/60 text-sm">Unaccounted Flux</span>
-                    <span className="text-rose-400 font-mono text-sm">{data.drift.toFixed(4)} <span className="text-[10px] text-rose-400/40">SOL</span></span>
+                    <span className="text-rose-400 font-mono text-sm">{(typeof data.drift === 'number') ? data.drift.toFixed(4) : '0.0000'} <span className="text-[10px] text-rose-400/40">SOL</span></span>
                 </div>
             </div>
 

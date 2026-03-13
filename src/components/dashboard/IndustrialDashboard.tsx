@@ -52,14 +52,14 @@ export default function IndustrialDashboard() {
                     />
                     <MetricFlux 
                         label="Cache Efficiency" 
-                        value={stats ? `${stats.cache_hit_rate.toFixed(1)}%` : "..."} 
+                        value={(stats && typeof stats.cache_hit_rate === 'number') ? `${stats.cache_hit_rate.toFixed(1)}%` : "..."} 
                         subValue="L2 Optimized" 
                         icon="zap" 
                         color="emerald" 
                     />
                     <MetricFlux 
                         label="Ops Cost Saved" 
-                        value={stats ? formatCurrency(stats.cost_savings_usd) : "..."} 
+                        value={(stats && typeof stats.cost_savings_usd === 'number') ? formatCurrency(stats.cost_savings_usd) : "..."} 
                         subValue="MTD Projection" 
                         icon="dollar" 
                         color="amber" 

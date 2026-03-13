@@ -33,6 +33,8 @@ economyRouter.get('/stats', async (c) => {
 
         return c.json({
             ...audit,
+            totalFees: audit.systemRevenue, // Alignment with UI expectations
+            isIntegral: audit.status === 'OPTIMAL',
             recentTransactionCount: recentTxs.length,
             velocity: (recentTxs.length / 1).toFixed(2), // Txs/hr
             totalTransactions: balanceLedger.length,
