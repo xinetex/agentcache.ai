@@ -52,12 +52,10 @@
     - [x] Build Asynchronous Settlement Cycles
     - [x] Surface Equilibrium metrics in the Dashboard
 - [x] Phase 11: Mainnet Hardening (100% Correctness)
-    - [x] Implement Nonce & Replay Protection in `SolanaEconomyService`
-    - [x] Build Dynamic Fee Model (Simulated Gas)
-    - [x] Implement Deep Reconciliation Engine in `EconomicAuditService`
-    - [x] Finalize "Mainnet-Ready" walkthrough
-    - [x] Build sub-agent "Sales Probes" that autonomously draft service proposals
-    - [x] Integrate hunter signals into `B2BServiceOrchestrator`
+- [x] Phase 12: Admin & Substrate Stabilization
+    - [x] Fix infinite re-render loop in `App.jsx`
+    - [x] Optimize `/api/observability/agents` API
+    - [x] Clarify Dashboard architecture
 - [x] Implement "Measurability Gap" ($\Delta m$) Tracking
     - [x] Add hidden-work metrics to `MaturityEngine`
     - [x] Create $\Delta m$ visualization for the Industrial Dashboard

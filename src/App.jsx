@@ -74,8 +74,10 @@ function App() {
   // Traffic Simulation
   const trafficState = useTrafficSimulation(nodes, edges);
 
-  // Update edges with traffic data
+  // Update edges with traffic data (Only in builder view to prevent global re-render loop)
   useEffect(() => {
+    if (view !== 'builder') return;
+
     setEdges(eds => eds.map(edge => ({
       ...edge,
       type: 'traffic', // Force traffic edge type
@@ -84,7 +86,7 @@ function App() {
         packets: trafficState[edge.id] || []
       }
     })));
-  }, [trafficState, setEdges]);
+  }, [trafficState, setEdges, view]);
 
   console.log('App render:', { sector, config, showSectorModal });
 

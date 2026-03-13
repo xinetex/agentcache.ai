@@ -72,7 +72,7 @@ export class AgentOrchestrator {
      * Get all active actors.
      */
     async getActiveActors(): Promise<any[]> {
-        return db.select().from(agents).where(sql`status != 'dead'`);
+        return db.select().from(agents).where(sql`status != 'dead'`).limit(100);
     }
 
     /**
