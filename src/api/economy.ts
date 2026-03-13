@@ -9,6 +9,8 @@
 import { Hono } from 'hono';
 import { solanaEconomyService } from '../services/SolanaEconomyService.js';
 import { economicAuditService } from '../services/EconomicAuditService.js';
+import { complianceSwarmOrchestrator } from '../services/ComplianceSwarmOrchestrator.js';
+import { sectorSolutionOrchestrator } from '../services/SectorSolutionOrchestrator.js';
 
 const economyRouter = new Hono();
 
@@ -26,11 +28,16 @@ economyRouter.get('/stats', async (c) => {
             new Date(tx.timestamp).getTime() > Date.now() - 3600000
         );
 
+        const complianceStats = await complianceSwarmOrchestrator.getSwarmStats();
+        const sectorSolutions = await sectorSolutionOrchestrator.getActiveSolutions();
+
         return c.json({
             ...audit,
             recentTransactionCount: recentTxs.length,
             velocity: (recentTxs.length / 1).toFixed(2), // Txs/hr
-            totalTransactions: balanceLedger.length
+            totalTransactions: balanceLedger.length,
+            compliance: complianceStats,
+            activeSectors: sectorSolutions.length
         });
     } catch (err: any) {
         return c.json({ error: err.message }, 500);

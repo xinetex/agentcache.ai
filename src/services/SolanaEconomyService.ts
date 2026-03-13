@@ -111,6 +111,35 @@ export class SolanaEconomyService {
         
         return tx;
     }
+
+    /**
+     * Process a recurring lease payment (Phase 8).
+     */
+    async processLease(leaseId: string, consumerId: string, providerId: string, amount: number): Promise<TransactionSummary[]> {
+        console.log(`[SolanaEconomy] 🧾 Processing lease payment for ${leaseId} (Consumer: ${consumerId})...`);
+
+        // Splits for Phase 8: 70% System (Platform Owned Swarms) / 30% Provider (if external)
+        // If provider is a platform auditor, system captures 100%
+        const isPlatformAuditor = providerId.startsWith('auditor_') || providerId.startsWith('fintech_') || providerId.startsWith('legal_');
+        
+        const systemFee = isPlatformAuditor ? amount : amount * 0.70;
+        const providerFee = amount - systemFee;
+
+        const transactions: TransactionSummary[] = [
+            await this.executeTransfer(consumerId, 'SYSTEM_TREASURY', systemFee, `LEASE_PAYMENT:${leaseId}`)
+        ];
+
+        if (providerFee > 0) {
+            transactions.push(
+                await this.executeTransfer(consumerId, `AGENT_WALLET:${providerId}`, providerFee, `LEASE_PROFIT:${leaseId}`)
+            );
+            await this.updateBalance(providerId, providerFee);
+        }
+
+        await this.updateBalance(consumerId, -amount);
+
+        return transactions;
+    }
 }
 
 export const solanaEconomyService = new SolanaEconomyService();

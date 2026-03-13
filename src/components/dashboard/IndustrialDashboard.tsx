@@ -6,6 +6,7 @@ import { B2BMarketPanel } from './B2BMarketPanel.js';
 import { RevenueMonitor } from './RevenueMonitor.js';
 import AgentLeaderboard from './AgentLeaderboard.js';
 import { CognitiveMap } from './CognitiveMap.js';
+import { ComplianceHealthMonitor } from './ComplianceHealthMonitor.js';
 
 export default function IndustrialDashboard() {
     const [stats, setStats] = useState<any>(null);
@@ -68,7 +69,7 @@ export default function IndustrialDashboard() {
                 {/* Middle row: Substrate Health & Market */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 shrink-0">
                     <MoltbookGrowthPanel />
-                    <B2BMarketPanel />
+                    <ComplianceHealthMonitor />
                     <RevenueMonitor />
                 </div>
 
