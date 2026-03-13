@@ -1,9 +1,8 @@
-import React from 'react';
-import { NeuralGlassLayout } from './NeuralGlassLayout.js';
-import { MetricFlux } from './MetricFlux.js';
-import { MoltbookGrowthPanel } from './MoltbookGrowthPanel.js';
-import AgentLeaderboard from './AgentLeaderboard.js';
-import { CognitiveMap } from './CognitiveMap.js';
+import { NeuralGlassLayout } from './NeuralGlassLayout.tsx';
+import { MetricFlux } from './MetricFlux.tsx';
+import { MoltbookGrowthPanel } from './MoltbookGrowthPanel.tsx';
+import AgentLeaderboard from './AgentLeaderboard.tsx';
+import { CognitiveMap } from './CognitiveMap.tsx';
 
 export default function IndustrialDashboard() {
     return (
