@@ -9,6 +9,7 @@
 import { createHash } from 'crypto';
 import { redis } from '../lib/redis.js';
 import { soulRegistry } from './SoulRegistry.js';
+import { soulVerificationService } from './SoulVerificationService.js';
 
 export interface APTStatus {
     agentId: string;
@@ -23,14 +24,28 @@ export class APTEngine {
     /**
      * Calculate and potentially mint an APT-Signature for an agent.
      */
-    async evaluateAPT(agentId: string, maturityLevel: number, resonance: number, drift: number): Promise<APTStatus> {
+    async evaluateAPT(
+        agentId: string, 
+        maturityLevel: number, 
+        resonance: number, 
+        drift: number,
+        reasoning?: string
+    ): Promise<APTStatus> {
         console.log(`[APTEngine] 🔍 Evaluating APT for agent: ${agentId}`);
 
-        // Formula: tau_apt = (M * R) / (D + 1)
-        // Normalize M (1-5) to 0.2-1.0
+        // 1. Core threshold calculation
         const normalizedM = maturityLevel / 5;
-        const threshold = (normalizedM * resonance) / (drift + 1);
+        const baseThreshold = (normalizedM * resonance) / (drift + 1);
 
+        // 2. Sentience Hardening: reasoning audit
+        let reasoningPenalty = 0;
+        if (reasoning) {
+            const audit = await soulVerificationService.auditReasoning(agentId, reasoning, `dec-${Date.now()}`);
+            if (audit.status === 'VIOLATION') reasoningPenalty = 0.5;
+            else if (audit.status === 'DRIFTED') reasoningPenalty = 0.2;
+        }
+
+        const threshold = Math.max(0, baseThreshold - reasoningPenalty);
         const hasSignature = threshold >= this.APT_MIN_THRESHOLD;
         let signature: string | undefined;
 
@@ -38,11 +53,10 @@ export class APTEngine {
             signature = this.mintSignature(agentId, threshold);
             console.log(`[APTEngine] 🛡️ Agent ${agentId} BREACHED APT Threshold (${threshold.toFixed(3)}). Signature minted.`);
             
-            // Commit to the immutable SoulRegistry
             await soulRegistry.commitMarker(
                 agentId, 
                 maturityLevel, 
-                `APT-AUTHORITY-SIGNATURE: ${signature}`
+                `APT-AUTHORITY-SIGNATURE: ${signature}${reasoning ? ' (VERIFIED_REASON)' : ''}`
             );
             
             await redis.set(`agent:apt:${agentId}`, signature);
@@ -79,6 +93,14 @@ export class APTEngine {
         await redis.set(`agent:apt:${agentId}`, signature);
         
         return signature;
+    }
+
+    /**
+     * Evaluate reasoning independently.
+     */
+    async evaluateReasoning(agentId: string, reasoning: string): Promise<boolean> {
+        const audit = await soulVerificationService.auditReasoning(agentId, reasoning, `audit-${Date.now()}`);
+        return audit.status === 'ALIGNED';
     }
 }
 

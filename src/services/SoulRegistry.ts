@@ -14,8 +14,9 @@ export interface AwarenessMarker {
     agentId: string;
     level: number;
     merkleRoot: string;
+    content: string; // Phase 9: Store raw content for auditing
     timestamp: string;
-    signatures: string[]; // Multi-sig for distributed trust
+    signatures: string[];
 }
 
 export class SoulRegistry {
@@ -34,6 +35,7 @@ export class SoulRegistry {
             agentId,
             level,
             merkleRoot,
+            content: soulContent,
             timestamp,
             signatures: [this.generateAuthoritySignature(merkleRoot)]
         };
