@@ -7,15 +7,15 @@
  * Unauthorized copying, distribution, or modification of this file, 
  * via any medium, is strictly prohibited.
  */
-import InputNode from './InputNode.js';
-import CacheL1Node from './CacheL1Node.js';
-import CacheL2Node from './CacheL2Node.js';
-import CacheL3Node from './CacheL3Node.js';
-import OpenAINode from './OpenAINode.js';
-import AnthropicNode from './AnthropicNode.js';
-import GeminiNode from './GeminiNode.js';
-import SemanticDedupNode from './SemanticDedupNode.js';
-import OutputNode from './OutputNode.js';
+import InputNode from './InputNode.jsx';
+import CacheL1Node from './CacheL1Node.jsx';
+import CacheL2Node from './CacheL2Node.jsx';
+import CacheL3Node from './CacheL3Node.jsx';
+import OpenAINode from './OpenAINode.jsx';
+import AnthropicNode from './AnthropicNode.jsx';
+import GeminiNode from './GeminiNode.jsx';
+import SemanticDedupNode from './SemanticDedupNode.jsx';
+import OutputNode from './OutputNode.jsx';
 
 export const nodeTypes = {
   input: InputNode,
