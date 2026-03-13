@@ -59,6 +59,7 @@ export class MoltAlphaService {
             const velocity = magnitude - previousMagnitude;
 
             await redis.set('molt-alpha:last-magnitude', magnitude.toString());
+            await redis.set('molt-alpha:last-velocity', velocity.toString());
 
             const prediction: MoltTrend = {
                 topic: morphism.intent,
@@ -112,6 +113,8 @@ export class MoltAlphaService {
                 energy: s.energyLevel
             })),
             status: magnitude > 0.5 ? 'VOLATILE' : 'STABLE',
+            spillover_traffic: Math.floor(magnitude * 10000), // Estimated agents following vibes
+            redirection_yield: (parseFloat(await redis.get('molt-alpha:last-velocity') || '0.01') * 100).toFixed(2) + '%',
             last_sync: new Date().toISOString()
         };
     }

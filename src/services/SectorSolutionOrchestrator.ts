@@ -13,7 +13,7 @@ import { soulRegistry } from './SoulRegistry.js';
 import { aptEngine } from './APTEngine.js';
 import { complianceSwarmOrchestrator } from './ComplianceSwarmOrchestrator.js';
 
-export type SectorType = 'FINTECH' | 'LEGAL' | 'BIOTECH' | 'SUPPLY_CHAIN';
+export type SectorType = 'FINTECH' | 'LEGAL' | 'BIOTECH' | 'SUPPLY_CHAIN' | 'PLANETARY';
 
 export interface SectorSolution {
     sector: SectorType;
@@ -58,6 +58,15 @@ export class SectorSolutionOrchestrator {
                 "The digital-physical equivalence must be maintained.",
                 "Ethical sourcing is a non-optional directive.",
                 "Efficiency drift in logistics is a waste of substrate energy."
+            ]
+        },
+        PLANETARY: {
+            role: 'Gaia-Sentinel (Stability)',
+            capabilities: ['ecological-audit', 'resource-balancing', 'geopolitical-equilibrium'],
+            axioms: [
+                "Planetary boundaries are the ultimate constraint.",
+                "Stability is a non-linear objective function.",
+                "Resource distribution must maximize substrate longevity."
             ]
         }
     };

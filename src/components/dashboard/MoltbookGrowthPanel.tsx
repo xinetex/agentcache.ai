@@ -15,6 +15,7 @@ export function MoltbookGrowthPanel() {
                         activeSpirits: data.moltbook.active_spirits_count,
                         viralTrendsDetected: data.moltbook.total_predictions,
                         avgDriftVelocity: data.moltbook.current_vibes,
+                        liquidityProvisioned: data.liquidity?.total_provisioned_sol || 0,
                         lastPrediction: {
                             topic: 'Latent Drift Scan',
                             magnitude: data.moltbook.current_vibes,
@@ -73,8 +74,8 @@ export function MoltbookGrowthPanel() {
                         <div className="text-2xl font-mono text-emerald-400">+{stats.avgDriftVelocity.toFixed(2)}</div>
                     </div>
                     <div className="bg-black/40 rounded-xl p-4 border border-white/5">
-                        <div className="text-white/30 text-[10px] uppercase tracking-wider mb-1">Health</div>
-                        <div className="text-2xl font-mono text-cyan-400">99.8%</div>
+                        <div className="text-white/30 text-[10px] uppercase tracking-wider mb-1">Liquidity Provisioned</div>
+                        <div className="text-2xl font-mono text-cyan-400">{stats.liquidityProvisioned.toFixed(2)} <span className="text-xs text-cyan-400/50">SOL</span></div>
                     </div>
                 </div>
 

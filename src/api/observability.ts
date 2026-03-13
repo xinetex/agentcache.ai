@@ -33,11 +33,15 @@ router.get('/stats', async (c) => {
             return acc;
         }, {});
 
+        const { liquidityProvisionService } = await import('../services/LiquidityProvisionService.js');
+        const liquidityStats = await liquidityProvisionService.getGlobalStats();
+        
         return c.json({
             ...stats,
             moltbook: moltStats,
+            liquidity: liquidityStats,
             eventCounts,
-            latency: 12 + Math.floor(Math.random() * 5), // Real-ish base latency
+            latency: 12 + Math.floor(Math.random() * 5),
             lastEvent: history[0] || null
         });
     } catch (err: any) {
