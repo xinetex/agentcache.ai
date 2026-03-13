@@ -16,7 +16,7 @@ import CommandCenter from './components/CommandCenter.jsx';
 import { useSector } from './context/SectorContext.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 import AuthModal from './components/AuthModal.jsx';
-import { nodeTypes } from './nodes.js';
+import { nodeTypes } from './nodes/index.js';
 import { initDemoMode } from './config/demoData.js';
 import { PipelineStorageService, StorageService } from './services/storageService.js';
 import TrafficEdge from './components/TrafficEdge.jsx';
