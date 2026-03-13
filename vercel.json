@@ -111,6 +111,10 @@
       "destination": "/admin.html"
     },
     {
+      "source": "/admin/:path*",
+      "destination": "/admin.html"
+    },
+    {
       "source": "/mission-control",
       "destination": "/mission-control.html"
     },

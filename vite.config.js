@@ -18,6 +18,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
+        admin: resolve(__dirname, 'admin.html'),
         dashboard: resolve(__dirname, 'dashboard.html'),
         pipeline_studio: resolve(__dirname, 'pipeline-studio.html'),
         gov_portal: resolve(__dirname, 'gov-portal.html'),
