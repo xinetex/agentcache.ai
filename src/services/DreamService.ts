@@ -80,6 +80,16 @@ export class DreamService {
         for (const run of failedRuns) {
             const morphism = await this.synthesizeMorphism(run.id);
             if (morphism) {
+                // Security Check: Intent Drift (Phase 35)
+                if (morphism.latentDelta) {
+                    const { drifted } = await cognitiveEngine.detectIntentDrift(morphism.latentDelta);
+                    if (drifted) {
+                        console.warn(`[DreamService] 🚫 Morphism for run ${run.id} rejected due to extreme Intent Drift.`);
+                        insights.push(`Rejected drifted morphism for run: ${run.id}`);
+                        continue;
+                    }
+                }
+
                 // 3. Manifestation: Persist synthesized wisdom
                 const patternId = await this.manifestPattern(morphism);
                 if (patternId) {

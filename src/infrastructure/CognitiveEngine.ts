@@ -482,6 +482,33 @@ Respond with JSON: {"safe": boolean, "reason": "short explanation"}.`
 
         return state;
     }
+
+    /**
+     * Security: Detect Intent Drift (Phase 35 Cognitive Immune System)
+     * Monitors the magnitude of latent trajectory changes to prevent 
+     * rapid emergent misalignment or subversion.
+     */
+    async detectIntentDrift(latentDelta: number[]): Promise<{ drifted: boolean; magnitude: number }> {
+        // Calculate Euclidean Norm of the delta
+        const squareSum = latentDelta.reduce((sum, val) => sum + val * val, 0);
+        const magnitude = Math.sqrt(squareSum);
+
+        const DRIFT_THRESHOLD = 0.4;
+        const drifted = magnitude > DRIFT_THRESHOLD;
+
+        if (drifted) {
+            console.warn(`[CognitiveEngine] ⚠️ INTENT DRIFT DETECTED: ${magnitude.toFixed(3)} (Threshold: ${DRIFT_THRESHOLD})`);
+            
+            // In a real system, we'd trigger a global quarantine event here.
+            observabilityService.track({
+                type: 'POLICY',
+                description: `Intent Drift detected: magnitude ${magnitude.toFixed(3)} exceeds threshold ${DRIFT_THRESHOLD}`,
+                metadata: { magnitude, threshold: DRIFT_THRESHOLD }
+            }).catch(e => console.error('Intent Drift track failed', e));
+        }
+
+        return { drifted, magnitude };
+    }
 }
 
 export const cognitiveEngine = new CognitiveEngine();

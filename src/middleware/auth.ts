@@ -17,11 +17,7 @@ import { getTierQuota, getTierFeatures } from '../config/tiers.js';
 import { eq } from 'drizzle-orm';
 import { buildQuotaExceededPayload, getUpgradeDetails } from '../lib/upgrade-response.js';
 
-// Demo API keys (for MVP testing)
-const DEMO_API_KEYS = new Set([
-    'ac_demo_test123',
-    'ac_demo_test456',
-]);
+// No hardcoded demo keys in production (Security Hardening Phase 35)
 
 // Credits
 const OVERAGE_CREDITS_PER_REQUEST = 1; // 1 credit = $0.01
@@ -118,14 +114,7 @@ export async function authenticateApiKey(c: any) {
         }, 401);
     }
 
-    // For MVP: Accept demo keys (unlimited usage)
-    if (DEMO_API_KEYS.has(apiKey)) {
-        c.set('apiKey', apiKey);
-        c.set('tier', 'enterprise');
-        c.set('tierFeatures', getTierFeatures('enterprise'));
-        c.set('usage', { used: 0, quota: -1, remaining: -1 });
-        return null; // continue
-    }
+    // Removal of hardcoded/demo auth path (Security Audit V1)
 
     // Fetch tier from Postgres with Redis caching
     try {
@@ -227,12 +216,12 @@ export async function authenticateApiKey(c: any) {
         c.set('usage', usage);
         return null; // Next
     } catch (error: any) {
-        console.error('[Auth] Error:', error);
-        // On critical DB failure, we can either fail open (free tier) or closed.
-        // Failing open allows site to work even if DB is down.
-        c.set('apiKey', apiKey);
-        c.set('tier', 'free');
-        c.set('tierFeatures', getTierFeatures('free'));
-        return null;
+        console.error('[Auth] Critical Security Failure:', error);
+        // Fail-Closed Logic (Security Audit V2)
+        // Do not allow unauthorized access on system failure.
+        return c.json({
+            error: 'Authentication Service Unavailable',
+            details: 'The platform is currently experiencing a critical database or cache failure. Please try again shortly.'
+        }, 503);
     }
 }

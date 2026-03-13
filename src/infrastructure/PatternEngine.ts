@@ -13,6 +13,7 @@ import { eq, sql } from 'drizzle-orm';
 import { redis } from '../lib/redis.js';
 import { TriageLogic } from './triage.js';
 import { CognitiveEngine } from './CognitiveEngine.js';
+import { reputationService } from '../services/ReputationService.js';
 
 export class PatternEngine {
     private cognitiveEngine: CognitiveEngine;
@@ -172,6 +173,14 @@ export class PatternEngine {
         for (const n of neighbors) {
             if (!n) continue;
             const state = JSON.parse(n);
+            
+            // Security Hardening: Block imitation from low-reputation nodes (Phase 35)
+            const rep = reputationService.getReputation(state.id).reputation;
+            if (rep < 0.5) {
+                console.warn(`[PatternEngine] 🚫 Skipping imitation of low-reputation node: ${state.id} (Rep: ${rep.toFixed(2)})`);
+                continue;
+            }
+
             // Energy/Reward = density + internal energy
             const neighborEnergy = state.density || 0;
 
@@ -267,7 +276,14 @@ export class PatternEngine {
      * Execute the "Ritual" (Action Sequence)
      */
     async executeAction(pattern: any) {
-        console.log(`[PatternEngine] Executing ritual for ${pattern.name}...`);
+        // Security Hardening: Reputation-Weighted Execution (Phase 35)
+        const rep = reputationService.getReputation(pattern.id || pattern.name).reputation;
+        console.log(`[PatternEngine] Executing ritual for ${pattern.name} (Reputation: ${rep.toFixed(2)})...`);
+
+        if (rep < 0.3) {
+            console.warn(`[PatternEngine] 🚫 Execution blocked for isolated agent: ${pattern.name}`);
+            return;
+        }
 
         const actions = Array.isArray(pattern.actionSequence) ? pattern.actionSequence : [pattern.actionSequence];
 
@@ -435,11 +451,15 @@ export class PatternEngine {
      * Reinforce the pattern (increase energy level)
      */
     async reinforce(id: string, amount: number) {
+        // Security Hardening: Multiply reinforcement by reputation (Phase 35)
+        const rep = reputationService.getReputation(id).reputation;
+        const weightedAmount = amount * rep;
+
         // Levin's "Niche Construction" - pattern makes environment more favorable
         // Here specific logic could go to make system prioritize this pattern
         await db.update(patterns)
             .set({
-                energyLevel: sql`${patterns.energyLevel} + ${amount}`
+                energyLevel: sql`${patterns.energyLevel} + ${weightedAmount}`
             })
             .where(eq(patterns.id, id));
     }

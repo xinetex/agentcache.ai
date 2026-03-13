@@ -10,6 +10,7 @@ import { db } from '../db/client.js';
 import { periscopeRuns, periscopeSteps, periscopeActions, periscopePathStats } from '../db/schema.js';
 import { eq, and, sql } from 'drizzle-orm';
 import { redis } from '../lib/redis.js';
+import * as crypto from 'crypto';
 
 export interface ActionCandidate {
     id: string;
@@ -183,7 +184,12 @@ export class PeriscopeService {
     /**
      * Log a new step within a run.
      */
-    async logStep(runId: string, index: number, stateSignature?: any, goalTag?: string): Promise<string> {
+    async logStep(runId: string, index: number, stateSignature?: any, goalTag?: string, signature?: string): Promise<string> {
+        // Security: Verify trace signature (Phase 35)
+        if (process.env.TRACE_SECRET && !this.verifySignature({ runId, index, goalTag }, signature)) {
+            throw new Error('Invalid trace signature. Potential experience poisoning attempt blocked.');
+        }
+
         const [step] = await db.insert(periscopeSteps)
             .values({
                 runId,
@@ -209,12 +215,28 @@ export class PeriscopeService {
         tokenCost?: number;
         success?: boolean;
         errorCode?: string;
-    }): Promise<void> {
+    }, signature?: string): Promise<void> {
+        // Security: Verify trace signature (Phase 35)
+        if (process.env.TRACE_SECRET && !this.verifySignature({ stepId, actionType: data.actionType }, signature)) {
+            throw new Error('Invalid action signature. Potential trace pollution blocked.');
+        }
+
         await db.insert(periscopeActions)
             .values({
                 stepId,
                 ...data
             });
+    }
+
+    private verifySignature(payload: any, signature?: string): boolean {
+        if (!process.env.TRACE_SECRET) return true; // Disabled
+        if (!signature) return false;
+
+        const expected = crypto.createHmac('sha256', process.env.TRACE_SECRET)
+            .update(JSON.stringify(payload))
+            .digest('hex');
+        
+        return signature === expected;
     }
 
     private generateActionKey(candidate: ActionCandidate): string {

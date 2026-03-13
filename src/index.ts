@@ -1202,10 +1202,36 @@ app.get('/api/overflow/stats', async (c) => {
   }
 });
 
+// Helper for simple Redis rate limiting (Phase 35 Security Hardening)
+async function checkRateLimit(key: string, limit: number, windowSeconds: number): Promise<{ exceeded: boolean; remaining: number }> {
+  try {
+    const current = await redis.incr(key);
+    if (current === 1) {
+      await redis.expire(key, windowSeconds);
+    }
+    return {
+      exceeded: current > limit,
+      remaining: Math.max(0, limit - current)
+    };
+  } catch (e) {
+    // If Redis fails, fail-safe (deny if we're worried, but here we'll allow but log)
+    console.error('[RateLimit] Error:', e);
+    return { exceeded: false, remaining: 1 };
+  }
+}
+
 /**
  * POST /api/qr/generate - Generate QR pairing code
  */
 app.post('/api/qr/generate', async (c) => {
+  // Rate limit: 5 generates per IP per hour
+  const ip = c.req.header('x-forwarded-for') || 'local';
+  const rl = await checkRateLimit(`rl:qr:gen:${ip}`, 5, 3600);
+  
+  if (rl.exceeded) {
+    return c.json({ error: 'Too many QR codes generated. Please wait an hour.' }, 429);
+  }
+
   try {
     const { neon } = await import('@neondatabase/serverless');
     const sql = neon(process.env.DATABASE_URL || '');
@@ -1237,11 +1263,20 @@ app.post('/api/qr/generate', async (c) => {
  * POST /api/qr/approve - Approve QR code and provision API key
  */
 app.post('/api/qr/approve', async (c) => {
+  // Rate limit: 10 attempts per code (Anti Brute-Force V3)
+  const body = await c.req.json();
+  const { code, email } = body;
+
+  if (!code) return c.json({ error: 'Code required' }, 400);
+
+  const rl = await checkRateLimit(`rl:qr:att:${code}`, 10, 300); // 10 attempts per 5 mins
+  if (rl.exceeded) {
+    return c.json({ error: 'Too many attempts for this code. Please generate a new one.' }, 429);
+  }
+
   try {
     const { neon } = await import('@neondatabase/serverless');
     const sql = neon(process.env.DATABASE_URL || '');
-    const body = await c.req.json();
-    const { code, email } = body;
 
     if (!code || !email) {
       return c.json({ error: 'Code and email required' }, 400);

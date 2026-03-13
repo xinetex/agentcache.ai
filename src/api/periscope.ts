@@ -53,10 +53,20 @@ router.post('/trace', async (c) => {
                 const runId = await periscopeService.startRun(data.agentId, data.sessionId);
                 return c.json({ success: true, runId });
             case 'log_step':
-                const stepId = await periscopeService.logStep(data.runId, data.index, data.stateSignature, data.goalTag);
+                const stepId = await periscopeService.logStep(
+                    data.runId, 
+                    data.index, 
+                    data.stateSignature, 
+                    data.goalTag, 
+                    data.signature // Passing Phase 35 Signature
+                );
                 return c.json({ success: true, stepId });
             case 'log_action':
-                await periscopeService.logAction(data.stepId, data);
+                await periscopeService.logAction(
+                    data.stepId, 
+                    data, 
+                    data.signature // Passing Phase 35 Signature
+                );
                 return c.json({ success: true });
             default:
                 return c.json({ error: 'Invalid trace type' }, 400);
