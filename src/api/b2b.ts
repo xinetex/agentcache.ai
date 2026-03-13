@@ -29,7 +29,8 @@ router.post('/provision', async (c) => {
  * Returns metrics for the Industrial Dashboard.
  */
 router.get('/market-context', async (c) => {
-    const stats = await b2bServiceOrchestrator.getMarketStats();
+    const clientId = c.req.query('clientId');
+    const stats = await b2bServiceOrchestrator.getMarketStats(clientId);
     return c.json({
         success: true,
         stats

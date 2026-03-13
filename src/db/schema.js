@@ -724,3 +724,17 @@ export const periscopePathStats = pgTable('periscope_path_stats', {
     sampleCount: integer('sample_count').default(0),
     updatedAt: timestamp('updated_at').defaultNow(),
 });
+
+// --- Maturity Engine: Cognitive Progression ---
+export const maturityLedger = pgTable('maturity_ledger', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    agentId: text('agent_id').references(() => hubAgents.id).notNull(),
+    taskKey: text('task_key').notNull(), // e.g., 'data-parsing', 'b2b-negotiation'
+    successCount: integer('success_count').default(0),
+    failureCount: integer('failure_count').default(0),
+    level: integer('level').default(1), // 1: Functional, 2: Heuristic, 3: Autonomous
+    lastSuccessAt: timestamp('last_success_at'),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+    maturityAgentTaskIdx: index('maturity_agent_task_idx').on(table.agentId, table.taskKey),
+}));

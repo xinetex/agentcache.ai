@@ -44,7 +44,8 @@ if (!connectionString) {
         periscope_actions: [],
         periscope_path_stats: [],
         patterns: [],
-        agent_alerts: []
+        agent_alerts: [],
+        maturity_ledger: []
     };
 
     function findAccount(ownerId) {
@@ -55,7 +56,13 @@ if (!connectionString) {
     // Chainable Mock Helper with State
     const createChainableMock = (tableName = null, operation = 'select') => {
         let currentTable = tableName;
-        let queryImpl = async () => [];
+        // Correctly initialize with table data if table is known
+        let queryImpl = async () => {
+            if (currentTable && mockStore[currentTable]) {
+                return mockStore[currentTable];
+            }
+            return [];
+        };
 
         const mock = {
             from: (tableObj) => {
@@ -82,6 +89,7 @@ if (!connectionString) {
                 if (!currentTable && tableObj === schema.periscopeSteps) currentTable = 'periscope_steps';
                 if (!currentTable && tableObj === schema.periscopeActions) currentTable = 'periscope_actions';
                 if (!currentTable && tableObj === schema.periscopePathStats) currentTable = 'periscope_path_stats';
+                if (!currentTable && tableObj === schema.maturityLedger) currentTable = 'maturity_ledger';
 
                 if (currentTable) {
                     queryImpl = async () => {
@@ -182,12 +190,14 @@ if (!connectionString) {
             if (tableObj === schema.periscopePathStats) tName = 'periscope_path_stats';
             if (tableObj === schema.patterns) tName = 'patterns';
             if (tableObj === schema.agentAlerts) tName = 'agent_alerts';
+            if (tableObj === schema.maturityLedger) tName = 'maturity_ledger';
             return createChainableMock(tName, 'insert');
         },
         update: (tableObj) => {
             let tName = '';
             if (tableObj === schema.ledgerAccounts) tName = 'ledger_accounts';
             if (tableObj === schema.patterns) tName = 'patterns';
+            if (tableObj === schema.maturityLedger) tName = 'maturity_ledger';
             return createChainableMock(tName, 'update');
         },
         delete: (tableObj) => {

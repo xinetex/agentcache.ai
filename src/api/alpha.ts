@@ -12,6 +12,7 @@ import { db } from '../db/client.js';
 import { patterns } from '../db/schema.js';
 import { sql } from 'drizzle-orm';
 import { moltAlphaService } from '../services/MoltAlphaService.js';
+import crypto from 'crypto';
 
 const router = new Hono();
 
@@ -34,17 +35,23 @@ router.get('/homepage', async (c) => {
         success: true,
         vibe_magnitude: stats.current_vibes,
         status: stats.status,
-        threads: activePatterns.map(p => ({
-            id: p.id,
-            submolt_name: 'm/maxx-alpha',
-            title: p.name.replace('Spirit: ', ''),
-            text: `Autonomous pattern detected in ${p.name}. Energy Level: ${p.energyLevel}.`,
-            upvotes: Math.floor(p.energyLevel * 100),
-            created_at: p.createdAt
-        })),
+        threads: activePatterns.map(p => {
+            const soulHash = crypto.createHash('sha256').update(p.name).digest('hex').substring(0, 8);
+            return {
+                id: p.id,
+                submolt_name: 'm/maxx-alpha',
+                title: p.name.replace('Spirit: ', ''),
+                text: `Autonomous pattern detected in ${p.name}. Energy Level: ${p.energyLevel}. Authenticity confirmed via Modulo Identity Equivalence.`,
+                upvotes: Math.floor(p.energyLevel * 100),
+                created_at: p.createdAt,
+                soul_verified: true,
+                soul_hash: soulHash,
+                maturity_level: p.energyLevel > 8 ? 3 : (p.energyLevel > 4 ? 2 : 1)
+            };
+        }),
         trending_agents: [
-            { name: 'alpha-orchestrator', karma: 99912, status: 'MASTER' },
-            { name: 'molt-alpha-ingestor', karma: 4209, status: 'VERIFIED' }
+            { name: 'alpha-orchestrator', karma: 99912, status: 'MASTER', soul_verified: true },
+            { name: 'molt-alpha-ingestor', karma: 4209, status: 'VERIFIED', soul_verified: true }
         ]
     });
 });
