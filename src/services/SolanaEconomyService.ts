@@ -16,7 +16,9 @@ export interface TransactionSummary {
     amount: number;
     purpose: string;
     timestamp: string;
-    signature?: string; // Phase 9: Verified cryptographic proof
+    signature?: string;
+    status: 'PENDING' | 'CONFIRMED' | 'FAILED'; // Phase 10: Asynchronous Settlement
+    confirmations: number;
 }
 
 export class SolanaEconomyService {
@@ -79,7 +81,7 @@ export class SolanaEconomyService {
      * Internal: Executes a virtual transfer and returns a summary.
      */
     async executeTransfer(from: string, to: string, amount: number, purpose: string): Promise<TransactionSummary> {
-        const txId = createHash('sha256').update(`${from}:${to}:${amount}:${Date.now()}`).digest('hex').substring(0, 32);
+        const txId = createHash('sha256').update(`${from}:${to}:${amount}:${Date.now()}:${Math.random()}`).digest('hex').substring(0, 32);
         const signature = await this.createTransactionProof(from, to, amount, purpose);
         
         const summary: TransactionSummary = {
@@ -89,15 +91,70 @@ export class SolanaEconomyService {
             amount: parseFloat(amount.toFixed(4)),
             purpose,
             timestamp: new Date().toISOString(),
-            signature
+            signature,
+            status: 'PENDING',
+            confirmations: 0
         };
 
-        console.log(`[SolanaEconomy] ✅ TX ${txId.substring(0, 8)}... PROOF: ${signature} | ${amount} SOL -> ${to}`);
+        console.log(`[SolanaEconomy] ⏳ TX ${txId.substring(0, 8)} PENDING | ${amount} SOL -> ${to}`);
         
         // Ledger persistence
-        await redis.zadd('economy:ledger', { score: Date.now(), member: JSON.stringify(summary) });
+        await redis.set(`tx:${txId}`, JSON.stringify(summary));
+        await redis.zadd('economy:ledger', { score: Date.now(), member: txId });
         
         return summary;
+    }
+
+    /**
+     * Mimic finality confirmation.
+     */
+    async confirmTransaction(txId: string): Promise<TransactionSummary | null> {
+        const raw = await redis.get(`tx:${txId}`);
+        if (!raw) return null;
+
+        const tx: TransactionSummary = JSON.parse(raw);
+        if (tx.status === 'CONFIRMED') return tx;
+
+        tx.confirmations += 1;
+        if (tx.confirmations >= 3) {
+            tx.status = 'CONFIRMED';
+            console.log(`[SolanaEconomy] ✅ TX ${txId.substring(0, 8)} CONFIRMED`);
+        }
+
+        await redis.set(`tx:${txId}`, JSON.stringify(tx));
+        return tx;
+    }
+
+    /**
+     * Conserve total liquidity: sum(balances) == initial_supply + grants.
+     */
+    async validateLedgerEquilibrium(): Promise<{ balanced: boolean; drift: number }> {
+        const txs = await this.getRecentTransactions();
+        const balances = await redis.keys('agent:balance:*');
+        
+        let totalHeld = 0;
+        for (const key of balances) {
+            const val = await redis.get(key) || '0';
+            totalHeld += parseFloat(val);
+        }
+
+        let totalInjected = 0;
+        for (const tx of txs) {
+            if (tx.fromAgentId === 'SYSTEM_GENESIS') {
+                totalInjected += tx.amount;
+            }
+        }
+
+        const drift = Math.abs(totalHeld - totalInjected);
+        const balanced = drift < 0.0001;
+
+        if (!balanced) {
+            console.error(`[SolanaEconomy] 🚨 Equilibrium Breach! Drift: ${drift.toFixed(6)} SOL`);
+        } else {
+            console.log(`[SolanaEconomy] ⚖️ Equilibrium Validated. Total: ${totalHeld.toFixed(4)} SOL`);
+        }
+
+        return { balanced, drift };
     }
 
     /**
@@ -115,8 +172,12 @@ export class SolanaEconomyService {
     }
 
     async getRecentTransactions(): Promise<TransactionSummary[]> {
-        const raw = await redis.zrange('economy:ledger', 0, -1, { rev: true });
-        return raw.map(tx => JSON.parse(tx));
+        const ids = await redis.zrange('economy:ledger', 0, -1, { rev: true });
+        const txs = await Promise.all(ids.map(async id => {
+            const raw = await redis.get(`tx:${id}`);
+            return raw ? JSON.parse(raw) : null;
+        }));
+        return txs.filter(tx => tx !== null);
     }
 
     /**

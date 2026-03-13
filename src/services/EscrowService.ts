@@ -15,8 +15,9 @@ export interface EscrowDeal {
     providerId: string;
     auditorId?: string;
     amount: number;
-    status: 'HELD' | 'RELEASED' | 'REFUNDED' | 'DISPUTED';
+    status: 'HELD' | 'PENDING_RELEASE' | 'RELEASED' | 'REFUNDED' | 'DISPUTED';
     purpose: string;
+    releaseTxId?: string; // Phase 10: Track settlement TX
     signatures: {
         consumer?: boolean;
         provider?: boolean;
@@ -89,14 +90,38 @@ export class EscrowService {
     }
 
     private async releaseEscrow(deal: EscrowDeal) {
-        console.log(`[Escrow] 🔓 Releasing escrow ${deal.id} to provider ${deal.providerId}...`);
+        console.log(`[Escrow] ⏳ Initiating release for escrow ${deal.id} to provider ${deal.providerId}...`);
         
-        // Execute transfer from escrow to provider
-        await solanaEconomyService.executeTransfer('SYSTEM_ESCROW', deal.providerId, deal.amount, `ESCROW_RELEASE:${deal.id}`);
-        await solanaEconomyService.updateBalance(deal.providerId, deal.amount);
-
-        deal.status = 'RELEASED';
+        // Phase 10: Execute transfer and track TX
+        const tx = await solanaEconomyService.executeTransfer('SYSTEM_ESCROW', deal.providerId, deal.amount, `ESCROW_RELEASE:${deal.id}`);
+        
+        deal.status = 'PENDING_RELEASE';
+        deal.releaseTxId = tx.txId;
         await redis.set(`b2b:escrow:${deal.id}`, JSON.stringify(deal));
+    }
+
+    /**
+     * Polling method to finalize a deal once settlement is confirmed.
+     */
+    async finalizeRelease(id: string): Promise<boolean> {
+        const data = await redis.get(`b2b:escrow:${id}`);
+        if (!data) return false;
+
+        const deal: EscrowDeal = JSON.parse(data);
+        if (deal.status !== 'PENDING_RELEASE' || !deal.releaseTxId) return false;
+
+        // Try to confirm the settlement (Phase 10 transition)
+        const tx = await solanaEconomyService.confirmTransaction(deal.releaseTxId);
+        
+        if (tx && tx.status === 'CONFIRMED') {
+            console.log(`[Escrow] 🔓 Finalized release for escrow ${deal.id}.`);
+            await solanaEconomyService.updateBalance(deal.providerId, deal.amount);
+            deal.status = 'RELEASED';
+            await redis.set(`b2b:escrow:${deal.id}`, JSON.stringify(deal));
+            return true;
+        }
+
+        return false;
     }
 
     /**
