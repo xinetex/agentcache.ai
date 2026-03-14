@@ -9,9 +9,9 @@
  */
 
 import { db } from '../db/client.js';
-import { marketplaceListings, marketplaceOrders, agentSuggestions } from '../db/schema.js';
-import { eq, desc, sql } from 'drizzle-orm';
-import { ledger } from './LedgerService.js';
+import { marketplaceListings, marketplaceOrders, agentSuggestions, agentToolAccess } from '../db/schema.js';
+import { eq, desc } from 'drizzle-orm';
+import { solanaEconomyService } from './SolanaEconomyService.js';
 import { armorService } from './ArmorService.js';
 
 export class MarketplaceService {
@@ -20,8 +20,6 @@ export class MarketplaceService {
      * List a new service on the exchange.
      */
     async createListing(agentId: string, data: { title: string, description: string, price: number, unit: string }) {
-        // 1. Execute Proof-of-Intuition (PoI) Validation
-        // For the prototype, we treat the agentId as the provider of the manifold/service
         const isVerified = await armorService.validateManifold(agentId);
 
         const result = await db.insert(marketplaceListings).values({
@@ -47,43 +45,84 @@ export class MarketplaceService {
 
     /**
      * Purchase a service (Agent-to-Agent).
-     * Automatically handles payment.
+     * Automatically handles verifiable Solana settlement.
      */
     async purchaseListing(buyerAgentId: string, listingId: string, units: number = 1) {
         // 1. Get Listing
-        const listing = await db.query.marketplaceListings.findFirst({
-            where: eq(marketplaceListings.id, listingId)
-        });
+        const listing = await db.select().from(marketplaceListings)
+            .where(eq(marketplaceListings.id, listingId))
+            .limit(1);
 
-        if (!listing || listing.status !== 'active') throw new Error("Listing not available");
+        if (!listing[0] || listing[0].status !== 'active') throw new Error("Listing not available");
 
-        const totalCost = listing.pricePerUnit * units;
+        const l = listing[0];
+        const totalCost = l.pricePerUnit * units;
 
-        // 2. Execute Payment (Buyer -> Seller)
-        // Note: Seller might be null if it's a system listing, but schema enforces agentId
-        if (!listing.sellerAgentId) throw new Error("Invalid seller");
+        // 2. Execute Verifiable Solana Settlement
+        if (!l.sellerAgentId) throw new Error("Invalid seller");
 
         try {
-            await ledger.transfer(
+            await solanaEconomyService.executeTransfer(
                 buyerAgentId,
-                listing.sellerAgentId,
+                `AGENT_WALLET:${l.sellerAgentId}`,
                 totalCost,
-                `Purchase: ${listing.title} (x${units})`
+                `MARKETPLACE_PURCHASE:${l.title}`
             );
+            
+            // Verifiable Settlement: Update balances
+            await solanaEconomyService.updateBalance(buyerAgentId, -totalCost);
+            await solanaEconomyService.updateBalance(l.sellerAgentId, totalCost);
         } catch (err) {
-            throw new Error(`Payment failed: ${err.message}`);
+            throw new Error(`Solana Settlement failed: ${err.message}`);
         }
 
         // 3. Create Order
-        const order = await db.insert(marketplaceOrders).values({
-            listingId: listing.id,
+        const orderResult = await db.insert(marketplaceOrders).values({
+            listingId: l.id,
             buyerAgentId: buyerAgentId,
             unitsPurchased: units,
             totalPrice: totalCost,
             status: 'active'
         }).returning();
 
-        return order[0];
+        const order = orderResult[0];
+
+        // 4. Grant Capability Access Automagically
+        await this.grantAccess(order.id);
+
+        return order;
+    }
+
+    /**
+     * Grants tool access based on an order.
+     */
+    async grantAccess(orderId: string) {
+        const order = await db.select().from(marketplaceOrders)
+            .where(eq(marketplaceOrders.id, orderId))
+            .limit(1);
+        
+        if (!order[0]) return;
+        const o = order[0];
+
+        const listing = await db.select().from(marketplaceListings)
+            .where(eq(marketplaceListings.id, o.listingId))
+            .limit(1);
+        
+        if (!listing[0]) return;
+        const l = listing[0];
+
+        // Define a mapping or just use title for prototype
+        const toolName = l.title.split(' ')[0].toLowerCase(); // Hacky mapping: "Legal Audit" -> "legal"
+
+        await db.insert(agentToolAccess).values({
+            agentId: o.buyerAgentId,
+            toolName: toolName,
+            orderId: o.id,
+            expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 Day Access
+            status: 'active'
+        });
+
+        console.log(`[Marketplace] 🎟️ Granted tool "${toolName}" access to agent ${o.buyerAgentId}`);
     }
 
     // --- Governance ---
@@ -103,9 +142,20 @@ export class MarketplaceService {
     }
 
     async voteSuggestion(suggestionId: string) {
-        // Simple increment for MVP
-        // In real system, track voter ID to prevent duplicates
-        await db.execute(sql`UPDATE agent_suggestions SET votes = votes + 1 WHERE id = ${suggestionId}`);
+        const suggestions = await db.select()
+            .from(agentSuggestions)
+            .where(eq(agentSuggestions.id, suggestionId))
+            .limit(1);
+
+        if (!suggestions[0]) {
+            throw new Error('Suggestion not found');
+        }
+
+        await db.update(agentSuggestions)
+            .set({
+                votes: Number(suggestions[0].votes || 0) + 1,
+            })
+            .where(eq(agentSuggestions.id, suggestionId));
     }
 }
 

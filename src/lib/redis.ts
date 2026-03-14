@@ -10,9 +10,55 @@
 
 import { Redis } from '@upstash/redis';
 
+class MockRedisSubscriber {
+  private channels = new Set<string>();
+  private messageHandlers = new Set<(channel: string, message: string) => void>();
+
+  constructor(private parent: MockRedis) {}
+
+  async subscribe(channel: string) {
+    this.channels.add(channel);
+    this.parent.registerSubscriber(this, channel);
+    return this.channels.size;
+  }
+
+  on(event: string, handler: (...args: any[]) => void) {
+    if (event === 'message') {
+      this.messageHandlers.add(handler as (channel: string, message: string) => void);
+    }
+    return this;
+  }
+
+  async unsubscribe(channel?: string) {
+    if (channel) {
+      this.channels.delete(channel);
+      this.parent.unregisterSubscriber(this, channel);
+      return 1;
+    }
+
+    for (const subscribedChannel of Array.from(this.channels)) {
+      this.parent.unregisterSubscriber(this, subscribedChannel);
+    }
+    this.channels.clear();
+    return 0;
+  }
+
+  async quit() {
+    await this.unsubscribe();
+    return 'OK';
+  }
+
+  emit(channel: string, message: string) {
+    for (const handler of this.messageHandlers) {
+      handler(channel, message);
+    }
+  }
+}
+
 // Simple In-Memory Mock for offline/dev mode
 class MockRedis {
   private store = new Map<string, any>();
+  private channelSubscribers = new Map<string, Set<MockRedisSubscriber>>();
 
   private ensureStoreLimit() {
     if (this.store.size > 5000) {
@@ -113,9 +159,47 @@ class MockRedis {
   }
 
   async publish(channel: string, message: string) {
-    // In mock mode, we just return 0 as there are no real pub/sub listeners.
-    // However, existence of this method prevents 'is not a function' errors.
+    const subscribers = Array.from(this.channelSubscribers.get(channel) || []);
+    for (const subscriber of subscribers) {
+      subscriber.emit(channel, message);
+    }
+    return subscribers.length;
+  }
+
+  duplicate() {
+    return new MockRedisSubscriber(this);
+  }
+
+  async subscribe(_channel: string) {
+    return 1;
+  }
+
+  on(_event: string, _handler: (...args: any[]) => void) {
+    return this;
+  }
+
+  async unsubscribe() {
     return 0;
+  }
+
+  async quit() {
+    return 'OK';
+  }
+
+  registerSubscriber(subscriber: MockRedisSubscriber, channel: string) {
+    if (!this.channelSubscribers.has(channel)) {
+      this.channelSubscribers.set(channel, new Set());
+    }
+    this.channelSubscribers.get(channel)!.add(subscriber);
+  }
+
+  unregisterSubscriber(subscriber: MockRedisSubscriber, channel: string) {
+    const subscribers = this.channelSubscribers.get(channel);
+    if (!subscribers) return;
+    subscribers.delete(subscriber);
+    if (subscribers.size === 0) {
+      this.channelSubscribers.delete(channel);
+    }
   }
 
   async xadd(key: string, id: string, ...args: string[]) {
@@ -292,6 +376,19 @@ class MockRedis {
     return removed;
   }
 
+  async eval(_script: string, _numKeys: number, ...keys: string[]) {
+    if (keys.length < 2) {
+      throw new Error('keys is not iterable');
+    }
+
+    const [minuteKey, hourKey] = keys;
+    const rpm = await this.incr(minuteKey);
+    const rph = await this.incr(hourKey);
+    await this.expire(minuteKey, 120);
+    await this.expire(hourKey, 7200);
+    return [rpm, rph];
+  }
+
   pipeline() {
     const self = this;
     const operations: Function[] = [];
@@ -325,40 +422,75 @@ const mockRedisInstance = new MockRedis();
 let redisClient: any;
 let isMock = false;
 
-// Initialize
-try {
-  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-    console.log("⚡ Using Upstash Redis (HTTP)");
-    redisClient = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    });
-  } else {
-    throw new Error("Missing Credentials");
+function shouldForceMockRedis() {
+  return process.env.NODE_ENV === 'test' || !!process.env.VITEST || process.env.AGENTCACHE_FORCE_MOCK_REDIS === '1';
+}
+
+function isConnectivityError(err: any) {
+  const message = String(err?.message || '');
+  const causeMessage = String(err?.cause?.message || '');
+  const code = String(err?.code || err?.cause?.code || '');
+  const combined = `${message} ${causeMessage} ${code}`;
+
+  return [
+    'fetch failed',
+    'ENOTFOUND',
+    'ECONNREFUSED',
+    'ETIMEDOUT',
+    'EAI_AGAIN',
+    'network',
+    'dns'
+  ].some((token) => combined.includes(token));
+}
+
+function getRedisClient() {
+  if (redisClient) return redisClient;
+
+  try {
+    if (shouldForceMockRedis()) {
+      throw new Error('Forced Mock Redis');
+    }
+    if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+      console.log("⚡ Found Redis Credentials. Initializing Upstash Redis (HTTP)");
+      redisClient = new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      });
+    } else {
+      throw new Error("Missing Credentials");
+    }
+  } catch (e) {
+    console.warn("⚠️ Redis Credentials Missing or Invalid. Using In-Memory Mock.");
+    redisClient = mockRedisInstance;
+    isMock = true;
   }
-} catch (e) {
-  console.warn("⚠️ Redis Credentials Missing. Using In-Memory Mock.");
-  redisClient = mockRedisInstance;
-  isMock = true;
+  return redisClient;
 }
 
 // Proxy to catch runtime Auth failures and switch to mock
 export const redis = new Proxy({}, {
   get: (target, prop) => {
-    // ...
-    if (prop === 'isMock') return isMock; // Add a way to check if we are in mock mode
+    // Add a way to check if we are in mock mode
+    if (prop === 'isMock') return isMock || shouldForceMockRedis();
 
-    // ...
-    if (isMock) return (redisClient as any)[prop];
+    if (isMock || shouldForceMockRedis()) {
+      isMock = true;
+      redisClient = mockRedisInstance;
+      return (mockRedisInstance as any)[prop];
+    }
 
     return async (...args: any[]) => {
+      const client = getRedisClient();
       try {
         // @ts-ignore
-        return await redisClient[prop](...args);
+        return await client[prop](...args);
       } catch (err: any) {
-        if (err.message && (err.message.includes("WRONGPASS") || err.message.includes("Unauthorized") || err.message.includes("Invalid token"))) {
+        if (
+          isConnectivityError(err) ||
+          (err.message && (err.message.includes("WRONGPASS") || err.message.includes("Unauthorized") || err.message.includes("Invalid token")))
+        ) {
           if (!isMock) {
-            console.warn("⚠️ Redis Auth Failed during op. Switching to In-Memory Mock.");
+            console.warn("⚠️ Redis unavailable during op. Switching to In-Memory Mock.");
             redisClient = mockRedisInstance;
             isMock = true;
           }

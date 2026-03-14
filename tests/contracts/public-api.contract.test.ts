@@ -272,4 +272,11 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(typeof stats.payload.fabric.analytics.summary.totalOperations).toBe('number');
     expect(typeof stats.payload.fabric.accounting.totalCreditsEstimated).toBe('number');
   }, 20000);
+
+  it('refuses badge issuance when auth cannot resolve a principal', async () => {
+    const issued = await request('/api/molt/issue-badge');
+
+    expect(issued.response.status).toBe(403);
+    expect(issued.payload.error).toContain('authenticated principal');
+  });
 });

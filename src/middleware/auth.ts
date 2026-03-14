@@ -92,6 +92,9 @@ export async function authenticateApiKey(c: any) {
 
         if (settlement.success) {
             c.set('apiKey', agentId);
+            c.set('principalAgentId', agentId);
+            c.set('principalId', `agent:${agentId}`);
+            c.set('principalKind', 'agent');
             c.set('tier', 'x402-paid');
             c.set('tierFeatures', getTierFeatures('enterprise'));
             c.set('usage', { used: 0, quota: -1, remaining: -1 });
@@ -121,38 +124,81 @@ export async function authenticateApiKey(c: any) {
         const keyHash = createHash('sha256').update(apiKey).digest('hex');
         const cacheKey = `tier:${keyHash}`;
 
-        let tier = 'free'; // default
-        let tierFeatures = null;
-
-        // Check Redis cache first (5 min TTL)
-        const cachedTier = await redis.get(cacheKey);
-        if (cachedTier) {
-            tier = cachedTier as string;
-            tierFeatures = getTierFeatures(tier);
-        } else {
-            // Query Postgres with Drizzle (Join api_keys -> organizations to get tier)
+        const resolveStoredPrincipal = async () => {
             const results = await db
                 .select({
                     hash: apiKeys.hash,
                     tier: organizations.plan,
-                    isActive: apiKeys.isActive
+                    isActive: apiKeys.isActive,
+                    orgId: apiKeys.orgId,
+                    userId: apiKeys.userId,
                 })
                 .from(apiKeys)
                 .leftJoin(organizations, eq(apiKeys.orgId, organizations.id))
                 .where(eq(apiKeys.isActive, true));
 
             for (const record of results) {
-                if (!record.hash) continue; // Should not happen
-
+                if (!record.hash) continue;
                 const match = await bcrypt.compare(apiKey, record.hash);
-                if (match) {
-                    tier = record.tier || 'free';
-                    tierFeatures = getTierFeatures(tier);
+                if (!match) continue;
+                return {
+                    tier: record.tier || 'free',
+                    orgId: record.orgId || null,
+                    userId: record.userId || null,
+                };
+            }
 
-                    // Cache tier in Redis for 5 minutes
-                    await redis.setex(cacheKey, 300, tier);
-                    break;
+            return null;
+        };
+
+        let tier = 'free'; // default
+        let tierFeatures = null;
+        let principalAgentId: string | null = null;
+        let principalId: string | null = null;
+        let principalKind: 'agent' | 'organization' | 'user' | 'unknown' = 'unknown';
+
+        // Check Redis cache first (5 min TTL)
+        const cachedTier = await redis.get(cacheKey);
+        if (cachedTier) {
+            tier = cachedTier as string;
+            tierFeatures = getTierFeatures(tier);
+            const storedPrincipal = await resolveStoredPrincipal();
+            if (storedPrincipal?.orgId) {
+                principalId = `org:${storedPrincipal.orgId}`;
+                principalKind = 'organization';
+            } else if (storedPrincipal?.userId) {
+                principalId = `user:${storedPrincipal.userId}`;
+                principalKind = 'user';
+            }
+        } else {
+            const storedPrincipal = await resolveStoredPrincipal();
+            if (storedPrincipal) {
+                tier = storedPrincipal.tier;
+                tierFeatures = getTierFeatures(tier);
+
+                if (storedPrincipal.orgId) {
+                    principalId = `org:${storedPrincipal.orgId}`;
+                    principalKind = 'organization';
+                } else if (storedPrincipal.userId) {
+                    principalId = `user:${storedPrincipal.userId}`;
+                    principalKind = 'user';
                 }
+
+                // Cache tier in Redis for 5 minutes
+                await redis.setex(cacheKey, 300, tier);
+            }
+        }
+
+        if (!principalId) {
+            try {
+                const { agentRegistry } = await import('../lib/hub/registry.js');
+                principalAgentId = await agentRegistry.getAgentIdFromApiKey(apiKey) || null;
+                if (principalAgentId) {
+                    principalId = `agent:${principalAgentId}`;
+                    principalKind = 'agent';
+                }
+            } catch (error) {
+                console.warn('[Auth] Failed to resolve principal agent ID:', error);
             }
         }
 
@@ -211,6 +257,9 @@ export async function authenticateApiKey(c: any) {
 
         // Attach tier info to context
         c.set('apiKey', apiKey);
+        c.set('principalAgentId', principalAgentId);
+        c.set('principalId', principalId);
+        c.set('principalKind', principalKind);
         c.set('tier', tier);
         c.set('tierFeatures', tierFeatures);
         c.set('usage', usage);

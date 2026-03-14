@@ -39,10 +39,20 @@ router.post('/issue-badge', async (c) => {
     const authError = await authenticateApiKey(c);
     if (authError) return authError;
 
-    const agentId = c.get('usage')?.agentId || 'unknown_agent';
+    const principalAgentId = (c as any).get('principalAgentId');
+    const principalId = (c as any).get('principalId');
+    const principalKind = (c as any).get('principalKind');
+    const subjectId = principalAgentId || principalId;
+
+    if (!subjectId || principalKind === 'unknown') {
+        return c.json({
+            error: 'Unable to resolve an authenticated principal for badge issuance.',
+        }, 403);
+    }
+
     try {
-        const token = await moltBadgeService.issueBadge(agentId);
-        return c.json({ success: true, token });
+        const token = await moltBadgeService.issueBadge(subjectId);
+        return c.json({ success: true, token, subjectId, principalKind });
     } catch (err: any) {
         return c.json({ error: err.message }, 500);
     }

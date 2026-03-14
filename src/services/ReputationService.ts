@@ -2,207 +2,262 @@
  * @license
  * Copyright (c) 2026 AgentCache.ai. All rights reserved.
  * 
- * PROPRIETARY AND CONFIDENTIAL: 
- * This software and its documentation are the property of AgentCache.ai.
- * Unauthorized copying, distribution, or modification of this file, 
- * via any medium, is strictly prohibited.
+ * ReputationService: The Trust Fabric.
+ * Manages agent reputation scores based on interaction history.
  */
 
-import { Sector } from './ChaosRecoveryEngine.js';
-import { observabilityService } from './ObservabilityService.js';
+import { db } from '../db/client.js';
+import { maturityLedger } from '../db/schema.js';
+import { eq, sql } from 'drizzle-orm';
+import { redis } from '../lib/redis.js';
 
-export interface AgentStats {
+export interface ReputationMarker {
+    agentId: string;
+    trustScore: number;
+    reliability: number;
+    level: number;
+    reputation: number;
+    status: 'trusted' | 'neutral' | 'suspicious';
+}
+
+export interface ReputationStats {
     totalTasks: number;
-    cognitiveErrors: number;    // Semantically wrong but syntactically valid
-    humanOverrides: number;     // Human had to correct output
-    downstreamDamage: number;  // Caused other agents to fix errors
-    chaosEpisodes: number;     // Number of provocations encountered
-    chaosSuccesses: number;    // Successful recoveries
-    recoveryTimeMs: number;    // Total time spent in recovery
-    highStakesTasks: number;   // Sector-weighted tasks (e.g. Healthcare)
+    cognitiveErrors: number;
+    humanOverrides: number;
+    chaosEpisodes: number;
+    chaosSuccesses: number;
+    recoveryTimeMs: number;
 }
 
-export interface ReputationState {
-    reputation: number;         // 0.0 - 1.0
-    status: 'healthy' | 'warn' | 'isolated';
-    lastUpdated: number;
+type SectorHealthStatus = 'healthy' | 'degrading' | 'critical';
+
+const KNOWN_SECTORS = ['finance', 'biotech', 'legal', 'robotics', 'healthcare', 'energy'] as const;
+
+function clamp01(value: number): number {
+    return Math.min(1, Math.max(0, value));
 }
 
-/**
- * ReputationService
- * 
- * Implements Phase 14 "Cognitive Reputation & Decay".
- * Tracks agentic performance metrics and applies mathematical decay to trust scores.
- * Uses the CER/OR/DDR framework from the user's "concrete metric-routing-decay" notes.
- */
+function emptyStats(): ReputationStats {
+    return {
+        totalTasks: 0,
+        cognitiveErrors: 0,
+        humanOverrides: 0,
+        chaosEpisodes: 0,
+        chaosSuccesses: 0,
+        recoveryTimeMs: 0,
+    };
+}
+
 export class ReputationService {
-    private agentStats = new Map<string, AgentStats>();
-    private reputationStates = new Map<string, ReputationState>();
+    private statsCache = new Map<string, ReputationStats>();
 
-    // Constants tuned for Phase 14 reactivity
-    private readonly ETA = 0.2;           // Reactivity smoothing constant
-    private readonly LAMBDA_T = 1.5;      // Time penalty sharpener (stricter)
-    private readonly LAMBDA_D = 0.5;      // Drift decay factor
-    private readonly MRT_TARGET = 800;   // Target recovery ms (stricter)
-    private readonly REPN_WARN = 0.8;     // Warning threshold
-    private readonly REPN_ISO = 0.5;      // Isolation threshold
+    private mergeStats(agentId: string, partial: Partial<ReputationStats>): ReputationStats {
+        const current = this.statsCache.get(agentId) || emptyStats();
+        const next = {
+            ...current,
+            ...Object.fromEntries(
+                Object.entries(partial).map(([key, value]) => [key, Number(value ?? current[key as keyof ReputationStats] ?? 0)])
+            ),
+        } as ReputationStats;
+        this.statsCache.set(agentId, next);
+        return next;
+    }
 
-    /**
-     * Increment a specific stat for an agent.
-     */
-    trackStat(agentId: string, statKind: keyof AgentStats, amount: number = 1) {
-        let stats = this.agentStats.get(agentId);
-        if (!stats) {
-            stats = this.getDefaultStats();
-            this.agentStats.set(agentId, stats);
+    private inferSector(agentId: string): string | null {
+        const normalized = agentId.toLowerCase();
+        return KNOWN_SECTORS.find((sector) => normalized.includes(sector)) || null;
+    }
+
+    private computeStatsReputation(stats: ReputationStats): number {
+        if (stats.totalTasks <= 0) {
+            return 0.5;
         }
-        (stats[statKind] as number) += amount;
-        
-        // Asynchronously update reputation for this agent
-        this.updateReputation(agentId).catch(console.error);
+
+        const totalTasks = Math.max(1, stats.totalTasks);
+        const errorRate = stats.cognitiveErrors / totalTasks;
+        const overrideRate = stats.humanOverrides / totalTasks;
+        const chaosRecoveryRate = stats.chaosEpisodes > 0
+            ? stats.chaosSuccesses / Math.max(1, stats.chaosEpisodes)
+            : 1;
+        const recoveryPenalty = stats.chaosEpisodes > 0
+            ? clamp01(stats.recoveryTimeMs / Math.max(1, stats.chaosEpisodes * 2000))
+            : 0;
+
+        const weightedCost =
+            (0.45 * errorRate) +
+            (0.25 * overrideRate) +
+            (0.2 * (1 - chaosRecoveryRate)) +
+            (0.1 * recoveryPenalty);
+
+        return clamp01(1 - weightedCost);
+    }
+
+    private getStatus(score: number): ReputationMarker['status'] {
+        return score > 0.8 ? 'trusted' : score > 0.5 ? 'neutral' : 'suspicious';
     }
 
     /**
-     * Update the reputation of an agent based on their windowed stats.
+     * Get the consolidated trust score for an agent.
+     * Logic: (Maturity Level * 0.5) + (Success Rate * 0.5)
      */
-    private async updateReputation(agentId: string) {
-        const stats = this.agentStats.get(agentId);
-        if (!stats) return;
+    async getReputation(agentId: string): Promise<ReputationMarker> {
+        const stats = await this.getStats(agentId);
+        const statsReputation = this.computeStatsReputation(stats);
 
-        const eps = 0.00001;
-        const cer = stats.cognitiveErrors / (stats.totalTasks + eps);
-        const or = stats.humanOverrides / (stats.totalTasks + eps);
-        const ddr = stats.downstreamDamage / (stats.totalTasks + eps);
+        // Fetch maturity ledger for this agent
+        const maturity = await db.select()
+            .from(maturityLedger)
+            .where(eq(maturityLedger.agentId, agentId))
+            .limit(1);
 
-        // Cognitive Chaos Score (CCS)
-        // Weights: e=0.3, o=0.5, d=0.2 (weighted heavily toward overrides/damage)
-        const ccs = (0.3 * cer) + (0.5 * or) + (0.2 * ddr);
+        if (maturity.length === 0) {
+            const fallbackScore = stats.totalTasks > 0 ? statsReputation : 0.5;
+            return {
+                agentId,
+                trustScore: fallbackScore,
+                reliability: stats.totalTasks > 0 ? clamp01(1 - (stats.cognitiveErrors / Math.max(1, stats.totalTasks))) : 0,
+                level: 1,
+                reputation: fallbackScore,
+                status: this.getStatus(fallbackScore)
+            };
+        }
 
-        // Recovery Efficiency (RE)
-        const crs = stats.chaosSuccesses / (stats.chaosEpisodes + eps);
-        const mrt = stats.recoveryTimeMs / (stats.chaosEpisodes + eps);
-        const re = crs * Math.exp(-this.LAMBDA_T * (mrt / this.MRT_TARGET));
+        const m = maturity[0];
+        const totalTasks = m.successCount + m.failureCount;
+        const reliability = totalTasks > 0 ? m.successCount / totalTasks : 0;
+        const maturityScore = (m.level / 3.0) * 0.6 + reliability * 0.4;
+        const trustScore = clamp01((maturityScore * 0.7) + (statsReputation * 0.3));
 
-        // Cognitive Cost (CogCost)
-        // Weighted for high-stakes impact
-        const stakeWeight = stats.highStakesTasks / (stats.totalTasks + eps);
-        const cogCost = (0.4 * ccs) + (0.3 * (1 - crs)) + (0.2 * (mrt / this.MRT_TARGET)) + (0.1 * stakeWeight);
-
-        // Performance Index (Perf)
-        const perf = Math.min(1, Math.max(0, 1 - cogCost));
-
-        // Exponential Smoothing for Reputation (R_a)
-        const oldState = this.reputationStates.get(agentId);
-        const oldRep = oldState?.reputation ?? 1.0;
-        let newRep = (1 - this.ETA) * oldRep + this.ETA * perf;
-
-        // Apply Drift-Sensitive Decay (Phase 14)
-        // Note: Drift should be passed in or tracked via ReputationService
-        // For now, we allow external update via a dedicated method
-
-        // Determine Status
-        let status: 'healthy' | 'warn' | 'isolated' = 'healthy';
-        if (newRep < this.REPN_ISO) status = 'isolated';
-        else if (newRep < this.REPN_WARN) status = 'warn';
-
-        const state: ReputationState = {
-            reputation: newRep,
-            status,
-            lastUpdated: Date.now()
+        return {
+            agentId,
+            trustScore,
+            reliability,
+            level: m.level,
+            reputation: trustScore,
+            status: this.getStatus(trustScore)
         };
+    }
 
-        this.reputationStates.set(agentId, state);
+    /**
+     * Update reputation based on a recent interaction.
+     */
+    async recordInteraction(agentId: string, success: boolean, taskKey: string) {
+        // 1. Update Maturity Ledger
+        const existing = await db.select()
+            .from(maturityLedger)
+            .where(sql`${maturityLedger.agentId} = ${agentId} AND ${maturityLedger.taskKey} = ${taskKey}`)
+            .limit(1);
 
-        // Emit telemetry if status changed or reputation dipped significantly
-        if (Math.abs(newRep - oldRep) > 0.05 || status !== this.reputationStates.get(agentId)?.status) {
-            await observabilityService.track({
-                type: 'REPUTATION_UPDATE' as any,
-                description: `Agent ${agentId} reputation: ${newRep.toFixed(2)} (${status})`,
-                metadata: {
-                    agentId,
-                    reputation: newRep,
-                    status,
-                    ccs,
-                    cogCost
-                }
+        if (existing.length > 0) {
+            await db.update(maturityLedger)
+                .set({
+                    successCount: success ? existing[0].successCount + 1 : existing[0].successCount,
+                    failureCount: success ? existing[0].failureCount : existing[0].failureCount + 1,
+                    lastSuccessAt: success ? new Date() : existing[0].lastSuccessAt,
+                    updatedAt: new Date()
+                })
+                .where(eq(maturityLedger.id, existing[0].id));
+        } else {
+            await db.insert(maturityLedger).values({
+                agentId,
+                taskKey,
+                successCount: success ? 1 : 0,
+                failureCount: success ? 0 : 1,
+                level: 1,
+                lastSuccessAt: success ? new Date() : null
             });
         }
+
+        // 2. Clear Redis cache for this reputation
+        await redis.del(`reputation:${agentId}`);
     }
 
     /**
-     * Apply an additional decay factor based on semantic drift.
+     * Get high-reputation agents for a specific task.
      */
-    async applyDriftDecay(agentId: string, drift: number) {
-        const state = this.reputationStates.get(agentId);
-        if (!state) return;
-
-        const decayedRep = state.reputation * (1 - (this.LAMBDA_D * drift));
-        
-        // Determine status based on decayed reputation
-        let status: 'healthy' | 'warn' | 'isolated' = 'healthy';
-        if (decayedRep < this.REPN_ISO) status = 'isolated';
-        else if (decayedRep < this.REPN_WARN) status = 'warn';
-
-        this.reputationStates.set(agentId, {
-            ...state,
-            reputation: decayedRep,
-            status,
-            lastUpdated: Date.now()
-        });
+    async getTopAgents(taskKey: string, minScore: number = 0.5) {
+        return await db.select({
+            agentId: maturityLedger.agentId,
+            level: maturityLedger.level,
+            success: maturityLedger.successCount
+        })
+        .from(maturityLedger)
+        .where(sql`${maturityLedger.taskKey} = ${taskKey} AND ${maturityLedger.level} >= 1`)
+        .orderBy(maturityLedger.level, maturityLedger.successCount)
+        .limit(5);
     }
 
-    /**
-     * Get behavioral stats for an agent.
-     */
-    getStats(agentId: string): AgentStats {
-        return this.agentStats.get(agentId) ?? this.getDefaultStats();
-    }
+    async trackStat(agentId: string, stat: keyof ReputationStats | string, amount: number = 1): Promise<void> {
+        const key = `reputation:stats:${agentId}`;
+        const numericAmount = Number.isFinite(amount) ? amount : 1;
+        this.mergeStats(agentId, {
+            [stat]: ((this.statsCache.get(agentId) || emptyStats()) as any)[stat] + numericAmount
+        } as Partial<ReputationStats>);
 
-    getReputation(agentId: string): ReputationState {
-        return this.reputationStates.get(agentId) ?? {
-            reputation: 1.0,
-            status: 'healthy',
-            lastUpdated: Date.now()
-        };
-    }
-
-    /**
-     * Get the collective reputation/health of a whole sector.
-     * Useful for detecting systemic drift in Phase 16.
-     */
-    getSectorReputation(sector: string): { average: number; agentCount: number; status: 'healthy' | 'degrading' | 'critical' } {
-        const sectorPrefix = sector.toLowerCase();
-        let total = 0;
-        let count = 0;
-
-        // Note: For this to work accurately, agents must be tagged with their sector.
-        // For MVP: We assume agents used in verify_{sector}.ts contain the sector name.
-        // In prod: We would maintain an agent-to-sector mapping.
-        for (const [agentId, state] of this.reputationStates.entries()) {
-            if (agentId.toLowerCase().includes(sectorPrefix)) {
-                total += state.reputation;
-                count++;
-            }
+        if (Number.isInteger(numericAmount)) {
+            await redis.hincrby(key, stat, numericAmount);
+            return;
         }
 
-        const average = count > 0 ? total / count : 1.0;
-        let status: 'healthy' | 'degrading' | 'critical' = 'healthy';
-        if (average < 0.6) status = 'critical';
-        else if (average < 0.8) status = 'degrading';
-
-        return { average, agentCount: count, status };
+        const current = Number(await redis.hget(key, stat) || 0);
+        await redis.hset(key, stat, String(current + numericAmount));
     }
 
-    private getDefaultStats(): AgentStats {
+    async getStats(agentId: string): Promise<ReputationStats> {
+        if (this.statsCache.has(agentId)) {
+            return this.statsCache.get(agentId)!;
+        }
+        const raw = await redis.hgetall(`reputation:stats:${agentId}`);
+        const stats = {
+            totalTasks: Number(raw.totalTasks || 0),
+            cognitiveErrors: Number(raw.cognitiveErrors || 0),
+            humanOverrides: Number(raw.humanOverrides || 0),
+            chaosEpisodes: Number(raw.chaosEpisodes || 0),
+            chaosSuccesses: Number(raw.chaosSuccesses || 0),
+            recoveryTimeMs: Number(raw.recoveryTimeMs || 0)
+        };
+        this.statsCache.set(agentId, stats);
+        return stats;
+    }
+
+    async applyDriftDecay(agentId: string, driftScore: number): Promise<ReputationMarker> {
+        if (driftScore > 0) {
+            await this.trackStat(agentId, 'cognitiveErrors', Math.max(1, Math.round(driftScore * 10)));
+        }
+        return this.getReputation(agentId);
+    }
+
+    getSectorReputation(sector: string): { reputation: number; average: number; status: SectorHealthStatus; agentCount: number } {
+        const normalizedSector = sector.toLowerCase();
+        let total = 0;
+        let agentCount = 0;
+
+        for (const [agentId, stats] of this.statsCache.entries()) {
+            if (this.inferSector(agentId) !== normalizedSector) continue;
+            total += this.computeStatsReputation(stats);
+            agentCount += 1;
+        }
+
+        if (agentCount === 0) {
+            return {
+                reputation: 0.7,
+                average: 0.7,
+                status: 'healthy',
+                agentCount: 0,
+            };
+        }
+
+        const average = clamp01(total / agentCount);
+        const status: SectorHealthStatus =
+            average < 0.45 ? 'critical' :
+            average < 0.7 ? 'degrading' :
+            'healthy';
+
         return {
-            totalTasks: 0,
-            cognitiveErrors: 0,
-            humanOverrides: 0,
-            downstreamDamage: 0,
-            chaosEpisodes: 0,
-            chaosSuccesses: 0,
-            recoveryTimeMs: 0,
-            highStakesTasks: 0
+            reputation: average,
+            average,
+            status,
+            agentCount,
         };
     }
 }

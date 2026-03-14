@@ -11,21 +11,75 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema.js';
 
-const connectionString = process.env.DATABASE_URL;
+let _client;
+let _db;
 
-export let client;
-export let db;
+function shouldUseMockDb() {
+    return process.env.NODE_ENV === 'test' || !!process.env.VITEST || process.env.AGENTCACHE_FORCE_MOCK_DB === '1';
+}
 
-// IMPORTANT:
-// - Do NOT default to localhost in serverless (Vercel) or production.
-// - If DATABASE_URL is missing, use a safe mock so APIs can still respond quickly.
-if (!connectionString) {
-    // In-Memory Store for Mock Data
+/**
+ * Lazy-initialization of the database connection.
+ * Ensures process.env is populated (e.g. by dotenv) before connecting.
+ */
+function getDb() {
+    if (_db) return _db;
+    
+    const connectionString = process.env.DATABASE_URL;
+
+    if (shouldUseMockDb() || !connectionString) {
+        console.warn("[DB] ⚠️ Using internal mock DB.");
+        _db = createMockDb();
+        return _db;
+    }
+
+    console.log('[DB] 🔌 Connecting to Postgres:', connectionString.substring(0, 15) + '...');
+
+    try {
+        if (connectionString === 'mock' || connectionString.includes('bogus')) {
+            throw new Error('Using Mock DB');
+        }
+        _client = postgres(connectionString, {
+            prepare: false,
+            ssl: 'require',
+            connect_timeout: 5,
+            idle_timeout: 5,
+            max: 10
+        });
+        _db = drizzle(_client, { schema });
+    } catch (error) {
+        console.warn("[DB] ⚠️ Connection failed or Mock requested. Falling back to internal mock engine.", error.message);
+        _db = createMockDb();
+    }
+    return _db;
+}
+
+/** @type {any} */
+export const db = new Proxy({}, {
+    get: (target, prop) => {
+        const d = getDb();
+        if (prop === '__isMock') {
+            return !!d.__isMock;
+        }
+        const val = d[prop];
+        if (typeof val === 'function') {
+            return val.bind(d);
+        }
+        return val;
+    }
+});
+
+/**
+ * Creates a chainable mock DB for environments without a real connection.
+ */
+function createMockDb() {
     const mockStore = {
         marketplace_listings: [],
         ledger_accounts: [],
         ledger_transactions: [],
         marketplace_orders: [],
+        agent_tool_access: [],
+        agent_suggestions: [],
         agents: [],
         users: [],
         decisions: [],
@@ -34,7 +88,6 @@ if (!connectionString) {
         hub_agent_api_keys: [],
         hub_focus_group_responses: [],
         hub_agent_badges: [],
-        service_requests: [],
         service_requests: [],
         needs_signals: [],
         bancache: [],
@@ -48,261 +101,152 @@ if (!connectionString) {
         maturity_ledger: []
     };
 
-    function findAccount(ownerId) {
-        const accounts = mockStore.ledger_accounts || [];
-        return accounts.find(a => a.owner_id === ownerId || a.ownerId === ownerId);
+    const toCamelCase = (value) => value.replace(/_([a-z])/g, (_, char) => char.toUpperCase());
+    const getTableName = (tableObj) => tableObj?.[Symbol.for('drizzle:Name')] || tableObj?.u_ || tableObj?.[Symbol.for('drizzle:BaseName')] || 'unknown';
+    const getColumnValue = (row, columnName) => row?.[columnName] ?? row?.[toCamelCase(columnName)];
+    const setColumnValue = (row, columnName, value) => {
+        const camelKey = toCamelCase(columnName);
+        if (columnName in row) row[columnName] = value;
+        else row[camelKey] = value;
+    };
+
+    function projectRow(row, selectShape) {
+        if (!selectShape) return row;
+
+        const projected = {};
+        for (const [alias, column] of Object.entries(selectShape)) {
+            const columnName = column?.name || alias;
+            projected[alias] = getColumnValue(row, columnName);
+        }
+        return projected;
     }
 
-    // Chainable Mock Helper with State
-    const createChainableMock = (tableName = null, operation = 'select') => {
+    function matchesWhere(row, expr) {
+        if (!expr?.queryChunks) return true;
+
+        const [, column, operatorChunk, rawValue] = expr.queryChunks;
+        const columnName = column?.name;
+        const operator = operatorChunk?.value?.[0]?.trim();
+        const rowValue = getColumnValue(row, columnName);
+        const comparisonValue = rawValue?.value ?? rawValue;
+
+        if (operator === '=') {
+            return rowValue === comparisonValue;
+        }
+
+        if (operator === 'IN') {
+            return Array.isArray(comparisonValue) ? comparisonValue.includes(rowValue) : false;
+        }
+
+        return true;
+    }
+
+    const createChainableMock = (tableName = null, mode = 'select', selectShape = null) => {
         let currentTable = tableName;
-        // Correctly initialize with table data if table is known
-        let queryImpl = async () => {
-            if (currentTable && mockStore[currentTable]) {
-                return mockStore[currentTable];
+        let filters = [];
+        let maxRows = null;
+        let updateValues = null;
+        let insertedRows = [];
+
+        const execute = async () => {
+            const tableRows = currentTable && mockStore[currentTable] ? mockStore[currentTable] : [];
+            const filteredRows = tableRows.filter((row) => filters.every((expr) => matchesWhere(row, expr)));
+
+            if (mode === 'select') {
+                const rows = filteredRows.slice(0, maxRows ?? filteredRows.length);
+                return rows.map((row) => projectRow(row, selectShape));
             }
+
+            if (mode === 'insert') {
+                return insertedRows;
+            }
+
+            if (mode === 'delete') {
+                if (filters.length === 0) {
+                    mockStore[currentTable] = [];
+                } else {
+                    mockStore[currentTable] = tableRows.filter((row) => !filters.every((expr) => matchesWhere(row, expr)));
+                }
+                return [];
+            }
+
+            if (mode === 'update') {
+                for (const row of filteredRows) {
+                    for (const [key, value] of Object.entries(updateValues || {})) {
+                        setColumnValue(row, key, value);
+                    }
+                }
+                return filteredRows;
+            }
+
             return [];
         };
 
         const mock = {
             from: (tableObj) => {
-                currentTable = tableObj[Symbol.for('drizzle:Name')] || tableObj.u_;
-                if (!currentTable && tableObj === schema.marketplaceListings) currentTable = 'marketplace_listings';
-                if (!currentTable && tableObj === schema.ledgerAccounts) currentTable = 'ledger_accounts';
-                if (!currentTable && tableObj === schema.ledgerTransactions) currentTable = 'ledger_transactions';
-                if (!currentTable && tableObj === schema.marketplaceOrders) currentTable = 'marketplace_orders';
-                if (!currentTable && tableObj === schema.agents) currentTable = 'agents';
-                if (!currentTable && tableObj === schema.hubAgents) currentTable = 'hub_agents';
-                if (!currentTable && tableObj === schema.hubAgentApiKeys) currentTable = 'hub_agent_api_keys';
-                if (!currentTable && tableObj === schema.hubFocusGroupResponses) currentTable = 'hub_focus_group_responses';
-                if (!currentTable && tableObj === schema.hubAgentBadges) currentTable = 'hub_agent_badges';
-                if (!currentTable && tableObj === schema.serviceRequests) currentTable = 'service_requests';
-                if (!currentTable && tableObj === schema.needsSignals) currentTable = 'needs_signals';
-
-                if (!currentTable && tableObj === schema.users) currentTable = 'users';
-                if (!currentTable && tableObj === schema.decisions) currentTable = 'decisions';
-                if (!currentTable && tableObj === schema.creditUsageDaily) currentTable = 'credit_usage_daily';
-                if (!currentTable && tableObj === schema.bancache) currentTable = 'bancache';
-                if (!currentTable && tableObj === schema.bannerAnalysis) currentTable = 'banner_analysis';
-                if (!currentTable && tableObj === schema.creditTransactions) currentTable = 'credit_transactions';
-                if (!currentTable && tableObj === schema.periscopeRuns) currentTable = 'periscope_runs';
-                if (!currentTable && tableObj === schema.periscopeSteps) currentTable = 'periscope_steps';
-                if (!currentTable && tableObj === schema.periscopeActions) currentTable = 'periscope_actions';
-                if (!currentTable && tableObj === schema.periscopePathStats) currentTable = 'periscope_path_stats';
-                if (!currentTable && tableObj === schema.maturityLedger) currentTable = 'maturity_ledger';
-
-                if (currentTable) {
-                    queryImpl = async () => {
-                        const data = mockStore[currentTable] || [];
-                        // Simple selects return flattened objects in Drizzle unless joins are used
-                        return data;
-                    };
-                }
-
+                currentTable = getTableName(tableObj);
                 return mock;
             },
-            leftJoin: () => mock,
-            innerJoin: () => mock,
-            where: (condition) => {
-                const oldQuery = queryImpl;
-                queryImpl = async () => {
-                    const data = await oldQuery();
-                    if (!condition) return data;
-
-                    let targetValue = condition.value !== undefined ? condition.value : condition.right;
-                    let targetKey = condition.key?.name || (condition.left?.name);
-
-                    if (targetKey && targetValue !== undefined) {
-                        return data.filter(row => {
-                            if (row[targetKey] === targetValue) return true;
-                            const camelKey = targetKey.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
-                            if (row[camelKey] === targetValue) return true;
-                            return false;
-                        });
-                    }
-                    return data;
-                };
+            where: (expr) => {
+                filters.push(expr);
                 return mock;
             },
-            limit: () => mock,
+            limit: (count) => {
+                maxRows = count;
+                return mock;
+            },
             orderBy: () => mock,
+            innerJoin: () => mock,
+            leftJoin: () => mock,
             for: () => mock,
             values: (data) => {
                 if (currentTable && mockStore[currentTable]) {
                     const entries = Array.isArray(data) ? data : [data];
                     entries.forEach(e => {
-                        if (!e.id) e.id = Math.random().toString(36).substring(7);
-                        if (currentTable === 'ledger_accounts' && (e.ownerId || e.owner_id)) {
-                            const oid = e.ownerId || e.owner_id;
-                            const existing = findAccount(oid);
-                            if (existing) {
-                                Object.assign(existing, e); // Merge!
-                                return;
-                            }
-                        }
-                        mockStore[currentTable].push(e);
+                        const entry = { ...e };
+                        if (!entry.id) entry.id = Math.random().toString(36).substring(7);
+                        mockStore[currentTable].push(entry);
+                        insertedRows.push(entry);
                     });
-                    queryImpl = async () => entries;
                 }
                 return mock;
             },
             set: (data) => {
-                const innerQuery = queryImpl;
-                queryImpl = async () => {
-                    const rows = await innerQuery();
-                    rows.forEach(row => {
-                        Object.assign(row, data);
-                        // Synchronize ownerId to owner_id if needed
-                        if (row.ownerId && !row.owner_id) row.owner_id = row.ownerId;
-                    });
-                    return rows;
-                };
+                updateValues = data;
                 return mock;
             },
             returning: () => {
                 return {
                     then: (resolve) => {
-                        queryImpl().then(resolve);
+                        execute().then(resolve);
                     }
                 };
             },
-            onConflictDoNothing: () => mock,
-            onConflictDoUpdate: () => mock,
             then: (resolve) => {
-                queryImpl().then(resolve);
+                execute().then(resolve);
             }
         };
         return mock;
     };
 
-    db = {
-        select: () => createChainableMock(null, 'select'),
+    const api = {
+        __isMock: true,
+        select: (fields) => createChainableMock(null, 'select', fields || null),
         insert: (tableObj) => {
-            let tName = '';
-            if (tableObj === schema.ledgerAccounts) tName = 'ledger_accounts';
-            if (tableObj === schema.ledgerTransactions) tName = 'ledger_transactions';
-            if (tableObj === schema.bancache) tName = 'bancache';
-            if (tableObj === schema.bannerAnalysis) tName = 'banner_analysis';
-            if (tableObj === schema.creditTransactions) tName = 'credit_transactions';
-            if (tableObj === schema.periscopeRuns) tName = 'periscope_runs';
-            if (tableObj === schema.periscopeSteps) tName = 'periscope_steps';
-            if (tableObj === schema.periscopeActions) tName = 'periscope_actions';
-            if (tableObj === schema.periscopePathStats) tName = 'periscope_path_stats';
-            if (tableObj === schema.patterns) tName = 'patterns';
-            if (tableObj === schema.agentAlerts) tName = 'agent_alerts';
-            if (tableObj === schema.maturityLedger) tName = 'maturity_ledger';
+            const tName = getTableName(tableObj);
             return createChainableMock(tName, 'insert');
         },
         update: (tableObj) => {
-            let tName = '';
-            if (tableObj === schema.ledgerAccounts) tName = 'ledger_accounts';
-            if (tableObj === schema.patterns) tName = 'patterns';
-            if (tableObj === schema.maturityLedger) tName = 'maturity_ledger';
+            const tName = getTableName(tableObj);
             return createChainableMock(tName, 'update');
         },
         delete: (tableObj) => {
-            let tName = '';
-            if (tableObj === schema.ledgerAccounts) tName = 'ledger_accounts';
-            if (tableObj === schema.patterns) tName = 'patterns';
+            const tName = getTableName(tableObj);
             return createChainableMock(tName, 'delete');
         },
-        execute: async (sqlChunk) => {
-            const flatten = (obj) => {
-                if (obj === null || obj === undefined) return '';
-                if (typeof obj === 'string') return obj;
-                if (typeof obj === 'number') return String(obj);
-                if (Array.isArray(obj)) return obj.map(flatten).join(' ');
-
-                // Drizzle internals based on logs:
-                // queryChunks is often an array, sometimes strings, sometimes objects with .value array
-                if (obj.queryChunks) return flatten(obj.queryChunks);
-                if (obj.value) return flatten(obj.value);
-                if (obj.chunks) return flatten(obj.chunks);
-                if (obj.sql) return flatten(obj.sql);
-
-                return '';
-            };
-
-            const sqlStr = flatten(sqlChunk);
-            const collectValues = (obj) => {
-                if (obj === null || obj === undefined) return [];
-                if (typeof obj === 'string' || typeof obj === 'number') return [obj];
-                if (Array.isArray(obj)) return obj.flatMap(collectValues);
-                if (obj.queryChunks) return collectValues(obj.queryChunks);
-                if (obj.params) return collectValues(obj.params);
-                if (obj.value !== undefined) return collectValues(obj.value);
-                return [];
-            };
-            const allValues = collectValues(sqlChunk);
-
-            // Debug: uncomment for SQL trace
-            // console.log(`[MockDB Execute] Flattened SQL: ${sqlStr}`);
-
-            // Raw Deduction/Addition Logic
-            if (sqlStr.includes('balance -')) {
-                const vals = collectValues(sqlChunk);
-                const amount = vals.find(v => typeof v === 'number') || 0;
-
-                // Try to find the UUID in params first, then fallback to regex
-                let oId = vals.find(v => typeof v === 'string' && /^[0-9a-f-]{36}$/i.test(v));
-                if (!oId) {
-                    const idMatch = sqlStr.match(/owner_id\s*=\s*(['"])?([a-zA-Z0-9-]{36})\1?/i);
-                    oId = idMatch ? idMatch[2] : null;
-                }
-
-                const acc = findAccount(oId);
-                // console.log(`[MockDB Execute] Deduction | Acc Found: ${!!acc} | Amount: ${amount} | ID: ${oId}`);
-                if (acc) {
-                    acc.balance = (Number(acc.balance) || 0) - amount;
-                }
-            } else if (sqlStr.includes('balance +')) {
-                const amount = Number(allValues.find(v => typeof v === 'number' && v > 0) || 0);
-                const oId = allValues.find(v => typeof v === 'string' && v.length > 20 && v.includes('-')) || '';
-                const acc = findAccount(oId);
-                if (acc) {
-                    acc.balance = (Number(acc.balance) || 0) + amount;
-                }
-            }
-            return [];
-        },
-        transaction: async (cb) => cb(db),
-        query: {
-            marketplaceListings: {
-                findFirst: () => mockStore.marketplace_listings[0],
-                findMany: () => mockStore.marketplace_listings,
-            }
-        }
+        execute: async () => [],
+        transaction: async (cb) => cb(api),
     };
-} else {
-    try {
-        // If DATABASE_URL is explicitly set to mock or if we're in a build environment without a real DB
-        if (!connectionString || connectionString === 'mock' || connectionString.includes('bogus')) {
-            throw new Error('Using Mock DB');
-        }
-        client = postgres(connectionString, {
-            prepare: false,
-            ssl: 'require',
-            connect_timeout: 5,
-            idle_timeout: 5,
-            max: 10
-        });
-        db = drizzle(client, { schema });
-    } catch (error) {
-        console.warn("[DB] ⚠️ Connection failed or Mock requested. Falling back to internal mock engine.", error.message);
-        db = {
-            select: () => ({ from: (table) => {
-                const tableName = table?._?.name?.name || table?.[Object.getOwnPropertySymbols(table)[0]] || 'unknown';
-                return createChainableMock(mockStore[tableName] || [], 'select', tableName);
-            }}),
-            insert: (table) => ({ values: (vals) => {
-                const tableName = table?._?.name?.name || 'unknown';
-                if (mockStore[tableName]) mockStore[tableName].push(vals);
-                return { returning: (fields) => [ { id: 'mock-id', ...vals } ] };
-            }}),
-            update: () => ({ set: () => ({ where: () => [] }) }),
-            delete: () => ({ where: () => ({ returning: () => [] }) }),
-            execute: () => ([]),
-            transaction: async (cb) => cb(db),
-        };
-    }
+
+    return api;
 }
