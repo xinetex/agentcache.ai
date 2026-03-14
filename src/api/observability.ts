@@ -15,6 +15,7 @@ import { memoryFabricBillingService } from '../services/MemoryFabricBillingServi
 import { swarmService } from '../services/SwarmService.js';
 import { jettySpeedDb } from '../services/jettySpeedDb.js';
 import { statsService } from '../services/StatsService.js';
+import { collectiveCortex } from '../services/CollectiveCortex.js';
 
 const router = new Hono();
 
@@ -83,13 +84,17 @@ router.get('/stream', async (c) => {
     c.header('Cache-Control', 'no-cache');
     c.header('Connection', 'keep-alive');
 
-    return c.stream(async (stream) => {
-        const sub = redis.duplicate();
-        await sub.subscribe('agentcache:telemetry');
+    return (c as any).stream(async (stream: any) => {
+        const sub = typeof (redis as any).duplicate === 'function' ? (redis as any).duplicate() : redis;
+        if (typeof (sub as any).subscribe === 'function') {
+            await (sub as any).subscribe('agentcache:telemetry');
+        }
 
-        sub.on('message', (channel, message) => {
-            stream.write(`data: ${message}\n\n`);
-        });
+        if (typeof (sub as any).on === 'function') {
+            (sub as any).on('message', (_channel: string, message: string) => {
+                stream.write(`data: ${message}\n\n`);
+            });
+        }
 
         // Keep-alive every 30s
         const keepAlive = setInterval(() => {
@@ -98,8 +103,8 @@ router.get('/stream', async (c) => {
 
         c.req.raw.signal.addEventListener('abort', () => {
             clearInterval(keepAlive);
-            sub.unsubscribe();
-            sub.quit();
+            if (typeof (sub as any).unsubscribe === 'function') (sub as any).unsubscribe();
+            if (typeof (sub as any).quit === 'function') (sub as any).quit();
         });
 
         // Initial burst of history
@@ -197,6 +202,19 @@ router.get('/telemetry', async (c) => {
             system_load: 0.42, // Simulated system load for UI
             timestamp: Date.now()
         });
+    } catch (err: any) {
+        return c.json({ error: err.message }, 500);
+    }
+});
+
+/**
+ * GET /api/observability/sessions
+ * Returns active Joint Objective Sessions (Collective Cortex).
+ */
+router.get('/sessions', async (c) => {
+    try {
+        const sessions = await collectiveCortex.listActiveSessions();
+        return c.json({ sessions });
     } catch (err: any) {
         return c.json({ error: err.message }, 500);
     }

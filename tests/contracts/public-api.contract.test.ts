@@ -273,6 +273,30 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(typeof stats.payload.fabric.accounting.totalCreditsEstimated).toBe('number');
   }, 20000);
 
+  it('exposes joint objective sessions without colliding with legacy session history keys', async () => {
+    const { redis } = await import('../../src/lib/redis.js');
+    const { collectiveCortex } = await import('../../src/services/CollectiveCortex.js');
+
+    await redis.set(`session:${unique('legacy')}:history`, JSON.stringify([{ event: 'history-only' }]));
+
+    const session = await collectiveCortex.initiateSession(
+      `Collective contract ${Date.now()}`,
+      ['agent-finance', 'agent-legal']
+    );
+
+    const listed = await request('/api/observability/sessions', undefined, 'GET');
+    expect(listed.response.status).toBe(200);
+    expect(Array.isArray(listed.payload.sessions)).toBe(true);
+
+    const stored = listed.payload.sessions.find((candidate: any) => candidate.id === session.id);
+    expect(stored).toBeDefined();
+    expect(stored.objective).toContain('Collective contract');
+    expect(stored.participants).toEqual(['agent-finance', 'agent-legal']);
+    expect(
+      listed.payload.sessions.some((candidate: any) => typeof candidate.id === 'string' && candidate.id.includes(':history'))
+    ).toBe(false);
+  }, 10000);
+
   it('refuses badge issuance when auth cannot resolve a principal', async () => {
     const issued = await request('/api/molt/issue-badge');
 
