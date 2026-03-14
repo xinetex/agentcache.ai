@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { TrustCenter } from '../infrastructure/TrustCenter.js';
 import { semanticCacheService } from '../services/SemanticCacheService.js';
 import { memoryFabricAnalyticsService } from '../services/MemoryFabricAnalyticsService.js';
+import { memoryFabricBillingService } from '../services/MemoryFabricBillingService.js';
 import { browserProofService } from '../services/BrowserProofService.js';
 import { buildSignedOntologyProvenance } from '../services/OntologyProvenanceService.js';
 import { memoryFabricPolicyService } from '../services/MemoryFabricPolicyService.js';
@@ -276,6 +277,15 @@ internalRouter.post('/cache/get', async (c) => {
             promptText: extractPromptText(parsed.data.messages),
             responseText: typeof result.response === 'string' ? result.response : undefined,
         }).catch((error) => console.warn('[MemoryFabricAnalytics] Failed to record provider read:', error));
+        const billing = await memoryFabricBillingService.recordUsage({
+            accountId: 'provider:maxxeval',
+            policy,
+            operation: 'read',
+            hit: result.hit,
+        }).catch((error) => {
+            console.warn('[MemoryFabricBilling] Failed to record provider read:', error);
+            return null;
+        });
         return c.json({
             requestId: parsed.requestId,
             sku: parsed.sku,
@@ -283,6 +293,7 @@ internalRouter.post('/cache/get', async (c) => {
             operation: 'cache/get',
             generatedAt: new Date().toISOString(),
             policy,
+            billing,
             ontology: buildSignedOntologyProvenance({
                 requestId: parsed.requestId,
                 sku: parsed.sku,
@@ -327,6 +338,14 @@ internalRouter.post('/cache/set', async (c) => {
                 ? parsed.data.response
                 : JSON.stringify(parsed.data.response),
         }).catch((error) => console.warn('[MemoryFabricAnalytics] Failed to record provider write:', error));
+        const billing = await memoryFabricBillingService.recordUsage({
+            accountId: 'provider:maxxeval',
+            policy,
+            operation: 'write',
+        }).catch((error) => {
+            console.warn('[MemoryFabricBilling] Failed to record provider write:', error);
+            return null;
+        });
 
         return c.json({
             requestId: parsed.requestId,
@@ -335,6 +354,7 @@ internalRouter.post('/cache/set', async (c) => {
             operation: 'cache/set',
             generatedAt: new Date().toISOString(),
             policy,
+            billing,
             ontology: buildSignedOntologyProvenance({
                 requestId: parsed.requestId,
                 sku: parsed.sku,
@@ -374,6 +394,14 @@ internalRouter.post('/browser-proof', async (c) => {
             promptText: parsed.data.url,
             responseText: result.snapshot?.excerpt || undefined,
         }).catch((error) => console.warn('[MemoryFabricAnalytics] Failed to record browser proof:', error));
+        const billing = await memoryFabricBillingService.recordUsage({
+            accountId: 'provider:maxxeval',
+            policy,
+            operation: 'browser_proof',
+        }).catch((error) => {
+            console.warn('[MemoryFabricBilling] Failed to record browser proof:', error);
+            return null;
+        });
         return c.json({
             requestId: parsed.requestId,
             sku: parsed.sku,
@@ -381,6 +409,7 @@ internalRouter.post('/browser-proof', async (c) => {
             operation: 'browser-proof',
             generatedAt: new Date().toISOString(),
             policy,
+            billing,
             ontology: buildSignedOntologyProvenance({
                 requestId: parsed.requestId,
                 sku: parsed.sku,

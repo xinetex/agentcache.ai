@@ -10,6 +10,8 @@ import { Hono } from 'hono';
 import { redis } from '../lib/redis.js';
 import { observabilityService } from '../services/ObservabilityService.js';
 import { agentOrchestrator } from '../services/AgentOrchestrator.js';
+import { memoryFabricAnalyticsService } from '../services/MemoryFabricAnalyticsService.js';
+import { memoryFabricBillingService } from '../services/MemoryFabricBillingService.js';
 import { swarmService } from '../services/SwarmService.js';
 import { jettySpeedDb } from '../services/jettySpeedDb.js';
 import { statsService } from '../services/StatsService.js';
@@ -22,7 +24,11 @@ const router = new Hono();
  */
 router.get('/stats', async (c) => {
     try {
-        const stats = await statsService.getGlobalStats();
+        const [stats, fabricAnalytics, fabricAccounting] = await Promise.all([
+            statsService.getGlobalStats(),
+            memoryFabricAnalyticsService.getSnapshot(),
+            memoryFabricBillingService.getSummary(),
+        ]);
         const history = await observabilityService.getHistory(10);
         const { moltAlphaService } = await import('../services/MoltAlphaService.js');
         const moltStats = await moltAlphaService.getStats();
@@ -38,6 +44,10 @@ router.get('/stats', async (c) => {
         
         return c.json({
             ...stats,
+            fabric: {
+                analytics: fabricAnalytics,
+                accounting: fabricAccounting,
+            },
             moltbook: moltStats,
             liquidity: liquidityStats,
             eventCounts,

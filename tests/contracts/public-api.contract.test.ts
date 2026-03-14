@@ -168,6 +168,7 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(financeWrite.payload.success).toBe(true);
     expect(financeWrite.payload.policy.sectorId).toBe('finance');
     expect(financeWrite.payload.policy.effectiveTtlSeconds).toBe(300);
+    expect(financeWrite.payload.billing.creditsEstimated).toBeGreaterThan(0);
 
     const financeHit = await request('/api/cache/get', {
       ...body,
@@ -177,6 +178,7 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(financeHit.response.status).toBe(200);
     expect(financeHit.payload.hit).toBe(true);
     expect(financeHit.payload.response).toBe('finance-cached-response');
+    expect(financeHit.payload.billing.creditsEstimated).toBeGreaterThan(0);
 
     const healthcareMiss = await request('/api/cache/get', {
       ...body,
@@ -195,6 +197,8 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(financeAnalytics.hits).toBeGreaterThanOrEqual(1);
     expect(financeAnalytics.ttlClampCount).toBeGreaterThanOrEqual(1);
     expect(financeAnalytics.estimatedUsdSaved).toBeGreaterThan(0);
+    expect(roi.payload.accounting.totalCreditsEstimated).toBeGreaterThan(0);
+    expect(roi.payload.accounting.bySku.some((item: any) => item.sku === 'finance-memory-fabric')).toBe(true);
   }, 10000);
 
   it('memory, cognitive, and stats endpoints return observable cognitive state', async () => {
@@ -265,6 +269,7 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(stats.payload.cognitive.predictive_synapse.status).toBe('active');
     expect(typeof stats.payload.cognitive.metrics.hits).toBe('number');
     expect(stats.payload.fabric).toBeDefined();
-    expect(typeof stats.payload.fabric.summary.totalOperations).toBe('number');
+    expect(typeof stats.payload.fabric.analytics.summary.totalOperations).toBe('number');
+    expect(typeof stats.payload.fabric.accounting.totalCreditsEstimated).toBe('number');
   }, 20000);
 });

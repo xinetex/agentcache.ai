@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NeuralGlassLayout } from './NeuralGlassLayout.js';
 import { MetricFlux } from './MetricFlux.js';
 import { MoltbookGrowthPanel } from './MoltbookGrowthPanel.js';
-import { B2BMarketPanel } from './B2BMarketPanel.js';
+import { MemoryFabricROIPanel } from './MemoryFabricROIPanel.js';
 import { RevenueMonitor } from './RevenueMonitor.js';
 import AgentLeaderboard from './AgentLeaderboard.js';
 import { CognitiveMap } from './CognitiveMap.js';
@@ -67,9 +67,10 @@ export default function IndustrialDashboard() {
                 </div>
 
                 {/* Middle row: Substrate Health & Market */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 shrink-0">
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 shrink-0">
                     <MoltbookGrowthPanel />
                     <ComplianceHealthMonitor />
+                    <MemoryFabricROIPanel fabric={stats?.fabric} />
                     <RevenueMonitor />
                 </div>
 

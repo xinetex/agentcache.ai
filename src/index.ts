@@ -33,6 +33,7 @@ import { upsertMemory, queryMemory } from './lib/vector.js';
 import { savingsTracker } from './lib/llm/savings-tracker.js';
 import { tokenBudget } from './lib/llm/token-budget.js';
 import { memoryFabricAnalyticsService } from './services/MemoryFabricAnalyticsService.js';
+import { memoryFabricBillingService } from './services/MemoryFabricBillingService.js';
 import * as bcrypt from 'bcryptjs';
 import { neon } from '@neondatabase/serverless';
 
@@ -53,6 +54,7 @@ try {
 
 // Type definitions for Hono variables
 type Variables = {
+  apiKey?: string;
   tier: string;
   usage: any;
   tierFeatures: any;
@@ -827,6 +829,12 @@ app.get('/api/stats', async (c) => {
   const tier = c.get('tier') || 'free';
   const tierFeatures = c.get('tierFeatures');
 
+  const [cognitive, fabricAnalytics, fabricAccounting] = await Promise.all([
+    cognitiveMemory.getStatus(),
+    memoryFabricAnalyticsService.getSnapshot(),
+    memoryFabricBillingService.getSummary({ apiKey: c.get('apiKey') }),
+  ]);
+
   return c.json({
     tier,
     monthlyQuota: usage.quota === -1 ? 'unlimited' : usage.quota,
@@ -835,8 +843,11 @@ app.get('/api/stats', async (c) => {
     percentUsed: usage.quota === -1 ? 0 : Math.round((usage.used / usage.quota) * 100),
     resetDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString(),
     features: tierFeatures,
-    cognitive: await cognitiveMemory.getStatus(),
-    fabric: await memoryFabricAnalyticsService.getSnapshot(),
+    cognitive,
+    fabric: {
+      analytics: fabricAnalytics,
+      accounting: fabricAccounting,
+    },
   });
 });
 
