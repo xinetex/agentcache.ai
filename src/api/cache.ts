@@ -13,6 +13,7 @@ import { semanticCacheService } from '../services/SemanticCacheService.js';
 import { resonanceService } from '../services/ResonanceService.js';
 import { listFabricSkus } from '../config/fabricSkus.js';
 import { authenticateApiKey } from '../middleware/auth.js';
+import { memoryFabricAnalyticsService } from '../services/MemoryFabricAnalyticsService.js';
 import { memoryFabricPolicyService } from '../services/MemoryFabricPolicyService.js';
 
 type Variables = {
@@ -30,6 +31,12 @@ function resolveMemoryPolicy(c: any, body: Record<string, any>) {
         requestedTtlSeconds: body.ttl,
         tierId: c.get('tier') || 'free',
     });
+}
+
+function extractPromptText(messages: any[]): string {
+    return messages
+        .map((message) => (typeof message?.content === 'string' ? message.content : JSON.stringify(message?.content ?? '')))
+        .join('\n');
 }
 
 cacheRouter.get('/fabric/skus', (c) => {
@@ -50,6 +57,23 @@ cacheRouter.post('/fabric/profile', async (c) => {
         return c.json({
             success: true,
             policy,
+        });
+    } catch (err: any) {
+        return c.json({ error: err.message }, 500);
+    }
+});
+
+cacheRouter.get('/fabric/roi', async (c) => {
+    const authError = await authenticateApiKey(c);
+    if (authError) return authError;
+
+    try {
+        const sku = c.req.query('sku');
+        const sectorId = c.req.query('sector');
+        const snapshot = await memoryFabricAnalyticsService.getSnapshot({ sku, sectorId });
+        return c.json({
+            success: true,
+            analytics: snapshot,
         });
     } catch (err: any) {
         return c.json({ error: err.message }, 500);
@@ -98,6 +122,13 @@ cacheRouter.post('/check', async (c) => {
             target_ip,
             target_banner,
         });
+        await memoryFabricAnalyticsService.recordOperation({
+            policy,
+            operation: 'read',
+            hit: result.hit,
+            promptText: extractPromptText(messages),
+            responseText: typeof result.response === 'string' ? result.response : undefined,
+        }).catch((error) => console.warn('[MemoryFabricAnalytics] Failed to record read:', error));
         return c.json({ ...result, policy });
     } catch (err: any) {
         return c.json({ error: err.message }, 500);
@@ -137,6 +168,12 @@ cacheRouter.post('/set', async (c) => {
             sessionId,
             turnIndex
         });
+        await memoryFabricAnalyticsService.recordOperation({
+            policy,
+            operation: 'write',
+            promptText: extractPromptText(messages),
+            responseText: typeof response === 'string' ? response : JSON.stringify(response),
+        }).catch((error) => console.warn('[MemoryFabricAnalytics] Failed to record write:', error));
 
         return c.json({
             success: true,
@@ -237,6 +274,13 @@ cacheRouter.post('/get', async (c) => {
             temperature,
             sector: policy.sectorId,
         });
+        await memoryFabricAnalyticsService.recordOperation({
+            policy,
+            operation: 'read',
+            hit: result.hit,
+            promptText: extractPromptText(messages),
+            responseText: typeof result.response === 'string' ? result.response : undefined,
+        }).catch((error) => console.warn('[MemoryFabricAnalytics] Failed to record read:', error));
         
         if (!result.hit) {
             return c.json({ ...result, policy }, 404);

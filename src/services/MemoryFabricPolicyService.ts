@@ -28,6 +28,7 @@ export interface MemoryFabricPolicy {
   eligible: boolean;
   recommendedTier: string;
   workloadProfile: FabricSkuDef['workloadProfile'];
+  ttlClamped: boolean;
   effectiveTtlSeconds: number;
   storageTier: MemoryFabricStorageTier;
   namespaceMode: 'shared' | 'private';
@@ -101,8 +102,9 @@ export class MemoryFabricPolicyService {
       tierFeatures?.privateNamespace ? 'private' : 'shared';
     const evidenceMode = resolveEvidenceMode(sectorId, sku);
     const notes: string[] = [];
+    const ttlClamped = Boolean(requestedTtlSeconds && requestedTtlSeconds > effectiveTtlSeconds);
 
-    if (requestedTtlSeconds && requestedTtlSeconds > effectiveTtlSeconds) {
+    if (ttlClamped) {
       notes.push('Requested TTL was reduced to stay within ontology freshness and plan limits.');
     }
 
@@ -128,6 +130,7 @@ export class MemoryFabricPolicyService {
       eligible,
       recommendedTier: sku.minTier,
       workloadProfile: sku.workloadProfile,
+      ttlClamped,
       effectiveTtlSeconds,
       storageTier: resolveStorageTier(effectiveTtlSeconds),
       namespaceMode,

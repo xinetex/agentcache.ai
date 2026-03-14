@@ -32,6 +32,7 @@ import { generateEmbedding } from './lib/llm/embeddings.js';
 import { upsertMemory, queryMemory } from './lib/vector.js';
 import { savingsTracker } from './lib/llm/savings-tracker.js';
 import { tokenBudget } from './lib/llm/token-budget.js';
+import { memoryFabricAnalyticsService } from './services/MemoryFabricAnalyticsService.js';
 import * as bcrypt from 'bcryptjs';
 import { neon } from '@neondatabase/serverless';
 
@@ -835,6 +836,7 @@ app.get('/api/stats', async (c) => {
     resetDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString(),
     features: tierFeatures,
     cognitive: await cognitiveMemory.getStatus(),
+    fabric: await memoryFabricAnalyticsService.getSnapshot(),
   });
 });
 

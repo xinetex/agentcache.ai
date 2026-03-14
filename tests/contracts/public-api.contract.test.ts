@@ -186,6 +186,15 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(healthcareMiss.response.status).toBe(404);
     expect(healthcareMiss.payload.hit).toBe(false);
     expect(healthcareMiss.payload.policy.sectorId).toBe('healthcare');
+
+    const roi = await request('/api/cache/fabric/roi', undefined, 'GET');
+    expect(roi.response.status).toBe(200);
+    expect(roi.payload.success).toBe(true);
+    const financeAnalytics = roi.payload.analytics.bySku.find((item: any) => item.sku === 'finance-memory-fabric');
+    expect(financeAnalytics).toBeDefined();
+    expect(financeAnalytics.hits).toBeGreaterThanOrEqual(1);
+    expect(financeAnalytics.ttlClampCount).toBeGreaterThanOrEqual(1);
+    expect(financeAnalytics.estimatedUsdSaved).toBeGreaterThan(0);
   }, 10000);
 
   it('memory, cognitive, and stats endpoints return observable cognitive state', async () => {
@@ -255,5 +264,7 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(stats.response.status).toBe(200);
     expect(stats.payload.cognitive.predictive_synapse.status).toBe('active');
     expect(typeof stats.payload.cognitive.metrics.hits).toBe('number');
+    expect(stats.payload.fabric).toBeDefined();
+    expect(typeof stats.payload.fabric.summary.totalOperations).toBe('number');
   }, 20000);
 });

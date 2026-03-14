@@ -12,6 +12,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { TrustCenter } from '../infrastructure/TrustCenter.js';
 import { semanticCacheService } from '../services/SemanticCacheService.js';
+import { memoryFabricAnalyticsService } from '../services/MemoryFabricAnalyticsService.js';
 import { browserProofService } from '../services/BrowserProofService.js';
 import { buildSignedOntologyProvenance } from '../services/OntologyProvenanceService.js';
 import { memoryFabricPolicyService } from '../services/MemoryFabricPolicyService.js';
@@ -144,6 +145,12 @@ function buildPostureSummary(trustStatus: any) {
     };
 }
 
+function extractPromptText(messages: Array<Record<string, any>>): string {
+    return messages
+        .map((message) => (typeof message?.content === 'string' ? message.content : JSON.stringify(message?.content ?? '')))
+        .join('\n');
+}
+
 async function parseVerifiedBody<T>(
     c: any,
     schema: z.ZodSchema<T>
@@ -262,6 +269,13 @@ internalRouter.post('/cache/get', async (c) => {
             ...parsed.data,
             sector: policy.sectorId,
         });
+        await memoryFabricAnalyticsService.recordOperation({
+            policy,
+            operation: 'read',
+            hit: result.hit,
+            promptText: extractPromptText(parsed.data.messages),
+            responseText: typeof result.response === 'string' ? result.response : undefined,
+        }).catch((error) => console.warn('[MemoryFabricAnalytics] Failed to record provider read:', error));
         return c.json({
             requestId: parsed.requestId,
             sku: parsed.sku,
@@ -305,6 +319,14 @@ internalRouter.post('/cache/set', async (c) => {
                 ? parsed.data.response
                 : JSON.stringify(parsed.data.response),
         });
+        await memoryFabricAnalyticsService.recordOperation({
+            policy,
+            operation: 'write',
+            promptText: extractPromptText(parsed.data.messages),
+            responseText: typeof parsed.data.response === 'string'
+                ? parsed.data.response
+                : JSON.stringify(parsed.data.response),
+        }).catch((error) => console.warn('[MemoryFabricAnalytics] Failed to record provider write:', error));
 
         return c.json({
             requestId: parsed.requestId,
@@ -342,20 +364,30 @@ internalRouter.post('/browser-proof', async (c) => {
     if (parsed.ok === false) return parsed.response;
 
     try {
+        const policy = memoryFabricPolicyService.resolve({
+            sector: parsed.data.sector,
+        });
         const result = await browserProofService.prove(parsed.data);
+        await memoryFabricAnalyticsService.recordOperation({
+            policy,
+            operation: 'browser_proof',
+            promptText: parsed.data.url,
+            responseText: result.snapshot?.excerpt || undefined,
+        }).catch((error) => console.warn('[MemoryFabricAnalytics] Failed to record browser proof:', error));
         return c.json({
             requestId: parsed.requestId,
             sku: parsed.sku,
             provider: 'agentcache',
             operation: 'browser-proof',
             generatedAt: new Date().toISOString(),
+            policy,
             ontology: buildSignedOntologyProvenance({
                 requestId: parsed.requestId,
                 sku: parsed.sku,
                 signClass: 'DOM',
-                sectorHint: parsed.data.sector,
+                sectorHint: policy.sectorId,
                 values: [
-                    parsed.data.sector,
+                    policy.sectorId,
                     parsed.data.url,
                     parsed.data.expectedSelectors,
                     parsed.data.expectedText,
