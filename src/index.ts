@@ -265,7 +265,6 @@ app.all('/api/integrations/vercel/:path{.+}?', lazy(() => import('./integrations
 // Security & Auth
 // -----------------------------------------------------------------------------
 import { authenticateApiKey, authenticateAdmin } from './middleware/auth.js';
-import { rateLimiter } from './middleware/rate-limiter.js';
 import { cognitiveMemory } from './services/cognitive-memory.js';
 
 
@@ -381,6 +380,9 @@ app.all('/api/admin/symbiont/:path{.+}?', lazy(() => import('./api/admin/symbion
 
 // Platform Revenue Reporting
 app.all('/api/platform/:path{.+}?', lazy(() => import('./api/platform.js')));
+
+// Signed provider-to-provider routes (MaxxEval, internal control plane)
+app.all('/api/internal/:path{.+}?', lazy(() => import('./api/internal.js')));
 
 // Public V1 API
 app.all('/api/v1/:path{.+}?', lazy(() => import('./api/v1/router.js')));
@@ -1426,4 +1428,3 @@ app.get('/api', (c) => {
     focusGroups: 'https://maxxeval.com/api/focus-groups/join',
   });
 });
-

@@ -70,6 +70,44 @@ const SERVICES: ServiceDef[] = [
         status: 'available'
     },
     {
+        id: 'enterprise-copilot-fabric',
+        name: 'Enterprise Copilot Fabric',
+        category: 'cache',
+        description: 'Ontology-aware semantic cache and memory fabric for enterprise copilots, workspace assistants, and retrieval-heavy agent fleets.',
+        tier: 'pro',
+        endpoint: 'GET /api/cache/fabric/skus, POST /api/cache/fabric/profile, POST /api/cache/get, POST /api/cache/set',
+        requiredInputs: [
+            { field: 'sector', type: 'string', description: 'Sector or workload domain (legal, saas, energy, general)' },
+            { field: 'messages', type: 'array', description: 'Prompt or tool invocation message array' }
+        ],
+        optionalInputs: [
+            { field: 'verticalSku', type: 'string', description: 'Use "enterprise-copilot" to pin the policy profile' },
+            { field: 'ttl', type: 'number', description: 'Requested TTL in seconds; policy may clamp it' },
+            { field: 'namespace', type: 'string', description: 'Workspace namespace for private routing' }
+        ],
+        pricing: 'Pro tier | Usage-based credits for read/write + semantic reuse uplift',
+        status: 'available'
+    },
+    {
+        id: 'finance-memory-fabric',
+        name: 'Finance Memory Fabric',
+        category: 'cache',
+        description: 'Low-latency, audit-oriented cache and evidence fabric for finance agents handling risk, KYC, pricing, and transaction validation.',
+        tier: 'pro',
+        endpoint: 'POST /api/cache/fabric/profile, POST /api/cache/get, POST /api/cache/set, POST /api/internal/browser-proof',
+        requiredInputs: [
+            { field: 'sector', type: 'string', description: 'Use "finance" for the finance ontology policy' },
+            { field: 'messages', type: 'array', description: 'Prompt or tool invocation message array' }
+        ],
+        optionalInputs: [
+            { field: 'verticalSku', type: 'string', description: 'Use "finance-memory-fabric" to pin the finance policy profile' },
+            { field: 'ttl', type: 'number', description: 'Requested TTL in seconds; finance freshness guardrails apply' },
+            { field: 'browserProof', type: 'boolean', description: 'Pair retrieval with DOM/browser proof for higher-trust evidence' }
+        ],
+        pricing: 'Pro tier | Audit-weighted credit model and custom enterprise contracts',
+        status: 'available'
+    },
+    {
         id: 'tool-cache',
         name: 'Tool Result Cache',
         category: 'cache',

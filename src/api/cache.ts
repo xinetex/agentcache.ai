@@ -11,14 +11,50 @@
 import { Hono } from 'hono';
 import { semanticCacheService } from '../services/SemanticCacheService.js';
 import { resonanceService } from '../services/ResonanceService.js';
+import { listFabricSkus } from '../config/fabricSkus.js';
 import { authenticateApiKey } from '../middleware/auth.js';
+import { memoryFabricPolicyService } from '../services/MemoryFabricPolicyService.js';
 
 type Variables = {
     user: any;
     apiKey: string;
+    tier?: string;
 };
 
 const cacheRouter = new Hono<{ Variables: Variables }>();
+
+function resolveMemoryPolicy(c: any, body: Record<string, any>) {
+    return memoryFabricPolicyService.resolve({
+        sector: body.sector,
+        verticalSku: body.verticalSku,
+        requestedTtlSeconds: body.ttl,
+        tierId: c.get('tier') || 'free',
+    });
+}
+
+cacheRouter.get('/fabric/skus', (c) => {
+    return c.json({
+        success: true,
+        skus: listFabricSkus(),
+    });
+});
+
+cacheRouter.post('/fabric/profile', async (c) => {
+    const authError = await authenticateApiKey(c);
+    if (authError) return authError;
+
+    try {
+        const body = await c.req.json();
+        const policy = resolveMemoryPolicy(c, body);
+
+        return c.json({
+            success: true,
+            policy,
+        });
+    } catch (err: any) {
+        return c.json({ error: err.message }, 500);
+    }
+});
 
 /**
  * POST /api/cache/check
@@ -30,23 +66,39 @@ cacheRouter.post('/check', async (c) => {
 
     try {
         const body = await c.req.json();
-        const { messages, model, provider, temperature, semantic, previous_query, sessionId, turnIndex } = body;
+        const {
+            messages,
+            model,
+            provider,
+            temperature,
+            semantic,
+            previous_query,
+            sessionId,
+            turnIndex,
+            target_ip,
+            target_banner,
+        } = body;
 
         if (!messages || !Array.isArray(messages)) {
             return c.json({ error: 'messages array required' }, 400);
         }
+
+        const policy = resolveMemoryPolicy(c, body);
 
         const result = await semanticCacheService.check({ 
             messages, 
             model, 
             provider, 
             temperature, 
+            sector: policy.sectorId,
             semantic, 
             previous_query,
             sessionId,
-            turnIndex
+            turnIndex,
+            target_ip,
+            target_banner,
         });
-        return c.json(result);
+        return c.json({ ...result, policy });
     } catch (err: any) {
         return c.json({ error: err.message }, 500);
     }
@@ -65,18 +117,20 @@ cacheRouter.post('/set', async (c) => {
 
     try {
         const body = await c.req.json();
-        const { messages, response, ttl, model, provider, temperature, circleId, sessionId, turnIndex } = body;
+        const { messages, response, model, provider, temperature, circleId, sessionId, turnIndex } = body;
 
         if (!messages || !response) {
             return c.json({ error: 'messages and response required' }, 400);
         }
 
-        await semanticCacheService.set({ 
+        const policy = resolveMemoryPolicy(c, body);
+        const key = await semanticCacheService.set({ 
             messages, 
             response, 
-            ttl, 
+            ttl: policy.effectiveTtlSeconds, 
             model: model || 'gpt-4o', 
             provider: provider || 'openai',
+            sector: policy.sectorId,
             temperature,
             circleId,
             originAgent: apiKey, // Implicitly track origin
@@ -84,7 +138,11 @@ cacheRouter.post('/set', async (c) => {
             turnIndex
         });
 
-        return c.json({ success: true });
+        return c.json({
+            success: true,
+            key: key.slice(-16),
+            policy,
+        });
     } catch (err: any) {
         return c.json({ error: err.message }, 500);
     }
@@ -171,13 +229,20 @@ cacheRouter.post('/get', async (c) => {
             return c.json({ error: 'messages required' }, 400);
         }
 
-        const result = await semanticCacheService.check({ messages, model, provider, temperature });
+        const policy = resolveMemoryPolicy(c, body);
+        const result = await semanticCacheService.check({
+            messages,
+            model,
+            provider,
+            temperature,
+            sector: policy.sectorId,
+        });
         
         if (!result.hit) {
-            return c.json(result, 404);
+            return c.json({ ...result, policy }, 404);
         }
 
-        return c.json(result);
+        return c.json({ ...result, policy });
     } catch (err: any) {
         return c.json({ error: err.message }, 500);
     }

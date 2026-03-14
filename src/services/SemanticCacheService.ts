@@ -64,15 +64,27 @@ export class SemanticCacheService {
      * Generate a deterministic but semantic-aware key for a message history.
      * Aligned with legacy "v1" stableHash format for backward compatibility.
      */
-    static generateKey(params: { provider: string; model: string; messages: any[]; temperature?: number }): string {
+    static generateKey(params: {
+        provider: string;
+        model: string;
+        messages: any[];
+        temperature?: number;
+        sector?: string;
+    }): string {
         const data = {
             provider: params.provider || 'openai',
             model: params.model,
             messages: params.messages,
             temperature: params.temperature ?? 0.7,
+            sector: params.sector?.trim().toLowerCase() || undefined,
         };
         const hash = stableHash(data);
-        return `agentcache:v1:${data.provider}:${data.model}:${hash}`;
+        const keyParts = ['agentcache', 'v1', data.provider, data.model];
+        if (data.sector) {
+            keyParts.push(data.sector);
+        }
+        keyParts.push(hash);
+        return keyParts.join(':');
     }
 
     /**
@@ -83,6 +95,8 @@ export class SemanticCacheService {
         model: string; 
         provider?: string; 
         temperature?: number;
+        sector?: string;
+        verticalSku?: string;
         semantic?: boolean; 
         previous_query?: string;
         sessionId?: string;
@@ -94,7 +108,8 @@ export class SemanticCacheService {
             provider: params.provider || 'openai',
             model: params.model,
             messages: params.messages,
-            temperature: params.temperature
+            temperature: params.temperature,
+            sector: params.sector,
         });
 
         const latestQuery = params.messages[params.messages.length - 1]?.content || '';
@@ -183,7 +198,7 @@ export class SemanticCacheService {
             await observabilityService.track({
                 type: 'CACHE_OPERATION',
                 description: `Cache HIT: turn ${params.turnIndex || 0} (Drift: ${(drift * 100).toFixed(1)}%)`,
-                sector: 'global',
+                sector: params.sector || 'global',
                 metadata: {
                     sessionId: params.sessionId,
                     turnIndex: params.turnIndex,
@@ -215,7 +230,7 @@ export class SemanticCacheService {
         await observabilityService.track({
             type: 'CACHE_OPERATION',
             description: `Cache MISS: ${driftBypass ? 'DRIFT BYPASS' : 'NOT FOUND'}`,
-            sector: 'global',
+            sector: params.sector || 'global',
             metadata: {
                 sessionId: params.sessionId,
                 turnIndex: params.turnIndex,
@@ -236,6 +251,8 @@ export class SemanticCacheService {
         model: string; 
         provider?: string; 
         temperature?: number;
+        sector?: string;
+        verticalSku?: string;
         response: string; 
         ttl?: number;
         circleId?: string;
@@ -247,7 +264,8 @@ export class SemanticCacheService {
             provider: params.provider || 'openai',
             model: params.model,
             messages: params.messages,
-            temperature: params.temperature
+            temperature: params.temperature,
+            sector: params.sector,
         });
         
         const ttl = params.ttl || 604800;
@@ -268,7 +286,7 @@ export class SemanticCacheService {
         await observabilityService.track({
             type: 'CACHE_OPERATION',
             description: `Cache SET: turn ${params.turnIndex || 0}`,
-            sector: 'global',
+            sector: params.sector || 'global',
             metadata: {
                 sessionId: params.sessionId,
                 turnIndex: params.turnIndex,

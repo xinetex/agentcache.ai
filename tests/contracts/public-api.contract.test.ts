@@ -135,6 +135,59 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(Array.isArray(hit.payload.predictive_prefetch)).toBe(true);
   }, 10000);
 
+  it('exposes memory-fabric policy resolution and keeps sector-aware cache keys isolated', async () => {
+    const sharedPrompt = unique('fabric-shared');
+    const body = {
+      provider: 'openai',
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: sharedPrompt }],
+    };
+
+    const profile = await request('/api/cache/fabric/profile', {
+      sector: 'finance',
+      verticalSku: 'finance-memory-fabric',
+      ttl: 7200,
+    });
+
+    expect(profile.response.status).toBe(200);
+    expect(profile.payload.success).toBe(true);
+    expect(profile.payload.policy.verticalSku).toBe('finance-memory-fabric');
+    expect(profile.payload.policy.sectorId).toBe('finance');
+    expect(profile.payload.policy.effectiveTtlSeconds).toBe(300);
+    expect(profile.payload.policy.evidenceMode).toBe('audit');
+
+    const financeWrite = await request('/api/cache/set', {
+      ...body,
+      sector: 'finance',
+      verticalSku: 'finance-memory-fabric',
+      response: 'finance-cached-response',
+      ttl: 7200,
+    });
+
+    expect(financeWrite.response.status).toBe(200);
+    expect(financeWrite.payload.success).toBe(true);
+    expect(financeWrite.payload.policy.sectorId).toBe('finance');
+    expect(financeWrite.payload.policy.effectiveTtlSeconds).toBe(300);
+
+    const financeHit = await request('/api/cache/get', {
+      ...body,
+      sector: 'finance',
+      verticalSku: 'finance-memory-fabric',
+    });
+    expect(financeHit.response.status).toBe(200);
+    expect(financeHit.payload.hit).toBe(true);
+    expect(financeHit.payload.response).toBe('finance-cached-response');
+
+    const healthcareMiss = await request('/api/cache/get', {
+      ...body,
+      sector: 'healthcare',
+      verticalSku: 'healthcare-memory-fabric',
+    });
+    expect(healthcareMiss.response.status).toBe(404);
+    expect(healthcareMiss.payload.hit).toBe(false);
+    expect(healthcareMiss.payload.policy.sectorId).toBe('healthcare');
+  }, 10000);
+
   it('memory, cognitive, and stats endpoints return observable cognitive state', async () => {
     const memoryText = unique('memory-text');
     const previous = unique('memory-prev');
