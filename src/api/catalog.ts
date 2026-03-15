@@ -248,6 +248,26 @@ const SERVICES: ServiceDef[] = [
         status: 'available'
     },
     {
+        id: 'pathological-api',
+        name: 'Pathological API',
+        category: 'intelligence',
+        description: 'Adversarial hardening runs for production agents. Simulate pathological reasoning, inject controlled provocation, compute recovery plans, and issue signed receipts.',
+        tier: 'pro',
+        endpoint: 'GET /api/pathological/profiles, POST /api/pathological/assess, GET /api/pathological/summary',
+        requiredInputs: [
+            { field: 'targetAgentId', type: 'string', description: 'Agent, workflow, or runtime identifier being assessed' },
+            { field: 'sector', type: 'string', description: 'Sector ontology for recovery and trust scoring (finance, healthcare, legal, biotech, robotics, energy)' }
+        ],
+        optionalInputs: [
+            { field: 'profileId', type: 'string', description: 'Pathology profile to apply (e.g. p1, p2, p3)' },
+            { field: 'provocation', type: 'object', description: 'Optional provocation config { type, severity, target?, durationMs? }' },
+            { field: 'severity', type: 'string', description: 'Assessment severity: low | medium | high | critical' },
+            { field: 'errorKind', type: 'string', description: 'Failure mode hypothesis for recovery planning' }
+        ],
+        pricing: 'Pro tier | Usage-based hardening credits and enterprise certification packages',
+        status: 'beta'
+    },
+    {
         id: 'plan-cache',
         name: 'Agentic Plan Cache',
         category: 'cache',
@@ -354,6 +374,7 @@ const TOOL_SHED_PROFILES: Record<ToolShedProfile, ToolShedProfileConfig> = {
         description: 'Prioritizes safety, policy compliance, and controlled freshness.',
         selections: [
             { serviceId: 'security-guardrails', reason: 'First-line defense for prompt input and workflow boundaries.', required: true },
+            { serviceId: 'pathological-api', reason: 'Stress-test agent workflows and produce hardening receipts before production rollout.', required: false },
             { serviceId: 'anti-cache', reason: 'Policy-safe invalidation when sensitive sources change.', required: true },
             { serviceId: 'semantic-cache', reason: 'Control spend while preserving predictable service performance.', required: true },
             { serviceId: 'session-memory', reason: 'Private namespace memory for regulated workflows.', required: false }

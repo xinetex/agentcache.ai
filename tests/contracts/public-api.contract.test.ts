@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { attachSharedReceiptSignature, buildSharedReceipt } from '../../src/contracts/shared-receipt.js';
 
 vi.mock('../../src/services/ArmorService.js', () => ({
   ArmorService: class {
@@ -303,4 +304,109 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(issued.response.status).toBe(403);
     expect(issued.payload.error).toContain('authenticated principal');
   });
+
+  it('ingests and exposes shared receipts through the public receipt API', async () => {
+    process.env.SHARED_RECEIPT_SECRET = 'public-contract-receipt-secret';
+    const receipt = attachSharedReceiptSignature(buildSharedReceipt({
+      receiptId: unique('shared-receipt'),
+      issuedAt: new Date().toISOString(),
+      producer: {
+        system: 'JETTYAGENT',
+        id: 'maxxpoly',
+        role: 'autopilot',
+      },
+      subject: {
+        kind: 'BOT_CYCLE',
+        id: unique('cycle'),
+      },
+      operation: {
+        action: 'autopilot.tick',
+        environment: 'prod',
+      },
+      ontology: {
+        sectorId: 'finance',
+        ontologyRef: 'finance@v1',
+        confidence: 0.91,
+      },
+      economics: {
+        sku: 'finance-memory-fabric',
+        latencyMs: 1200,
+      },
+      trust: {
+        verdict: 'INFO',
+        confidence: 0.77,
+      },
+      telemetry: {
+        cyclePnlUsd: 3.42,
+      },
+      refs: {
+        marketId: 'kalshi:NBG1',
+      },
+    }), process.env.SHARED_RECEIPT_SECRET);
+
+    const ingested = await request('/api/receipts/ingest', receipt);
+    expect(ingested.response.status).toBe(201);
+    expect(ingested.payload.success).toBe(true);
+    expect(ingested.payload.signatureStatus).toBe('verified');
+
+    const listed = await request('/api/receipts?producerSystem=JETTYAGENT&limit=10', undefined, 'GET');
+    expect(listed.response.status).toBe(200);
+    expect(listed.payload.success).toBe(true);
+    expect(listed.payload.receipts.some((item: any) => item.receipt.receiptId === receipt.receiptId)).toBe(true);
+
+    const fetched = await request(`/api/receipts/${receipt.receiptId}`, undefined, 'GET');
+    expect(fetched.response.status).toBe(200);
+    expect(fetched.payload.receipt.subject.kind).toBe('BOT_CYCLE');
+    expect(fetched.payload.receipt.ontology.sectorId).toBe('finance');
+
+    const summary = await request('/api/receipts/summary?producerSystem=JETTYAGENT', undefined, 'GET');
+    expect(summary.response.status).toBe(200);
+    expect(summary.payload.summary.total).toBeGreaterThanOrEqual(1);
+    expect(summary.payload.summary.byProducerSystem[0].system).toBe('JETTYAGENT');
+
+    const stats = await request('/api/stats', undefined, 'GET');
+    expect(stats.response.status).toBe(200);
+    expect(stats.payload.receipts.total).toBeGreaterThanOrEqual(1);
+  }, 10000);
+
+  it('runs a pathological assessment and records a hardening receipt', async () => {
+    const profiles = await request('/api/pathological/profiles', undefined, 'GET');
+    expect(profiles.response.status).toBe(200);
+    expect(profiles.payload.success).toBe(true);
+    expect(Array.isArray(profiles.payload.profiles)).toBe(true);
+    expect(profiles.payload.profiles.length).toBeGreaterThan(0);
+
+    const assessment = await request('/api/pathological/assess', {
+      targetAgentId: unique('agent'),
+      profileId: 'p1',
+      sector: 'finance',
+      severity: 'high',
+      errorKind: 'stale_signal',
+      provocation: {
+        type: 'COGNITIVE',
+        severity: 0.65,
+        target: 'finance',
+        durationMs: 25,
+      },
+    });
+
+    expect(assessment.response.status).toBe(201);
+    expect(assessment.payload.success).toBe(true);
+    expect(assessment.payload.receipt.subject.kind).toBe('PATHOLOGY_RUN');
+    expect(assessment.payload.receipt.operation.action).toBe('pathology.assess');
+    expect(assessment.payload.receipt.ontology.sectorId).toBe('finance');
+    expect(typeof assessment.payload.receipt.payload.duelForecast.success).toBe('boolean');
+    expect(['PASS', 'REVIEW', 'BLOCK']).toContain(assessment.payload.receipt.trust.verdict);
+
+    const run = await request(`/api/pathological/runs/${assessment.payload.receiptId}`, undefined, 'GET');
+    expect(run.response.status).toBe(200);
+    expect(run.payload.run.receipt.receiptId).toBe(assessment.payload.receiptId);
+    expect(run.payload.run.receipt.subject.kind).toBe('PATHOLOGY_RUN');
+
+    const summary = await request('/api/pathological/summary?sectorId=finance', undefined, 'GET');
+    expect(summary.response.status).toBe(200);
+    expect(summary.payload.success).toBe(true);
+    expect(summary.payload.summary.total).toBeGreaterThanOrEqual(1);
+    expect(summary.payload.summary.bySubjectKind.some((item: any) => item.kind === 'PATHOLOGY_RUN')).toBe(true);
+  }, 10000);
 });

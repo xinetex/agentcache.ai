@@ -75,4 +75,16 @@ describe('Antibody Hardening & Pathology Sandbox', () => {
       pathologicalId: 'p1'
     }), 'pathology');
   });
+
+  it('produces deterministic duel forecasts for the same agent/profile pair', () => {
+    const first = pathologySandbox.forecastDuel('agent-1', 'p1');
+    const second = pathologySandbox.forecastDuel('agent-1', 'p1');
+    const different = pathologySandbox.forecastDuel('agent-2', 'p1');
+
+    expect(first).toEqual(second);
+    expect(first.resistanceScore).not.toBe(different.resistanceScore);
+    expect(typeof first.success).toBe('boolean');
+    expect(first.confidence).toBeGreaterThanOrEqual(0);
+    expect(first.confidence).toBeLessThanOrEqual(1);
+  });
 });

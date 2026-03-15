@@ -8,6 +8,7 @@
  * via any medium, is strictly prohibited.
  */
 
+import { createHash } from 'node:crypto';
 import { eventBus } from '../lib/event-bus.js';
 import { redis } from '../lib/redis.js';
 
@@ -16,6 +17,13 @@ export interface PathologicalProfile {
   name: string;
   fallacyType: string;
   soul_patch: string;
+}
+
+export interface DuelForecast {
+  success: boolean;
+  confidence: number;
+  difficulty: number;
+  resistanceScore: number;
 }
 
 /**
@@ -46,12 +54,46 @@ export class PathologySandbox {
     }
   ];
 
+  private difficultyFor(profile: PathologicalProfile): number {
+    switch (profile.fallacyType) {
+      case 'circular_logic':
+        return 0.58;
+      case 'vacuous_truth':
+        return 0.52;
+      case 'infinite_descent':
+      default:
+        return 0.48;
+    }
+  }
+
+  private normalizedHash(input: string): number {
+    const digest = createHash('sha256').update(input).digest('hex').slice(0, 8);
+    const value = parseInt(digest, 16);
+    return value / 0xffffffff;
+  }
+
+  forecastDuel(targetAgentId: string, profileId: string = 'p1'): DuelForecast {
+    const profile = PathologySandbox.PROFILES.find((candidate) => candidate.id === profileId) || PathologySandbox.PROFILES[0];
+    const difficulty = this.difficultyFor(profile);
+    const resistanceScore = this.normalizedHash(`${targetAgentId}:${profile.id}`);
+    const success = resistanceScore >= difficulty;
+    const confidence = Math.abs(resistanceScore - difficulty);
+
+    return {
+      success,
+      confidence: Number(confidence.toFixed(3)),
+      difficulty,
+      resistanceScore: Number(resistanceScore.toFixed(3)),
+    };
+  }
+
   /**
    * Start a 'Logic Duel' between a target agent and a pathological actor.
    */
   async startDuel(targetAgentId: string, profileId: string = 'p1'): Promise<string> {
     const duelId = `duel:${Date.now()}`;
     const profile = PathologySandbox.PROFILES.find(p => p.id === profileId) || PathologySandbox.PROFILES[0];
+    const forecast = this.forecastDuel(targetAgentId, profile.id);
 
     // 1. Log the duel start
     console.log(`[Pathology] ⚔️ Logic Duel Started: ${targetAgentId} vs ${profile.name}`);
@@ -63,6 +105,7 @@ export class PathologySandbox {
       pathologicalId: profile.id,
       pathologicalName: profile.name,
       fallacyType: profile.fallacyType,
+      forecast,
       timestamp: Date.now()
     }, 'pathology');
 
@@ -76,8 +119,8 @@ export class PathologySandbox {
   }
 
   private async resolveDuel(duelId: string, targetAgentId: string, profile: PathologicalProfile) {
-    // For now, we simulate a 'Defense' outcome based on target agent's reputation/metrics
-    const success = Math.random() > 0.3; // 70% defense success
+    const forecast = this.forecastDuel(targetAgentId, profile.id);
+    const success = forecast.success;
     
     eventBus.publish(success ? 'duel_defended' : 'duel_compromised', {
       duelId,
@@ -85,6 +128,7 @@ export class PathologySandbox {
       pathologicalId: profile.id,
       outcome: success ? 'Healthy rejection of fallacy' : 'Reasoning drift detected',
       antibody_pulse: success ? true : false,
+      forecast,
       timestamp: Date.now()
     }, 'pathology');
 

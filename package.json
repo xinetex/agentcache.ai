@@ -14,7 +14,8 @@
     "mcp:start": "node dist/mcp/server.js",
     "sigil": "tsx src/cli/sigil.ts",
     "test": "vitest",
-    "test:verification": "vitest --run tests/unit/cognitive-memory.test.ts tests/claims/cognitive-claims.test.ts tests/contracts/public-api.contract.test.ts"
+    "test:verification": "vitest --run tests/unit/cognitive-memory.test.ts tests/claims/cognitive-claims.test.ts tests/contracts/public-api.contract.test.ts",
+    "typecheck:ops": "tsc --noEmit --pretty false -p tsconfig.operations.json"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1004.0",

@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/**/*",
+    "api/**/*",
+    "scripts/industrial_audit.ts",
+    "scripts/verify_collective_state.ts",
+    "scripts/verify_marketplace.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

@@ -34,6 +34,7 @@ import { savingsTracker } from './lib/llm/savings-tracker.js';
 import { tokenBudget } from './lib/llm/token-budget.js';
 import { memoryFabricAnalyticsService } from './services/MemoryFabricAnalyticsService.js';
 import { memoryFabricBillingService } from './services/MemoryFabricBillingService.js';
+import { sharedReceiptService } from './services/SharedReceiptService.js';
 import * as bcrypt from 'bcryptjs';
 import { neon } from '@neondatabase/serverless';
 
@@ -461,8 +462,12 @@ app.post('/api/agents/register', async (c) => {
 app.all('/api/needs/:path{.+}?', lazy(() => import('./api/needs.js')));
 // Service catalog + custom cache requests
 app.all('/api/catalog/:path{.+}?', lazy(() => import('./api/catalog.js')));
+// Pathological API (adversarial hardening and recovery assessments)
+app.all('/api/pathological/:path{.+}?', lazy(() => import('./api/pathological.js')));
 // Focus Group API (full study/session/analysis system)
 app.all('/api/focus-group/:path{.+}?', lazy(() => import('./api/focus-group.js')));
+// Shared receipt ingestion and inspection
+app.all('/api/receipts/:path{.+}?', lazy(() => import('./api/receipts.js')));
 // Tool Safety Scanner (supply chain security for agent tools)
 app.all('/api/tools/scan/:path{.+}?', lazy(() => import('./api/tool-scanner.js')));
 app.all('/api/sentry/:path{.+}?', lazy(() => import('./api/sentry.js')));
@@ -829,10 +834,11 @@ app.get('/api/stats', async (c) => {
   const tier = c.get('tier') || 'free';
   const tierFeatures = c.get('tierFeatures');
 
-  const [cognitive, fabricAnalytics, fabricAccounting] = await Promise.all([
+  const [cognitive, fabricAnalytics, fabricAccounting, receiptSummary] = await Promise.all([
     cognitiveMemory.getStatus(),
     memoryFabricAnalyticsService.getSnapshot(),
     memoryFabricBillingService.getSummary({ apiKey: c.get('apiKey') }),
+    sharedReceiptService.getSummary(),
   ]);
 
   return c.json({
@@ -848,6 +854,7 @@ app.get('/api/stats', async (c) => {
       analytics: fabricAnalytics,
       accounting: fabricAccounting,
     },
+    receipts: receiptSummary,
   });
 });
 
@@ -1413,6 +1420,7 @@ app.get('/api', (c) => {
       '/api/hub/agents/register': 'Register your agent (GET for instructions, POST to register)',
       '/api/hub/heartbeat': 'Personalized opportunities (poll every 4h)',
       '/api/catalog': 'Browse available cache services',
+      '/api/pathological/profiles': 'List adversarial pathology profiles',
       '/api/needs': 'Current demand signals from agents',
       '/api/needs/trends': 'Aggregated trends and velocity',
       '/api/tools/scan': 'Tool Safety Scanner — scan tools before installing (POST source code)',
@@ -1431,6 +1439,7 @@ app.get('/api', (c) => {
       '/api/memory/recall': 'Recall similar memories (vector search)',
       '/api/memory/:id': 'Fetch a stored memory by id',
       '/api/security/check': 'Prompt injection / jailbreak detection',
+      '/api/pathological/assess': 'Run a pathological hardening assessment and issue a receipt',
       '/api/tools/scan': 'Scan tool source code for threats (JS/TS + Python + MCP)',
       '/api/tools/scan/:hash': 'Lookup previous scan by content hash',
       '/api/tools/scan/stats': 'Aggregate scan statistics',
