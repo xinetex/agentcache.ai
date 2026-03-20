@@ -30,6 +30,11 @@
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "scripts",
+    "verify_*.ts",
+    "test_*.ts",
+    "list_tables.ts",
+    "moltest_spillover.ts"
   ]
 }

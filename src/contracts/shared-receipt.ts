@@ -17,11 +17,14 @@ export type SharedReceiptSubjectKind =
   | 'STATUS_SNAPSHOT'
   | 'PERFORMANCE_SNAPSHOT'
   | 'BOT_CYCLE'
+  | 'STORAGE_TRANSFER'
+  | 'SOULPRINT_SCAN'
   | 'PATHOLOGY_RUN'
   | 'TRADE_INTENT'
   | 'TRADE_EXECUTION'
   | 'TRUST_EXPORT'
-  | 'BROWSER_TASK';
+  | 'BROWSER_TASK'
+  | 'SOULPRINT_ARTIFACT';
 
 export type SharedReceiptParty = {
   system: SharedReceiptSystem;
@@ -114,11 +117,14 @@ const sharedReceiptSubjectKindSchema = z.enum([
   'STATUS_SNAPSHOT',
   'PERFORMANCE_SNAPSHOT',
   'BOT_CYCLE',
+  'STORAGE_TRANSFER',
+  'SOULPRINT_SCAN',
   'PATHOLOGY_RUN',
   'TRADE_INTENT',
   'TRADE_EXECUTION',
   'TRUST_EXPORT',
   'BROWSER_TASK',
+  'SOULPRINT_ARTIFACT',
 ]);
 
 const sharedReceiptPartySchema = z.object({

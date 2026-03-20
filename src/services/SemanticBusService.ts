@@ -64,8 +64,8 @@ export class SemanticBusService {
         // 2. Multi-Signal Governance: Intervention Gate (Phase 15)
         let decisionAction: string = 'allow';
         if (msg.originAgent) {
-            const stats = reputationService.getStats(msg.originAgent);
-            const rep = reputationService.getReputation(msg.originAgent);
+            const stats = await reputationService.getStats(msg.originAgent);
+            const rep = await reputationService.getReputation(msg.originAgent);
             
             const ctx = {
                 agentId: msg.originAgent,

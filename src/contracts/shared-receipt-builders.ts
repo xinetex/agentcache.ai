@@ -34,6 +34,17 @@ type BotCycleReceiptInput = ReceiptBuilderContext & {
   action?: string;
 };
 
+type StorageTransferReceiptInput = ReceiptBuilderContext & {
+  transferId: string;
+  route?: string;
+  method?: string;
+  environment?: string;
+  provider?: string;
+  storageClass?: string;
+  direction?: 'upload' | 'download' | 'copy' | 'delete' | 'tiering';
+  action?: string;
+};
+
 type PerformanceSnapshotReceiptInput = ReceiptBuilderContext & {
   snapshotId: string;
   route?: string;
@@ -64,6 +75,22 @@ type PathologyRunReceiptInput = ReceiptBuilderContext & {
   action?: string;
 };
 
+type SoulprintScanReceiptInput = ReceiptBuilderContext & {
+  scanId: string;
+  route?: string;
+  environment?: string;
+  action?: string;
+  evidence?: SharedReceiptEnvelope['evidence'];
+};
+
+type SoulprintArtifactReceiptInput = ReceiptBuilderContext & {
+  artifactId: string;
+  route?: string;
+  environment?: string;
+  action?: string;
+  evidence?: SharedReceiptEnvelope['evidence'];
+};
+
 function finalizeReceipt(receipt: SharedReceiptEnvelope, secret?: string): SharedReceiptEnvelope {
   return secret ? attachSharedReceiptSignature(receipt, secret) : receipt;
 }
@@ -91,6 +118,38 @@ export function buildBotCycleReceipt(input: BotCycleReceiptInput): SharedReceipt
     refs: input.refs,
     telemetry: input.telemetry,
     payload: input.payload,
+  });
+
+  return finalizeReceipt(receipt, input.secret);
+}
+
+export function buildStorageTransferReceipt(input: StorageTransferReceiptInput): SharedReceiptEnvelope {
+  const receipt = buildSharedReceipt({
+    receiptId: input.receiptId,
+    issuedAt: input.issuedAt || new Date().toISOString(),
+    producer: input.producer,
+    subject: {
+      kind: 'STORAGE_TRANSFER',
+      id: input.transferId,
+      route: input.route,
+    },
+    operation: {
+      action: input.action || 'storage.transfer',
+      provider: input.provider || 'lyve',
+      route: input.route,
+      method: input.method || 'POST',
+      environment: input.environment,
+    },
+    ontology: input.ontology,
+    economics: input.economics,
+    trust: defaultTrust(input.trust),
+    refs: input.refs,
+    telemetry: input.telemetry,
+    payload: {
+      storageClass: input.storageClass,
+      direction: input.direction,
+      ...(input.payload || {}),
+    },
   });
 
   return finalizeReceipt(receipt, input.secret);
@@ -191,6 +250,60 @@ export function buildPathologyRunReceipt(input: PathologyRunReceiptInput): Share
     ontology: input.ontology,
     economics: input.economics,
     trust: defaultTrust(input.trust),
+    refs: input.refs,
+    telemetry: input.telemetry,
+    payload: input.payload,
+  });
+
+  return finalizeReceipt(receipt, input.secret);
+}
+
+export function buildSoulprintScanReceipt(input: SoulprintScanReceiptInput): SharedReceiptEnvelope {
+  const receipt = buildSharedReceipt({
+    receiptId: input.receiptId,
+    issuedAt: input.issuedAt || new Date().toISOString(),
+    producer: input.producer,
+    subject: {
+      kind: 'SOULPRINT_SCAN',
+      id: input.scanId,
+      route: input.route,
+    },
+    operation: {
+      action: input.action || 'soulprint.scan',
+      route: input.route,
+      environment: input.environment,
+    },
+    ontology: input.ontology,
+    economics: input.economics,
+    trust: defaultTrust(input.trust),
+    evidence: input.evidence,
+    refs: input.refs,
+    telemetry: input.telemetry,
+    payload: input.payload,
+  });
+
+  return finalizeReceipt(receipt, input.secret);
+}
+
+export function buildSoulprintArtifactReceipt(input: SoulprintArtifactReceiptInput): SharedReceiptEnvelope {
+  const receipt = buildSharedReceipt({
+    receiptId: input.receiptId,
+    issuedAt: input.issuedAt || new Date().toISOString(),
+    producer: input.producer,
+    subject: {
+      kind: 'SOULPRINT_ARTIFACT',
+      id: input.artifactId,
+      route: input.route,
+    },
+    operation: {
+      action: input.action || 'soulprint.artifact_scan',
+      route: input.route,
+      environment: input.environment,
+    },
+    ontology: input.ontology,
+    economics: input.economics,
+    trust: defaultTrust(input.trust),
+    evidence: input.evidence,
     refs: input.refs,
     telemetry: input.telemetry,
     payload: input.payload,

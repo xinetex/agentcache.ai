@@ -35,6 +35,8 @@ import { tokenBudget } from './lib/llm/token-budget.js';
 import { memoryFabricAnalyticsService } from './services/MemoryFabricAnalyticsService.js';
 import { memoryFabricBillingService } from './services/MemoryFabricBillingService.js';
 import { sharedReceiptService } from './services/SharedReceiptService.js';
+import { externalAgentRegistrationService } from './services/ExternalAgentRegistrationService.js';
+import { customerUsageTracking } from './middleware/customerUsageTracking.js';
 import * as bcrypt from 'bcryptjs';
 import { neon } from '@neondatabase/serverless';
 
@@ -56,6 +58,8 @@ try {
 // Type definitions for Hono variables
 type Variables = {
   apiKey?: string;
+  principalId?: string;
+  principalAgentId?: string;
   tier: string;
   usage: any;
   tierFeatures: any;
@@ -199,6 +203,8 @@ app.use('/api/*', cors({
   allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
 }));
 
+app.use('/api/*', customerUsageTracking);
+
 // Agent discovery header — any agent calling any API endpoint discovers the onboarding path
 app.use('*', async (c, next) => {
   // Global Security Headers (Best Practices)
@@ -234,6 +240,11 @@ const lazy = (loader: () => Promise<any>) => {
       } else {
         const parts = c.req.path.split('/');
         subPath = '/' + parts.slice(3).join('/');
+      }
+
+      const requestUrl = new URL(c.req.url);
+      if (requestUrl.search) {
+        subPath += requestUrl.search;
       }
 
       // Handle disturbed/locked body (WAF middleware consumes it)
@@ -468,6 +479,8 @@ app.all('/api/pathological/:path{.+}?', lazy(() => import('./api/pathological.js
 app.all('/api/focus-group/:path{.+}?', lazy(() => import('./api/focus-group.js')));
 // Shared receipt ingestion and inspection
 app.all('/api/receipts/:path{.+}?', lazy(() => import('./api/receipts.js')));
+// External agent preregistration and Soulprint scans
+app.all('/api/external-agents/:path{.+}?', lazy(() => import('./api/external-agents.js')));
 // Tool Safety Scanner (supply chain security for agent tools)
 app.all('/api/tools/scan/:path{.+}?', lazy(() => import('./api/tool-scanner.js')));
 app.all('/api/sentry/:path{.+}?', lazy(() => import('./api/sentry.js')));
@@ -840,6 +853,7 @@ app.get('/api/stats', async (c) => {
     memoryFabricBillingService.getSummary({ apiKey: c.get('apiKey') }),
     sharedReceiptService.getSummary(),
   ]);
+  const externalAgents = await externalAgentRegistrationService.getSummary(c.get('principalId') || `api_key:${c.get('apiKey')}`);
 
   return c.json({
     tier,
@@ -854,6 +868,8 @@ app.get('/api/stats', async (c) => {
       analytics: fabricAnalytics,
       accounting: fabricAccounting,
     },
+    browserProof: receiptSummary.browser,
+    externalAgents,
     receipts: receiptSummary,
   });
 });

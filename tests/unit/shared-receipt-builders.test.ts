@@ -3,6 +3,8 @@ import {
   buildApiCallReceipt,
   buildBotCycleReceipt,
   buildPathologyRunReceipt,
+  buildSoulprintScanReceipt,
+  buildStorageTransferReceipt,
   buildTrustExportReceipt,
 } from '../../src/contracts/shared-receipt-builders.js';
 
@@ -84,5 +86,64 @@ describe('shared receipt builders', () => {
     expect(receipt.operation.action).toBe('pathology.assess');
     expect(receipt.operation.route).toBe('/api/pathological/assess');
     expect(receipt.trust.anomalyScore).toBe(0.72);
+  });
+
+  it('builds a storage transfer receipt with lyve metadata', () => {
+    const receipt = buildStorageTransferReceipt({
+      receiptId: 'storage-001',
+      producer: {
+        system: 'JETTYAGENT',
+        id: 'maxxeval.com',
+        role: 'storage-runtime',
+      },
+      transferId: 'transfer-001',
+      route: '/api/jetty-speed/chunk',
+      provider: 'lyve',
+      direction: 'upload',
+      storageClass: 'durable-object',
+      trust: {
+        verdict: 'PASS',
+        confidence: 0.88,
+      },
+      refs: {
+        bucket: 'jettydata-prod',
+        fileId: 'file-123',
+      },
+    });
+
+    expect(receipt.subject.kind).toBe('STORAGE_TRANSFER');
+    expect(receipt.operation.provider).toBe('lyve');
+    expect(receipt.operation.route).toBe('/api/jetty-speed/chunk');
+    expect(receipt.payload?.direction).toBe('upload');
+    expect(receipt.payload?.storageClass).toBe('durable-object');
+  });
+
+  it('builds a soulprint scan receipt', () => {
+    const receipt = buildSoulprintScanReceipt({
+      receiptId: 'soulprint-001',
+      producer: {
+        system: 'AGENTCACHE',
+        id: 'agentcache.ai',
+        role: 'preregistration-auditor',
+      },
+      scanId: 'registration-001:scan-001',
+      route: '/api/external-agents/registration-001/soulprint',
+      trust: {
+        verdict: 'PASS',
+        confidence: 0.87,
+      },
+      refs: {
+        externalSystem: 'moltbook',
+        externalAgentId: 'bot-77',
+      },
+      payload: {
+        findings: ['Escalates aggressively under low-confidence states'],
+      },
+    });
+
+    expect(receipt.subject.kind).toBe('SOULPRINT_SCAN');
+    expect(receipt.operation.action).toBe('soulprint.scan');
+    expect(receipt.operation.route).toBe('/api/external-agents/registration-001/soulprint');
+    expect(receipt.payload?.findings).toEqual(['Escalates aggressively under low-confidence states']);
   });
 });

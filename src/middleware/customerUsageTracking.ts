@@ -20,10 +20,12 @@ import { Redis } from '@upstash/redis';
 // Initialize Redis client
 let redis: Redis | null = null;
 try {
-  redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL!,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-  });
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
+  }
 } catch (error) {
   console.error('[Usage Tracking] Redis initialization failed:', error);
 }
@@ -59,6 +61,8 @@ const ENDPOINT_CUSTOMER_MAP: Record<string, string> = {
   '/api/brain': CUSTOMERS.AUDIO1_TV, // Optional
   
   '/api/provision/jettythunder': CUSTOMERS.JETTYTHUNDER,
+  '/api/edges/optimal': CUSTOMERS.JETTYTHUNDER,
+  '/api/jetty-speed/chunk': CUSTOMERS.JETTYTHUNDER,
   '/api/jetty/optimal-edges': CUSTOMERS.JETTYTHUNDER,
   '/api/jetty/track-upload': CUSTOMERS.JETTYTHUNDER,
   '/api/jetty/cache-chunk': CUSTOMERS.JETTYTHUNDER,
@@ -80,15 +84,22 @@ const ENDPOINT_CUSTOMER_MAP: Record<string, string> = {
 const ENDPOINT_SERVICE_MAP: Record<string, string> = {
   '/api/cdn/stream': SERVICE_CATEGORIES.CDN_STREAMING,
   '/api/cdn/warm': SERVICE_CATEGORIES.CDN_STREAMING,
+  '/api/cdn/status': SERVICE_CATEGORIES.CDN_STREAMING,
   '/api/transcode/submit': SERVICE_CATEGORIES.TRANSCODING,
   '/api/transcode/status': SERVICE_CATEGORIES.TRANSCODING,
   '/api/transcode/jobs': SERVICE_CATEGORIES.TRANSCODING,
   
   '/api/provision/jettythunder': SERVICE_CATEGORIES.FILE_PROVISIONING,
+  '/api/edges/optimal': SERVICE_CATEGORIES.EDGE_ROUTING,
+  '/api/jetty-speed/chunk': SERVICE_CATEGORIES.CHUNK_CACHING,
   '/api/jetty/optimal-edges': SERVICE_CATEGORIES.EDGE_ROUTING,
   '/api/jetty/track-upload': SERVICE_CATEGORIES.CHUNK_CACHING,
   '/api/jetty/cache-chunk': SERVICE_CATEGORIES.CHUNK_CACHING,
   '/api/jetty/user-stats': SERVICE_CATEGORIES.USER_STATS,
+  '/api/jetty/check-duplicate': SERVICE_CATEGORIES.CHUNK_CACHING,
+  '/api/muscle/plan': SERVICE_CATEGORIES.AI_PROCESSING,
+  '/api/muscle/reflex': SERVICE_CATEGORIES.AI_PROCESSING,
+  '/api/s3/presigned': SERVICE_CATEGORIES.FILE_PROVISIONING,
   '/api/brain': SERVICE_CATEGORIES.AI_PROCESSING,
   '/api/cache': SERVICE_CATEGORIES.CORE_CACHING,
   

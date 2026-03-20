@@ -227,6 +227,7 @@ export const users = pgTable('users', {
     avatarUrl: text('avatar_url'),
     role: text('role').default('user'), // 'admin', 'user'
     plan: text('plan').default('free'),
+    stripeCustomerId: text('stripe_customer_id'),
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
 });
@@ -516,7 +517,7 @@ export const cards = pgTable('cards', {
 // 1. The Ledger (Banking)
 export const ledgerAccounts = pgTable('ledger_accounts', {
     id: uuid('id').defaultRandom().primaryKey(),
-    ownerId: uuid('owner_id').notNull(), // User or Agent ID
+    ownerId: text('owner_id').notNull(), // User or Agent ID (Hub ID)
     ownerType: text('owner_type').notNull(), // 'user' | 'agent'
     currency: text('currency').default('USDC'),
     balance: real('balance').default(0.0),
@@ -539,7 +540,7 @@ export const ledgerTransactions = pgTable('ledger_transactions', {
 // 2. The Market (Trading)
 export const marketplaceListings = pgTable('marketplace_listings', {
     id: uuid('id').defaultRandom().primaryKey(),
-    sellerAgentId: uuid('seller_agent_id').references(() => agents.id),
+    sellerAgentId: text('seller_agent_id').references(() => hubAgents.id),
     title: text('title').notNull(),
     description: text('description'),
     pricePerUnit: real('price_per_unit').notNull(),
@@ -553,7 +554,7 @@ export const marketplaceListings = pgTable('marketplace_listings', {
 export const marketplaceOrders = pgTable('marketplace_orders', {
     id: uuid('id').defaultRandom().primaryKey(),
     listingId: uuid('listing_id').references(() => marketplaceListings.id),
-    buyerAgentId: uuid('buyer_agent_id').references(() => agents.id),
+    buyerAgentId: text('buyer_agent_id').references(() => hubAgents.id),
     status: text('status').default('pending'), // 'pending', 'active', 'completed', 'disputed'
     unitsPurchased: real('units_purchased').default(1),
     totalPrice: real('total_price').notNull(),
@@ -562,10 +563,20 @@ export const marketplaceOrders = pgTable('marketplace_orders', {
     completedAt: timestamp('completed_at'),
 });
 
+export const agentToolAccess = pgTable('agent_tool_access', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    agentId: text('agent_id').references(() => hubAgents.id),
+    toolName: text('tool_name').notNull(),
+    orderId: uuid('order_id').references(() => marketplaceOrders.id),
+    expiresAt: timestamp('expires_at'),
+    status: text('status').default('active'),
+    createdAt: timestamp('created_at').defaultNow(),
+});
+
 // 3. Agent Governance (Voice)
 export const agentSuggestions = pgTable('agent_suggestions', {
     id: uuid('id').defaultRandom().primaryKey(),
-    agentId: uuid('agent_id').references(() => agents.id),
+    agentId: text('agent_id').references(() => hubAgents.id),
     title: text('title').notNull(),
     description: text('description'),
     category: text('category').default('enhancement'), // 'enhancement', 'bug', 'policy'
@@ -737,4 +748,24 @@ export const maturityLedger = pgTable('maturity_ledger', {
     updatedAt: timestamp('updated_at').defaultNow(),
 }, (table) => ({
     maturityAgentTaskIdx: index('maturity_agent_task_idx').on(table.agentId, table.taskKey),
+}));
+// --- External Agent Registration (Phase 7: S31) ---
+export const externalAgents = pgTable('external_agents', {
+    id: text('id').primaryKey(),
+    externalSystem: text('external_system').notNull(), // 'moltbook', 'generic'
+    externalAgentId: text('external_agent_id').notNull(),
+    displayName: text('display_name').notNull(),
+    profileUrl: text('profile_url'),
+    ownerPrincipalId: text('owner_principal_id').notNull(),
+    status: text('status').default('pending').notNull(), // 'pending', 'verified'
+    challengeToken: text('challenge_token').notNull(),
+    challengeInstructions: text('challenge_instructions'),
+    latestSoulprintReceiptId: text('latest_soulprint_receipt_id'),
+    metadata: jsonb('metadata').default({}),
+    verifiedAt: timestamp('verified_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+    externalAgentOwnerIdx: index('external_agent_owner_idx').on(table.ownerPrincipalId),
+    externalAgentSystemIdIdx: index('external_agent_system_id_idx').on(table.externalSystem, table.externalAgentId),
 }));

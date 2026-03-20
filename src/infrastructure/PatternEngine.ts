@@ -175,7 +175,7 @@ export class PatternEngine {
             const state = JSON.parse(n);
             
             // Security Hardening: Block imitation from low-reputation nodes (Phase 35)
-            const rep = reputationService.getReputation(state.id).reputation;
+            const rep = (await reputationService.getReputation(state.id)).reputation;
             if (rep < 0.5) {
                 console.warn(`[PatternEngine] 🚫 Skipping imitation of low-reputation node: ${state.id} (Rep: ${rep.toFixed(2)})`);
                 continue;
@@ -277,7 +277,7 @@ export class PatternEngine {
      */
     async executeAction(pattern: any) {
         // Security Hardening: Reputation-Weighted Execution (Phase 35)
-        const rep = reputationService.getReputation(pattern.id || pattern.name).reputation;
+        const rep = (await reputationService.getReputation(pattern.id || pattern.name)).reputation;
         console.log(`[PatternEngine] Executing ritual for ${pattern.name} (Reputation: ${rep.toFixed(2)})...`);
 
         if (rep < 0.3) {
@@ -452,7 +452,7 @@ export class PatternEngine {
      */
     async reinforce(id: string, amount: number) {
         // Security Hardening: Multiply reinforcement by reputation (Phase 35)
-        const rep = reputationService.getReputation(id).reputation;
+        const rep = (await reputationService.getReputation(id)).reputation;
         const weightedAmount = amount * rep;
 
         // Levin's "Niche Construction" - pattern makes environment more favorable

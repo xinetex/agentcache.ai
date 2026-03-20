@@ -12,6 +12,8 @@ The operations verification lane closes that gap by defining a curated set of sc
 
 - `scripts/industrial_audit.ts`
   - Exercises telemetry, resonance, conflict handling, and policy blocking.
+- `scripts/verify_lyve_storage.ts`
+  - Verifies Lyve endpoint reachability, region alignment, and least-privilege object-scope posture.
 - `scripts/verify_collective_state.ts`
   - Exercises the maintained Collective Cortex session/indexing path.
 - `scripts/verify_marketplace.ts`
@@ -23,8 +25,16 @@ The operations verification lane closes that gap by defining a curated set of sc
   - `npx tsc --noEmit --pretty false`
 - Operations lane:
   - `npm run typecheck:ops`
+  - `npm run test:ops`
+  - `npm run verify:lyve -- --json`
 
 The operations lane uses [tsconfig.operations.json](/Users/letstaco/Documents/agentcache-ai/tsconfig.operations.json), which extends the main project config and adds only the curated scripts above.
+
+The runtime smoke lane currently lives in:
+
+- [operations-scripts.test.ts](/Users/letstaco/Documents/agentcache-ai/tests/unit/operations-scripts.test.ts)
+
+Those tests import the supported scripts through their exported entrypoints and verify that they still execute against maintained service contracts under mocks.
 
 ## Why This Exists
 

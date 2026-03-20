@@ -29,20 +29,23 @@ export function CognitiveMap() {
     const [network, setNetwork] = useState<NetworkStatus | null>(null);
     const [telemetry, setTelemetry] = useState<Telemetry | null>(null);
     const [selectedCluster, setSelectedCluster] = useState<Cluster | null>(null);
+    const [sessions, setSessions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     // Fetch REAL Data
     const fetchData = async () => {
         try {
-            const [clusterRes, networkRes, telemetryRes] = await Promise.all([
+            const [clusterRes, networkRes, telemetryRes, sessionRes] = await Promise.all([
                 fetch('/api/observability/clusters'),
                 fetch('/api/observability/network'),
-                fetch('/api/observability/telemetry')
+                fetch('/api/observability/telemetry'),
+                fetch('/api/observability/sessions')
             ]);
 
             const clusterData = await clusterRes.json();
             const networkData = await networkRes.json();
             const telemetryData = await telemetryRes.json();
+            const sessionData = await sessionRes.json();
 
             if (clusterData.clusters) {
                 setClusters(clusterData.clusters.map((c: any) => ({
@@ -56,6 +59,9 @@ export function CognitiveMap() {
                     y: 50 + c.y,
                     count: c.size * 5
                 })));
+            }
+            if (sessionData.sessions) {
+                setSessions(sessionData.sessions);
             }
             setNetwork(networkData);
             setTelemetry(telemetryData);
@@ -196,6 +202,41 @@ export function CognitiveMap() {
                     </div>
                 </div>
             </div>
+
+            {/* Joint sessions (Collective Cortex Bridges) */}
+            {sessions.map((session, i) => (
+                <div key={session.id}>
+                    <motion.div
+                        className="absolute w-4 h-4 bg-cyan-400 rounded-full z-30 shadow-[0_0_15px_rgba(34,211,238,0.8)] flex items-center justify-center cursor-help"
+                        style={{ left: `${30 + i * 15}%`, top: `${20 + i * 10}%` }}
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        whileHover={{ scale: 1.5 }}
+                    >
+                        <Zap size={8} className="text-black" />
+                        <div className="absolute top-6 whitespace-nowrap bg-black/80 px-2 py-1 rounded text-[10px] text-cyan-300 border border-cyan-500/30 opacity-0 hover:opacity-100 transition-opacity">
+                            JOINT_SESSION: {session.objective.substring(0, 30)}...
+                        </div>
+                    </motion.div>
+                    
+                    {/* Visual connection lines to participants */}
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible">
+                        {session.participants.map((pid: string, j: number) => {
+                            // Find cluster for this participant? (Simplification: line to top-left)
+                            return (
+                                <line 
+                                    key={j}
+                                    x1={`${30 + i * 15 + 2}%`} y1={`${20 + i * 10 + 2}%`} 
+                                    x2={`${50 + (j % 2 === 0 ? -10 : 10)}%`} y2="50%" 
+                                    stroke="rgba(34, 211, 238, 0.3)" 
+                                    strokeWidth="1" 
+                                    strokeDasharray="3,3"
+                                />
+                            );
+                        })}
+                    </svg>
+                </div>
+            ))}
 
             {/* Clusters (Real Redis Data) */}
             {clusters.length === 0 && !loading && (

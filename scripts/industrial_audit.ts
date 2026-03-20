@@ -1,4 +1,4 @@
-
+import { fileURLToPath } from 'node:url';
 import { resonanceService } from '../src/services/ResonanceService.js';
 import { cognitiveEngine } from '../src/infrastructure/CognitiveEngine.js';
 import { policyEngine } from '../src/services/PolicyEngine.js';
@@ -11,7 +11,7 @@ import { semanticBusService } from '../src/services/SemanticBusService.js';
  * This script simulates a realistic swarm session and verifies
  * that the ObservabilityService captures all critical system events.
  */
-async function runIndustrialAudit() {
+export async function runIndustrialAudit() {
     console.log(`🧪 Starting Phase 12: Industrial Audit & Telemetry Verification...`);
     console.log(`   🔸 Environment - VECTOR_SERVICE_URL: ${process.env.VECTOR_SERVICE_URL || 'undefined (using default)'}`);
 
@@ -77,18 +77,31 @@ async function runIndustrialAudit() {
     const expected = ['RESONANCE', 'CONFLICT', 'POLICY'];
     const missing = expected.filter(t => !typesFound.has(t as any));
 
-    if (missing.length === 0) {
+    const success = missing.length === 0;
+
+    if (success) {
         console.log("   ✅ All telemetry channels are firing correctly.");
     } else {
         console.warn(`   ⚠️ Missing telemetry channels: ${missing.join(', ')}`);
     }
 
     console.log("\n✨ Industrial Audit Complete.");
+
+    return {
+        success,
+        historyLength: history.length,
+        eventTypes: Array.from(typesFound),
+        missing,
+    };
 }
 
-runIndustrialAudit().then(() => {
-    process.exit(0);
-}).catch(err => {
-    console.error(err);
-    process.exit(1);
-});
+const isDirectExecution = process.argv[1] === fileURLToPath(import.meta.url);
+
+if (isDirectExecution) {
+    runIndustrialAudit().then(() => {
+        process.exit(0);
+    }).catch(err => {
+        console.error(err);
+        process.exit(1);
+    });
+}

@@ -44,6 +44,25 @@ export type SharedReceiptSummary = {
   bySubjectKind: Array<{ kind: string; count: number }>;
   byVerdict: Array<{ verdict: string; count: number }>;
   bySector: Array<{ sectorId: string; count: number }>;
+  browser: {
+    proofs: number;
+    byExecutionMode: Array<{ executionMode: string; count: number }>;
+    byEngine: Array<{ engine: string; count: number }>;
+    byHomeostasisStatus: Array<{ status: string; count: number }>;
+  };
+  commerce: {
+    lifecycleEvents: number;
+    byAction: Array<{ action: string; count: number }>;
+    byEscrowStatus: Array<{ status: string; count: number }>;
+    byBuyerId: Array<{ buyerId: string; count: number }>;
+    bySellerAgentProfileId: Array<{ sellerAgentProfileId: string; count: number }>;
+  };
+  storage: {
+    transfers: number;
+    byDirection: Array<{ direction: string; count: number }>;
+    byNamespace: Array<{ namespace: string; count: number }>;
+    byTenantId: Array<{ tenantId: string; count: number }>;
+  };
 };
 
 const RECEIPT_RETENTION_SECONDS = 90 * 24 * 60 * 60;
@@ -78,6 +97,21 @@ function countBy(values: string[]): Array<{ key: string; count: number }> {
   return Array.from(counts.entries())
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
     .map(([key, count]) => ({ key, count }));
+}
+
+function asString(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  return String(value);
+}
+
+function isCommerceAction(action: string): boolean {
+  return [
+    'CREATE_JOB_ORDER',
+    'FUND_ESCROW',
+    'DELIVER_JOB_ORDER',
+    'RELEASE_ESCROW',
+    'RAISE_DISPUTE',
+  ].includes(action);
 }
 
 export class SharedReceiptService {
@@ -166,6 +200,11 @@ export class SharedReceiptService {
 
   async getSummary(filters: SharedReceiptListFilters = {}): Promise<SharedReceiptSummary> {
     const records = await this.list({ ...filters, limit: MAX_LIST_LIMIT });
+    const commerceRecords = records.filter((record) =>
+      isCommerceAction(asString(record.receipt.operation?.action)),
+    );
+    const storageRecords = records.filter((record) => record.receipt.subject.kind === 'STORAGE_TRANSFER');
+    const browserRecords = records.filter((record) => record.receipt.subject.kind === 'BROWSER_TASK');
 
     return {
       total: records.length,
@@ -185,6 +224,55 @@ export class SharedReceiptService {
         sectorId: key,
         count,
       })),
+      browser: {
+        proofs: browserRecords.length,
+        byExecutionMode: countBy(browserRecords.map((record) => asString(record.receipt.payload?.executionMode))).map(({ key, count }) => ({
+          executionMode: key,
+          count,
+        })),
+        byEngine: countBy(browserRecords.map((record) => asString(record.receipt.payload?.engine))).map(({ key, count }) => ({
+          engine: key,
+          count,
+        })),
+        byHomeostasisStatus: countBy(browserRecords.map((record) => asString(record.receipt.trust?.status))).map(({ key, count }) => ({
+          status: key,
+          count,
+        })),
+      },
+      commerce: {
+        lifecycleEvents: commerceRecords.length,
+        byAction: countBy(commerceRecords.map((record) => asString(record.receipt.operation?.action))).map(({ key, count }) => ({
+          action: key,
+          count,
+        })),
+        byEscrowStatus: countBy(commerceRecords.map((record) => asString(record.receipt.refs?.escrowStatus))).map(({ key, count }) => ({
+          status: key,
+          count,
+        })),
+        byBuyerId: countBy(commerceRecords.map((record) => asString(record.receipt.refs?.buyerId))).map(({ key, count }) => ({
+          buyerId: key,
+          count,
+        })),
+        bySellerAgentProfileId: countBy(commerceRecords.map((record) => asString(record.receipt.refs?.sellerAgentProfileId))).map(({ key, count }) => ({
+          sellerAgentProfileId: key,
+          count,
+        })),
+      },
+      storage: {
+        transfers: storageRecords.length,
+        byDirection: countBy(storageRecords.map((record) => asString(record.receipt.refs?.direction))).map(({ key, count }) => ({
+          direction: key,
+          count,
+        })),
+        byNamespace: countBy(storageRecords.map((record) => asString(record.receipt.refs?.namespace))).map(({ key, count }) => ({
+          namespace: key,
+          count,
+        })),
+        byTenantId: countBy(storageRecords.map((record) => asString(record.receipt.refs?.tenantId))).map(({ key, count }) => ({
+          tenantId: key,
+          count,
+        })),
+      },
     };
   }
 }

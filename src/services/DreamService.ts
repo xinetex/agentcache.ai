@@ -81,8 +81,8 @@ export class DreamService {
             const morphism = await this.synthesizeMorphism(run.id);
             if (morphism) {
                 // Security Check: Intent Drift (Phase 35)
-                if (morphism.latentDelta) {
-                    const { drifted } = await cognitiveEngine.detectIntentDrift(morphism.latentDelta);
+                if (morphism.latentDelta && typeof (cognitiveEngine as any).detectIntentDrift === 'function') {
+                    const { drifted } = await (cognitiveEngine as any).detectIntentDrift(morphism.latentDelta);
                     if (drifted) {
                         console.warn(`[DreamService] 🚫 Morphism for run ${run.id} rejected due to extreme Intent Drift.`);
                         insights.push(`Rejected drifted morphism for run: ${run.id}`);
@@ -114,6 +114,7 @@ export class DreamService {
             .where(eq(periscopeSteps.runId, runId))
             .orderBy(periscopeSteps.index);
 
+        console.log(`[DreamService] 🔎 Steps found for run ${runId}: ${steps.length}`);
         if (steps.length === 0) return null;
 
         const stepIds = steps.map(s => s.id);
@@ -148,16 +149,17 @@ Return JSON only: {
   "reasoning": "Why this change fixes the issue"
 }`;
 
-        // Using validateMemory as a generic LLM proxy for prototype, 
-        // in prod this would be a specialized 'reason' call.
         const result = await cognitiveEngine.validateMemory(reasoningPrompt);
+        const resultText = result.reason || '{}';
+        console.log('[DreamService] 🧠 LLM Reasoning Result:', resultText.substring(0, 100) + '...');
         
         try {
-            const morphismData = JSON.parse(result.reason || '{}');
+            const jsonMatch = resultText.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) return null;
+
+            const morphismData = JSON.parse(jsonMatch[0]);
             if (morphismData.intent && morphismData.actionSequence) {
-                // Integrate Latent Manipulator Formula
                 const latentDelta = this.synthesizeLatentDelta(traceSummary);
-                
                 return {
                     ...morphismData,
                     latentDelta

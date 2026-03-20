@@ -20,8 +20,9 @@ import './providers/grok.js';
 import './providers/perplexity.js';
 import './providers/inception.js';
 import './providers/ollama.js';
+import './providers/abacus.js';
 
-export type ProviderType = 'openai' | 'anthropic' | 'gemini' | 'moonshot' | 'grok' | 'perplexity' | 'inception' | 'ollama';
+export type ProviderType = 'openai' | 'anthropic' | 'gemini' | 'moonshot' | 'grok' | 'perplexity' | 'inception' | 'ollama' | 'abacus';
 
 export class LLMFactory {
     /**
@@ -35,6 +36,7 @@ export class LLMFactory {
         grok: process.env.AI_GATEWAY_API_KEY,
         perplexity: process.env.PERPLEXITY_API_KEY,
         inception: process.env.INCEPTION_API_KEY,
+        abacus: process.env.ABACUS_API_KEY,
     };
 
     /**

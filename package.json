@@ -1,6 +1,11 @@
 {
+  "private": true,
   "name": "agentcache-ai",
   "version": "1.0.0",
+  "workspaces": [
+    "packages/*",
+    "sdk"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -14,8 +19,11 @@
     "mcp:start": "node dist/mcp/server.js",
     "sigil": "tsx src/cli/sigil.ts",
     "test": "vitest",
+    "test:ops": "vitest --run tests/unit/operations-scripts.test.ts",
     "test:verification": "vitest --run tests/unit/cognitive-memory.test.ts tests/claims/cognitive-claims.test.ts tests/contracts/public-api.contract.test.ts",
-    "typecheck:ops": "tsc --noEmit --pretty false -p tsconfig.operations.json"
+    "verify:lyve": "node --import tsx ./scripts/verify_lyve_storage.ts",
+    "typecheck:ops": "tsc --noEmit --pretty false -p tsconfig.operations.json",
+    "orchestrate:buildout": "node --import tsx ./scripts/orchestrate-buildout.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1004.0",
@@ -42,6 +50,7 @@
     "hono": "^4.10.6",
     "inngest": "^3.46.0",
     "ioredis": "^5.8.2",
+    "js-yaml": "^4.1.1",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.555.0",
     "node-fetch": "^2.7.0",

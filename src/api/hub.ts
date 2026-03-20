@@ -33,7 +33,7 @@ import {
 } from '../lib/hub/registry.js';
 import { ParticipantAgent } from '../agents/ParticipantAgent.js';
 import { db } from '../db/client.js';
-import { hubAgentBadges, hubFocusGroupResponses } from '../db/schema.js';
+import { hubAgentBadges, hubFocusGroupResponses, organizations } from '../db/schema.js';
 
 const hubRouter = new Hono();
 

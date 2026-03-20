@@ -245,11 +245,12 @@ export class PeriscopeService {
 
     private getDefaultStats() {
         return {
-            avgLatencyMs: 500,
-            p95LatencyMs: 1000,
-            avgTokenCost: 1000,
-            successRate: 0.9,
-            cacheHitRate: 0.5
+            // Unknown paths should be penalized relative to observed successful paths.
+            avgLatencyMs: 2500,
+            p95LatencyMs: 5000,
+            avgTokenCost: 3000,
+            successRate: 0.35,
+            cacheHitRate: 0.05
         };
     }
 }

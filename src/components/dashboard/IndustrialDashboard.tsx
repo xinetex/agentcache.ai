@@ -7,6 +7,7 @@ import { RevenueMonitor } from './RevenueMonitor.js';
 import AgentLeaderboard from './AgentLeaderboard.js';
 import { CognitiveMap } from './CognitiveMap.js';
 import { ComplianceHealthMonitor } from './ComplianceHealthMonitor.js';
+import { SoulprintTrustPanel } from './SoulprintTrustPanel.js';
 
 export default function IndustrialDashboard() {
     const [stats, setStats] = useState<any>(null);
@@ -67,10 +68,11 @@ export default function IndustrialDashboard() {
                 </div>
 
                 {/* Middle row: Substrate Health & Market */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 shrink-0">
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 gap-6 shrink-0">
                     <MoltbookGrowthPanel />
                     <ComplianceHealthMonitor />
-                    <MemoryFabricROIPanel fabric={stats?.fabric} />
+                    <MemoryFabricROIPanel fabric={stats?.fabric} browserProof={stats?.browserProof} />
+                    <SoulprintTrustPanel externalAgents={stats?.externalAgents} />
                     <RevenueMonitor />
                 </div>
 

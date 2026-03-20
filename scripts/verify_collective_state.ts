@@ -5,10 +5,11 @@
  * verify_collective_state.ts: Verifies Pillar 2 (Cross-Domain Shared State).
  */
 
+import { fileURLToPath } from 'node:url';
 import { collectiveCortex } from '../src/services/CollectiveCortex.js';
 import { sectorSolutionOrchestrator } from '../src/services/SectorSolutionOrchestrator.js';
 
-async function verify() {
+export async function verifyCollectiveState() {
     console.log('🧪 Pillar 2: Cross-Domain Shared State Verification...');
 
     // 1. Spawn Two Specialized Agents
@@ -48,13 +49,27 @@ async function verify() {
     const fintechDirective = await collectiveCortex.getDirective(session.id, fintechAgent.agentId);
     const legalDirective = await collectiveCortex.getDirective(session.id, legalAgent.agentId);
 
-    if (fintechDirective && legalDirective) {
+    const success = !!(fintechDirective && legalDirective);
+
+    if (success) {
         console.log('\n✅ CROSS-DOMAIN CONVERGENCE ATTAINED!');
         console.log(`[Directive for FINTECH]: ${fintechDirective}`);
         console.log(`[Directive for LEGAL]: ${legalDirective}`);
     } else {
         console.error('❌ Convergence failed or directives not found.');
     }
+
+    return {
+        success,
+        sessionId: session.id,
+        indexed: !!registered,
+        fintechDirective,
+        legalDirective,
+    };
 }
 
-verify().catch(console.error);
+const isDirectExecution = process.argv[1] === fileURLToPath(import.meta.url);
+
+if (isDirectExecution) {
+    verifyCollectiveState().catch(console.error);
+}

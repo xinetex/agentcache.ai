@@ -14,6 +14,7 @@ import Stripe from 'stripe';
 import { db } from '../db/client.js';
 import { users, organizations, members } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
+import { memoryFabricBillingService } from '../services/MemoryFabricBillingService.js';
 
 const app = new Hono<{ Variables: { user: any } }>();
 // Initialize Stripe lazily
@@ -107,16 +108,27 @@ app.post('/upgrade', async (c) => {
 app.get('/usage', async (c) => {
     const user = c.get('user');
 
-    // Stub for now - aggregation is complex
-    return c.json({
-        plan: user.plan || 'free',
-        usage: {
-            requests: 0,
-            limit: 10000,
-            remaining: 10000
-        },
-        message: 'Usage tracking pending migration to user-level aggregation.'
-    });
+    try {
+        const summary = await memoryFabricBillingService.getSummary({ accountId: user.id });
+
+        return c.json({
+            plan: user.plan || 'free',
+            usage: {
+                requests: summary.operations,
+                credits: summary.totalCreditsEstimated,
+                usd: summary.usdEquivalent,
+                breakdown: {
+                    reads: summary.reads,
+                    writes: summary.writes,
+                    proofs: summary.browserProofs
+                }
+            },
+            skus: summary.bySku
+        });
+    } catch (error) {
+        console.error('[Billing] Usage fetch failed:', error);
+        return c.json({ error: 'Failed to fetch usage metrics' }, 500);
+    }
 });
 
 export default app;

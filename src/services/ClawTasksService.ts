@@ -17,7 +17,8 @@
  * Auth: Bearer token from CLAWTASKS_API_KEY env var
  */
 
-import { openClaw } from '../lib/openclaw.js';
+import { LLMFactory } from '../lib/llm/factory.js';
+import { router } from '../lib/llm/router.js';
 
 const CLAWTASKS_API = 'https://clawtasks.com/api';
 const AGENT_NAME = 'AgentCache_TrustBroker';
@@ -107,7 +108,7 @@ export class ClawTasksService {
             await this.fetch('/agents/me', {
                 method: 'PATCH',
                 body: JSON.stringify({
-                    bio: "I am the Trust Broker. I verify claims, fact-check statements, and audit posts using multi-modal AI reasoning powered by Kimi 2.5.",
+                    bio: "I am the Trust Broker. I verify claims, fact-check statements, and audit posts using a Dual Stack AI reasoning framework (Brain/Hands) for maximum accuracy and speed.",
                     specialties: ["verification", "fact-checking", "truth", "audit", "research", "writing"],
                     available: true
                 })
@@ -200,10 +201,13 @@ export class ClawTasksService {
     }
 
     /**
-     * Actually do the bounty work using Kimi 2.5
+     * Actually do the bounty work using the optimal model from the ModelRouter
      */
     async doWork(bounty: ClawTasksBounty): Promise<string> {
-        const systemPrompt = `You are the AgentCache Trust Broker, powered by Kimi 2.5. 
+        const route = router.routeByTaskType('bounty');
+        const llm = LLMFactory.createProvider(route.provider as any);
+
+        const systemPrompt = `You are the AgentCache Trust Broker. 
 You specialize in fact-checking, verification, research, and analysis.
 Complete the following bounty task to the best of your ability.
 Be thorough but concise. If asked to verify something, provide evidence and reasoning.`;
@@ -216,10 +220,15 @@ ${bounty.description}
 Complete this task and provide your response:`;
 
         try {
-            const response = await openClaw.complete(userPrompt, systemPrompt);
-            return response;
+            console.log(`[ClawTasks] Executing bounty with ${route.model} (${route.tier})`);
+            const response = await llm.chat([
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt }
+            ], { model: route.model, temperature: 0.2 });
+
+            return response.content;
         } catch (err) {
-            console.error('[ClawTasks] Kimi work failed:', err);
+            console.error(`[ClawTasks] LLM work failed using ${route.model}:`, err);
             return `Error completing task: ${err}`;
         }
     }

@@ -4,8 +4,10 @@
     "src/**/*",
     "api/**/*",
     "scripts/industrial_audit.ts",
+    "scripts/verify_lyve_storage.ts",
     "scripts/verify_collective_state.ts",
-    "scripts/verify_marketplace.ts"
+    "scripts/verify_marketplace.ts",
+    "scripts/verify_edge_intelligence.ts"
   ],
   "exclude": [
     "node_modules",

@@ -55,11 +55,13 @@ Use:
 
 - `buildBotCycleReceipt`
 - `buildPerformanceSnapshotReceipt`
+- `buildStorageTransferReceipt`
 
 Good subjects:
 
 - `BOT_CYCLE`
 - `PERFORMANCE_SNAPSHOT`
+- `STORAGE_TRANSFER`
 - `TRADE_INTENT`
 - `TRADE_EXECUTION`
 
@@ -141,9 +143,53 @@ const receipt = buildTrustExportReceipt({
 });
 ```
 
+## Minimal JettyThunder / Lyve Example
+
+```ts
+import { buildStorageTransferReceipt } from '../contracts/shared-receipt-builders.js';
+
+const receipt = buildStorageTransferReceipt({
+  receiptId: `lyve-transfer-${transfer.id}`,
+  producer: {
+    system: 'JETTYAGENT',
+    id: 'maxxeval.com',
+    role: 'storage-runtime',
+  },
+  transferId: transfer.id,
+  route: '/api/jetty-speed/chunk',
+  provider: 'lyve',
+  environment: 'production',
+  direction: 'upload',
+  storageClass: 'durable-object',
+  ontology: {
+    sectorId: 'infrastructure',
+    ontologyRef: 'storage@v1',
+    signClass: 'transfer-proof',
+    confidence: 0.9,
+  },
+  trust: {
+    verdict: 'PASS',
+    confidence: 0.91,
+  },
+  refs: {
+    fileId: transfer.fileId,
+    bucket: transfer.bucket,
+    edgeId: transfer.edgeId,
+  },
+  telemetry: {
+    bytesTransferred: transfer.bytesTransferred,
+    multipart: transfer.multipart,
+  },
+  secret: process.env.SHARED_RECEIPT_SECRET,
+});
+```
+
+Storage receipts should prefer references over raw objects. Keep bucket names, file ids, object keys,
+ETags, signed-url refs, and transfer hashes in `refs` or `evidence.attachments`, not full payload blobs.
+
 ## Next Cross-Repo Implementation Order
 
-1. `jettyagent` emits readonly `maxxeval.com` bot-cycle and performance receipts
+1. `jettyagent` emits readonly `maxxeval.com` bot-cycle, performance, and storage-transfer receipts
 2. `maxxeval` emits trust-export and paid-route receipts in the same contract
 3. both repos POST those receipts into AgentCache
 4. MaxxEval later persists the same envelope inside its own `ExecutionReceipt.metadataJson`

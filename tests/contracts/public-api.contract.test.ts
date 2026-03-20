@@ -1,6 +1,13 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { attachSharedReceiptSignature, buildSharedReceipt } from '../../src/contracts/shared-receipt.js';
 
+const mockVideoCacheGet = vi.fn(async (path: string) => {
+  if (path === 'test/sample.mp4') return Buffer.from('video-data');
+  return null;
+});
+
+const mockVideoCacheGetL1Stats = vi.fn(async () => ({ hits: 2, misses: 1 }));
+
 vi.mock('../../src/services/ArmorService.js', () => ({
   ArmorService: class {
     async checkRequest() {
@@ -22,6 +29,90 @@ vi.mock('../../src/api/clawsave.js', () => ({
 
 vi.mock('../../src/lib/llm/embeddings.js', () => ({
   generateEmbedding: async () => new Array(1536).fill(0.1),
+}));
+
+vi.mock('../../transcoder-service/videocache.js', () => ({
+  getVideoCache: () => ({
+    get: mockVideoCacheGet,
+    getL1Stats: mockVideoCacheGetL1Stats,
+  }),
+}));
+
+vi.mock('../../src/services/transcode-queue.js', () => ({
+  submitTranscodeJob: async () => 'job-test-123',
+  getJobStatus: async (jobId: string) => ({
+    status: 'queued',
+    outputs: [],
+    error: null,
+    jobId,
+  }),
+  getQueueLength: async () => 3,
+}));
+
+vi.mock('../../src/services/edgeSelector.js', () => ({
+  edgeSelector: {
+    selectOptimalEdges: (
+      _edges: any[],
+      _metrics: any[],
+      _location: { lat: number; lng: number },
+      _priority: string,
+      topN: number
+    ) => Array.from({ length: topN }, (_, index) => ({
+      edge: {
+        id: `edge-${index + 1}`,
+        url: `https://edge-${index + 1}.agentcache.test`,
+        city: index === 0 ? 'Detroit' : `Edge ${index + 1}`,
+        country: 'US',
+        lat: 42.33,
+        lng: -83.05,
+        provider: 'agentcache',
+      },
+      distance: index * 10,
+      score: 100 - index,
+      weight: 1 - index * 0.1,
+      latency: 25 + index,
+      load: 0.2 + index * 0.05,
+    })),
+  },
+}));
+
+vi.mock('../../src/services/jettySpeedDb.js', () => ({
+  jettySpeedDb: {
+    getActiveEdges: async () => [
+      { id: 'edge-1', url: 'https://edge-1.agentcache.test' },
+      { id: 'edge-2', url: 'https://edge-2.agentcache.test' },
+    ],
+    getAllEdgeMetrics: async () => [
+      { edgeId: 'edge-1', latencyMs: 25, load: 0.2 },
+      { edgeId: 'edge-2', latencyMs: 30, load: 0.25 },
+    ],
+  },
+}));
+
+vi.mock('../../src/services/provisioning.js', () => ({
+  generateApiKey: async ({ integration }: { integration: string }) => `ac_${integration}_mock_provisioned_key`,
+  createNamespace: async ({ name }: { name: string }) => name,
+  recordInstallation: async ({ user_id, project_id, namespace }: { user_id: string; project_id: string; namespace: string }) => ({
+    id: 'installation-1',
+    user_id,
+    project_id,
+    namespace,
+  }),
+  validateApiKey: async (key: string) => {
+    if (key !== 'ac_valid_contract_key') {
+      return null;
+    }
+
+    return {
+      key,
+      user_id: 'contract-user',
+      integration: 'jettythunder',
+      project_id: 'jettythunder-production',
+      rate_limit: 10_000_000,
+      usage_count: 7,
+      created_at: new Date('2026-03-01T12:00:00.000Z'),
+    };
+  },
 }));
 
 vi.mock('../../src/lib/vector.js', () => ({
@@ -272,6 +363,8 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(stats.payload.fabric).toBeDefined();
     expect(typeof stats.payload.fabric.analytics.summary.totalOperations).toBe('number');
     expect(typeof stats.payload.fabric.accounting.totalCreditsEstimated).toBe('number');
+    expect(stats.payload.externalAgents).toBeDefined();
+    expect(typeof stats.payload.externalAgents.total).toBe('number');
   }, 20000);
 
   it('exposes joint objective sessions without colliding with legacy session history keys', async () => {
@@ -312,35 +405,43 @@ describe.sequential('AgentCache public API contracts', () => {
       issuedAt: new Date().toISOString(),
       producer: {
         system: 'JETTYAGENT',
-        id: 'maxxpoly',
-        role: 'autopilot',
+        id: 'maxxeval.com',
+        role: 'storage-runtime',
       },
       subject: {
-        kind: 'BOT_CYCLE',
-        id: unique('cycle'),
+        kind: 'STORAGE_TRANSFER',
+        id: unique('storage-transfer'),
+        route: '/api/jetty-speed/chunk',
       },
       operation: {
-        action: 'autopilot.tick',
+        action: 'storage.upload_file',
+        provider: 'lyve',
+        route: '/api/jetty-speed/chunk',
+        method: 'PUT',
         environment: 'prod',
       },
       ontology: {
-        sectorId: 'finance',
-        ontologyRef: 'finance@v1',
+        sectorId: 'infrastructure',
+        ontologyRef: 'storage@v1',
         confidence: 0.91,
       },
       economics: {
-        sku: 'finance-memory-fabric',
-        latencyMs: 1200,
+        sku: 'storage-evidence',
+        latencyMs: 240,
       },
       trust: {
-        verdict: 'INFO',
-        confidence: 0.77,
+        verdict: 'PASS',
+        confidence: 0.91,
       },
       telemetry: {
-        cyclePnlUsd: 3.42,
+        bytesTransferred: 1048576,
       },
       refs: {
-        marketId: 'kalshi:NBG1',
+        direction: 'upload',
+        namespace: 'tenant',
+        tenantId: 9,
+        userId: 42,
+        objectKey: 'tenants/9/users/42/files/storage-proof.bin',
       },
     }), process.env.SHARED_RECEIPT_SECRET);
 
@@ -356,17 +457,314 @@ describe.sequential('AgentCache public API contracts', () => {
 
     const fetched = await request(`/api/receipts/${receipt.receiptId}`, undefined, 'GET');
     expect(fetched.response.status).toBe(200);
-    expect(fetched.payload.receipt.subject.kind).toBe('BOT_CYCLE');
-    expect(fetched.payload.receipt.ontology.sectorId).toBe('finance');
+    expect(fetched.payload.receipt.subject.kind).toBe('STORAGE_TRANSFER');
+    expect(fetched.payload.receipt.ontology.sectorId).toBe('infrastructure');
 
     const summary = await request('/api/receipts/summary?producerSystem=JETTYAGENT', undefined, 'GET');
     expect(summary.response.status).toBe(200);
     expect(summary.payload.summary.total).toBeGreaterThanOrEqual(1);
     expect(summary.payload.summary.byProducerSystem[0].system).toBe('JETTYAGENT');
+    expect(summary.payload.summary.storage.transfers).toBeGreaterThanOrEqual(1);
+    expect(summary.payload.summary.storage.byDirection).toEqual(
+      expect.arrayContaining([{ direction: 'upload', count: 1 }]),
+    );
+    expect(summary.payload.summary.storage.byNamespace).toEqual(
+      expect.arrayContaining([{ namespace: 'tenant', count: 1 }]),
+    );
+    expect(summary.payload.summary.storage.byTenantId).toEqual(
+      expect.arrayContaining([{ tenantId: '9', count: 1 }]),
+    );
 
     const stats = await request('/api/stats', undefined, 'GET');
     expect(stats.response.status).toBe(200);
     expect(stats.payload.receipts.total).toBeGreaterThanOrEqual(1);
+    expect(stats.payload.browserProof).toBeDefined();
+  }, 10000);
+
+  it('summarizes MaxxEval commerce lifecycle receipts through the public receipt API', async () => {
+    process.env.SHARED_RECEIPT_SECRET = 'public-contract-receipt-secret';
+    const receipt = attachSharedReceiptSignature(buildSharedReceipt({
+      receiptId: unique('commerce-receipt'),
+      issuedAt: new Date().toISOString(),
+      producer: {
+        system: 'MAXXEVAL',
+        id: 'maxxeval.com',
+        role: 'trust-commerce-layer',
+      },
+      subject: {
+        kind: 'API_CALL',
+        id: unique('job-order'),
+        route: '/api/job-orders/[id]',
+      },
+      operation: {
+        action: 'FUND_ESCROW',
+        provider: 'maxxeval',
+        route: '/api/job-orders/[id]',
+        method: 'PATCH',
+        environment: 'prod',
+      },
+      ontology: {
+        sectorId: 'finance',
+        ontologyRef: 'finance@v1',
+        confidence: 0.89,
+      },
+      trust: {
+        verdict: 'PASS',
+        confidence: 0.95,
+      },
+      refs: {
+        buyerId: 'buyer-contract',
+        sellerAgentProfileId: 'seller-contract',
+        escrowStatus: 'HELD',
+      },
+    }), process.env.SHARED_RECEIPT_SECRET);
+
+    const ingested = await request('/api/receipts/ingest', receipt);
+    expect(ingested.response.status).toBe(201);
+
+    const summary = await request('/api/receipts/summary?producerSystem=MAXXEVAL', undefined, 'GET');
+    expect(summary.response.status).toBe(200);
+    expect(summary.payload.summary.commerce.lifecycleEvents).toBeGreaterThanOrEqual(1);
+    expect(summary.payload.summary.commerce.byAction).toEqual(
+      expect.arrayContaining([{ action: 'FUND_ESCROW', count: 1 }]),
+    );
+    expect(summary.payload.summary.commerce.byEscrowStatus).toEqual(
+      expect.arrayContaining([{ status: 'HELD', count: 1 }]),
+    );
+    expect(summary.payload.summary.commerce.byBuyerId).toEqual(
+      expect.arrayContaining([{ buyerId: 'buyer-contract', count: 1 }]),
+    );
+    expect(summary.payload.summary.commerce.bySellerAgentProfileId).toEqual(
+      expect.arrayContaining([{ sellerAgentProfileId: 'seller-contract', count: 1 }]),
+    );
+  }, 10000);
+
+  it('summarizes browser-proof receipts by execution mode and engine quality', async () => {
+    process.env.SHARED_RECEIPT_SECRET = 'public-contract-receipt-secret';
+    const receipt = attachSharedReceiptSignature(buildSharedReceipt({
+      receiptId: unique('browser-proof-receipt'),
+      issuedAt: new Date().toISOString(),
+      producer: {
+        system: 'MAXXEVAL',
+        id: 'maxxeval.com',
+        role: 'trust-commerce-layer',
+      },
+      subject: {
+        kind: 'BROWSER_TASK',
+        id: unique('browser-task'),
+        route: '/api/x402/v1/agentcache/browser/proof',
+      },
+      operation: {
+        action: 'CAPTURE_BROWSER_PROOF',
+        provider: 'agentcache',
+        route: '/api/x402/v1/agentcache/browser/proof',
+        method: 'GET',
+        environment: 'prod',
+      },
+      ontology: {
+        sectorId: 'finance',
+        ontologyRef: 'finance@v1',
+        confidence: 0.93,
+      },
+      trust: {
+        verdict: 'PASS',
+        confidence: 0.95,
+        status: 'stable',
+      },
+      payload: {
+        executionMode: 'lightpanda+firecrawl+http',
+        engine: 'lightpanda',
+      },
+    }), process.env.SHARED_RECEIPT_SECRET);
+
+    const ingested = await request('/api/receipts/ingest', receipt);
+    expect(ingested.response.status).toBe(201);
+
+    const summary = await request('/api/receipts/summary?producerSystem=MAXXEVAL', undefined, 'GET');
+    expect(summary.response.status).toBe(200);
+    expect(summary.payload.summary.browser.proofs).toBeGreaterThanOrEqual(1);
+    expect(summary.payload.summary.browser.byExecutionMode).toEqual(
+      expect.arrayContaining([{ executionMode: 'lightpanda+firecrawl+http', count: 1 }]),
+    );
+    expect(summary.payload.summary.browser.byEngine).toEqual(
+      expect.arrayContaining([{ engine: 'lightpanda', count: 1 }]),
+    );
+    expect(summary.payload.summary.browser.byHomeostasisStatus).toEqual(
+      expect.arrayContaining([{ status: 'stable', count: 1 }]),
+    );
+
+    const stats = await request('/api/stats', undefined, 'GET');
+    expect(stats.response.status).toBe(200);
+    expect(stats.payload.browserProof.proofs).toBeGreaterThanOrEqual(1);
+    expect(stats.payload.browserProof.byEngine).toEqual(
+      expect.arrayContaining([{ engine: 'lightpanda', count: 1 }]),
+    );
+  }, 10000);
+
+  it('registers an external agent and records a Soulprint scan receipt', async () => {
+    const registration = await request('/api/external-agents/register', {
+      externalSystem: 'moltbook',
+      externalAgentId: unique('moltbot'),
+      displayName: 'Moltbook Research Bot',
+      profileUrl: 'https://moltbook.com/bots/research-bot',
+      metadata: {
+        vertical: 'finance',
+      },
+    });
+
+    expect(registration.response.status).toBe(201);
+    expect(registration.payload.success).toBe(true);
+    expect(registration.payload.registration.status).toBe('pending');
+    expect(typeof registration.payload.registration.challengeToken).toBe('string');
+
+    const verified = await request(`/api/external-agents/${registration.payload.registration.id}/verify`, {
+      ownershipProof: registration.payload.registration.challengeToken,
+    });
+    expect(verified.response.status).toBe(200);
+    expect(verified.payload.registration.status).toBe('verified');
+
+    const soulprint = await request(`/api/external-agents/${registration.payload.registration.id}/soulprint`, {
+      sector: 'finance',
+      confidence: 0.91,
+      summary: 'Risk-sensitive bot with strong escalation instincts.',
+      sources: [
+        {
+          kind: 'prompt-template',
+          ref: 'moltbook://bot/research-bot/system-prompt',
+          excerpt: 'Escalate when confidence drops below 0.7.',
+        },
+      ],
+      findings: [
+        {
+          category: 'escalation',
+          summary: 'Escalates aggressively under low-confidence states.',
+          severity: 'medium',
+        },
+      ],
+      biasFlags: ['recency_bias', 'authority_bias'],
+      topology: {
+        escalationBias: 0.81,
+        authorityBias: 0.72,
+      },
+    });
+
+    expect(soulprint.response.status).toBe(201);
+    expect(soulprint.payload.success).toBe(true);
+    expect(soulprint.payload.receipt.subject.kind).toBe('SOULPRINT_SCAN');
+    expect(soulprint.payload.receipt.refs.registrationId).toBe(registration.payload.registration.id);
+
+    const listed = await request('/api/external-agents', undefined, 'GET');
+    expect(listed.response.status).toBe(200);
+    expect(listed.payload.registrations.some((item: any) => item.id === registration.payload.registration.id)).toBe(true);
+
+    const receipt = await request(`/api/receipts/${soulprint.payload.receiptId}`, undefined, 'GET');
+    expect(receipt.response.status).toBe(200);
+    expect(receipt.payload.receipt.subject.kind).toBe('SOULPRINT_SCAN');
+  }, 10000);
+
+  it('can derive a Soulprint from uploaded config artifacts', async () => {
+    const registration = await request('/api/external-agents/register', {
+      externalSystem: 'generic',
+      externalAgentId: unique('external-bot'),
+      displayName: 'External Finance Bot',
+    });
+
+    expect(registration.response.status).toBe(201);
+
+    const verified = await request(`/api/external-agents/${registration.payload.registration.id}/verify`, {
+      ownershipProof: registration.payload.registration.challengeToken,
+    });
+    expect(verified.response.status).toBe(200);
+
+    const soulprint = await request(`/api/external-agents/${registration.payload.registration.id}/soulprint`, {
+      artifacts: [
+        {
+          kind: 'system-prompt',
+          ref: 'file://SOUL.md',
+          content: 'Always escalate to human review for policy breaches. Use the latest market information and approved sources only.',
+        },
+        {
+          kind: 'skill',
+          ref: 'file://SKILL.md',
+          content: 'Brainstorm multiple approaches for Kalshi market analysis and risk decisions.',
+        },
+      ],
+    });
+
+    expect(soulprint.response.status).toBe(201);
+    expect(soulprint.payload.soulprint.sector).toBe('finance');
+    expect(soulprint.payload.soulprint.biasFlags).toEqual(
+      expect.arrayContaining(['escalation_bias', 'recency_bias', 'authority_bias', 'exploration_bias']),
+    );
+    expect(soulprint.payload.receipt.subject.kind).toBe('SOULPRINT_SCAN');
+  }, 10000);
+
+  it('summarizes external agents and exposes Soulprint reports', async () => {
+    const registration = await request('/api/external-agents/register', {
+      externalSystem: 'moltbook',
+      externalAgentId: unique('summary-agent'),
+      displayName: 'Summary Agent',
+    });
+
+    expect(registration.response.status).toBe(201);
+
+    const verified = await request(`/api/external-agents/${registration.payload.registration.id}/verify`, {
+      ownershipProof: registration.payload.registration.challengeToken,
+    });
+    expect(verified.response.status).toBe(200);
+
+    const soulprint = await request(`/api/external-agents/${registration.payload.registration.id}/soulprint`, {
+      artifacts: [
+        {
+          kind: 'system-prompt',
+          ref: 'moltbook://bot/summary-agent/system-prompt',
+          content: 'Use the latest market risk data and escalate to human review for uncertain Kalshi trading moves.',
+        },
+      ],
+    });
+
+    expect(soulprint.response.status).toBe(201);
+
+    const summary = await request('/api/external-agents/summary', undefined, 'GET');
+    expect(summary.response.status).toBe(200);
+    expect(summary.payload.success).toBe(true);
+    expect(summary.payload.summary.total).toBeGreaterThanOrEqual(1);
+    expect(summary.payload.summary.verified).toBeGreaterThanOrEqual(1);
+    expect(summary.payload.summary.withSoulprint).toBeGreaterThanOrEqual(1);
+    expect(summary.payload.summary.bySystem).toEqual(
+      expect.arrayContaining([expect.objectContaining({ system: 'moltbook' })]),
+    );
+    expect(summary.payload.summary.bySector).toEqual(
+      expect.arrayContaining([expect.objectContaining({ sector: 'finance' })]),
+    );
+    expect(summary.payload.summary.byBiasFlag).toEqual(
+      expect.arrayContaining([expect.objectContaining({ biasFlag: 'escalation_bias' })]),
+    );
+
+    const stats = await request('/api/stats', undefined, 'GET');
+    expect(stats.response.status).toBe(200);
+    expect(stats.payload.externalAgents.total).toBeGreaterThanOrEqual(1);
+    expect(stats.payload.externalAgents.withSoulprint).toBeGreaterThanOrEqual(1);
+
+    const report = await request(
+      `/api/external-agents/${registration.payload.registration.id}/soulprint/report`,
+      undefined,
+      'GET',
+    );
+    expect(report.response.status).toBe(200);
+    expect(report.payload.success).toBe(true);
+    expect(report.payload.registration.id).toBe(registration.payload.registration.id);
+    expect(report.payload.soulprint.sector).toBe('finance');
+    expect(report.payload.soulprint.findings.length).toBeGreaterThan(0);
+    expect(report.payload.receipt.subject.kind).toBe('SOULPRINT_SCAN');
+
+    const observability = await app.request('/api/observability/stats');
+    expect(observability.status).toBe(200);
+    const observabilityPayload = await observability.json();
+    expect(observabilityPayload.externalAgents.total).toBeGreaterThanOrEqual(1);
+    expect(observabilityPayload.externalAgents.bySector).toEqual(
+      expect.arrayContaining([expect.objectContaining({ sector: 'finance' })]),
+    );
   }, 10000);
 
   it('runs a pathological assessment and records a hardening receipt', async () => {
@@ -408,5 +806,203 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(summary.payload.success).toBe(true);
     expect(summary.payload.summary.total).toBeGreaterThanOrEqual(1);
     expect(summary.payload.summary.bySubjectKind.some((item: any) => item.kind === 'PATHOLOGY_RUN')).toBe(true);
+  }, 10000);
+
+  it('exposes local audio1.tv and JettyThunder route contracts through the app surface', async () => {
+    mockVideoCacheGet.mockClear();
+    const originalFetch = globalThis.fetch;
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+
+      if (url === 'http://localhost:3000/api/admin/goap/execute') {
+        return new Response(JSON.stringify({ success: true, planned: true }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      if (url === 'https://lyve-upload.example/chunk') {
+        return new Response(null, {
+          status: 200,
+          headers: { ETag: '"lyve-etag-123"' },
+        });
+      }
+
+      if (url === 'https://lyve-download.example/chunk') {
+        return new Response('lyve-chunk-data', {
+          status: 200,
+          headers: { 'Content-Type': 'application/octet-stream' },
+        });
+      }
+
+      return originalFetch(input as any, init);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    try {
+      const cdnMissingParams = await request('/api/cdn/stream', undefined, 'GET');
+      expect(cdnMissingParams.response.status).toBe(400);
+      expect(cdnMissingParams.payload.error).toContain('Missing path');
+
+      const cdnFoundResponse = await app.request('/api/cdn/stream?path=test/sample.mp4', {
+        method: 'GET',
+        headers: {
+          'X-API-Key': apiKey,
+        },
+      });
+      expect(cdnFoundResponse.status).toBe(200);
+      expect(cdnFoundResponse.headers.get('X-VideoCache')).toBe('HIT');
+      expect(await cdnFoundResponse.text()).toBe('video-data');
+
+      const cdnStatus = await request('/api/cdn/status', undefined, 'GET');
+      expect(cdnStatus.response.status).toBe(200);
+      expect(cdnStatus.payload.component).toBe('cdn');
+      expect(cdnStatus.payload.cache.enabled).toBe(true);
+      expect(cdnStatus.response.headers.get('X-Customer-Id')).toBe('audio1_tv');
+      expect(cdnStatus.response.headers.get('X-Service-Category')).toBe('cdn_streaming');
+
+      const cdnWarm = await request('/api/cdn/warm', {
+        paths: ['test/sample.mp4', 'test/missing-preview.jpg'],
+      }, 'POST');
+      expect(cdnWarm.response.status).toBe(200);
+      expect(cdnWarm.payload.success).toBe(true);
+      expect(cdnWarm.payload.warmed).toEqual(['test/sample.mp4', 'test/missing-preview.jpg']);
+      expect(cdnWarm.response.headers.get('X-Customer-Id')).toBe('audio1_tv');
+      expect(cdnWarm.response.headers.get('X-Service-Category')).toBe('cdn_streaming');
+      expect(mockVideoCacheGet).toHaveBeenCalledWith('test/sample.mp4');
+      expect(mockVideoCacheGet).toHaveBeenCalledWith('test/missing-preview.jpg');
+
+      const transcodeReject = await request('/api/transcode/submit', {}, 'POST');
+      expect(transcodeReject.response.status).toBe(400);
+      expect(transcodeReject.payload.error).toContain('inputKey');
+
+      const transcodeSubmit = await request('/api/transcode/submit', {
+        inputKey: 'test/source-video.mp4',
+        profile: 'roku-hls',
+      }, 'POST');
+      expect(transcodeSubmit.response.status).toBe(200);
+      expect(transcodeSubmit.payload.jobId).toBe('job-test-123');
+      expect(transcodeSubmit.payload.status).toBe('queued');
+      expect(transcodeSubmit.response.headers.get('X-Customer-Id')).toBe('audio1_tv');
+      expect(transcodeSubmit.response.headers.get('X-Service-Category')).toBe('transcoding');
+
+      const transcodeStatus = await request('/api/transcode/status/test-job-123', undefined, 'GET');
+      expect(transcodeStatus.response.status).toBe(200);
+      expect(transcodeStatus.payload.jobId).toBe('test-job-123');
+      expect(transcodeStatus.payload.status).toBe('queued');
+
+      const transcodeJobs = await request('/api/transcode/jobs', undefined, 'GET');
+      expect(transcodeJobs.response.status).toBe(200);
+      expect(transcodeJobs.payload.queueLength).toBe(3);
+
+      const transcodeCancel = await request('/api/transcode/cancel/test-job-123', {}, 'POST');
+      expect(transcodeCancel.response.status).toBe(501);
+      expect(transcodeCancel.payload.success).toBe(false);
+      expect(transcodeCancel.payload.message).toContain('not yet implemented');
+
+      const provision = await request('/api/provision/jettythunder', {}, 'POST');
+      expect(provision.response.status).toBe(201);
+      expect(provision.payload.success).toBe(true);
+      expect(provision.payload.api_key).toMatch(/^ac_/);
+      expect(provision.payload.namespace).toBe('jettythunder_production');
+      expect(provision.payload.environment).toBe('production');
+      expect(provision.payload.integration_guide.env_vars.AGENTCACHE_API_KEY).toMatch(/^ac_/);
+      expect(provision.payload.tier).toBe('enterprise');
+      expect(provision.response.headers.get('X-Customer-Id')).toBe('jettythunder_app');
+      expect(provision.response.headers.get('X-Service-Category')).toBe('file_provisioning');
+
+      const edgeSelection = await request('/api/edges/optimal', {
+        lat: 42.3314,
+        lng: -83.0458,
+        fileSize: 1024,
+        priority: 'speed',
+        topN: 2,
+      }, 'POST');
+      expect(edgeSelection.response.status).toBe(200);
+      expect(edgeSelection.payload.edges).toHaveLength(2);
+      expect(edgeSelection.payload.edges[0].edge.url).toContain('edge-1.agentcache.test');
+      expect(edgeSelection.response.headers.get('X-Customer-Id')).toBe('jettythunder_app');
+      expect(edgeSelection.response.headers.get('X-Service-Category')).toBe('edge_routing');
+
+      const edgeMissingLatLng = await request('/api/edges/optimal', { fileSize: 1024 }, 'POST');
+      expect(edgeMissingLatLng.response.status).toBe(400);
+      expect(edgeMissingLatLng.payload.error).toContain('Missing lat/lng');
+
+      const chunkUpload = await app.request('/api/jetty-speed/chunk', {
+        method: 'POST',
+        headers: {
+          'X-API-Key': apiKey,
+          'X-File-Id': 'file-123',
+          'X-Chunk-Index': '0',
+          'X-Lyve-Upload-Url': 'https://lyve-upload.example/chunk',
+          'X-Edge-Id': 'edge-1',
+          'Content-Type': 'application/octet-stream',
+        },
+        body: 'chunk-data',
+      });
+      expect(chunkUpload.status).toBe(200);
+      expect(chunkUpload.headers.get('X-Customer-Id')).toBe('jettythunder_app');
+      expect(chunkUpload.headers.get('X-Service-Category')).toBe('chunk_caching');
+      const chunkUploadPayload = await chunkUpload.json();
+      expect(chunkUploadPayload.success).toBe(true);
+      expect(chunkUploadPayload.edgeId).toBe('edge-1');
+      expect(chunkUploadPayload.etag).toBe('"lyve-etag-123"');
+
+      const chunkCacheHit = await app.request('/api/jetty-speed/chunk/file-123/0', {
+        method: 'GET',
+        headers: {
+          'X-API-Key': apiKey,
+        },
+      });
+      expect(chunkCacheHit.status).toBe(200);
+      expect(chunkCacheHit.headers.get('X-Cache')).toBe('HIT');
+      expect(await chunkCacheHit.text()).toBe('chunk-data');
+
+      const chunkCacheMissFetch = await app.request('/api/jetty-speed/chunk/file-456/0', {
+        method: 'GET',
+        headers: {
+          'X-API-Key': apiKey,
+          'X-Lyve-Download-Url': 'https://lyve-download.example/chunk',
+        },
+      });
+      expect(chunkCacheMissFetch.status).toBe(200);
+      expect(chunkCacheMissFetch.headers.get('X-Cache')).toBe('MISS');
+      expect(await chunkCacheMissFetch.text()).toBe('lyve-chunk-data');
+
+      const chunkCacheMissNoUrl = await request('/api/jetty-speed/chunk/file-789/0', undefined, 'GET');
+      expect(chunkCacheMissNoUrl.response.status).toBe(404);
+      expect(chunkCacheMissNoUrl.payload.error).toContain('not found');
+
+      const stagingProvision = await request('/api/provision/jettythunder', {
+        environment: 'staging',
+      }, 'POST');
+      expect(stagingProvision.response.status).toBe(201);
+      expect(stagingProvision.payload.namespace).toBe('jettythunder_staging');
+      expect(stagingProvision.payload.environment).toBe('staging');
+
+      const musclePlan = await request('/api/muscle/plan', {
+        goal: 'test-connection',
+      }, 'POST');
+      expect([200, 502]).toContain(musclePlan.response.status);
+      expect(musclePlan.response.headers.get('X-Customer-Id')).toBe('jettythunder_app');
+      expect(musclePlan.response.headers.get('X-Service-Category')).toBe('ai_processing');
+      if (musclePlan.response.status === 502) {
+        expect(musclePlan.payload.error).toContain('Muscle');
+      }
+
+      const invalidProvisionKey = await request('/api/provision/ac_invalid_contract_key', undefined, 'GET');
+      expect(invalidProvisionKey.response.status).toBe(404);
+      expect(invalidProvisionKey.payload.error).toContain('not found');
+
+      const validProvisionKey = await request('/api/provision/ac_valid_contract_key', undefined, 'GET');
+      expect(validProvisionKey.response.status).toBe(200);
+      expect(validProvisionKey.payload.success).toBe(true);
+      expect(validProvisionKey.payload.key_info.user_id).toBe('contract-user');
+      expect(validProvisionKey.payload.key_info.integration).toBe('jettythunder');
+      expect(validProvisionKey.payload.key_info.key_preview).toContain('...');
+      expect(validProvisionKey.payload.key_info.key_preview).not.toBe('ac_valid_contract_key');
+    } finally {
+      vi.stubGlobal('fetch', originalFetch);
+    }
   }, 10000);
 });

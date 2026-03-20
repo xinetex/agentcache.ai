@@ -10,8 +10,8 @@
 
 import { sectorEngine } from '../services/SectorEngine.js';
 import { ontologyRegistry } from '../ontology/OntologyRegistry.js';
-import { DataLakeConnector } from '../ontology/DataLakeConnector.js';
 import { Neo4jAdapter } from '../ontology/connectors/Neo4jAdapter.js';
+import { RawConnector } from '../ontology/connectors/RawConnector.js';
 
 /**
  * FinanceEngine (Phase 7 Production Wiring)
@@ -27,7 +27,7 @@ export async function wireFinanceSector() {
     if (!ontology) throw new Error("Finance ontology not found");
 
     // 1. Initialize High-Fidelity Connectors
-    const marketDataConnector = new DataLakeConnector(); 
+    const marketDataConnector = new RawConnector(); 
     // In prod, this would be a FIX/FpML over WebSocket connector
 
     // 2. Initialize Market Knowledge Graph

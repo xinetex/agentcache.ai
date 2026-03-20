@@ -62,11 +62,14 @@ export class EdgeSelector {
       edge.lat, edge.lng
     );
 
-    // Default metric values if not available (mock)
-    const latency = metric?.latency_ms || Math.max(20, distance / 50); // ~1ms per 50km
-    const load = metric?.load_percent || 30; // Default 30% load
-    const bandwidth = metric?.bandwidth_mbps || 1000; // Default 1 Gbps
-    const errorRate = metric?.error_rate || 0;
+    // Default metric values if not available (penalty applied)
+    const isStale = !metric || (Date.now() - new Date(metric.timestamp).getTime() > 5 * 60 * 1000);
+    
+    // Penalize stale or missing data
+    const latency = metric?.latency_ms || (isStale ? 500 : Math.max(20, distance / 50));
+    const load = metric?.load_percent || (isStale ? 90 : 30);
+    const bandwidth = metric?.bandwidth_mbps || (isStale ? 10 : 1000);
+    const errorRate = metric?.error_rate || (isStale ? 5 : 0);
 
     // Scoring weights based on priority
     let distanceWeight = 0.3;
@@ -89,12 +92,12 @@ export class EdgeSelector {
       errorWeight = 0.05;
     }
 
-    // Normalize and invert scores (higher is better)
-    const distanceScore = Math.max(0, 1 - (distance / 10000)); // 0-10000km range
-    const latencyScore = Math.max(0, 1 - (latency / 200)); // 0-200ms range
-    const loadScore = Math.max(0, 1 - (load / 100)); // 0-100% range
-    const bandwidthScore = Math.min(1, bandwidth / 1000); // 0-1000 Mbps range
-    const errorScore = Math.max(0, 1 - (errorRate / 10)); // 0-10% range
+    // Normalize scores (0-1, higher is better)
+    const distanceScore = Math.max(0, 1 - (distance / 10000));
+    const latencyScore = Math.max(0, 1 - (latency / 500)); // Cap at 500ms
+    const loadScore = Math.max(0, 1 - (load / 100));
+    const bandwidthScore = Math.min(1, bandwidth / 1000);
+    const errorScore = Math.max(0, 1 - (errorRate / 10));
 
     const totalScore =
       (distanceScore * distanceWeight) +
@@ -127,80 +130,78 @@ export class EdgeSelector {
         metric,
         distance,
         score,
-        weight: 0, // Will be calculated after selection
-        latency: metric?.latency_ms || Math.max(20, distance / 50),
-        load: metric?.load_percent || 30,
+        weight: 0,
+        latency: metric?.latency_ms || (metric ? 50 : 200),
+        load: metric?.load_percent || (metric ? 30 : 80),
       };
     });
 
-    // Sort by score descending
     scored.sort((a, b) => b.score - a.score);
-
-    // Take top N edges
     const selected = scored.slice(0, topN);
 
-    // Calculate weights (proportional to score)
+    // Calculate weights
     const totalScore = selected.reduce((sum, e) => sum + e.score, 0);
     selected.forEach(edge => {
-      edge.weight = edge.score / totalScore;
+      edge.weight = totalScore > 0 ? edge.score / totalScore : (1 / selected.length);
     });
 
     return selected;
   }
 
-  // Calculate upload strategy based on file size
+  // Calculate upload strategy
   public calculateStrategy(
     fileSize: number,
     selectedEdges: EdgeScore[],
     priority: 'speed' | 'cost' | 'balanced' = 'balanced'
   ): UploadStrategy {
-    // Chunk size logic
-    let chunkSize = 50 * 1024 * 1024; // 50MB default
+    let chunkSize = 50 * 1024 * 1024;
     if (fileSize < 100 * 1024 * 1024) {
-      chunkSize = 10 * 1024 * 1024; // 10MB for small files
+      chunkSize = 10 * 1024 * 1024;
     } else if (fileSize > 10 * 1024 * 1024 * 1024) {
-      chunkSize = 100 * 1024 * 1024; // 100MB for huge files
+      chunkSize = 100 * 1024 * 1024;
     }
 
-    // Thread count based on priority and edges
-    let threads = Math.min(selectedEdges.length * 4, 24); // Max 24 threads
+    let threads = Math.min(selectedEdges.length * 4, 24);
     if (priority === 'cost') {
-      threads = Math.min(selectedEdges.length * 2, 12); // Reduce threads for cost
+      threads = Math.min(selectedEdges.length * 2, 12);
     } else if (priority === 'speed') {
-      threads = Math.min(selectedEdges.length * 6, 32); // Max 32 threads for speed
+      threads = Math.min(selectedEdges.length * 6, 32);
     }
 
-    // Estimate time based on average bandwidth
-    const avgBandwidth = selectedEdges.reduce((sum, e) => 
-      sum + (e.metric?.bandwidth_mbps || 500), 0
-    ) / selectedEdges.length;
+    const avgBandwidth = selectedEdges.length > 0
+      ? selectedEdges.reduce((sum, e) => sum + (e.metric?.bandwidth_mbps || 500), 0) / selectedEdges.length
+      : 500;
 
-    const effectiveBandwidth = avgBandwidth * threads * 0.8; // 80% efficiency
-    const estimatedTime = Math.ceil(
-      (fileSize / 1024 / 1024) / effectiveBandwidth
-    ); // seconds
-
-    // Estimate cost ($0.10 per GB egress)
+    const effectiveBandwidth = avgBandwidth * threads * 0.8;
+    const estimatedTime = Math.ceil((fileSize / 1024 / 1024) / effectiveBandwidth);
     const estimatedCost = (fileSize / 1024 / 1024 / 1024) * 0.10;
-
-    // Compression (disable for now, can enable for text files)
-    const compression = 'none';
 
     return {
       chunkSize,
       threads,
-      compression,
+      compression: 'none',
       estimatedTime,
       estimatedCost: parseFloat(estimatedCost.toFixed(4)),
     };
   }
 
-  // Add direct Lyve Cloud option (no edge, direct upload)
+  // Add direct Lyve Cloud option
   public addDirectLyveOption(
     selectedEdges: EdgeScore[],
     userLocation: UserLocation
   ): EdgeScore[] {
-    // Add direct Lyve as a fallback option with 10% weight
+    // Determine mesh health to scale Lyve fallback weight
+    const activeEdgesCount = selectedEdges.filter(e => e.metric && (Date.now() - new Date(e.metric.timestamp).getTime() < 5 * 60 * 1000)).length;
+    const avgLatency = selectedEdges.length > 0 
+      ? selectedEdges.reduce((sum, e) => sum + e.latency, 0) / selectedEdges.length
+      : 1000;
+    
+    // meshHealthScore: 1.0 = perfect, 0.0 = degraded
+    const meshHealthScore = (activeEdgesCount / Math.max(1, selectedEdges.length)) * (Math.max(0, 1 - (avgLatency / 1000)));
+    
+    // base fallback is 0.10 (10%), grows to 0.70 (70%) as mesh fails
+    const fallbackWeight = 0.10 + (0.60 * (1 - meshHealthScore));
+
     const lyveEdge: EdgeScore = {
       edge: {
         id: 'lyve-direct',
@@ -214,43 +215,23 @@ export class EdgeSelector {
       },
       metric: undefined,
       distance: 0,
-      score: 0.5, // Medium score
-      weight: 0.10,
+      score: 0.5,
+      weight: fallbackWeight,
       latency: 45,
       load: 0,
     };
 
-    // Adjust weights of other edges to accommodate direct option
     const edgesWithLyve = [...selectedEdges, lyveEdge];
-    const totalWeight = selectedEdges.reduce((sum, e) => sum + e.weight, 0) + 0.10;
+    const remainingWeight = 1 - fallbackWeight;
+    const currentMeshWeight = selectedEdges.reduce((sum, e) => sum + e.weight, 0);
     
-    edgesWithLyve.forEach(edge => {
-      edge.weight = edge.weight / totalWeight;
-    });
+    if (currentMeshWeight > 0) {
+      selectedEdges.forEach(edge => {
+        edge.weight = (edge.weight / currentMeshWeight) * remainingWeight;
+      });
+    }
 
     return edgesWithLyve;
-  }
-
-  // Mock edge metrics for testing (until monitoring service is live)
-  public generateMockMetrics(edges: EdgeLocation[]): Map<string, EdgeMetric> {
-    const metrics = new Map<string, EdgeMetric>();
-    const now = new Date();
-
-    edges.forEach(edge => {
-      const distance = haversineDistance(37.7749, -122.4194, edge.lat, edge.lng);
-      
-      metrics.set(edge.id, {
-        edge_id: edge.id,
-        timestamp: now,
-        latency_ms: Math.max(10, Math.floor(distance / 50) + Math.random() * 20),
-        load_percent: Math.floor(Math.random() * 50) + 20, // 20-70%
-        bandwidth_mbps: Math.floor(Math.random() * 500) + 500, // 500-1000 Mbps
-        active_uploads: Math.floor(Math.random() * 10),
-        error_rate: Math.random() * 2, // 0-2%
-      });
-    });
-
-    return metrics;
   }
 }
 

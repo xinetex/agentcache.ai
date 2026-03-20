@@ -10,8 +10,8 @@
 
 import { sectorEngine } from '../services/SectorEngine.js';
 import { ontologyRegistry } from '../ontology/OntologyRegistry.js';
-import { DataLakeConnector } from '../ontology/DataLakeConnector.js';
 import { Neo4jAdapter } from '../ontology/connectors/Neo4jAdapter.js';
+import { RawConnector } from '../ontology/connectors/RawConnector.js';
 
 /**
  * HealthcareEngine (Phase 7 Production Wiring)
@@ -27,7 +27,7 @@ export async function wireHealthcareSector() {
     if (!ontology) throw new Error("Healthcare ontology not found");
 
     // 1. Initialize FHIR-aligned Connectors
-    const clinicalDataConnector = new DataLakeConnector(); 
+    const clinicalDataConnector = new RawConnector(); 
     // In prod, this would be an HL7 FHIR over HTTPS/mTLS connector
 
     // 2. Initialize Clinical Knowledge Graph

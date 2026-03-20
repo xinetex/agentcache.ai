@@ -1,74 +1,102 @@
-
-/**
- * Verify Agent Exchange
- * Simulates a full lifecycle of the marketplace.
- */
-import { ledger } from '../src/services/LedgerService.js';
+import 'dotenv/config';
+import { fileURLToPath } from 'node:url';
 import { marketplace } from '../src/services/MarketplaceService.js';
+import { solanaEconomyService } from '../src/services/SolanaEconomyService.js';
 import { db } from '../src/db/client.js';
-import { agents } from '../src/db/schema.js';
-import { v4 as uuidv4 } from 'uuid';
+import { hubAgents, agentToolAccess } from '../src/db/schema.js';
+import { eq } from 'drizzle-orm';
 
-async function main() {
-    console.log("🏦 Initializing Agent Exchange Verification...");
+export async function verifyMarketplace() {
+    console.log("--- 🛒 Pillar 4: Marketplace Verification (hubAgents) ---");
 
-    // 1. Create Agents without using 'returning' if driver doesn't support it well, 
-    // or just assume standard Postgres behavior.
-    const sellerId = uuidv4();
-    const buyerId = uuidv4();
+    // 1. Setup Mock Agents (Include required 'role')
+    const sellerId = 'seller_agent_' + Date.now();
+    const buyerId = 'buyer_agent_' + Date.now();
 
-    console.log(`Creating Agents: Seller=${sellerId}, Buyer=${buyerId}`);
-
-    try {
-        await db.insert(agents).values([
-            { id: sellerId, name: 'LidarPro_Agent', role: 'specialist' },
-            { id: buyerId, name: 'DeepThinker_Agent', role: 'researcher' }
-        ]);
-
-        // 2. Setup Ledger
-        await ledger.createAccount(sellerId, 'agent', 0);
-        await ledger.createAccount(buyerId, 'agent', 100); // Give buyer $100
-
-        console.log("💰 Ledger Accounts Initialized. Buyer Balance: $100");
-
-        // 3. Create Listing
-        console.log("📢 Seller creating listing...");
-        const listing = await marketplace.createListing(sellerId, {
-            title: 'High-Res Lidar Analysis',
-            description: 'I will analyze any AOI for structrual defects.',
-            price: 10.00,
-            unit: 'request'
-        });
-        console.log(`✅ Listing Created: ${listing.title} ($${listing.pricePerUnit})`);
-
-        // 4. Purchase
-        console.log("🛒 Buyer purchasing service...");
-        const order = await marketplace.purchaseListing(buyerId, listing.id, 2); // Buy 2 units ($20)
-
-        console.log(`✅ Order Placed: ID ${order.id} - Total: $${order.totalPrice}`);
-
-        // 5. Verify Balances
-        const sellerAcc = await ledger.getAccount(sellerId);
-        const buyerAcc = await ledger.getAccount(buyerId);
-
-        console.log(`\n--- Final Balances ---`);
-        console.log(`Seller: $${sellerAcc.balance} (Expected $20)`);
-        console.log(`Buyer:  $${buyerAcc.balance} (Expected $80)`);
-
-        if (sellerAcc.balance === 20 && buyerAcc.balance === 80) {
-            console.log("\nPASSED: Transaction successful.");
-        } else {
-            console.error("\nFAILED: Balance mismatch.");
+    console.log("[Verify] Creating Mock Agents...");
+    await db.insert(hubAgents).values([
+        { 
+            id: sellerId, 
+            name: 'Service Provider Agent', 
+            role: 'provider', 
+            environment: 'production' 
+        },
+        { 
+            id: buyerId, 
+            name: 'Consumer Agent', 
+            role: 'optimizer', 
+            environment: 'production' 
         }
+    ]);
 
-        // 6. Test Suggestion Box
-        console.log("\n🗳️ Testing Suggestion Box...");
-        const suggestion = await marketplace.submitSuggestion(buyerId, "Add Dark Mode API", "Agents need clarity in the dark.");
-        console.log(`Suggestion Submitted: "${suggestion.title}"`);
+    // 2. Initialize Wallets (Give buyer some SOL)
+    console.log("[Verify] Initializing Wallets...");
+    await solanaEconomyService.initializeWallet(buyerId, 1.0);
+    await solanaEconomyService.initializeWallet(sellerId, 0.1);
+    
+    const initialBuyerBalance = await solanaEconomyService.getBalance(buyerId);
+    console.log(`[Verify] Initial Buyer Balance: ${initialBuyerBalance} SOL`);
 
-    } catch (err) {
-        console.error("Verification Failed:", err);
+    // 3. Create Listing
+    console.log("[Verify] Creating Listing...");
+    const listing = await marketplace.createListing(sellerId, {
+        title: 'Legal Compliance Audit',
+        description: 'Autonomous legal risk assessment for B2B swarms.',
+        price: 0.2,
+        unit: 'audit'
+    });
+    console.log(`[Verify] Listing Created: ${listing.id}`);
+
+    // 4. Autonomous Purchase
+    console.log("[Verify] Executing Purchase...");
+    const order = await marketplace.purchaseListing(buyerId, listing.id);
+    console.log(`[Verify] Order Successful: ${order.id} | Total Price: ${order.totalPrice} SOL`);
+
+    // 5. Verify Balances
+    const finalBuyerBalance = await solanaEconomyService.getBalance(buyerId);
+    const finalSellerBalance = await solanaEconomyService.getBalance(sellerId);
+    console.log(`[Verify] Final Buyer Balance: ${finalBuyerBalance} SOL`);
+    console.log(`[Verify] Final Seller Balance: ${finalSellerBalance} SOL`);
+
+    // 6. Verify Access Grant
+    console.log("[Verify] Verifying Access Grant...");
+    const access = await db.select().from(agentToolAccess)
+        .where(eq(agentToolAccess.agentId, buyerId));
+    
+    console.log(`[Verify] Tool Access Entries found: ${access.length}`);
+    if (access.length > 0) {
+        console.log(`[Verify] - Tool: ${access[0].toolName}`);
+        console.log(`[Verify] - Status: ${access[0].status}`);
     }
+
+    const success = finalBuyerBalance < initialBuyerBalance && access.length > 0;
+
+    if (success) {
+        console.log("\n✅ Pillar 4 Marketplace Verification SUCCESSFUL.");
+    } else {
+        console.log("\n❌ Pillar 4 Marketplace Verification FAILED.");
+    }
+
+    return {
+        success,
+        listingId: listing.id,
+        orderId: order.id,
+        initialBuyerBalance,
+        finalBuyerBalance,
+        finalSellerBalance,
+        accessCount: access.length,
+    };
 }
 
-main().catch(console.error);
+const isDirectExecution = process.argv[1] === fileURLToPath(import.meta.url);
+
+if (isDirectExecution) {
+    verifyMarketplace()
+        .then(() => {
+            process.exit(0);
+        })
+        .catch(err => {
+            console.error("❌ Verification Error:", err);
+            process.exit(1);
+        });
+}

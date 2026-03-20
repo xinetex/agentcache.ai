@@ -26,6 +26,43 @@ interface BlobMetadata {
   checksum?: string;
 }
 
+type BlobStorageConfig = {
+  endpoint?: string;
+  region?: string;
+  accessKey?: string;
+  secretKey?: string;
+  bucket?: string;
+};
+
+export function inferRegionFromStorageEndpoint(endpoint?: string): string | undefined {
+  if (!endpoint) return undefined;
+
+  try {
+    const hostname = new URL(endpoint).hostname;
+    const match = hostname.match(/([a-z]{2}-[a-z]+-\d)/i);
+    return match?.[1];
+  } catch {
+    return undefined;
+  }
+}
+
+export function validateBlobStorageConfig(config: BlobStorageConfig): string[] {
+  const warnings: string[] = [];
+  const inferredRegion = inferRegionFromStorageEndpoint(config.endpoint);
+
+  if (config.endpoint && config.region && inferredRegion && inferredRegion !== config.region) {
+    warnings.push(
+      `Blob storage region mismatch: endpoint implies ${inferredRegion} but config uses ${config.region}`
+    );
+  }
+
+  if (config.endpoint && (!config.accessKey || !config.secretKey || !config.bucket)) {
+    warnings.push('Blob storage endpoint is configured without complete credentials or bucket settings');
+  }
+
+  return warnings;
+}
+
 export class BlobLayer {
   private s3Client: S3Client | null = null;
   private bucket: string = '';
@@ -42,6 +79,17 @@ export class BlobLayer {
     const secretKey = process.env.LYVE_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY;
     const bucket = process.env.LYVE_BUCKET || process.env.AWS_S3_BUCKET;
     const region = process.env.LYVE_REGION || process.env.AWS_REGION || 'us-east-1';
+    const warnings = validateBlobStorageConfig({
+      endpoint,
+      region,
+      accessKey,
+      secretKey,
+      bucket,
+    });
+
+    for (const warning of warnings) {
+      console.warn(`[BlobLayer] ${warning}`);
+    }
 
     if (endpoint && accessKey && secretKey && bucket) {
       try {

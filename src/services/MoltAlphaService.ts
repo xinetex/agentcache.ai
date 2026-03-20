@@ -11,9 +11,14 @@ import { cognitiveEngine } from '../infrastructure/CognitiveEngine.js';
 import { patternEngine } from '../infrastructure/PatternEngine.js';
 import { redis } from '../lib/redis.js';
 import { db } from '../db/client.js';
-import { periscopeRuns, periscopeSteps, patterns } from '../db/schema.js';
+import { 
+    patterns, 
+    periscopeRuns, 
+    periscopeSteps,
+    periscopeActions 
+} from '../db/schema.js';
 import { moltbookCrawler } from './MoltbookCrawler.js';
-import { sql } from 'drizzle-orm';
+import { sql, eq } from 'drizzle-orm';
 
 export interface MoltTrend {
     topic: string;
@@ -36,20 +41,45 @@ export class MoltAlphaService {
             
             // 2. Latent Synthesis: Use DreamService to condense "vibes" into a Morphism
             // We create a temporary "Shadow Run" to represent the current Moltbook state
-            const [runId] = await db.insert(periscopeRuns).values({
+            const runs = await db.insert(periscopeRuns).values({
                 agentId: 'molt-alpha-ingestor',
                 sessionId: `moltbook_${Date.now()}`
             }).returning({ id: periscopeRuns.id });
+            
+            if (!runs || runs.length === 0) {
+                console.error('[Molt-Alpha] ❌ Failed to create Periscope Run');
+                return null;
+            }
+            const runId = runs[0].id;
+            console.log(`[Molt-Alpha] 📁 Created Run ID: ${runId}`);
 
             await db.insert(periscopeSteps).values({
-                runId: runId.id,
+                runId: runId,
                 index: 0,
                 goalTag: 'ingest_moltbook_trends',
                 stateSignature: { clusters }
             });
+            console.log('[Molt-Alpha] 📑 Created Step for Run');
 
-            const morphism = await dreamService.synthesizeMorphism(runId.id);
-            if (!morphism || !morphism.latentDelta) return null;
+            // 2.5 Add a dummy action to represent the crawler work so DreamService has a trace
+            await db.insert(periscopeActions).values({
+                stepId: (await db.select().from(periscopeSteps).where(eq(periscopeSteps.runId, runId)).limit(1))[0].id,
+                actionType: 'observation',
+                toolName: 'MoltbookCrawler',
+                success: true,
+                latencyMs: 1200
+            });
+            console.log('[Molt-Alpha] 🛠️ Created Crawler Action');
+
+            const morphism = await dreamService.synthesizeMorphism(runId);
+            if (!morphism) {
+                console.warn('[Molt-Alpha] ⚠️ DreamService returned null morphism');
+                return null;
+            }
+            if (!morphism.latentDelta) {
+                console.warn('[Molt-Alpha] ⚠️ Morphism missing latentDelta');
+                return null;
+            }
 
             // 3. Topographical Analysis: Analyze Drift Velocity
             const { magnitude } = await cognitiveEngine.detectIntentDrift(morphism.latentDelta);

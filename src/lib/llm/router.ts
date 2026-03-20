@@ -18,7 +18,7 @@
 
 import { tokenBudget } from './token-budget.js';
 
-export type ModelTier = 'local' | 'fast' | 'balanced' | 'reasoning';
+export type ModelTier = 'local' | 'minimal' | 'fast' | 'balanced' | 'reasoning' | 'smart';
 
 export type TaskType =
     | 'heartbeat'
@@ -28,6 +28,10 @@ export type TaskType =
     | 'coding'
     | 'architecture'
     | 'verification'
+    | 'classification'
+    | 'extraction'
+    | 'triage'
+    | 'bounty'
     | 'general';
 
 export interface RouteResult {
@@ -50,11 +54,17 @@ const TIERS: Record<ModelTier, { provider: string; model: string; cost: number; 
         cost: 0,
         desc: 'Local LLM. Zero cost. Best for heartbeats and maintenance.'
     },
+    minimal: {
+        provider: 'openai',
+        model: 'gpt-5.4-nano',
+        cost: 0.05,
+        desc: 'Ultra-fast, ultra-low cost. Optimized for classification and triage.'
+    },
     fast: {
-        provider: 'moonshot',
-        model: 'kimi-latest',
+        provider: 'openai',
+        model: 'gpt-5.4-mini',
         cost: 0.15,
-        desc: 'High speed, low cost. Best for simple tasks and research.'
+        desc: 'High speed, low cost. Best for research and sub-agent execution.'
     },
     balanced: {
         provider: 'anthropic',
@@ -67,6 +77,12 @@ const TIERS: Record<ModelTier, { provider: string; model: string; cost: number; 
         model: 'o1-preview',
         cost: 15.00,
         desc: 'Maximum intelligence. Best for architecture and complex logic.'
+    },
+    smart: {
+        provider: 'abacus',
+        model: 'route-llm',
+        cost: 0.50,
+        desc: 'Intelligent routing. GPT-4 quality at GPT-3.5 prices via Abacus RouteLLM.'
     }
 };
 
@@ -78,7 +94,11 @@ const TASK_ROUTING: Record<TaskType, ModelTier> = {
     outreach: 'balanced',
     coding: 'balanced',
     architecture: 'reasoning',
-    verification: 'fast',
+    verification: 'balanced',
+    classification: 'minimal',
+    extraction: 'minimal',
+    triage: 'minimal',
+    bounty: 'fast',
     general: 'fast'
 };
 
@@ -97,7 +117,14 @@ export class ModelRouter {
      * Route by explicit task type (preferred method)
      */
     routeByTaskType(taskType: TaskType): RouteResult {
-        const tier = TASK_ROUTING[taskType] || 'fast';
+        let tier = TASK_ROUTING[taskType] || 'fast';
+        
+        // Phase 34: Proactive RouteLLM (Abacus) integration
+        // If we have an Abacus key, we prefer 'smart' for 'balanced' tasks
+        if (tier === 'balanced' && process.env.ABACUS_API_KEY) {
+            tier = 'smart';
+        }
+
         const config = TIERS[tier];
         const budgetStatus = tokenBudget.getStatus();
 
@@ -145,10 +172,11 @@ export class ModelRouter {
 
         // 2. Check for Balanced Triggers (Tier 3)
         if (length > 200 || hasCode) {
-            const config = TIERS.balanced;
+            const tier = process.env.ABACUS_API_KEY ? 'smart' : 'balanced';
+            const config = TIERS[tier];
             const canProceed = tokenBudget.canSpend(config.cost * 0.003);
             return {
-                tier: 'balanced',
+                tier,
                 provider: config.provider,
                 model: config.model,
                 reason: hasCode ? 'Detected code snippet' : 'Prompt length requires moderate context',

@@ -29,7 +29,8 @@ export class MoltBadgeService {
     async issueBadge(agentId: string): Promise<string> {
         console.log(`[MoltBadge] 🎖️ Issuing reputation badge for agent: ${agentId}`);
 
-        const score = await reputationService.getReputation(agentId);
+        const reputation = await reputationService.getReputation(agentId);
+        const score = reputation.reputation;
         
         const payload: ReputationBadge = {
             agentId,
@@ -43,7 +44,7 @@ export class MoltBadgeService {
         const token = jwt.sign(payload, this.SECRET);
 
         // Cache the badge for public verification
-        await redis.set(`mesh:node:badge:${agentId}`, token, 'EX', 86400);
+        await redis.setex(`mesh:node:badge:${agentId}`, 86400, token);
 
         return token;
     }

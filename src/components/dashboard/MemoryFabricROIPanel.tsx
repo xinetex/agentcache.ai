@@ -6,6 +6,12 @@ type Props = {
         analytics?: any;
         accounting?: any;
     } | null;
+    browserProof?: {
+        proofs?: number;
+        byEngine?: Array<{ engine: string; count: number }>;
+        byExecutionMode?: Array<{ executionMode: string; count: number }>;
+        byHomeostasisStatus?: Array<{ status: string; count: number }>;
+    } | null;
 };
 
 function formatMoney(value?: number) {
@@ -21,11 +27,14 @@ function formatCredits(value?: number) {
     return `${value.toFixed(3)} cr`;
 }
 
-export function MemoryFabricROIPanel({ fabric }: Props) {
+export function MemoryFabricROIPanel({ fabric, browserProof }: Props) {
     const analytics = fabric?.analytics;
     const accounting = fabric?.accounting;
     const summary = analytics?.summary || {};
     const topSku = analytics?.bySku?.[0];
+    const topBrowserEngine = browserProof?.byEngine?.[0];
+    const topBrowserMode = browserProof?.byExecutionMode?.[0];
+    const stableProofs = browserProof?.byHomeostasisStatus?.find((item) => item.status === 'stable')?.count || 0;
 
     return (
         <div className="p-6 bg-gradient-to-br from-cyan-950/30 via-slate-950/40 to-emerald-950/20 rounded-2xl border border-cyan-500/20 h-full backdrop-blur-xl group hover:border-cyan-400/40 transition-all duration-700">
@@ -83,6 +92,18 @@ export function MemoryFabricROIPanel({ fabric }: Props) {
                     <span className="text-white/60 text-sm">TTL Clamp Events</span>
                     <span className="text-amber-300 font-mono text-sm">{summary.ttlClampCount || 0}</span>
                 </div>
+                <div className="flex justify-between items-end border-b border-white/5 pb-2">
+                    <span className="text-white/60 text-sm">Browser Proofs</span>
+                    <span className="text-cyan-200 font-mono text-sm">{browserProof?.proofs || 0}</span>
+                </div>
+                <div className="flex justify-between items-end border-b border-white/5 pb-2">
+                    <span className="text-white/60 text-sm">Top Proof Engine</span>
+                    <span className="text-emerald-300 font-mono text-sm">{topBrowserEngine?.engine || 'n/a'}</span>
+                </div>
+                <div className="flex justify-between items-end border-b border-white/5 pb-2">
+                    <span className="text-white/60 text-sm">Top Proof Mode</span>
+                    <span className="text-violet-300 font-mono text-[11px]">{topBrowserMode?.executionMode || 'n/a'}</span>
+                </div>
                 <div className="flex justify-between items-end">
                     <span className="text-white/60 text-sm">Billable USD</span>
                     <span className="text-rose-300 font-mono text-sm">{formatMoney(accounting?.usdEquivalent)}</span>
@@ -97,6 +118,9 @@ export function MemoryFabricROIPanel({ fabric }: Props) {
                     />
                 </div>
                 <p className="text-white/20 text-[9px] mt-2 text-center uppercase tracking-widest">Evidence-weighted memory substrate utilization</p>
+                <p className="text-white/25 text-[9px] mt-2 text-center uppercase tracking-widest">
+                    Stable browser proofs: {stableProofs}
+                </p>
             </div>
         </div>
     );

@@ -17,6 +17,7 @@ import { jettySpeedDb } from '../services/jettySpeedDb.js';
 import { statsService } from '../services/StatsService.js';
 import { collectiveCortex } from '../services/CollectiveCortex.js';
 import { sharedReceiptService } from '../services/SharedReceiptService.js';
+import { externalAgentRegistrationService } from '../services/ExternalAgentRegistrationService.js';
 
 const router = new Hono();
 
@@ -26,11 +27,12 @@ const router = new Hono();
  */
 router.get('/stats', async (c) => {
     try {
-        const [stats, fabricAnalytics, fabricAccounting, receiptSummary] = await Promise.all([
+        const [stats, fabricAnalytics, fabricAccounting, receiptSummary, externalAgents] = await Promise.all([
             statsService.getGlobalStats(),
             memoryFabricAnalyticsService.getSnapshot(),
             memoryFabricBillingService.getSummary(),
             sharedReceiptService.getSummary(),
+            externalAgentRegistrationService.getGlobalSummary(),
         ]);
         const history = await observabilityService.getHistory(10);
         const { moltAlphaService } = await import('../services/MoltAlphaService.js');
@@ -51,6 +53,8 @@ router.get('/stats', async (c) => {
                 analytics: fabricAnalytics,
                 accounting: fabricAccounting,
             },
+            browserProof: receiptSummary.browser,
+            externalAgents,
             receipts: receiptSummary,
             moltbook: moltStats,
             liquidity: liquidityStats,

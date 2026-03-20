@@ -3,10 +3,14 @@ import { db } from '../../src/db/client.js';
 import { users } from '../../src/db/schema.js';
 import { desc } from 'drizzle-orm';
 
-export default async function handler(req, res) {
-    // 1. Auth Check (TODO: Implement real middleware)
-    // const authHeader = req.headers.authorization;
-    // if (!authHeader) return res.status(401).json({ error: 'Unauthorized' });
+import { requireAuth } from '../_auth.js';
+
+async function handler(req, res) {
+    // Auth Check
+    const user = req.user;
+    if (user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden: Admin access required' });
+    }
 
     try {
         // 2. Fetch Users from DB
@@ -76,3 +80,5 @@ function getRoleColor(role) {
     if (role === 'editor') return 'bg-emerald-600';
     return 'bg-gray-700';
 }
+
+export default requireAuth(handler);

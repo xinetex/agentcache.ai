@@ -13,6 +13,8 @@ import { db } from '../db/client.js';
 import { creditTransactions } from '../db/schema.js';
 import { v4 as uuidv4 } from 'uuid';
 
+import { ledger } from './LedgerService.js';
+
 /**
  * Stripe Service
  * Bridges the gap between Real Money (USD) and Agent Money (Credits).
@@ -67,6 +69,42 @@ export class StripeService {
     }
 
     /**
+     * Perform an off-session charge (Auto-topoff)
+     */
+    async offSessionCharge(userId: string, paymentMethodId: string, amountCredits: number, stripeCustomerId: string) {
+        if (!this.isConfigured) throw new Error("Stripe not configured");
+
+        const amountCents = amountCredits * 1;
+
+        const paymentIntent = await this.stripe.paymentIntents.create({
+            amount: amountCents,
+            currency: 'usd',
+            customer: stripeCustomerId,
+            payment_method: paymentMethodId,
+            off_session: true,
+            confirm: true,
+            metadata: {
+                userId,
+                credits: amountCredits.toString(),
+                type: 'auto_topoff'
+            }
+        });
+
+        if (paymentIntent.status === 'succeeded') {
+            await this.syncTransactionToLedger(userId, amountCredits, `Stripe Auto-topoff: ${paymentIntent.id}`);
+            return true;
+        }
+        return false;
+    }
+
+    private async syncTransactionToLedger(userId: string, credits: number, description: string) {
+        // Ensure account exists
+        await ledger.createAccount(userId, 'user');
+        // Deposit to ledger
+        await ledger.deposit(userId, credits, description);
+    }
+
+    /**
      * Handle Webhook Event (Mockable for tests)
      */
     async handleEvent(event: Stripe.Event) {
@@ -89,7 +127,8 @@ export class StripeService {
                     stripeCheckoutSessionId: session.id
                 });
 
-                // TODO: Also update the 'ledger' if we are treating User as an Agent Owner
+                // Sync with internal ledger
+                await this.syncTransactionToLedger(userId, credits, `Stripe Deposit: ${session.id}`);
             }
         }
     }

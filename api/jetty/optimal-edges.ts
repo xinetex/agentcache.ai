@@ -90,13 +90,8 @@ export default async function handler(req: Request) {
       });
     }
 
-    // 3. Get edge metrics (or use mock for MVP)
-    let metrics = await jettySpeedDb.getAllEdgeMetrics();
-    
-    // If no real metrics, use mock data
-    if (metrics.size === 0) {
-      metrics = edgeSelector.generateMockMetrics(edges);
-    }
+    // 3. Get edge metrics
+    const metrics = await jettySpeedDb.getAllEdgeMetrics();
 
     // 4. Select optimal edges
     const userLocation = body.userLocation || {
