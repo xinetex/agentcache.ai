@@ -15,6 +15,7 @@ import { maxxeval } from "../../lib/maxxeval.js";
 import { db } from "../../db/client.js";
 import { needsSignals } from "../../db/schema.js";
 import { and, eq, desc } from 'drizzle-orm';
+import { routerExperimentService } from "../../services/RouterExperimentService.js";
 
 /**
  * The Heartbeat of the Economy.
@@ -129,7 +130,20 @@ export const runAgentLoop = inngest.createFunction(
             }
         });
 
+        // Step 4: Router Self-Optimization (Autoresearch Pattern)
+        const optimization = await step.run("router-optimization-cycle", async () => {
+            logger.info("🧪 RouterExperiment: Running optimization cycle...");
+            try {
+                const result = await routerExperimentService.runCycle();
+                return { status: "success", action: result.action, experimentId: result.experiment?.id };
+            } catch (err) {
+                logger.error("RouterExperiment cycle failed:", err);
+                // Non-critical — don't throw, just log
+                return { status: "error", error: String(err) };
+            }
+        });
+
         logger.info("💤 Heartbeat complete. Agents sleeping.");
-        return { trends, research, needsRefresh };
+        return { trends, research, needsRefresh, optimization };
     }
 );

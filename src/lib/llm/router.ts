@@ -18,7 +18,7 @@
 
 import { tokenBudget } from './token-budget.js';
 
-export type ModelTier = 'local' | 'minimal' | 'fast' | 'balanced' | 'reasoning' | 'smart';
+export type ModelTier = 'local' | 'minimal' | 'fast' | 'balanced' | 'reasoning' | 'smart' | 'claw';
 
 export type TaskType =
     | 'heartbeat'
@@ -83,6 +83,12 @@ const TIERS: Record<ModelTier, { provider: string; model: string; cost: number; 
         model: 'route-llm',
         cost: 0.50,
         desc: 'Intelligent routing. GPT-4 quality at GPT-3.5 prices via Abacus RouteLLM.'
+    },
+    claw: {
+        provider: 'minimax',
+        model: 'MiniMax-M2.7',
+        cost: 0.30,
+        desc: 'OpenClaw-optimized agentic reasoning. Best for tool-use and Claw protocol tasks.'
     }
 };
 
@@ -112,9 +118,26 @@ const REASONING_KEYWORDS = [
 const CODE_INDICATORS = ['function', 'class', 'const', 'import', '```', 'def ', 'struct ', 'async '];
 
 export class ModelRouter {
+    /** Active experiment overrides applied by RouterExperimentService */
+    private experimentOverrides: Map<string, { provider: string; model: string; cost: number }> = new Map();
+
+    /**
+     * Apply an experiment override for a specific tier.
+     * Called by RouterExperimentService when starting a new experiment.
+     */
+    setExperimentOverride(tier: string, override: { provider: string; model: string; cost: number } | null): void {
+        if (override) {
+            this.experimentOverrides.set(tier, override);
+            console.log(`[ModelRouter] 🧪 Experiment override SET: ${tier} → ${override.provider}/${override.model}`);
+        } else {
+            this.experimentOverrides.delete(tier);
+            console.log(`[ModelRouter] 🧪 Experiment override CLEARED for tier: ${tier}`);
+        }
+    }
 
     /**
      * Route by explicit task type (preferred method)
+     * Now checks for active experiment overrides from RouterExperimentService.
      */
     routeByTaskType(taskType: TaskType): RouteResult {
         let tier = TASK_ROUTING[taskType] || 'fast';
@@ -128,16 +151,24 @@ export class ModelRouter {
         const config = TIERS[tier];
         const budgetStatus = tokenBudget.getStatus();
 
+        // Check for active experiment override (non-blocking)
+        const override = this.experimentOverrides.get(tier);
+        const activeProvider = override?.provider || config.provider;
+        const activeModel = override?.model || config.model;
+        const activeCost = override?.cost || config.cost;
+
         // Estimate cost for a typical request (2k tokens in, 1k out)
-        const estimatedCost = tokenBudget.estimateCost(config.provider, config.model, 2000, 1000);
+        const estimatedCost = tokenBudget.estimateCost(activeProvider, activeModel, 2000, 1000);
         const canProceed = tier === 'local' || tokenBudget.canSpend(estimatedCost);
 
         return {
             tier,
-            provider: config.provider,
-            model: config.model,
-            reason: `Task type "${taskType}" → ${tier} tier (${config.desc})`,
-            estimatedCostPer1M: config.cost,
+            provider: activeProvider,
+            model: activeModel,
+            reason: override
+                ? `Task "${taskType}" → ${tier} tier [EXPERIMENT: ${override.provider}/${override.model}]`
+                : `Task type "${taskType}" → ${tier} tier (${config.desc})`,
+            estimatedCostPer1M: activeCost,
             budgetStatus: {
                 canProceed,
                 remainingUsd: budgetStatus.remainingUsd

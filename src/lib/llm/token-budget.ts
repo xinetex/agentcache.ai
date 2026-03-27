@@ -60,6 +60,10 @@ const COST_MATRIX: Record<string, Record<string, number>> = {
     },
     grok: {
         'grok-2': 2.00
+    },
+    minimax: {
+        'MiniMax-M2.7': 0.30,
+        'default': 0.30
     }
 };
 

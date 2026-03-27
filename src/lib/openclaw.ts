@@ -30,6 +30,7 @@ export interface OpenClawResponse {
 
 // Moonshot API endpoints
 const MOONSHOT_API = 'https://api.moonshot.ai/v1/chat/completions';
+const MINIMAX_API = 'https://api.minimax.io/v1/chat/completions';
 const LOCAL_GATEWAY = 'http://localhost:18789/v1/chat/completions';
 
 export class OpenClawClient {
@@ -38,20 +39,24 @@ export class OpenClawClient {
     private useProduction: boolean;
 
     constructor(opts?: { apiKey?: string; model?: string }) {
-        this.apiKey = opts?.apiKey || process.env.MOONSHOT_API_KEY || process.env.CLAW_API_TOKEN || '';
-        this.model = opts?.model || process.env.KIMI_MODEL || 'kimi-k2-0711-preview';
+        this.apiKey = opts?.apiKey || process.env.MOONSHOT_API_KEY || process.env.MINIMAX_API_KEY || process.env.CLAW_API_TOKEN || '';
+        this.model = opts?.model || process.env.MINIMAX_MODEL || process.env.KIMI_MODEL || 'kimi-k2-0711-preview';
 
-        // Use production Moonshot API if we have MOONSHOT_API_KEY
-        this.useProduction = !!process.env.MOONSHOT_API_KEY;
+        // Use production if we have an API key
+        this.useProduction = !!(process.env.MOONSHOT_API_KEY || process.env.MINIMAX_API_KEY);
 
-        console.log(`[OpenClawClient] Mode: ${this.useProduction ? 'PRODUCTION (Moonshot API)' : 'LOCAL (Gateway)'}`);
+        const activeProvider = this.model.toLowerCase().includes('minimax') ? 'MiniMax' : 'Moonshot';
+        console.log(`[OpenClawClient] Mode: ${this.useProduction ? `PRODUCTION (${activeProvider} API)` : 'LOCAL (Gateway)'}`);
     }
 
     /**
      * Send a chat completion request
      */
     async chat(messages: OpenClawMessage[], opts?: { temperature?: number; maxTokens?: number }): Promise<OpenClawResponse> {
-        const endpoint = this.useProduction ? MOONSHOT_API : LOCAL_GATEWAY;
+        let endpoint = LOCAL_GATEWAY;
+        if (this.useProduction) {
+            endpoint = this.model.toLowerCase().includes('minimax') ? MINIMAX_API : MOONSHOT_API;
+        }
 
         const response = await fetch(endpoint, {
             method: 'POST',

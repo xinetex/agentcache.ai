@@ -58,6 +58,7 @@ const ENDPOINT_CUSTOMER_MAP: Record<string, string> = {
   '/api/transcode/submit': CUSTOMERS.AUDIO1_TV,
   '/api/transcode/status': CUSTOMERS.AUDIO1_TV,
   '/api/transcode/jobs': CUSTOMERS.AUDIO1_TV,
+  '/api/transcribe/submit': CUSTOMERS.AUDIO1_TV,
   '/api/brain': CUSTOMERS.AUDIO1_TV, // Optional
   
   '/api/provision/jettythunder': CUSTOMERS.JETTYTHUNDER,
@@ -71,6 +72,8 @@ const ENDPOINT_CUSTOMER_MAP: Record<string, string> = {
   '/api/muscle/plan': CUSTOMERS.JETTYTHUNDER,
   '/api/muscle/reflex': CUSTOMERS.JETTYTHUNDER,
   '/api/s3/presigned': CUSTOMERS.JETTYTHUNDER,
+  '/api/helix/infer': CUSTOMERS.JETTYTHUNDER,
+  '/api/helix/sync': CUSTOMERS.JETTYTHUNDER,
   
   // ClawSave.com (Vercel: prj_Eue0ehGAyjbpU2n5Nly1G0fEw1dp)
   // Uses JettyThunder.app agentic storage services
@@ -88,6 +91,7 @@ const ENDPOINT_SERVICE_MAP: Record<string, string> = {
   '/api/transcode/submit': SERVICE_CATEGORIES.TRANSCODING,
   '/api/transcode/status': SERVICE_CATEGORIES.TRANSCODING,
   '/api/transcode/jobs': SERVICE_CATEGORIES.TRANSCODING,
+  '/api/transcribe/submit': SERVICE_CATEGORIES.TRANSCODING,
   
   '/api/provision/jettythunder': SERVICE_CATEGORIES.FILE_PROVISIONING,
   '/api/edges/optimal': SERVICE_CATEGORIES.EDGE_ROUTING,
@@ -100,6 +104,8 @@ const ENDPOINT_SERVICE_MAP: Record<string, string> = {
   '/api/muscle/plan': SERVICE_CATEGORIES.AI_PROCESSING,
   '/api/muscle/reflex': SERVICE_CATEGORIES.AI_PROCESSING,
   '/api/s3/presigned': SERVICE_CATEGORIES.FILE_PROVISIONING,
+  '/api/helix/infer': SERVICE_CATEGORIES.AI_PROCESSING,
+  '/api/helix/sync': SERVICE_CATEGORIES.AI_PROCESSING,
   '/api/brain': SERVICE_CATEGORIES.AI_PROCESSING,
   '/api/cache': SERVICE_CATEGORIES.CORE_CACHING,
   

@@ -15,6 +15,7 @@ import { cognitiveMemory } from './cognitive-memory.js';
 import { eventBus } from '../lib/event-bus.js';
 import { shadowSentryService } from './ShadowSentryService.js';
 import { observabilityService } from './ObservabilityService.js';
+import { platonicKeyService } from './PlatonicKeyService.js';
 
 export interface CacheCheckResult {
     cached: boolean;
@@ -28,11 +29,13 @@ export interface CacheCheckResult {
     similarity?: number;
     predictive_prefetch?: any[];
     drift?: number;
-    reason?: 'exact' | 'semantic' | 'drift_bypass' | 'miss';
+    reason?: 'exact' | 'semantic' | 'platonic' | 'drift_bypass' | 'miss';
     sessionId?: string;
     turnIndex?: number;
     environmental_risk?: number;
     quarantined?: boolean;
+    originalProvider?: string;
+    originalModel?: string;
 }
 
 /**
@@ -195,7 +198,7 @@ export class SemanticCacheService {
             };
 
             // Emit Observation Trace
-            await observabilityService.track({
+            void observabilityService.track({
                 type: 'CACHE_OPERATION',
                 description: `Cache HIT: turn ${params.turnIndex || 0} (Drift: ${(drift * 100).toFixed(1)}%)`,
                 sector: params.sector || 'global',
@@ -206,9 +209,70 @@ export class SemanticCacheService {
                     hit: true,
                     key: result.key
                 }
-            });
+            }).catch((error) => console.warn('[Observability] Failed to track cache hit:', error));
 
             return result;
+        }
+
+        // === PLATONIC FALLBACK (Cross-Provider Cache Hit) ===
+        // Before declaring a full miss, check the provider-agnostic Platonic key.
+        // This allows a cached response from GPT-4 to satisfy a query for Claude-3.
+        if (!driftBypass) {
+            try {
+                const platonicEntry = await platonicKeyService.lookupPlatonic(
+                    params.messages,
+                    params.temperature
+                );
+
+                if (platonicEntry) {
+                    console.log(`[SemanticCache] 🌌 PLATONIC HIT: Serving ${platonicEntry.originalProvider}:${platonicEntry.originalModel} response for ${params.provider || 'openai'}:${params.model} query.`);
+
+                    await redis.incr('stats:total_hits');
+                    await redis.incr('stats:platonic_hits');
+                    await redis.incrbyfloat('stats:total_savings_usd', 0.05);
+                    await redis.incrbyfloat('stats:platonic_savings_usd', 0.05);
+                    await cognitiveMemory.recordCacheOutcome(true);
+
+                    const platonicResult: CacheCheckResult = {
+                        cached: true,
+                        hit: true,
+                        response: platonicEntry.response,
+                        key: key.slice(-16),
+                        type: 'platonic',
+                        similarity: 0.85, // Cross-provider similarity estimate
+                        savedUsd: 0.05,
+                        coherence: 1.0 - drift,
+                        predictive_prefetch: predictivePrefetch,
+                        drift,
+                        reason: 'platonic',
+                        sessionId: params.sessionId,
+                        turnIndex: params.turnIndex,
+                        environmental_risk: environmentalRisk,
+                        quarantined: false,
+                        originalProvider: platonicEntry.originalProvider,
+                        originalModel: platonicEntry.originalModel,
+                    };
+
+                    void observabilityService.track({
+                        type: 'CACHE_OPERATION',
+                        description: `PLATONIC HIT: ${platonicEntry.originalProvider}:${platonicEntry.originalModel} → ${params.provider}:${params.model}`,
+                        sector: params.sector || 'global',
+                        metadata: {
+                            sessionId: params.sessionId,
+                            turnIndex: params.turnIndex,
+                            drift,
+                            hit: true,
+                            reason: 'platonic',
+                            originalProvider: platonicEntry.originalProvider,
+                            originalModel: platonicEntry.originalModel,
+                        }
+                    }).catch((error) => console.warn('[Observability] Failed to track platonic hit:', error));
+
+                    return platonicResult;
+                }
+            } catch (platonicError) {
+                console.warn('[SemanticCache] Platonic fallback failed (non-critical):', platonicError);
+            }
         }
 
         await cognitiveMemory.recordCacheOutcome(false);
@@ -227,7 +291,7 @@ export class SemanticCacheService {
         };
 
         // Emit Observation Trace
-        await observabilityService.track({
+        void observabilityService.track({
             type: 'CACHE_OPERATION',
             description: `Cache MISS: ${driftBypass ? 'DRIFT BYPASS' : 'NOT FOUND'}`,
             sector: params.sector || 'global',
@@ -238,7 +302,7 @@ export class SemanticCacheService {
                 hit: false,
                 reason: missResult.reason
             }
-        });
+        }).catch((error) => console.warn('[Observability] Failed to track cache miss:', error));
 
         return missResult;
     }
@@ -271,6 +335,16 @@ export class SemanticCacheService {
         const ttl = params.ttl || 604800;
         await redis.setex(key, ttl, params.response);
 
+        // Write Platonic Shadow Key (Cross-Provider Cache)
+        platonicKeyService.storePlatonicShadow({
+            messages: params.messages,
+            temperature: params.temperature,
+            response: params.response,
+            provider: params.provider || 'openai',
+            model: params.model,
+            ttl,
+        }).catch((err) => console.warn('[SemanticCache] Platonic shadow write failed (non-critical):', err));
+
         // Track metadata for Semantic Resonance (Phase 5)
         if (params.circleId || params.originAgent) {
             const latestQuery = params.messages[params.messages.length - 1]?.content || '';
@@ -283,7 +357,7 @@ export class SemanticCacheService {
         }
 
         // Emit Observation Trace
-        await observabilityService.track({
+        void observabilityService.track({
             type: 'CACHE_OPERATION',
             description: `Cache SET: turn ${params.turnIndex || 0}`,
             sector: params.sector || 'global',
@@ -292,7 +366,7 @@ export class SemanticCacheService {
                 turnIndex: params.turnIndex,
                 key: key.slice(-16)
             }
-        });
+        }).catch((error) => console.warn('[Observability] Failed to track cache set:', error));
 
         return key;
     }

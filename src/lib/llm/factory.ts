@@ -21,8 +21,9 @@ import './providers/perplexity.js';
 import './providers/inception.js';
 import './providers/ollama.js';
 import './providers/abacus.js';
+import './providers/minimax.js';
 
-export type ProviderType = 'openai' | 'anthropic' | 'gemini' | 'moonshot' | 'grok' | 'perplexity' | 'inception' | 'ollama' | 'abacus';
+export type ProviderType = 'openai' | 'anthropic' | 'gemini' | 'moonshot' | 'grok' | 'perplexity' | 'inception' | 'ollama' | 'abacus' | 'minimax';
 
 export class LLMFactory {
     /**
@@ -37,6 +38,7 @@ export class LLMFactory {
         perplexity: process.env.PERPLEXITY_API_KEY,
         inception: process.env.INCEPTION_API_KEY,
         abacus: process.env.ABACUS_API_KEY,
+        minimax: process.env.MINIMAX_API_KEY,
     };
 
     /**
