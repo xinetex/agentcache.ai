@@ -22,3 +22,4 @@ docs/VERCEL_ENV_SETUP.md
 .env.lyve
 .env.backup
 .env.bak
+studio-dist/
