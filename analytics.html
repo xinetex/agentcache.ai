@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentCache | Analytics & Insights</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-primary: #3b82f6;
+            --accent-success: #22c55e;
+            --accent-warning: #eab308;
+            --accent-danger: #ef4444;
+            --border-color: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .metric-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-change {
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .metric-change.positive {
+            color: var(--accent-success);
+        }
+
+        .metric-change.negative {
+            color: var(--accent-danger);
+        }
+
+        /* Specific Grid Spans */
+        .col-span-3 {
+            grid-column: span 3;
+        }
+
+        .col-span-4 {
+            grid-column: span 4;
+        }
+
+        .col-span-6 {
+            grid-column: span 6;
+        }
+
+        .col-span-8 {
+            grid-column: span 8;
+        }
+
+        .col-span-12 {
+            grid-column: span 12;
+        }
+
+        @media (max-width: 1024px) {
+
+            .col-span-3,
+            .col-span-4,
+            .col-span-6,
+            .col-span-8 {
+                grid-column: span 12;
+            }
+        }
+
+        /* Dial / Gauge */
+        .gauge-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .gauge-value {
+            position: absolute;
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .gauge-label {
+            position: absolute;
+            bottom: 40px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Status Badge */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background-color: rgba(34, 197, 94, 0.1);
+            color: var(--accent-success);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1>Analytics Dashboard</h1>
+                <p class="subtitle">Real-time platform performance & cache insights</p>
+            </div>
+            <div class="status-badge">
+                ● System Operational
+            </div>
+        </header>
+
+        <!-- Top Metrics -->
+        <div class="grid">
+            <div class="card col-span-3">
+                <div class="card-header">
+                    <h3 class="card-title">Total Requests</h3>
+                    <span style="font-size: 1.2rem;">📉</span>
+                </div>
+                <div class="metric-value">2.4M</div>
+                <div class="metric-change positive">
+                    ↑ 12.5% <span style="color: var(--text-secondary)">vs last week</span>
+                </div>
+            </div>
+            <div class="card col-span-3">
+                <div class="card-header">
+                    <h3 class="card-title">Bandwidth Saved</h3>
+                    <span style="font-size: 1.2rem;">💾</span>
+                </div>
+                <div class="metric-value">845 GB</div>
+                <div class="metric-change positive">
+                    ↑ 8.2% <span style="color: var(--text-secondary)">vs last week</span>
+                </div>
+            </div>
+            <div class="card col-span-3">
+                <div class="card-header">
+                    <h3 class="card-title">Avg Latency</h3>
+                    <span style="font-size: 1.2rem;">⚡</span>
+                </div>
+                <div class="metric-value">42ms</div>
+                <div class="metric-change positive">
+                    ↓ 15ms <span style="color: var(--text-secondary)">improvement</span>
+                </div>
+            </div>
+            <div class="card col-span-3">
+                <div class="card-header">
+                    <h3 class="card-title">Cost Savings</h3>
+                    <span style="font-size: 1.2rem;">💰</span>
+                </div>
+                <div class="metric-value">$1,240</div>
+                <div class="metric-change positive">
+                    ↑ 18% <span style="color: var(--text-secondary)">vs last week</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Charts -->
+        <div class="grid">
+            <!-- Traffic Chart -->
+            <div class="card col-span-8">
+                <div class="card-header">
+                    <h3 class="card-title">Traffic & Cache Hits (24h)</h3>
+                </div>
+                <canvas id="trafficChart" height="300"></canvas>
+            </div>
+
+            <!-- Hit Rate Dial -->
+            <div class="card col-span-4">
+                <div class="card-header">
+                    <h3 class="card-title">Cache Hit Rate</h3>
+                </div>
+                <div class="gauge-container">
+                    <canvas id="gaugeChart"></canvas>
+                    <div class="gauge-value">87%</div>
+                    <div class="gauge-label">Global Efficiency</div>
+                </div>
+                <p style="text-align: center; color: var(--text-secondary); font-size: 0.875rem; margin-top: 1rem;">
+                    Target: 90% efficiency
+                </p>
+            </div>
+        </div>
+
+        <!-- Secondary Charts -->
+        <div class="grid">
+            <!-- Latency Distribution -->
+            <div class="card col-span-4">
+                <div class="card-header">
+                    <h3 class="card-title">Latency Distribution</h3>
+                </div>
+                <canvas id="latencyChart" height="250"></canvas>
+            </div>
+
+            <!-- Model Usage -->
+            <div class="card col-span-4">
+                <div class="card-header">
+                    <h3 class="card-title">Model Usage</h3>
+                </div>
+                <canvas id="modelChart" height="250"></canvas>
+            </div>
+
+            <!-- Cache Freshness -->
+            <div class="card col-span-4">
+                <div class="card-header">
+                    <h3 class="card-title">Cache Freshness</h3>
+                </div>
+                <canvas id="freshnessChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Common Chart Config
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.borderColor = '#334155';
+        Chart.defaults.font.family = "'Inter', sans-serif";
+
+        let trafficChart, gaugeChart, latencyChart, modelChart, freshnessChart;
+
+        async function initDashboard() {
+            // Initialize Charts with empty/loading state
+            initCharts();
+
+            // Fetch Real Data
+            await updateDashboard();
+
+            // Poll every 5 seconds
+            setInterval(updateDashboard, 5000);
+        }
+
+        async function updateDashboard() {
+            try {
+                const res = await fetch('/api/telemetry');
+                const data = await res.json();
+
+                if (data.error) throw new Error(data.error);
+
+                // Update Top Cards
+                const metrics = document.querySelectorAll('.metric-value');
+                // 1. Total Requests (Commands Processed)
+                metrics[0].textContent = parseInt(data.total_commands || 0).toLocaleString();
+                // 2. Bandwidth (Mock calculation based on commands)
+                metrics[1].textContent = formatBytes((data.total_commands || 0) * 4500);
+                // 3. Avg Latency (Global)
+                metrics[2].textContent = `${data.global_latency_ms}ms`;
+                // 4. Cost Savings (Mock calculation)
+                metrics[3].textContent = `$${((data.total_commands || 0) * 0.0004).toFixed(2)}`;
+
+                // Update Gauge (Hit Rate)
+                updateGauge(data.cache_efficiency);
+
+                // Update Traffic Chart (Add new point, shift old)
+                updateTraffic(data.raw_hits + data.raw_misses);
+
+            } catch (e) {
+                console.warn('Dashboard update failed:', e);
+            }
+        }
+
+        function formatBytes(bytes, decimals = 1) {
+            if (!+bytes) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+        }
+
+        function initCharts() {
+            // 1. Traffic Chart (Line)
+            const trafficCtx = document.getElementById('trafficChart').getContext('2d');
+            const initialData = Array(24).fill(0);
+            trafficChart = new Chart(trafficCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({ length: 24 }, (_, i) => `${i}:00`),
+                    datasets: [
+                        {
+                            label: 'Real-Time Requests',
+                            data: [...initialData],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true }, x: { display: false } }
+                }
+            });
+
+            // 2. Gauge Chart (Doughnut)
+            const gaugeCtx = document.getElementById('gaugeChart').getContext('2d');
+            gaugeChart = new Chart(gaugeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Hits', 'Misses'],
+                    datasets: [{
+                        data: [0, 100],
+                        backgroundColor: ['#22c55e', '#1e293b'],
+                        borderWidth: 0,
+                        circumference: 180,
+                        rotation: 270,
+                        cutout: '80%'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                }
+            });
+
+            // 3. Latency Chart (Bar) - Static distribution for now
+            const latencyCtx = document.getElementById('latencyChart').getContext('2d');
+            latencyChart = new Chart(latencyCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['P50', 'P90', 'P95', 'P99'],
+                    datasets: [{
+                        label: 'Latency (ms)',
+                        data: [25, 45, 80, 150],
+                        backgroundColor: ['#22c55e', '#3b82f6', '#eab308', '#ef4444'],
+                        borderRadius: 4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // 4. Model Usage & 5. Freshness (Keep Mock/Static for visual variety unless we have data)
+            // ... (Omitted to keep script concise, they remain static in HTML structure if not updated)
+            // Actually, need to init them or they will be blank canvases? 
+            // The HTML defined canvases, so it's better to render 'something'.
+
+            // 4. Model Usage
+            const modelCtx = document.getElementById('modelChart').getContext('2d');
+            modelChart = new Chart(modelCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['GPT-4o', 'Claude 3.5'],
+                    datasets: [{ data: [60, 40], backgroundColor: ['#10b981', '#3b82f6'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '60%' }
+            });
+
+            // 5. Freshness
+            const freshCtx = document.getElementById('freshnessChart').getContext('2d');
+            freshnessChart = new Chart(freshCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Fresh', 'Stale'],
+                    datasets: [{ data: [85, 15], backgroundColor: ['#22c55e', '#eab308'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function updateGauge(hitRate) {
+            gaugeChart.data.datasets[0].data = [hitRate, 100 - hitRate];
+            gaugeChart.update();
+            document.querySelector('.gauge-value').textContent = `${hitRate}%`;
+        }
+
+        function updateTraffic(newVal) {
+            // Shift data
+            const data = trafficChart.data.datasets[0].data;
+            data.shift();
+            data.push(newVal);
+            trafficChart.update();
+        }
+
+        // Start
+        initDashboard();
+    </script>
+</body>
+
+</html>
