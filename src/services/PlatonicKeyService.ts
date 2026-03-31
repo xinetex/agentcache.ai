@@ -10,6 +10,8 @@
 
 import { stableHash } from '../lib/stable-json.js';
 import { redis } from '../lib/redis.js';
+import { TurboQuantService } from './TurboQuantService.js';
+import { generateEmbedding } from '../lib/llm/embeddings.js';
 
 /**
  * VectorCompressor interface — pluggable compression strategy.
@@ -25,6 +27,14 @@ export interface VectorCompressor {
 export const PassthroughCompressor: VectorCompressor = {
     compress: (v) => v,
     decompress: (v) => v,
+};
+
+/** 
+ * TurboQuantCompressor — 8x-10x compression (3-bit) 
+ */
+export const TurboQuantCompressor: VectorCompressor = {
+    compress: (v) => TurboQuantService.compress(v),
+    decompress: (v) => TurboQuantService.decompress(v),
 };
 
 /**
@@ -44,25 +54,27 @@ export interface PlatonicCacheEntry {
     originalModel: string;
     cachedAt: string;
     ttl: number;
+    embedding?: string; // ACTQ compressed Base64
 }
 
 export class PlatonicKeyService {
     private compressor: VectorCompressor;
 
     constructor(compressor?: VectorCompressor) {
-        this.compressor = compressor || PassthroughCompressor;
+        this.compressor = compressor || TurboQuantCompressor;
     }
     /**
      * Generate a provider-agnostic key from messages alone.
      * Strips provider/model to create a "universal" lookup.
      */
-    static generatePlatonicKey(messages: any[], temperature?: number): string {
+    static generatePlatonicKey(messages: any[], temperature?: number, sector?: string): string {
         const data = {
             messages,
             temperature: temperature ?? 0.7,
         };
         const hash = stableHash(data);
-        return `agentcache:platonic:${hash}`;
+        const sectorKey = sector?.trim().toLowerCase() || 'global';
+        return `agentcache:platonic:${sectorKey}:${hash}`;
     }
 
     /**
@@ -75,14 +87,29 @@ export class PlatonicKeyService {
         provider: string;
         model: string;
         ttl?: number;
+        sector?: string;
+        embedding?: number[];
     }): Promise<string> {
-        const key = PlatonicKeyService.generatePlatonicKey(params.messages, params.temperature);
+        const key = PlatonicKeyService.generatePlatonicKey(params.messages, params.temperature, params.sector);
+        const compressedResponse = typeof params.response === 'string' ? params.response : JSON.stringify(params.response);
+        
+        // Generate/Compress embedding for Semantic Platonic Hits
+        let actqEmbedding: string | undefined;
+        try {
+            const rawVec = params.embedding || await generateEmbedding(params.messages[params.messages.length - 1]?.content || '');
+            const compressed = TurboQuantService.compress(rawVec);
+            actqEmbedding = TurboQuantService.toBase64(compressed);
+        } catch (err) {
+            console.warn('[Platonic] Failed to generate/compress embedding for shadow:', err);
+        }
+
         const entry: PlatonicCacheEntry = {
-            response: params.response,
+            response: compressedResponse,
             originalProvider: params.provider,
             originalModel: params.model,
             cachedAt: new Date().toISOString(),
             ttl: params.ttl || 604800,
+            embedding: actqEmbedding,
         };
 
         await redis.setex(key, entry.ttl, JSON.stringify(entry));
@@ -93,8 +120,8 @@ export class PlatonicKeyService {
      * Look up a Platonic cache entry.
      * Returns null if no cross-provider match exists.
      */
-    async lookupPlatonic(messages: any[], temperature?: number): Promise<PlatonicCacheEntry | null> {
-        const key = PlatonicKeyService.generatePlatonicKey(messages, temperature);
+    async lookupPlatonic(messages: any[], temperature?: number, sector?: string): Promise<PlatonicCacheEntry | null> {
+        const key = PlatonicKeyService.generatePlatonicKey(messages, temperature, sector);
         const raw = await redis.get(key);
         if (!raw) return null;
 
@@ -103,6 +130,39 @@ export class PlatonicKeyService {
         } catch {
             return null;
         }
+    }
+    /**
+     * Semantic lookup in a given sector.
+     * Uses "Lidar" mode to find matches even if hash doesn't match.
+     */
+    async lookupSemanticPlatonic(query: string, sector: string = 'global', threshold: number = 0.95): Promise<PlatonicCacheEntry | null> {
+        const sectorKey = `agentcache:platonic:${sector.toLowerCase()}:*`;
+        const keys = await redis.keys(sectorKey);
+        
+        if (keys.length === 0) return null;
+
+        // Take the latest 100 entries for Lidar "Hot-Set" performance
+        const hotSet = keys.slice(-100);
+        const queryVec = await generateEmbedding(query);
+        const queryCompressed = TurboQuantService.compress(queryVec);
+
+        for (const key of hotSet) {
+            const raw = await redis.get(key);
+            if (!raw) continue;
+            const entry = JSON.parse(raw as string) as PlatonicCacheEntry;
+            
+            if (entry.embedding) {
+                const docVec = TurboQuantService.fromBase64(entry.embedding);
+                const sim = TurboQuantService.fastSimilarity(queryCompressed, docVec);
+                
+                if (sim >= threshold) {
+                    console.log(`[Platonic] 🎯 LIDAR HIT: Found semantic match with similarity ${sim.toFixed(4)}`);
+                    return entry;
+                }
+            }
+        }
+        
+        return null;
     }
 }
 

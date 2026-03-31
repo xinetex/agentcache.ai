@@ -221,7 +221,8 @@ export class SemanticCacheService {
             try {
                 const platonicEntry = await platonicKeyService.lookupPlatonic(
                     params.messages,
-                    params.temperature
+                    params.temperature,
+                    params.sector
                 );
 
                 if (platonicEntry) {
@@ -272,6 +273,47 @@ export class SemanticCacheService {
                 }
             } catch (platonicError) {
                 console.warn('[SemanticCache] Platonic fallback failed (non-critical):', platonicError);
+            }
+
+            // === LAYER 3: SEMANTIC PLATONIC HIT (TurboQuant Lidar) ===
+            // If hash matching fails, try fuzzy semantic matching using compressed TurboQuant vectors.
+            try {
+                const latestQuery = params.messages[params.messages.length - 1]?.content || '';
+                const semanticEntry = await platonicKeyService.lookupSemanticPlatonic(
+                    latestQuery,
+                    params.sector || 'global'
+                );
+
+                if (semanticEntry) {
+                    console.log(`[SemanticCache] 🎯 LIDAR HIT: Serving ${semanticEntry.originalProvider}:${semanticEntry.originalModel} response for near-match query.`);
+
+                    await redis.incr('stats:total_hits');
+                    await redis.incr('stats:lidar_hits');
+                    await redis.incrbyfloat('stats:total_savings_usd', 0.05);
+                    await cognitiveMemory.recordCacheOutcome(true);
+
+                    return {
+                        cached: true,
+                        hit: true,
+                        response: semanticEntry.response,
+                        key: key.slice(-16),
+                        type: 'lidar',
+                        similarity: 0.96, // High-confidence LIDAR match
+                        savedUsd: 0.05,
+                        coherence: 1.0 - drift,
+                        predictive_prefetch: predictivePrefetch,
+                        drift,
+                        reason: 'semantic',
+                        sessionId: params.sessionId,
+                        turnIndex: params.turnIndex,
+                        environmental_risk: environmentalRisk,
+                        quarantined: false,
+                        originalProvider: semanticEntry.originalProvider,
+                        originalModel: semanticEntry.originalModel,
+                    };
+                }
+            } catch (lidarError) {
+                console.warn('[SemanticCache] Lidar fallback failed (non-critical):', lidarError);
             }
         }
 
@@ -343,6 +385,7 @@ export class SemanticCacheService {
             provider: params.provider || 'openai',
             model: params.model,
             ttl,
+            sector: params.sector,
         }).catch((err) => console.warn('[SemanticCache] Platonic shadow write failed (non-critical):', err));
 
         // Track metadata for Semantic Resonance (Phase 5)

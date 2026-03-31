@@ -10,6 +10,7 @@
 import { redis as globalRedis } from './redis.js';
 import { VectorClient } from '../infrastructure/VectorClient.js';
 import { generateEmbedding } from './llm/embeddings.js';
+import { TurboQuantService } from '../services/TurboQuantService.js';
 
 const vectorClientSingleton = new VectorClient(process.env.VECTOR_SERVICE_URL);
 
@@ -81,12 +82,24 @@ export class HybridVectorIndex {
             const vector = record.vector || await generateEmbedding(record.data || record.metadata?.query || '');
             await this.vectorClient.addVectors([longId], vector);
 
+            // ACTQ Shadow Path: Store 3-bit compressed vector in Redis metadata for "Lidar" mode
+            let encodedShadow: string | undefined;
+            if (record.turboquant !== false) {
+                try {
+                    const compressed = TurboQuantService.compress(vector);
+                    encodedShadow = TurboQuantService.toBase64(compressed);
+                } catch (e) {
+                    console.warn('[Vector] TurboQuant shadow generation failed:', e);
+                }
+            }
+
             await this.redis.set(metaKey, JSON.stringify({
                 id,
                 data: record.data ?? existing?.data ?? record.metadata?.query ?? '',
                 metadata: {
                     ...(existing?.metadata || {}),
                     ...(record.metadata || {}),
+                    actq: encodedShadow
                 },
             }));
         }
@@ -126,6 +139,41 @@ export class HybridVectorIndex {
                 metadata: record.metadata
             };
         })).then(r => r.filter(x => x !== null));
+    }
+
+    /**
+     * Fast-pass semantic query using Redis-native TurboQuant (Lidar).
+     * Bypasses the VectorClient for low-latency top-K.
+     */
+    async queryTurbo(query: string, topK: number = 3, threshold: number = 0.94) {
+        const queryVec = await generateEmbedding(query);
+        const queryCompressed = TurboQuantService.compress(queryVec);
+
+        // Scan Redis for vectors in this index
+        const keys = await this.redis.keys(`${PREFIX_META}*`);
+        const results: any[] = [];
+
+        for (const key of keys) {
+            const raw = await this.redis.get(key);
+            if (!raw) continue;
+            const record = JSON.parse(raw as string);
+            
+            if (record.metadata?.actq) {
+                const docVec = TurboQuantService.fromBase64(record.metadata.actq);
+                const sim = TurboQuantService.fastSimilarity(queryCompressed, docVec);
+                
+                if (sim >= threshold) {
+                    results.push({
+                        id: record.id,
+                        score: sim,
+                        data: record.data,
+                        metadata: record.metadata
+                    });
+                }
+            }
+        }
+
+        return results.sort((a, b) => b.score - a.score).slice(0, topK);
     }
 
     async delete(id: string) {
