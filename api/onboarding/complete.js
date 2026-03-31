@@ -37,6 +37,146 @@ function buildNamespaceRows(strategy, customNamespaces = []) {
   ];
 }
 
+async function insertStarterPipeline(client, values) {
+  const variants = [
+    {
+      columns: [
+        'user_id',
+        'organization_id',
+        'name',
+        'description',
+        'sector',
+        'nodes',
+        'connections',
+        'complexity_tier',
+        'complexity_score',
+        'monthly_cost',
+        'status',
+        'is_starter',
+        'projected_savings',
+        'estimated_hit_rate',
+        'wizard_prompt',
+      ],
+      values: [
+        values.userId,
+        values.organizationId,
+        values.name,
+        values.description,
+        values.sector,
+        JSON.stringify(values.nodes),
+        JSON.stringify(values.connections),
+        values.complexity,
+        values.complexityScore,
+        values.monthlyCost,
+        'draft',
+        true,
+        values.projectedSavings,
+        values.estimatedHitRate,
+        values.wizardPrompt,
+      ],
+    },
+    {
+      columns: [
+        'user_id',
+        'organization_id',
+        'name',
+        'description',
+        'sector',
+        'nodes',
+        'connections',
+        'complexity_tier',
+        'complexity_score',
+        'monthly_cost',
+        'status',
+        'projected_savings',
+        'estimated_hit_rate',
+        'wizard_prompt',
+      ],
+      values: [
+        values.userId,
+        values.organizationId,
+        values.name,
+        values.description,
+        values.sector,
+        JSON.stringify(values.nodes),
+        JSON.stringify(values.connections),
+        values.complexity,
+        values.complexityScore,
+        values.monthlyCost,
+        'draft',
+        values.projectedSavings,
+        values.estimatedHitRate,
+        values.wizardPrompt,
+      ],
+    },
+    {
+      columns: [
+        'user_id',
+        'organization_id',
+        'name',
+        'description',
+        'sector',
+        'nodes',
+        'connections',
+        'complexity_tier',
+        'complexity_score',
+        'monthly_cost',
+        'status',
+        'estimated_hit_rate',
+        'wizard_prompt',
+      ],
+      values: [
+        values.userId,
+        values.organizationId,
+        values.name,
+        values.description,
+        values.sector,
+        JSON.stringify(values.nodes),
+        JSON.stringify(values.connections),
+        values.complexity,
+        values.complexityScore,
+        values.monthlyCost,
+        'draft',
+        values.estimatedHitRate,
+        values.wizardPrompt,
+      ],
+    },
+  ];
+
+  let lastError;
+
+  for (const [index, variant] of variants.entries()) {
+    const placeholders = variant.columns.map((_, columnIndex) => {
+      const raw = variant.columns[columnIndex] === 'nodes' || variant.columns[columnIndex] === 'connections';
+      return raw ? `$${columnIndex + 1}::jsonb` : `$${columnIndex + 1}`;
+    });
+
+    await client.query('SAVEPOINT starter_pipeline_insert');
+
+    try {
+      return await client.query(`
+        INSERT INTO pipelines (
+          ${variant.columns.join(',\n          ')}
+        ) VALUES (
+          ${placeholders.join(', ')}
+        )
+        RETURNING id, name, description
+      `, variant.values);
+    } catch (error) {
+      lastError = error;
+      await client.query('ROLLBACK TO SAVEPOINT starter_pipeline_insert').catch(() => {});
+
+      if (error?.code !== '42703' || index === variants.length - 1) {
+        throw error;
+      }
+    } finally {
+      await client.query('RELEASE SAVEPOINT starter_pipeline_insert').catch(() => {});
+    }
+  }
+
+  throw lastError;
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -83,7 +223,7 @@ export default async function handler(req, res) {
 
     const result = await transaction(async (client) => {
       const userResult = await client.query(`
-        SELECT id, email, full_name, organization_id, onboarding_completed
+        SELECT *
         FROM users
         WHERE id = $1
       `, [decoded.userId]);
@@ -96,26 +236,22 @@ export default async function handler(req, res) {
         throw err;
       }
 
-      if (user.onboarding_completed) {
-        const err = new Error('Onboarding already completed');
-        err.code = 'ALREADY_COMPLETED';
-        throw err;
-      }
-
       const limits = getPlanLimits(requestedPlan);
-      const organizationName = orgInput.name?.trim() || generateWorkspaceName(user.full_name, user.email);
+      const userDisplayName = user.full_name || user.name || user.email?.split('@')[0] || 'Workspace Owner';
+      const organizationName = orgInput.name?.trim() || generateWorkspaceName(userDisplayName, user.email);
       const organizationSector = orgInput.sector || sector || 'general';
       const contactEmail = orgInput.contact_email?.trim() || user.email;
-      const contactName = orgInput.contact_name?.trim() || user.full_name;
+      const contactName = orgInput.contact_name?.trim() || userDisplayName;
+      const existingOrganizationId = user.organization_id || decoded.organizationId || decoded.orgId || null;
 
       let organization;
 
-      if (user.organization_id) {
+      if (existingOrganizationId) {
         const existingOrgResult = await client.query(`
           SELECT id, slug
           FROM organizations
           WHERE id = $1
-        `, [user.organization_id]);
+        `, [existingOrganizationId]);
 
         if (existingOrgResult.rows.length > 0) {
           const existingOrg = existingOrgResult.rows[0];
@@ -171,33 +307,50 @@ export default async function handler(req, res) {
         organization = organizationResult.rows[0];
       }
 
-      await client.query(`
-        UPDATE users
-        SET
-          organization_id = $1,
-          role = 'owner',
-          onboarding_completed = TRUE,
-          onboarding_data = $2::jsonb
-        WHERE id = $3
-      `, [
-        organization.id,
-        JSON.stringify({
-          sector: organizationSector,
-          useCase,
-          priority,
-          wizardPrompt,
-          organization: {
-            name: organizationName,
-            contact_email: contactEmail,
-            contact_name: contactName,
-            plan_tier: requestedPlan,
-          },
-          namespaceStrategy,
-          customNamespaces,
-          scale,
-        }),
-        user.id,
-      ]);
+      const onboardingData = JSON.stringify({
+        sector: organizationSector,
+        useCase,
+        priority,
+        wizardPrompt,
+        organization: {
+          name: organizationName,
+          contact_email: contactEmail,
+          contact_name: contactName,
+          plan_tier: requestedPlan,
+        },
+        namespaceStrategy,
+        customNamespaces,
+        scale,
+      });
+
+      const updateClauses = [];
+      const updateValues = [];
+
+      if (Object.prototype.hasOwnProperty.call(user, 'organization_id')) {
+        updateClauses.push(`organization_id = $${updateValues.length + 1}`);
+        updateValues.push(organization.id);
+      }
+      if (Object.prototype.hasOwnProperty.call(user, 'role')) {
+        updateClauses.push(`role = $${updateValues.length + 1}`);
+        updateValues.push('owner');
+      }
+      if (Object.prototype.hasOwnProperty.call(user, 'onboarding_completed')) {
+        updateClauses.push(`onboarding_completed = $${updateValues.length + 1}`);
+        updateValues.push(true);
+      }
+      if (Object.prototype.hasOwnProperty.call(user, 'onboarding_data')) {
+        updateClauses.push(`onboarding_data = $${updateValues.length + 1}::jsonb`);
+        updateValues.push(onboardingData);
+      }
+
+      if (updateClauses.length > 0) {
+        updateValues.push(user.id);
+        await client.query(`
+          UPDATE users
+          SET ${updateClauses.join(', ')}
+          WHERE id = $${updateValues.length}
+        `, updateValues);
+      }
 
       for (const ns of namespaceRows) {
         await client.query(`
@@ -215,44 +368,28 @@ export default async function handler(req, res) {
       }
 
       const pipelineConfig = generateStarterPipeline(organizationSector, priority);
-      const pipelineResult = await client.query(`
-        INSERT INTO pipelines (
-          user_id,
-          organization_id,
-          name,
-          description,
-          sector,
-          nodes,
-          connections,
-          complexity_tier,
-          complexity_score,
-          monthly_cost,
-          status,
-          is_starter,
-          projected_savings,
-          estimated_hit_rate,
-          wizard_prompt
-        ) VALUES (
-          $1, $2, $3, $4, $5,
-          $6::jsonb, $7::jsonb, $8, $9, $10,
-          'draft', TRUE, $11, $12, $13
-        )
-        RETURNING id, name, description
-      `, [
-        user.id,
-        organization.id,
-        pipelineConfig.name,
-        pipelineConfig.description,
-        organizationSector,
-        JSON.stringify(pipelineConfig.nodes),
-        JSON.stringify(pipelineConfig.connections),
-        pipelineConfig.complexity,
-        pipelineConfig.nodes.length * 10,
-        Number((pipelineConfig.projectedSavings / 12).toFixed(2)),
-        pipelineConfig.projectedSavings,
-        pipelineConfig.estimatedHitRate,
-        wizardPrompt || useCase || '',
-      ]);
+      let pipelineRow = null;
+
+      try {
+        const pipelineResult = await insertStarterPipeline(client, {
+          userId: user.id,
+          organizationId: organization.id,
+          name: pipelineConfig.name,
+          description: pipelineConfig.description,
+          sector: organizationSector,
+          nodes: pipelineConfig.nodes,
+          connections: pipelineConfig.connections,
+          complexity: pipelineConfig.complexity,
+          complexityScore: pipelineConfig.nodes.length * 10,
+          monthlyCost: Number((pipelineConfig.projectedSavings / 12).toFixed(2)),
+          projectedSavings: pipelineConfig.projectedSavings,
+          estimatedHitRate: pipelineConfig.estimatedHitRate,
+          wizardPrompt: wizardPrompt || useCase || '',
+        });
+        pipelineRow = pipelineResult.rows[0];
+      } catch (error) {
+        console.warn('Starter pipeline creation skipped during onboarding:', error?.message || error);
+      }
 
       const apiKeyPlain = generateApiKey();
       await client.query(`
@@ -280,31 +417,35 @@ export default async function handler(req, res) {
         true,
       ]);
 
-      await client.query(`
-        INSERT INTO organization_settings (
-          organization_id, namespace_strategy, features, preferences
-        ) VALUES ($1, $2, $3::jsonb, $4::jsonb)
-        ON CONFLICT (organization_id) DO UPDATE
-        SET
-          namespace_strategy = EXCLUDED.namespace_strategy,
-          preferences = EXCLUDED.preferences
-      `, [
-        organization.id,
-        scale === 'multi_customer' ? 'multi_customer' : 'single_tenant',
-        JSON.stringify({
-          multi_tenant: scale === 'multi_customer',
-          sso: requestedPlan === 'enterprise',
-          custom_nodes: organizationSector === 'filestorage',
-        }),
-        JSON.stringify({
-          default_sector: organizationSector,
-          namespace_strategy: namespaceStrategy,
-        }),
-      ]);
+      try {
+        await client.query(`
+          INSERT INTO organization_settings (
+            organization_id, namespace_strategy, features, preferences
+          ) VALUES ($1, $2, $3::jsonb, $4::jsonb)
+          ON CONFLICT (organization_id) DO UPDATE
+          SET
+            namespace_strategy = EXCLUDED.namespace_strategy,
+            preferences = EXCLUDED.preferences
+        `, [
+          organization.id,
+          scale === 'multi_customer' ? 'multi_customer' : 'single_tenant',
+          JSON.stringify({
+            multi_tenant: scale === 'multi_customer',
+            sso: requestedPlan === 'enterprise',
+            custom_nodes: organizationSector === 'filestorage',
+          }),
+          JSON.stringify({
+            default_sector: organizationSector,
+            namespace_strategy: namespaceStrategy,
+          }),
+        ]);
+      } catch (error) {
+        console.warn('Organization settings creation skipped during onboarding:', error?.message || error);
+      }
 
       return {
         organization,
-        pipeline: pipelineResult.rows[0],
+        pipeline: pipelineRow,
         pipelineConfig,
         apiKeyPlain,
       };
@@ -314,9 +455,9 @@ export default async function handler(req, res) {
       success: true,
       organization: result.organization,
       pipeline: {
-        id: result.pipeline.id,
-        name: result.pipeline.name,
-        description: result.pipeline.description,
+        id: result.pipeline?.id || null,
+        name: result.pipeline?.name || result.pipelineConfig.name,
+        description: result.pipeline?.description || result.pipelineConfig.description,
         nodes: result.pipelineConfig.nodes,
         connections: result.pipelineConfig.connections,
         estimatedHitRate: result.pipelineConfig.estimatedHitRate,
@@ -332,10 +473,6 @@ export default async function handler(req, res) {
   } catch (error) {
     if (error?.code === 'NOT_FOUND') {
       return res.status(404).json({ error: error.message });
-    }
-
-    if (error?.code === 'ALREADY_COMPLETED') {
-      return res.status(409).json({ error: error.message });
     }
 
     console.error('Onboarding completion error:', error);

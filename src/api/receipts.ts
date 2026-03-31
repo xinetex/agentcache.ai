@@ -61,6 +61,7 @@ router.get('/summary', async (c) => {
       subjectKind: c.req.query('subjectKind'),
       sectorId: c.req.query('sectorId'),
       verdict: c.req.query('verdict'),
+      buyerId: c.req.query('buyerId'),
       limit: Number(c.req.query('limit') || 100),
     });
 
@@ -106,6 +107,7 @@ router.get('/', async (c) => {
       subjectKind: c.req.query('subjectKind'),
       sectorId: c.req.query('sectorId'),
       verdict: c.req.query('verdict'),
+      buyerId: c.req.query('buyerId'),
       limit: Number(c.req.query('limit') || 25),
     });
 

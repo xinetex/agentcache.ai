@@ -8,6 +8,7 @@
  * via any medium, is strictly prohibited.
  */
 import { createHash } from 'crypto';
+import { execSync } from 'child_process';
 import { PredictiveSynapse } from '../infrastructure/PredictiveSynapse.js';
 import { DriftWalker } from '../infrastructure/DriftWalker.js';
 import { HybridVectorIndex } from '../lib/vector.js';
@@ -137,6 +138,27 @@ export class AgentCacheCognitiveService {
       costSaved: hit ? '0.04' : '0.00',
       timestamp: Date.now()
     }, 'cognitive');
+  }
+
+  /**
+   * Phase 41: Workspace Fingerprinting (Moonshot).
+   * Captures a snapshot of the current git state to detect context drift.
+   */
+  async captureWorkspaceFingerprint(): Promise<string> {
+    try {
+      const branch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
+      const status = execSync('git status --short').toString().trim();
+      const lastCommit = execSync('git log -1 --oneline').toString().trim();
+      
+      const fingerprint = createHash('sha256')
+        .update(`${branch}:${status}:${lastCommit}`)
+        .digest('hex');
+        
+      await this.redis.set('cognitive:workspace_fingerprint', fingerprint);
+      return fingerprint;
+    } catch (e) {
+      return 'non-git-workspace';
+    }
   }
 
   async assessDrift(id: string, heal: boolean = false, sessionId?: string): Promise<DriftResult> {

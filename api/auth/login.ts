@@ -1,4 +1,4 @@
-import * as bcrypt from 'bcryptjs';
+import bcrypt from 'bcryptjs';
 import { generateToken } from '../../lib/jwt.js';
 import { query } from '../../lib/db.js';
 

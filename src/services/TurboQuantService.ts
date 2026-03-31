@@ -119,7 +119,7 @@ export class TurboQuantService {
      * Compress a vector into a compact Uint8Array.
      * Dimensions: D -> 3 bits per element (packed) + metadata.
      */
-    static compress(vector: number[]): Uint8Array {
+    static compress(vector: number[] | Float32Array): Uint8Array {
         const d = vector.length;
         const padded = this.padToPowerOf2(vector);
         const n = padded.length;

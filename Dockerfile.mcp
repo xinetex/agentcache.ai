@@ -1,0 +1,29 @@
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+COPY . .
+RUN npm run mcp:build
+
+FROM node:20-alpine AS runtime
+
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+RUN npm ci --omit=dev && npm cache clean --force
+
+COPY --from=builder /app/dist/mcp ./dist/mcp
+
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 && \
+    chown -R nodejs:nodejs /app
+
+USER nodejs
+
+ENV NODE_ENV=production
+ENV AGENTCACHE_MCP_SANDBOX=container
+
+CMD ["node", "dist/mcp/server.js"]

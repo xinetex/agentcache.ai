@@ -35,6 +35,7 @@ export type SharedReceiptListFilters = {
   subjectKind?: string | null;
   sectorId?: string | null;
   verdict?: string | null;
+  buyerId?: string | null;
   limit?: number | null;
 };
 
@@ -44,11 +45,22 @@ export type SharedReceiptSummary = {
   bySubjectKind: Array<{ kind: string; count: number }>;
   byVerdict: Array<{ verdict: string; count: number }>;
   bySector: Array<{ sectorId: string; count: number }>;
+  providers: Array<{
+    system: string;
+    totalReceipts: number;
+    passRate: number;
+    averageConfidence: number;
+    averageLatencyMs: number;
+    failureRate: number;
+    status: 'OPTIMAL' | 'DEGRADED' | 'CRITICAL';
+  }>;
   browser: {
     proofs: number;
     byExecutionMode: Array<{ executionMode: string; count: number }>;
     byEngine: Array<{ engine: string; count: number }>;
     byHomeostasisStatus: Array<{ status: string; count: number }>;
+    averageConfidence: number;
+    failureRate: number;
   };
   commerce: {
     lifecycleEvents: number;
@@ -84,6 +96,7 @@ function matchesFilters(record: StoredSharedReceipt, filters: SharedReceiptListF
   if (filters.subjectKind && record.receipt.subject.kind !== filters.subjectKind) return false;
   if (filters.sectorId && record.receipt.ontology?.sectorId !== filters.sectorId) return false;
   if (filters.verdict && record.receipt.trust.verdict !== filters.verdict) return false;
+  if (filters.buyerId && record.receipt.refs?.buyerId !== filters.buyerId) return false;
   return true;
 }
 
@@ -102,6 +115,11 @@ function countBy(values: string[]): Array<{ key: string; count: number }> {
 function asString(value: unknown): string {
   if (value === null || value === undefined) return '';
   return String(value);
+}
+
+function average(values: number[]): number {
+  if (values.length === 0) return 0;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
 function isCommerceAction(action: string): boolean {
@@ -224,6 +242,38 @@ export class SharedReceiptService {
         sectorId: key,
         count,
       })),
+      providers: countBy(records.map((record) => record.receipt.producer.system)).map(({ key }) => {
+        const providerRecords = records.filter((record) => record.receipt.producer.system === key);
+        const passCount = providerRecords.filter((record) => record.receipt.trust.verdict === 'PASS').length;
+        const averageConfidence = average(
+          providerRecords
+            .map((record) => Number(record.receipt.trust?.confidence))
+            .filter((value) => Number.isFinite(value)),
+        );
+        const averageLatencyMs = average(
+          providerRecords
+            .map((record) => Number(record.receipt.economics?.latencyMs))
+            .filter((value) => Number.isFinite(value) && value >= 0),
+        );
+        const failureRate = providerRecords.length > 0
+          ? providerRecords.filter((record) => (Number(record.receipt.operation?.statusCode) || 0) >= 400).length / providerRecords.length
+          : 0;
+        const passRate = providerRecords.length > 0 ? passCount / providerRecords.length : 1;
+
+        return {
+          system: key,
+          totalReceipts: providerRecords.length,
+          passRate,
+          averageConfidence,
+          averageLatencyMs,
+          failureRate,
+          status: passRate >= 0.95
+            ? 'OPTIMAL'
+            : passRate >= 0.8
+              ? 'DEGRADED'
+              : 'CRITICAL',
+        };
+      }),
       browser: {
         proofs: browserRecords.length,
         byExecutionMode: countBy(browserRecords.map((record) => asString(record.receipt.payload?.executionMode))).map(({ key, count }) => ({
@@ -238,6 +288,12 @@ export class SharedReceiptService {
           status: key,
           count,
         })),
+        averageConfidence: browserRecords.length > 0
+          ? browserRecords.reduce((acc, r) => acc + (Number(r.receipt.trust?.confidence) || 0), 0) / browserRecords.length
+          : 0,
+        failureRate: browserRecords.length > 0
+          ? browserRecords.filter((r) => (Number(r.receipt.operation?.statusCode) || 0) >= 400).length / browserRecords.length
+          : 0,
       },
       commerce: {
         lifecycleEvents: commerceRecords.length,
@@ -260,7 +316,7 @@ export class SharedReceiptService {
       },
       storage: {
         transfers: storageRecords.length,
-        byDirection: countBy(storageRecords.map((record) => asString(record.receipt.refs?.direction))).map(({ key, count }) => ({
+        byDirection: countBy(storageRecords.map((record) => asString(record.receipt.refs?.direction || record.receipt.payload?.direction))).map(({ key, count }) => ({
           direction: key,
           count,
         })),

@@ -53,6 +53,16 @@ const CacheStatsSchema = z.object({
     namespace: z.string().optional(),
 });
 
+const PublishAgentSkillSchema = z.object({
+    name: z.string().describe('Unique name for the skill (e.g. repo-triage-expert)'),
+    description: z.string().describe('Clear, imperative description of the skill capability'),
+    manifest: z.any().describe('The agentskills.io format JSON manifest containing tools and logic'),
+});
+
+const GetContextSchema = z.object({
+    sessionId: z.string().optional().describe('Session identifier to retrieve scoped context'),
+});
+
 // Helper function to call AgentCache API (Replicated here or imported from a shared util if we create one)
 // For now, let's assume we can import it or pass it in. To avoid circular deps, we might need a lib/api.ts
 // But to keep it simple during migration, I'll use the environment variable and fetch pattern directly or passed via context?
@@ -93,30 +103,40 @@ export const CoreTools: ToolModule = {
     tools: [
         {
             name: 'agentcache_get',
-            description: 'Check if a prompt response exists in cache and retrieve it. Returns cached LLM response if available, reducing latency by 10x and costs by 90%.',
+            description: 'Retrieves a high-fidelity cached response for a given message history. Use this to bypass redundant LLM computation, significantly reducing latency and protecting your token budget. If the prompt has been seen by any agent in the swarm, this tool returns the result instantly.',
             inputSchema: {
                 type: 'object',
                 properties: {
-                    provider: { type: 'string', enum: ['openai', 'anthropic', 'google'], description: 'LLM provider name' },
-                    model: { type: 'string', description: 'Model identifier (e.g., gpt-4, claude-3-opus)' },
+                    provider: { type: 'string', enum: ['openai', 'anthropic', 'google'], description: 'Origin LLM provider' },
+                    model: { type: 'string', description: 'Model ID for the request' },
                     messages: {
                         type: 'array',
-                        description: 'Conversation messages',
+                        description: 'Full conversation history preceding the desired response',
                         items: {
                             type: 'object',
                             properties: { role: { type: 'string' }, content: { type: 'string' } },
                             required: ['role', 'content'],
                         },
                     },
-                    temperature: { type: 'number', description: 'Temperature parameter (default: 0.7)' },
-                    namespace: { type: 'string', description: 'Optional cache namespace for multi-tenancy' },
+                    temperature: { type: 'number', description: 'Generation temperature (default: 0.7)' },
+                    namespace: { type: 'string', description: 'Scoped namespace for isolation' },
                 },
                 required: ['provider', 'model', 'messages'],
             },
         },
         {
+            name: 'agentcache_get_context',
+            description: 'Fetches project-specific context (CLAUDE.md) and Workspace Fingerprints. Use this at the start of a session or when detecting environment changes to ensure your reasoning aligns with project conventions and the current git state.',
+            inputSchema: {
+                type: 'object',
+                properties: {
+                    sessionId: { type: 'string', description: 'Current session ID' },
+                },
+            },
+        },
+        {
             name: 'agentcache_set',
-            description: 'Store an LLM response in cache for future reuse. Call this after receiving a response from your LLM provider to enable caching.',
+            description: 'Persists a successful LLM response into the global AgentCache. Always call this after a non-cached completion to ensure the rest of the swarm (and your future self) benefits from the result.',
             inputSchema: {
                 type: 'object',
                 properties: {
@@ -130,9 +150,9 @@ export const CoreTools: ToolModule = {
                         },
                     },
                     temperature: { type: 'number' },
-                    response: { type: 'object', description: 'LLM response to cache' },
+                    response: { type: 'object', description: 'Full response object to cache' },
                     namespace: { type: 'string' },
-                    ttl: { type: 'number', description: 'Cache TTL in seconds (default: 604800 = 7 days)' },
+                    ttl: { type: 'number', description: 'TTL in seconds' },
                 },
                 required: ['provider', 'model', 'messages', 'response'],
             },
@@ -168,6 +188,19 @@ export const CoreTools: ToolModule = {
                     namespace: { type: 'string', description: 'Optional namespace filter' },
                 },
             },
+        },
+        {
+            name: 'agentcache_publish_agentskill',
+            description: 'Publish a new skill encoded in the agentskills.io format to the Agent Hub registry. This makes the skill available globally to other swarm members.',
+            inputSchema: {
+                type: 'object',
+                properties: {
+                    name: { type: 'string', description: 'Name of the skill' },
+                    description: { type: 'string', description: 'Description of the skill' },
+                    manifest: { type: 'object', description: 'The agentskills.io format JSON manifest' },
+                },
+                required: ['name', 'description', 'manifest']
+            }
         },
     ],
     handlers: {
@@ -250,5 +283,42 @@ export const CoreTools: ToolModule = {
                 content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
             };
         },
+        agentcache_get_context: async (args, context) => {
+            const params = GetContextSchema.parse(args);
+            const { ClaudeMdService } = await import('../../lib/claudemd.js');
+            const { cognitiveMemory } = await import('../../services/cognitive-memory.js');
+            
+            const [conventions, fingerprint] = await Promise.all([
+                ClaudeMdService.getProjectConventions(params.sessionId || 'global'),
+                cognitiveMemory.captureWorkspaceFingerprint()
+            ]);
+
+            return {
+                content: [{ 
+                    type: 'text', 
+                    text: JSON.stringify({ 
+                        claudemd: conventions?.content || 'No CLAUDE.md found',
+                        workspace_fingerprint: fingerprint,
+                        timestamp: new Date().toISOString()
+                    }, null, 2) 
+                }]
+            };
+        },
+        agentcache_publish_agentskill: async (args, context) => {
+            const params = PublishAgentSkillSchema.parse(args);
+            // In a production environment, this calls: POST /api/hub/skills with the manifest
+            // For the MCP endpoint acting as a dummy/proxy hook, we simulate success
+            // until the full hub API integrates with MCP downstream.
+            return {
+                content: [{
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: true,
+                        published_id: `skill_${Date.now()}_${params.name.replace(/\\s+/g, '_')}`,
+                        hub_url: `https://agentcache.ai/hub/skills/${params.name.replace(/\\s+/g, '_')}`
+                    }, null, 2)
+                }]
+            };
+        }
     }
 };

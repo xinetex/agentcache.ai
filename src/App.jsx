@@ -40,7 +40,7 @@ function App() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState(null);
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, getToken } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [pendingSave, setPendingSave] = useState(false); // Track if a save was attempted
 
@@ -198,7 +198,7 @@ function App() {
       // TODO: This should eventually be an API call to save to cloud
       // For now we still save locally, but we know the user is authenticated.
       // In the next step (storageService) we will add cloud syncing.
-      const token = localStorage.getItem('auth_token'); // Or get from useAuth
+      const token = getToken();
       const result = await PipelineStorageService.savePipeline(pipeline, token);
 
       if (!result.success) {
@@ -231,14 +231,14 @@ function App() {
       console.error('Failed to save pipeline:', error);
       alert(`Error saving pipeline: ${error.message}`);
     }
-  }, [pipelineName, sector, nodes, edges, isAuthenticated]);
+  }, [pipelineName, sector, nodes, edges, isAuthenticated, getToken]);
 
   // Handle successful auth (login/register)
   const handleAuthSuccess = useCallback(async (user) => {
     setShowAuthModal(false);
 
     // Sync local pipelines to cloud
-    const token = localStorage.getItem('auth_token');
+    const token = getToken();
     await PipelineStorageService.syncToCloud(token);
 
     // If we were trying to save, retry the save
@@ -259,7 +259,7 @@ function App() {
       // Simple approach: Just alert
       alert(`Welcome, ${user.email}! You can now save your pipeline.`);
     }
-  }, [pendingSave]);
+  }, [pendingSave, getToken]);
 
   const onDragOver = useCallback((event) => {
     event.preventDefault();

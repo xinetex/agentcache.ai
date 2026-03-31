@@ -8,6 +8,10 @@ import AgentLeaderboard from './AgentLeaderboard.js';
 import { CognitiveMap } from './CognitiveMap.js';
 import { ComplianceHealthMonitor } from './ComplianceHealthMonitor.js';
 import { SoulprintTrustPanel } from './SoulprintTrustPanel.js';
+import { ReceiptInspector } from './ReceiptInspector.js';
+import { ProviderTrustScorecard } from './ProviderTrustScorecard.js';
+import { MetabolicPricingPanel } from './MetabolicPricingPanel.js';
+import { AlignmentFabricPanel } from './AlignmentFabricPanel.js';
 
 export default function IndustrialDashboard() {
     const [stats, setStats] = useState<any>(null);
@@ -73,17 +77,27 @@ export default function IndustrialDashboard() {
                     <ComplianceHealthMonitor />
                     <MemoryFabricROIPanel fabric={stats?.fabric} browserProof={stats?.browserProof} />
                     <SoulprintTrustPanel externalAgents={stats?.externalAgents} />
+                    <MetabolicPricingPanel />
                     <RevenueMonitor />
                 </div>
 
-                {/* Bottom row: Infrastructure & Leaderboard */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[500px] pb-10">
+                {/* Infrastructure & Leaderboard */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[500px]">
                     <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden relative group hover:border-cyan-500/30 transition-all duration-500">
                         <CognitiveMap />
                     </div>
-                    <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden group hover:border-emerald-500/30 transition-all duration-500">
-                        <AgentLeaderboard />
+                    <div className="flex flex-col gap-6">
+                        <AlignmentFabricPanel summary={stats?.alignment} />
+                        <ProviderTrustScorecard summary={stats?.receipts} />
+                        <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden flex-1 group hover:border-emerald-500/30 transition-all duration-500">
+                            <AgentLeaderboard />
+                        </div>
                     </div>
+                </div>
+
+                {/* Evidence Spine: Receipt Inspector */}
+                <div className="h-[600px] mb-10">
+                    <ReceiptInspector />
                 </div>
             </div>
 

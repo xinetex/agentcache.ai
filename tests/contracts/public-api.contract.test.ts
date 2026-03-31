@@ -155,6 +155,7 @@ vi.mock('../../src/lib/vector.js', () => ({
 let app: any;
 
 const apiKey = 'ac_demo_test123';
+const adminToken = 'test-admin-token';
 
 function unique(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -174,8 +175,23 @@ async function request(path: string, body?: Record<string, unknown>, method: str
   return { response, payload };
 }
 
+async function requestAdmin(path: string, body?: Record<string, unknown>, method: string = 'POST') {
+  const response = await app.request(path, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Admin-Token': adminToken,
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  const payload = await response.json();
+  return { response, payload };
+}
+
 describe.sequential('AgentCache public API contracts', () => {
   beforeAll(async () => {
+    process.env.ADMIN_TOKEN = adminToken;
     ({ app } = await import('../../src/index.js'));
   });
 
@@ -292,6 +308,116 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(roi.payload.accounting.totalCreditsEstimated).toBeGreaterThan(0);
     expect(roi.payload.accounting.bySku.some((item: any) => item.sku === 'finance-memory-fabric')).toBe(true);
   }, 10000);
+
+  it('scores and routes alignment requests with receipt-ready evidence', async () => {
+    const scored = await request('/api/alignment/score', {
+      sourceProvider: 'openai',
+      targetProvider: 'anthropic',
+      taskFamily: 'classification',
+      privacyMode: 'encrypted_linear',
+      sensitivity: 'regulated',
+    });
+
+    expect(scored.response.status).toBe(200);
+    expect(scored.payload.report.compatible).toBe(true);
+    expect(scored.payload.report.executionMode).toBe('encrypted_linear');
+
+    const routed = await request('/api/alignment/route', {
+      prompt: 'Classify this payment dispute by risk level.',
+      taskFamily: 'classification',
+      sectorHint: 'finance',
+      sourceProvider: 'openai',
+      sourceModel: 'text-embedding-3-small',
+      allowedProviders: ['anthropic'],
+      privacyMode: 'encrypted_linear',
+      sensitivity: 'regulated',
+      tierId: 'enterprise',
+    });
+
+    expect(routed.response.status).toBe(200);
+    expect(routed.payload.decision.executionMode).toBe('encrypted_linear');
+    expect(routed.payload.decision.receipt.subject.kind).toBe('ALIGNMENT_RUN');
+    expect(routed.payload.decision.receipt.operation.sourceProvider).toBe('openai');
+    expect(routed.payload.decision.receipt.operation.targetProvider).toBe('anthropic');
+    expect(routed.payload.decision.policy.ontologyRef).toMatch(/^finance@/);
+  });
+
+  it('records alignment benchmarks and exposes alignment summaries through the app surface', async () => {
+    const benchmark = await request('/api/alignment/benchmarks', {
+      pairId: 'openai-anthropic-classification',
+      sourceProvider: 'openai',
+      sourceModel: 'text-embedding-3-small',
+      targetProvider: 'anthropic',
+      targetModel: 'claude-3-5-sonnet',
+      taskFamily: 'classification',
+      dataset: 'contract-fixture-v1',
+      baselineScore: 0.93,
+      alignedScore: 0.89,
+      degradationPct: 4.3,
+      latencyMs: 142,
+      costUsd: 0.004,
+      status: 'validated',
+      notes: ['Recorded from contract test fixture'],
+    });
+
+    expect(benchmark.response.status).toBe(201);
+    expect(benchmark.payload.benchmark.pairId).toBe('openai-anthropic-classification');
+
+    const summary = await request('/api/alignment/summary', undefined, 'GET');
+    expect(summary.response.status).toBe(200);
+    expect(summary.payload.summary.storedBenchmarks).toBeGreaterThanOrEqual(1);
+    expect(summary.payload.summary.validatedPairs).toBeGreaterThanOrEqual(1);
+
+    const stats = await request('/api/observability/stats', undefined, 'GET');
+    expect(stats.response.status).toBe(200);
+    expect(stats.payload.alignment.storedBenchmarks).toBeGreaterThanOrEqual(1);
+  });
+
+  it('allows admin pair overrides and applies them to future alignment decisions', async () => {
+    const created = await requestAdmin('/api/alignment/pairs', {
+      id: 'openai-gemini-classification',
+      sourceProvider: 'openai',
+      targetProvider: 'gemini',
+      taskFamily: 'classification',
+      status: 'validated',
+      compatibilityScore: 0.91,
+      tokenizerCompatibility: 0.82,
+      representationSimilarity: 0.88,
+      privateInferenceCapable: true,
+      evidenceLevel: 'validated-v1',
+      notes: ['Contract-test operator approval'],
+      updatedBy: 'contract-test',
+    });
+
+    expect(created.response.status).toBe(201);
+    expect(created.payload.pair.status).toBe('validated');
+
+    const patched = await requestAdmin('/api/alignment/pairs/openai-gemini-classification', {
+      status: 'blocked',
+      compatibilityScore: 0.22,
+      privateInferenceCapable: false,
+      notes: ['Blocked after regression'],
+      updatedBy: 'contract-test',
+    }, 'PATCH');
+
+    expect(patched.response.status).toBe(200);
+    expect(patched.payload.pair.status).toBe('blocked');
+
+    const scored = await request('/api/alignment/score', {
+      sourceProvider: 'openai',
+      targetProvider: 'gemini',
+      taskFamily: 'classification',
+      privacyMode: 'encrypted_linear',
+      sensitivity: 'regulated',
+    });
+
+    expect(scored.response.status).toBe(409);
+    expect(scored.payload.report.compatible).toBe(false);
+
+    const listed = await request('/api/alignment/pairs?includeBlocked=true', undefined, 'GET');
+    const blockedPair = listed.payload.pairs.find((pair: any) => pair.id === 'openai-gemini-classification');
+    expect(blockedPair?.status).toBe('blocked');
+  });
 
   it('memory, cognitive, and stats endpoints return observable cognitive state', async () => {
     const memoryText = unique('memory-text');
@@ -1005,4 +1131,92 @@ describe.sequential('AgentCache public API contracts', () => {
       vi.stubGlobal('fetch', originalFetch);
     }
   }, 10000);
+
+  it('runs execution control workflows through review and gate approval', async () => {
+    const created = await request('/api/execution/context-packs', {
+      name: unique('execution-pack'),
+      objective: 'Review a finance memo before it is published externally.',
+      methodology: 'Route through policy review and require approval.',
+      conventions: ['Use exact figures only'],
+      tools: ['retrieval', 'policy-check'],
+      workflowPhases: ['draft', 'review', 'gate', 'finalize'],
+      reviewerRoles: ['critical', 'compliance'],
+      policyProfile: {
+        verticalSku: 'finance-memory-fabric',
+      },
+      sectorHint: 'finance',
+      sources: [
+        {
+          kind: 'policy',
+          uri: 'ac://policies/finance/release',
+          title: 'Finance release policy',
+        },
+      ],
+    });
+
+    expect(created.response.status).toBe(201);
+    expect(created.payload.pack.latestVersion).toBe(1);
+    expect(created.payload.version.policy.evidenceMode).toBe('audit');
+    expect(created.payload.version.reviewerRoles).toEqual(['critical', 'compliance']);
+
+    const started = await request('/api/execution/runs', {
+      contextPackId: created.payload.pack.id,
+      inputPayload: {
+        documentId: unique('doc'),
+      },
+      finalAction: 'publish',
+    });
+
+    expect(started.response.status).toBe(201);
+    expect(started.payload.run.currentPhase).toBe('draft');
+    expect(started.payload.run.status).toBe('in_progress');
+    expect(started.payload.run.gateStatus).toBe('pending');
+    expect(started.payload.gate.status).toBe('pending');
+
+    const advanced = await request(`/api/execution/runs/${started.payload.run.id}/phase`, {
+      phase: 'review',
+    });
+
+    expect(advanced.response.status).toBe(200);
+    expect(advanced.payload.run.currentPhase).toBe('review');
+    expect(advanced.payload.run.status).toBe('awaiting_review');
+
+    const criticalReviewed = await request(`/api/execution/runs/${started.payload.run.id}/reviews`, {
+      reviewerRole: 'critical',
+      verdict: 'PASS',
+      summary: 'No blocking issues found.',
+      findings: ['Receipts and citations present.'],
+      confidence: 0.93,
+    });
+
+    expect(criticalReviewed.response.status).toBe(201);
+    expect(criticalReviewed.payload.run.status).toBe('awaiting_review');
+    expect(criticalReviewed.payload.run.completedReviewerRoles).toEqual(['critical']);
+
+    const reviewed = await request(`/api/execution/runs/${started.payload.run.id}/reviews`, {
+      reviewerRole: 'compliance',
+      verdict: 'PASS',
+      summary: 'Policy controls satisfied.',
+      findings: ['No disclosure issues detected.'],
+      confidence: 0.95,
+    });
+
+    expect(reviewed.response.status).toBe(201);
+    expect(reviewed.payload.run.status).toBe('awaiting_gate');
+    expect(reviewed.payload.run.currentPhase).toBe('gate');
+
+    const approved = await requestAdmin(`/api/execution/gates/${started.payload.gate.id}/approve`, {
+      note: 'Approved for release.',
+      decidedBy: 'contract-admin',
+    });
+
+    expect(approved.response.status).toBe(200);
+    expect(approved.payload.run.status).toBe('completed');
+    expect(approved.payload.gate.status).toBe('approved');
+
+    const fetched = await request(`/api/execution/runs/${started.payload.run.id}`, undefined, 'GET');
+    expect(fetched.response.status).toBe(200);
+    expect(fetched.payload.reviews).toHaveLength(2);
+    expect(fetched.payload.gate.status).toBe('approved');
+  });
 });

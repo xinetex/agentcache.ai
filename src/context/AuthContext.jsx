@@ -1,6 +1,35 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext(null);
+const PRIMARY_TOKEN_KEY = 'agentcache_token';
+const LEGACY_TOKEN_KEY = 'auth_token';
+const USER_KEY = 'agentcache_user';
+const WORKSPACE_KEY = 'agentcache_workspace';
+
+const readStoredToken = () =>
+  localStorage.getItem(PRIMARY_TOKEN_KEY) || localStorage.getItem(LEGACY_TOKEN_KEY);
+
+const persistSession = ({ token, user, workspace = null }) => {
+  if (token) {
+    localStorage.setItem(PRIMARY_TOKEN_KEY, token);
+    localStorage.setItem(LEGACY_TOKEN_KEY, token);
+  }
+
+  if (user) {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  }
+
+  if (workspace) {
+    localStorage.setItem(WORKSPACE_KEY, JSON.stringify(workspace));
+  }
+};
+
+const clearSession = () => {
+  localStorage.removeItem(PRIMARY_TOKEN_KEY);
+  localStorage.removeItem(LEGACY_TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+  localStorage.removeItem(WORKSPACE_KEY);
+};
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -17,7 +46,7 @@ export const AuthProvider = ({ children }) => {
 
   // Check for existing session on mount
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
+    const token = readStoredToken();
     if (token) {
       fetchCurrentUser(token);
     } else {
@@ -36,14 +65,19 @@ export const AuthProvider = ({ children }) => {
       if (response.ok) {
         const data = await response.json();
         setUser(data.user);
+        persistSession({
+          token,
+          user: data.user,
+          workspace: data.organization ? { user: data.user, organization: data.organization } : null
+        });
       } else {
         // Token invalid, clear it
-        localStorage.removeItem('auth_token');
+        clearSession();
         setUser(null);
       }
     } catch (err) {
       console.error('Failed to fetch current user:', err);
-      localStorage.removeItem('auth_token');
+      clearSession();
       setUser(null);
     } finally {
       setLoading(false);
@@ -55,7 +89,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -63,6 +97,7 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({
           email,
           password,
+          name: email.split('@')[0],
           organizationName,
           sector,
           businessDescription
@@ -76,7 +111,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Store token and set user
-      localStorage.setItem('auth_token', data.token);
+      persistSession({ token: data.token, user: data.user });
       setUser(data.user);
 
       return { success: true, user: data.user };
@@ -108,7 +143,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Store token and set user
-      localStorage.setItem('auth_token', data.token);
+      persistSession({ token: data.token, user: data.user });
       setUser(data.user);
 
       return { success: true, user: data.user };
@@ -121,13 +156,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('auth_token');
+    clearSession();
     setUser(null);
     setError(null);
   };
 
   const getToken = () => {
-    return localStorage.getItem('auth_token');
+    return readStoredToken();
   };
 
   const isAuthenticated = () => {

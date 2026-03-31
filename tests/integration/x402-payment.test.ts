@@ -20,9 +20,23 @@ vi.mock('../../src/services/ArmorService.js', () => {
     };
 });
 
+// Mock the agent registry to recognize our non-demo test key as a valid principal
+vi.mock('../../src/lib/hub/registry.js', () => ({
+    agentRegistry: {
+        getAgentIdFromApiKey: async (key: string) => {
+            if (key === 'ac_x402_test_agent') return 'x402-test-agent';
+            return undefined;
+        },
+        resolveAgent: async () => null,
+        registerAgent: async () => ({}),
+    }
+}));
+
 let app: any;
 
-const apiKey = 'ac_demo_test_x402'; // Not a real demo key, should fail
+// Use a non-demo key (does NOT start with ac_demo_) so it goes through the full
+// auth flow including quota enforcement, rather than hitting the demo bypass.
+const apiKey = 'ac_x402_test_agent';
 
 async function request(path: string, body?: Record<string, unknown>, headers: Record<string, string> = {}) {
     const response = await app.request(path, {

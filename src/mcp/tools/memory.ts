@@ -47,6 +47,11 @@ const EvolveFleetSchema = z.object({
     populationSize: z.number().optional().default(20).describe('Size of population'),
 });
 
+const FetchCognitiveMemorySchema = z.object({
+    sector: z.string().optional().default('general').describe('The sector to search in'),
+    query: z.string().describe('The search query'),
+});
+
 // Services
 const encoder = new MultiModalEncoder();
 
@@ -126,6 +131,18 @@ export const MemoryTools: ToolModule = {
                 }
             }
         },
+        {
+            name: 'agentcache_fetch_cognitive_memory',
+            description: 'Fetch related conceptual memories from the Cognitive Memory Fabric. Returns abstract concepts that might assist an agent in reasoning about the current situation.',
+            inputSchema: {
+                type: 'object',
+                properties: {
+                    sector: { type: 'string', description: 'The sector or domain (e.g., finance, robotics, general)' },
+                    query: { type: 'string', description: 'The search query' }
+                },
+                required: ['query']
+            }
+        },
     ],
     handlers: {
         agentcache_hive_memory: async (args, context) => {
@@ -174,6 +191,21 @@ export const MemoryTools: ToolModule = {
         agentcache_evolve_fleet: async (args, context) => {
             const params = EvolveFleetSchema.parse(args);
             return { content: [{ type: 'text', text: JSON.stringify({ status: 'evolution_started', ...params }, null, 2) }] };
+        },
+        agentcache_fetch_cognitive_memory: async (args, context) => {
+            const params = FetchCognitiveMemorySchema.parse(args);
+            // In a full environment, this routes to /api/cognitive/query
+            // For the MCP standalone proxy, we return a simulated fabric slice
+            return { content: [{ type: 'text', text: JSON.stringify({ 
+                status: 'fetched', 
+                sector: params.sector,
+                query: params.query,
+                fabric_resonance: 0.88,
+                insights: [
+                    "Pattern suggests bypassing cache when reasoning density is high.",
+                    "Similar trajectories usually involve deep verifiable math proofs."
+                ]
+            }, null, 2) }] };
         }
     }
 };

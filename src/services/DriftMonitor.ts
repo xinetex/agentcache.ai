@@ -42,6 +42,14 @@ export class DriftMonitor {
         sectorAnchors.push(anchor);
     }
 
+    getAnchorsForSector(sector: Sector): LatentAnchor[] {
+        return [...(this.anchors.get(sector) || [])];
+    }
+
+    hasAnchorsForSector(sector: Sector): boolean {
+        return (this.anchors.get(sector)?.length || 0) > 0;
+    }
+
     /**
      * Measure the drift of a signal against the sector's anchors.
      * Higher score (0.0 - 1.0) means higher drift.

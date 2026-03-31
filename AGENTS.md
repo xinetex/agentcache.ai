@@ -111,7 +111,11 @@ The `lazy()` helper dynamically imports the module, resolves the Hono router, an
 ### Services Layer
 
 `src/services/` — Large service layer containing business logic. Key services:
-- `SemanticCacheService.ts` — Core semantic caching
+- `SemanticCacheService.ts` — Core semantic caching with Platonic cross-provider fallback
+- `PlatonicKeyService.ts` — Provider-agnostic cache keys for cross-model cache hits
+- `MiniMaxProvider.ts` — Native MiniMax M2.7 support with OpenClaw optimization
+- `TranscriptionService.ts` — High-speed audio/video transcription via `insanely-fast-whisper`
+- `AlignmentMapService.ts` — HELIX-inspired private inference alignment maps
 - `PolicyEngine.ts` — Guardrails and policy enforcement
 - `BillingService.ts` / `StripeService.ts` — Billing via Stripe
 - `ContentService.js` — Bento grid content management
@@ -153,8 +157,8 @@ See `.env.example` for the full list. Critical ones:
 
 ## Customer-Critical Endpoints
 
-**audio1.tv**: `GET /api/cdn/stream`, `POST /api/transcode/submit`, `GET /api/transcode/status/:jobId`
-**jettythunder.app**: `POST /api/provision/jettythunder`, `GET /api/jetty/optimal-edges`, `POST /api/jetty/track-upload`, `POST /api/jetty/cache-chunk`
+**audio1.tv**: `GET /api/cdn/stream`, `POST /api/transcode/submit`, `POST /api/transcribe/submit`, `GET /api/transcode/status/:jobId`
+**jettythunder.app**: `POST /api/provision/jettythunder`, `GET /api/jetty/optimal-edges`, `POST /api/jetty/track-upload`, `POST /api/jetty/cache-chunk`, `POST /api/helix/infer`
 **clawsave.com**: `GET /api/clawsave`, `POST /api/claw/agent`, `POST /api/claw/storage`, `POST /api/claw/provision`, `POST /api/claw/memory/*`
 
 Customer identification is path-based — see `src/middleware/customerUsageTracking.ts` for the full endpoint-to-customer mapping. Always verify these work on Vercel preview deploys before merging changes that touch CDN, transcode, jetty, claw, or provisioning routes.

@@ -127,14 +127,14 @@ cacheRouter.post('/check', async (c) => {
             target_ip,
             target_banner,
         });
-        await memoryFabricAnalyticsService.recordOperation({
+        void memoryFabricAnalyticsService.recordOperation({
             policy,
             operation: 'read',
             hit: result.hit,
             promptText: extractPromptText(messages),
             responseText: typeof result.response === 'string' ? result.response : undefined,
         }).catch((error) => console.warn('[MemoryFabricAnalytics] Failed to record read:', error));
-        const billing = await memoryFabricBillingService.recordUsage({
+        const billingPromise = memoryFabricBillingService.recordUsage({
             apiKey: c.get('apiKey'),
             policy,
             operation: 'read',
@@ -143,6 +143,7 @@ cacheRouter.post('/check', async (c) => {
             console.warn('[MemoryFabricBilling] Failed to record read:', error);
             return null;
         });
+        const billing = await billingPromise;
         return c.json({ ...result, policy, billing });
     } catch (err: any) {
         return c.json({ error: err.message }, 500);
@@ -182,13 +183,13 @@ cacheRouter.post('/set', async (c) => {
             sessionId,
             turnIndex
         });
-        await memoryFabricAnalyticsService.recordOperation({
+        void memoryFabricAnalyticsService.recordOperation({
             policy,
             operation: 'write',
             promptText: extractPromptText(messages),
             responseText: typeof response === 'string' ? response : JSON.stringify(response),
         }).catch((error) => console.warn('[MemoryFabricAnalytics] Failed to record write:', error));
-        const billing = await memoryFabricBillingService.recordUsage({
+        const billingPromise = memoryFabricBillingService.recordUsage({
             apiKey: c.get('apiKey'),
             policy,
             operation: 'write',
@@ -196,6 +197,7 @@ cacheRouter.post('/set', async (c) => {
             console.warn('[MemoryFabricBilling] Failed to record write:', error);
             return null;
         });
+        const billing = await billingPromise;
 
         return c.json({
             success: true,
@@ -297,14 +299,14 @@ cacheRouter.post('/get', async (c) => {
             temperature,
             sector: policy.sectorId,
         });
-        await memoryFabricAnalyticsService.recordOperation({
+        void memoryFabricAnalyticsService.recordOperation({
             policy,
             operation: 'read',
             hit: result.hit,
             promptText: extractPromptText(messages),
             responseText: typeof result.response === 'string' ? result.response : undefined,
         }).catch((error) => console.warn('[MemoryFabricAnalytics] Failed to record read:', error));
-        const billing = await memoryFabricBillingService.recordUsage({
+        const billingPromise = memoryFabricBillingService.recordUsage({
             apiKey: c.get('apiKey'),
             policy,
             operation: 'read',
@@ -313,6 +315,7 @@ cacheRouter.post('/get', async (c) => {
             console.warn('[MemoryFabricBilling] Failed to record read:', error);
             return null;
         });
+        const billing = await billingPromise;
         
         if (!result.hit) {
             return c.json({ ...result, policy, billing }, 404);

@@ -91,6 +91,65 @@ type SoulprintArtifactReceiptInput = ReceiptBuilderContext & {
   evidence?: SharedReceiptEnvelope['evidence'];
 };
 
+type BrowserTaskReceiptInput = ReceiptBuilderContext & {
+  taskId: string;
+  url: string;
+  executionMode?: string;
+  engine?: string;
+  status?: string;
+  statusCode?: number | string | null;
+  action?: string;
+};
+
+type AlignmentRunReceiptInput = ReceiptBuilderContext & {
+  runId: string;
+  route?: string;
+  method?: string;
+  provider?: string;
+  sourceProvider?: string;
+  sourceModel?: string;
+  targetProvider?: string;
+  targetModel?: string;
+  executionMode?: string;
+  privacyMode?: string;
+  action?: string;
+};
+
+type ContextPackVersionReceiptInput = ReceiptBuilderContext & {
+  versionId: string;
+  contextPackId?: string;
+  route?: string;
+  method?: string;
+  action?: string;
+};
+
+type ExecutionRunReceiptInput = ReceiptBuilderContext & {
+  runId: string;
+  contextPackVersionId?: string;
+  route?: string;
+  method?: string;
+  executionMode?: string;
+  action?: string;
+};
+
+type ExecutionReviewReceiptInput = ReceiptBuilderContext & {
+  reviewId: string;
+  runId: string;
+  reviewerRole: string;
+  route?: string;
+  method?: string;
+  action?: string;
+};
+
+type GateDecisionReceiptInput = ReceiptBuilderContext & {
+  gateId: string;
+  runId: string;
+  gateType: string;
+  route?: string;
+  method?: string;
+  action?: string;
+};
+
 function finalizeReceipt(receipt: SharedReceiptEnvelope, secret?: string): SharedReceiptEnvelope {
   return secret ? attachSharedReceiptSignature(receipt, secret) : receipt;
 }
@@ -143,7 +202,10 @@ export function buildStorageTransferReceipt(input: StorageTransferReceiptInput):
     ontology: input.ontology,
     economics: input.economics,
     trust: defaultTrust(input.trust),
-    refs: input.refs,
+    refs: {
+      direction: input.direction,
+      ...(input.refs || {}),
+    },
     telemetry: input.telemetry,
     payload: {
       storageClass: input.storageClass,
@@ -305,6 +367,184 @@ export function buildSoulprintArtifactReceipt(input: SoulprintArtifactReceiptInp
     trust: defaultTrust(input.trust),
     evidence: input.evidence,
     refs: input.refs,
+    telemetry: input.telemetry,
+    payload: input.payload,
+  });
+
+  return finalizeReceipt(receipt, input.secret);
+}
+
+export function buildBrowserTaskReceipt(input: BrowserTaskReceiptInput): SharedReceiptEnvelope {
+  const receipt = buildSharedReceipt({
+    receiptId: input.receiptId,
+    issuedAt: input.issuedAt || new Date().toISOString(),
+    producer: input.producer,
+    subject: {
+      kind: 'BROWSER_TASK',
+      id: input.taskId,
+      ref: input.url,
+    },
+    operation: {
+      action: input.action || 'browser.task',
+      route: input.url,
+      statusCode: input.statusCode,
+    },
+    ontology: input.ontology,
+    economics: input.economics,
+    trust: defaultTrust(input.trust),
+    refs: input.refs,
+    telemetry: input.telemetry,
+    payload: {
+      executionMode: input.executionMode,
+      engine: input.engine,
+      ...(input.payload || {}),
+    },
+  });
+
+  return finalizeReceipt(receipt, input.secret);
+}
+
+export function buildAlignmentRunReceipt(input: AlignmentRunReceiptInput): SharedReceiptEnvelope {
+  const receipt = buildSharedReceipt({
+    receiptId: input.receiptId,
+    issuedAt: input.issuedAt || new Date().toISOString(),
+    producer: input.producer,
+    subject: {
+      kind: 'ALIGNMENT_RUN',
+      id: input.runId,
+      route: input.route,
+    },
+    operation: {
+      action: input.action || 'alignment.route',
+      provider: input.provider,
+      sourceProvider: input.sourceProvider,
+      sourceModel: input.sourceModel,
+      targetProvider: input.targetProvider,
+      targetModel: input.targetModel,
+      route: input.route,
+      method: input.method || 'POST',
+      executionMode: input.executionMode,
+      privacyMode: input.privacyMode,
+    },
+    ontology: input.ontology,
+    economics: input.economics,
+    trust: defaultTrust(input.trust),
+    refs: input.refs,
+    telemetry: input.telemetry,
+    payload: input.payload,
+  });
+
+  return finalizeReceipt(receipt, input.secret);
+}
+
+export function buildContextPackVersionReceipt(input: ContextPackVersionReceiptInput): SharedReceiptEnvelope {
+  const receipt = buildSharedReceipt({
+    receiptId: input.receiptId,
+    issuedAt: input.issuedAt || new Date().toISOString(),
+    producer: input.producer,
+    subject: {
+      kind: 'CONTEXT_PACK_VERSION',
+      id: input.versionId,
+      route: input.route,
+      ref: input.contextPackId,
+    },
+    operation: {
+      action: input.action || 'execution.context_pack.version',
+      route: input.route,
+      method: input.method || 'POST',
+    },
+    ontology: input.ontology,
+    economics: input.economics,
+    trust: defaultTrust(input.trust),
+    refs: input.refs,
+    telemetry: input.telemetry,
+    payload: input.payload,
+  });
+
+  return finalizeReceipt(receipt, input.secret);
+}
+
+export function buildExecutionRunReceipt(input: ExecutionRunReceiptInput): SharedReceiptEnvelope {
+  const receipt = buildSharedReceipt({
+    receiptId: input.receiptId,
+    issuedAt: input.issuedAt || new Date().toISOString(),
+    producer: input.producer,
+    subject: {
+      kind: 'EXECUTION_RUN',
+      id: input.runId,
+      route: input.route,
+      ref: input.contextPackVersionId,
+    },
+    operation: {
+      action: input.action || 'execution.run',
+      route: input.route,
+      method: input.method || 'POST',
+      executionMode: input.executionMode,
+    },
+    ontology: input.ontology,
+    economics: input.economics,
+    trust: defaultTrust(input.trust),
+    refs: input.refs,
+    telemetry: input.telemetry,
+    payload: input.payload,
+  });
+
+  return finalizeReceipt(receipt, input.secret);
+}
+
+export function buildExecutionReviewReceipt(input: ExecutionReviewReceiptInput): SharedReceiptEnvelope {
+  const receipt = buildSharedReceipt({
+    receiptId: input.receiptId,
+    issuedAt: input.issuedAt || new Date().toISOString(),
+    producer: input.producer,
+    subject: {
+      kind: 'EXECUTION_REVIEW',
+      id: input.reviewId,
+      route: input.route,
+      ref: input.runId,
+    },
+    operation: {
+      action: input.action || 'execution.review',
+      route: input.route,
+      method: input.method || 'POST',
+    },
+    ontology: input.ontology,
+    economics: input.economics,
+    trust: defaultTrust(input.trust),
+    refs: {
+      reviewerRole: input.reviewerRole,
+      ...(input.refs || {}),
+    },
+    telemetry: input.telemetry,
+    payload: input.payload,
+  });
+
+  return finalizeReceipt(receipt, input.secret);
+}
+
+export function buildGateDecisionReceipt(input: GateDecisionReceiptInput): SharedReceiptEnvelope {
+  const receipt = buildSharedReceipt({
+    receiptId: input.receiptId,
+    issuedAt: input.issuedAt || new Date().toISOString(),
+    producer: input.producer,
+    subject: {
+      kind: 'GATE_DECISION',
+      id: input.gateId,
+      route: input.route,
+      ref: input.runId,
+    },
+    operation: {
+      action: input.action || 'execution.gate_decision',
+      route: input.route,
+      method: input.method || 'POST',
+    },
+    ontology: input.ontology,
+    economics: input.economics,
+    trust: defaultTrust(input.trust),
+    refs: {
+      gateType: input.gateType,
+      ...(input.refs || {}),
+    },
     telemetry: input.telemetry,
     payload: input.payload,
   });

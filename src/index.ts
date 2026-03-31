@@ -71,17 +71,15 @@ export const app = new Hono<{ Variables: Variables }>();
 // Armor WAF Middleware (must be registered after app creation)
 // -----------------------------------------------------------------------------
 app.use('/api/*', async (c, next) => {
-  const ip = c.req.header('x-forwarded-for') || '127.0.0.1';
-
-  // Parse body for WAF if method is POST/PUT
-  let payload = undefined;
-  if (['POST', 'PUT'].includes(c.req.method)) {
-    try {
-      payload = await c.req.json().catch(() => ({}));
-    } catch (e) { }
+  if (c.req.path.startsWith('/api/auth/')) {
+    await next();
+    return;
   }
 
-  const check = await armor.checkRequest(ip, c.req.path, payload);
+  const ip = c.req.header('x-forwarded-for') || '127.0.0.1';
+  // Do not consume request bodies in global middleware on Vercel serverless.
+  // Hono POST handlers own body parsing for write-heavy routes.
+  const check = await armor.checkRequest(ip, c.req.path);
 
   if (!check.allowed) {
     return c.json({ error: `Firewall Blocked: ${check.reason}` }, check.reason.includes('Rate') ? 429 : 403);
@@ -94,6 +92,11 @@ app.use('/api/*', async (c, next) => {
 // Coherence Telemetry Middleware (Phase 4.1)
 // -----------------------------------------------------------------------------
 app.use('/api/*', async (c, next) => {
+  if (c.req.path.startsWith('/api/auth/')) {
+    await next();
+    return;
+  }
+
   await next();
 
   const swarmId = c.req.header('X-Swarm-Id') || 'global-swarm';
@@ -138,7 +141,9 @@ const freshnessRules = new FreshnessRuleEngine();
 // Wrapped to prevent server crash if DB/Redis is down
 (async () => {
   try {
-    if (process.env.DATABASE_URL && (process.env.REDIS_URL || process.env.UPSTASH_REDIS_URL) && !process.env.VERCEL) {
+    const isServerlessPreview = !!process.env.VERCEL;
+
+    if (process.env.DATABASE_URL && (process.env.REDIS_URL || process.env.UPSTASH_REDIS_URL) && !isServerlessPreview) {
       // Dynamic import to prevent heavy load on Vercel startup
       const { PatternEngine } = await import('./infrastructure/PatternEngine.js');
       const patternEngine = new PatternEngine();
@@ -146,6 +151,9 @@ const freshnessRules = new FreshnessRuleEngine();
       if (process.env.NODE_ENV !== 'test') {
         patternEngine.listen();
       }
+    } else if (isServerlessPreview) {
+      console.log('[Startup] Autonomy Engine: SKIPPED (Vercel Serverless)');
+      console.log('[Startup] PatternEngine: SKIPPED (Vercel Serverless)');
     } else {
       // Start Autonomy Engine (Phase 5)
       if (process.env.NODE_ENV !== 'test') {
@@ -200,8 +208,11 @@ const PORT = process.env.PORT || 3001;
 app.use('/api/*', cors({
   origin: '*',
   allowMethods: ['GET', 'POST', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
+  allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'X-Helix-Shield', 'X-Helix-Source', 'X-Helix-Target'],
 }));
+
+import { helixShield } from './middleware/HelixShieldMiddleware.js';
+app.use('/api/*', helixShield);
 
 app.use('/api/*', customerUsageTracking);
 
@@ -251,11 +262,12 @@ const lazy = (loader: () => Promise<any>) => {
       const method = c.req.method;
       if (['POST', 'PUT', 'PATCH'].includes(method)) {
         try {
-          const body = await c.req.json().catch(() => null);
+          const cloned = c.req.raw.clone();
+          const body = await cloned.text().catch(() => '');
           return router.request(subPath, {
             method,
             headers: c.req.header(),
-            body: body ? JSON.stringify(body) : undefined
+            body: body || undefined,
           }, c.env);
         } catch (bodyErr) {
           // If body reading fails or is already locked, try native fetch fallback
@@ -409,6 +421,7 @@ app.all('/api/patterns/:path{.+}?', lazy(() => import('./api/patterns.js')));
 app.all('/api/geo/:path{.+}?', lazy(() => import('./api/geo.js')));
 app.all('/api/cdn/:path{.+}?', lazy(() => import('./api/cdn.js')));
 app.all('/api/transcode/:path{.+}?', lazy(() => import('./api/transcode.js')));
+app.all('/api/transcribe/:path{.+}?', lazy(() => import('./api/transcribe.js')));
 
 app.all('/api/pipeline/:path{.+}?', lazy(() => import('./api/pipeline.js')));
 
@@ -421,6 +434,9 @@ app.all('/api/economy/:path{.+}?', lazy(() => import('./api/economy.js')));
 app.all('/api/compliance/:path{.+}?', lazy(() => import('./api/compliance.js')));
 
 app.all('/api/ontology/:path{.+}?', lazy(() => import('./api/ontology.js')));
+app.all('/api/alignment/:path{.+}?', lazy(() => import('./api/alignment.js')));
+app.all('/api/execution/:path{.+}?', lazy(() => import('./api/execution.js')));
+app.all('/api/helix/:path{.+}?', lazy(() => import('./api/helix.js')));
 
 app.all('/api/sentry/:path{.+}?', lazy(() => import('./api/sentry.js')));
 app.all('/api/lemma/:path{.+}?', lazy(() => import('./api/lemma.js')));

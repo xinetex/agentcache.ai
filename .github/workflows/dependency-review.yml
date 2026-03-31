@@ -1,0 +1,48 @@
+name: Dependency Review
+
+on:
+  pull_request:
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'packages/**/package.json'
+      - 'packages/**/package-lock.json'
+      - 'sdk/**/package.json'
+      - 'sdk/python/requirements.txt'
+      - 'transcoder-service/requirements.txt'
+      - 'packages/python-sdk/pyproject.toml'
+      - 'sdk-python/setup.py'
+      - '.github/workflows/**'
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          deny-licenses: GPL-2.0, GPL-3.0, AGPL-1.0, AGPL-3.0
+
+  python-requirements-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Enforce pinned Python requirements
+        run: npm run security:python-deps

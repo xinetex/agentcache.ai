@@ -16,6 +16,7 @@ import { eventBus } from '../lib/event-bus.js';
 import { shadowSentryService } from './ShadowSentryService.js';
 import { observabilityService } from './ObservabilityService.js';
 import { platonicKeyService } from './PlatonicKeyService.js';
+import { ClaudeMdService } from '../lib/claudemd.js';
 
 export interface CacheCheckResult {
     cached: boolean;

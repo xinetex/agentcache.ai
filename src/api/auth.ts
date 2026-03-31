@@ -8,11 +8,11 @@
  * via any medium, is strictly prohibited.
  */
 import { Hono } from 'hono';
-import { sign, verify } from 'hono/jwt';
 import { db } from '../db/client.js';
 import { users, members, organizations } from '../db/schema.js';
 import { eq, and } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
+import { generateToken, verifyToken as verifyPortalToken } from '../../lib/jwt.js';
 
 type Variables = {
     user: any;
@@ -47,16 +47,20 @@ export const authMiddleware = async (c, next) => {
     }
 
     // 2. Check JWT (Standard Auth)
-    try {
-        const payload = await verify(token, JWT_SECRET);
-        c.set('user', payload);
-        // Optional: Fetch fresh role from DB if needed, but payload is faster
-        // const member = await db.query.members.findFirst(...)
-
+    const payload = verifyPortalToken(token);
+    if (payload) {
+        c.set('user', {
+            id: payload.userId,
+            email: payload.email,
+            role: payload.role,
+            orgId: payload.organizationId,
+            plan: payload.plan
+        });
         await next();
-    } catch (err) {
-        return c.json({ error: 'Unauthorized: Invalid Token' }, 401);
+        return;
     }
+
+    return c.json({ error: 'Unauthorized: Invalid Token' }, 401);
 };
 
 // --- Middleware: Role Check ---
@@ -73,6 +77,84 @@ export const requireRole = (requiredRole) => async (c, next) => {
     }
 
     await next();
+};
+
+const handleSignup = async (c) => {
+    try {
+        const { email, password, name, fullName, full_name, organizationName } = await c.req.json();
+
+        if (!email || !password) {
+            return c.json({ error: 'Email and password required' }, 400);
+        }
+
+        if (password.length < 8) {
+            return c.json({ error: 'Password must be at least 8 characters' }, 400);
+        }
+
+        const normalizedEmail = email.toLowerCase();
+
+        // Check existing
+        const existing = await db.select().from(users).where(eq(users.email, normalizedEmail)).limit(1);
+        if (existing.length > 0) {
+            return c.json({ error: 'User already exists' }, 409);
+        }
+
+        const displayName = (name || fullName || full_name || normalizedEmail.split('@')[0]).trim();
+        const orgName = (organizationName || `${displayName}'s Org`).trim();
+
+        // Hash password
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        // 1. Create User
+        const [newUser] = await db.insert(users).values({
+            email: normalizedEmail,
+            passwordHash,
+            name: displayName,
+            role: 'owner',
+            plan: 'free'
+        }).returning();
+
+        // 2. Create Default Organization
+        const [newOrg] = await db.insert(organizations).values({
+            name: orgName,
+            plan: 'free'
+        }).returning();
+
+        // 3. Add Member
+        await db.insert(members).values({
+            userId: newUser.id,
+            orgId: newOrg.id,
+            role: 'owner'
+        });
+
+        // 4. Generate Token
+        const token = generateToken({
+            id: newUser.id,
+            email: newUser.email,
+            organization_id: newOrg.id,
+            role: 'owner',
+            plan: newUser.plan
+        });
+
+        return c.json({
+            token,
+            user: {
+                id: newUser.id,
+                email: newUser.email,
+                name: newUser.name,
+                role: 'owner',
+                plan: newUser.plan
+            },
+            onboarding: {
+                required: true,
+                url: '/onboarding.html'
+            }
+        }, 201);
+
+    } catch (error: any) {
+        console.error('[Auth] Signup error:', error);
+        return c.json({ error: 'Internal Server Error', details: error.message }, 500);
+    }
 };
 
 // --- Endpoint: Standard Login ---
@@ -113,24 +195,26 @@ app.post('/login', async (c) => {
             .where(eq(members.userId, user.id))
             .limit(1);
 
-        const payload = {
+        const resolvedRole = member[0]?.role || user.role || 'viewer';
+        const token = generateToken({
             id: user.id,
             email: user.email,
-            role: user.role, // Default to user role if member role missing
-            orgId: member[0]?.orgId,
-            plan: user.plan,
-            exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 // 24h
-        };
-
-        const token = await sign(payload, JWT_SECRET);
+            organization_id: member[0]?.orgId || null,
+            role: resolvedRole,
+            plan: user.plan
+        });
         return c.json({
             token,
             user: {
                 id: user.id,
                 email: user.email,
                 name: user.name,
-                role: user.role,
+                role: resolvedRole,
                 plan: user.plan
+            },
+            onboarding: {
+                required: !member[0]?.orgId,
+                url: !member[0]?.orgId ? '/onboarding.html' : null
             }
         });
 
@@ -178,90 +262,32 @@ app.post('/dev-login', async (c) => {
         .where(eq(members.userId, user[0].id))
         .limit(1);
 
-    const payload = {
+    const resolvedRole = member[0]?.role || 'viewer';
+    const token = generateToken({
         id: user[0].id,
         email: user[0].email,
-        role: member[0]?.role || 'viewer',
-        orgId: member[0]?.orgId,
-        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 // 24h
-    };
-
-    const token = await sign(payload, JWT_SECRET);
-    return c.json({ token, user: payload });
+        organization_id: member[0]?.orgId || null,
+        role: resolvedRole,
+        plan: user[0].plan
+    });
+    return c.json({
+        token,
+        user: {
+            id: user[0].id,
+            email: user[0].email,
+            role: resolvedRole,
+            orgId: member[0]?.orgId || null
+        },
+        onboarding: {
+            required: !member[0]?.orgId,
+            url: !member[0]?.orgId ? '/onboarding.html' : null
+        }
+    });
 });
 
 // --- Endpoint: Signup ---
-app.post('/signup', async (c) => {
-    try {
-        const { email, password, name } = await c.req.json();
-
-        if (!email || !password) {
-            return c.json({ error: 'Email and password required' }, 400);
-        }
-
-        if (password.length < 8) {
-            return c.json({ error: 'Password must be at least 8 characters' }, 400);
-        }
-
-        // Check existing
-        const existing = await db.select().from(users).where(eq(users.email, email.toLowerCase())).limit(1);
-        if (existing.length > 0) {
-            return c.json({ error: 'User already exists' }, 409);
-        }
-
-        // Hash password
-        const passwordHash = await bcrypt.hash(password, 10);
-
-        // 1. Create User
-        const [newUser] = await db.insert(users).values({
-            email: email.toLowerCase(),
-            passwordHash,
-            name: name || email.split('@')[0],
-            role: 'user',
-            plan: 'free'
-        }).returning();
-
-        // 2. Create Default Organization
-        const [newOrg] = await db.insert(organizations).values({
-            name: `${newUser.name}'s Org`,
-            plan: 'free'
-        }).returning();
-
-        // 3. Add Member
-        await db.insert(members).values({
-            userId: newUser.id,
-            orgId: newOrg.id,
-            role: 'owner'
-        });
-
-        // 4. Generate Token
-        const payload = {
-            id: newUser.id,
-            email: newUser.email,
-            role: newUser.role,
-            orgId: newOrg.id,
-            plan: newUser.plan,
-            exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 // 24h
-        };
-
-        const token = await sign(payload, JWT_SECRET);
-
-        return c.json({
-            token,
-            user: {
-                id: newUser.id,
-                email: newUser.email,
-                name: newUser.name,
-                role: newUser.role,
-                plan: newUser.plan
-            }
-        }, 201);
-
-    } catch (error: any) {
-        console.error('[Auth] Signup error:', error);
-        return c.json({ error: 'Internal Server Error', details: error.message }, 500);
-    }
-});
+app.post('/signup', handleSignup);
+app.post('/register', handleSignup);
 
 // --- Endpoint: Get Current User ---
 app.get('/me', authMiddleware, async (c) => {
@@ -289,7 +315,7 @@ app.get('/me', authMiddleware, async (c) => {
             id: dbUser.id,
             email: dbUser.email,
             name: dbUser.name,
-            role: dbUser.role,
+            role: member[0]?.role || dbUser.role,
             plan: dbUser.plan,
             avatarUrl: dbUser.avatarUrl
         },

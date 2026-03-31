@@ -4,7 +4,7 @@ import { Shield, ArrowRight, UserPlus, Building2, Key } from 'lucide-react';
 import CyberCard from './CyberCard.jsx';
 
 export default function RegisterOverlay() {
-    const { login } = useAuth(); // We'll need a register function in AuthContext later
+    const { login } = useAuth();
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
         name: '',
@@ -21,10 +21,15 @@ export default function RegisterOverlay() {
         setError(null);
 
         try {
-            const res = await fetch('/api/auth/register', {
+            const res = await fetch('/api/auth/signup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: JSON.stringify({
+                    email: formData.email,
+                    password: formData.password,
+                    name: formData.name,
+                    organizationName: formData.orgName
+                })
             });
             const data = await res.json();
 
@@ -43,7 +48,7 @@ export default function RegisterOverlay() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md">
             <div className="w-full max-w-lg p-6 relative">
                 {/* Decorative Grid Background */}
-                <div className="absolute inset-0 bg-[url('/assets/grid.svg')] opacity-10 pointer-events-none"></div>
+                <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10 pointer-events-none"></div>
 
                 <CyberCard
                     title="IDENTITY PROTOCOL // NEW OPERATOR"

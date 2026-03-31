@@ -9,71 +9,70 @@
  */
 
 import { boidsEngine } from './BoidsEngine.js';
-import { generateEmbedding } from '../lib/llm/embeddings.js';
 import { db } from '../db/client.js';
 import { creditTransactions } from '../db/schema.js';
 import { cognitiveMemory } from './cognitive-memory.js';
 import { redis } from '../lib/redis.js';
+import { latentTrajectoryService, type SupportedSector } from './LatentTrajectoryService.js';
+import type { Sector } from './ChaosRecoveryEngine.js';
 
 export interface IntuitionResult {
     latentVector: Float32Array;
     confidence: number;
     manifoldHit: boolean;
     suggestion?: string;
+    sector?: string;
+    driftScore?: number;
+    expectedShift?: number;
+    collapseRisk?: number;
+    trajectoryMode?: string;
 }
 
 export class IntuitionService {
-    private manipulatorModel: any; // FFN - Latent Manipulator
-    
-    // Semantic Compasses (Ground Truth Directions for core sectors)
-    private semanticCompasses: Map<string, { query: string, expectedShift: number }> = new Map([
-        ['finance', { query: "market analysis and financial reports", expectedShift: 0.05 }],
-        ['legal', { query: "regulatory compliance and contract law", expectedShift: 0.05 }],
-        ['tech', { query: "software architecture and distributed systems", expectedShift: 0.05 }]
+    private semanticCompasses: Map<Sector, { query: string, expectedShift: number }> = new Map([
+        ['finance', { query: "market analysis and financial reports", expectedShift: 0.02 }],
+        ['legal', { query: "regulatory compliance and contract law", expectedShift: 0.02 }],
+        ['healthcare', { query: "patient records and HIPAA-compliant clinical workflow", expectedShift: 0.02 }],
+        ['robotics', { query: "inverse kinematics and manipulator safety planning", expectedShift: 0.02 }],
+        ['biotech', { query: "protein binding affinity and biotech assay execution", expectedShift: 0.02 }],
+        ['energy', { query: "grid stability and energy dispatch controls", expectedShift: 0.02 }]
     ]);
-
-    constructor() {
-        // Mock manipulator initialization for prototype
-        this.manipulatorModel = {
-            forward: (vector: Float32Array) => {
-                // In a production scenario, this would be a real ONNX/TensorFlow model
-                // For the autonomous prototype, we apply a "semantic nudge"
-                const result = new Float32Array(vector.length);
-                for (let i = 0; i < vector.length; i++) {
-                    result[i] = vector[i] + (Math.random() - 0.5) * 0.01;
-                }
-                return result;
-            }
-        };
-    }
 
     /**
      * Process a query through the intuition layer
      */
     async process(query: string): Promise<IntuitionResult> {
-        // 1. Convert text to latent vector (System 1 input)
-        const embeddings = await generateEmbedding(query);
-        const latentVector = new Float32Array(embeddings);
+        const sector = this.resolveSector(query);
+        const trajectory = await latentTrajectoryService.predict({
+            query,
+            sector,
+        });
+        const transformedVector = trajectory.predictedVector;
 
-        // 2. Manipulate latent vector (Thinking in latent space)
-        const transformedVector = this.manipulatorModel.forward(latentVector);
-
-        // 3. Navigation: Nudge the swarm toward the predicted manifold
+        // 2. Navigation: Nudge the swarm toward the predicted manifold
         // This connects the visualization/swarm logic to the semantic logic
-        this.navigateSwarm(transformedVector);
+        this.navigateSwarm(transformedVector, 1.1 + trajectory.confidence * 1.2);
 
-        // 4. Integrity Check (Phase 3.7): Periodically run canaries in the background
+        // 3. Integrity Check (Phase 3.7): Periodically run canaries in the background
         if (Math.random() > 0.9) {
             this.runManipulatorCanary().catch(err => console.error('[Intuition] Canary failed:', err));
         }
 
-        // 5. Record Usage (Savings Share Logic)
+        // 4. Record Usage (Savings Share Logic)
         await this.recordUsage();
 
         return {
             latentVector: transformedVector,
-            confidence: 0.85, // Mock confidence
-            manifoldHit: true
+            confidence: trajectory.confidence,
+            manifoldHit: trajectory.driftScore < 0.35 && trajectory.collapseRisk < 0.6,
+            suggestion: trajectory.driftScore > 0.35
+                ? `Re-anchor toward ${sector} manifold before trusting this path.`
+                : `Trajectory is stable enough to prewarm the ${sector} manifold.`,
+            sector,
+            driftScore: trajectory.driftScore,
+            expectedShift: trajectory.expectedShift,
+            collapseRisk: trajectory.collapseRisk,
+            trajectoryMode: trajectory.mode
         };
     }
 
@@ -90,17 +89,28 @@ export class IntuitionService {
         if (predictions.length > 0) {
             // 2. Select the highest confidence prediction
             const topPrediction = predictions[0];
-            
-            // 3. Generate latent vector for predicted future query (System 1 pre-warm)
-            const embeddings = await generateEmbedding(topPrediction.query);
-            const predictiveVector = new Float32Array(embeddings);
-            
-            // 4. Pre-nudge the swarm (gently, so we don't disrupt current focus)
-            // For pre-warming, we use a subtle weight (0.8) to align the flock without snapping.
-            this.navigateSwarm(predictiveVector, 0.8);
+
+            const sector = this.resolveSector(`${currentQuery} ${topPrediction.query}`);
+            const trajectory = await latentTrajectoryService.predict({
+                query: topPrediction.query,
+                sector,
+                goalQuery: currentQuery,
+            });
+
+            // 3. Pre-nudge the swarm using a predictive latent trajectory.
+            this.navigateSwarm(trajectory.predictedVector, 0.65 + trajectory.confidence * 0.35);
             
             console.log(`[IntuitionService] ✅ Swarm pre-warmed toward predicted manifold: "${topPrediction.query.slice(0, 30)}..."`);
         }
+    }
+
+    async assessRealization(previousQuery: string, actualQuery: string) {
+        const sector = this.resolveSector(`${previousQuery} ${actualQuery}`);
+        return latentTrajectoryService.assessRealization({
+            query: previousQuery,
+            actualQuery,
+            sector,
+        });
     }
 
     /**
@@ -139,21 +149,18 @@ export class IntuitionService {
         
         let allPassed = true;
         for (const [sector, compass] of this.semanticCompasses) {
-            // 1. Get baseline (System 1 input)
-            const embedding = await generateEmbedding(compass.query);
-            const latentVector = new Float32Array(embedding);
-            
-            // 2. Measure actual shift
-            const transformed = this.manipulatorModel.forward(latentVector);
-            
-            // 3. Verify semantic grounding (Mock check for prototype)
-            // In production, we'd check the cosine similarity of the SHIFT vector 
-            // against the expected sector center.
-            const shiftMag = transformed.reduce((acc, val, i) => acc + Math.abs(val - latentVector[i]), 0);
-            
-            if (shiftMag < 1.0) { // Extremely low shift or drift
-                 console.warn(`[Intuition] ⚠️ Canary warning for ${sector}: Manipulator feels "stiff" or biased.`);
-                 allPassed = false;
+            const trajectory = await latentTrajectoryService.predict({
+                query: compass.query,
+                sector,
+            });
+
+            const shiftMag = trajectory.expectedShift;
+            const shiftLooksHealthy = shiftMag >= compass.expectedShift * 0.25;
+            const manifoldLooksHealthy = trajectory.driftScore < 0.4 && trajectory.collapseRisk < 0.65;
+
+            if (!shiftLooksHealthy || !manifoldLooksHealthy) {
+                console.warn(`[Intuition] ⚠️ Canary warning for ${sector}: unhealthy latent trajectory detected.`);
+                allPassed = false;
             }
         }
 
@@ -190,6 +197,10 @@ export class IntuitionService {
         } catch (err) {
             console.warn('[IntuitionService] Failed to record usage:', err);
         }
+    }
+
+    private resolveSector(query: string): SupportedSector {
+        return latentTrajectoryService.inferSector(query);
     }
 }
 

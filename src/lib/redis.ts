@@ -421,6 +421,7 @@ class MockRedis {
 const mockRedisInstance = new MockRedis();
 let redisClient: any;
 let isMock = false;
+const REDIS_OP_TIMEOUT_MS = Math.max(250, Number.parseInt(process.env.REDIS_OP_TIMEOUT_MS || '1500', 10) || 1500);
 
 function shouldForceMockRedis() {
   return process.env.NODE_ENV === 'test' || !!process.env.VITEST || process.env.AGENTCACHE_FORCE_MOCK_REDIS === '1';
@@ -432,15 +433,31 @@ function isConnectivityError(err: any) {
   const code = String(err?.code || err?.cause?.code || '');
   const combined = `${message} ${causeMessage} ${code}`;
 
-  return [
-    'fetch failed',
-    'ENOTFOUND',
-    'ECONNREFUSED',
-    'ETIMEDOUT',
-    'EAI_AGAIN',
-    'network',
-    'dns'
-  ].some((token) => combined.includes(token));
+    return [
+        'fetch failed',
+        'ENOTFOUND',
+        'ECONNREFUSED',
+        'ETIMEDOUT',
+        'EAI_AGAIN',
+        'timed out',
+        'network',
+        'dns'
+    ].some((token) => combined.includes(token));
+}
+
+function createRedisTimeoutError() {
+  const error: any = new Error(`Redis operation timed out after ${REDIS_OP_TIMEOUT_MS}ms`);
+  error.code = 'ETIMEDOUT';
+  return error;
+}
+
+async function withRedisTimeout<T>(operation: Promise<T>): Promise<T> {
+  return Promise.race([
+    operation,
+    new Promise<T>((_, reject) => {
+      setTimeout(() => reject(createRedisTimeoutError()), REDIS_OP_TIMEOUT_MS);
+    }),
+  ]);
 }
 
 function getRedisClient() {
@@ -483,7 +500,7 @@ export const redis = new Proxy({}, {
       const client = getRedisClient();
       try {
         // @ts-ignore
-        return await client[prop](...args);
+        return await withRedisTimeout(client[prop](...args));
       } catch (err: any) {
         if (
           isConnectivityError(err) ||

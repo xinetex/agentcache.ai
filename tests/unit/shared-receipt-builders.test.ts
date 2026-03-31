@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildAlignmentRunReceipt,
   buildApiCallReceipt,
   buildBotCycleReceipt,
+  buildContextPackVersionReceipt,
+  buildExecutionReviewReceipt,
+  buildExecutionRunReceipt,
+  buildGateDecisionReceipt,
   buildPathologyRunReceipt,
   buildSoulprintScanReceipt,
   buildStorageTransferReceipt,
@@ -9,6 +14,35 @@ import {
 } from '../../src/contracts/shared-receipt-builders.js';
 
 describe('shared receipt builders', () => {
+  it('builds an alignment run receipt with cross-provider metadata', () => {
+    const receipt = buildAlignmentRunReceipt({
+      receiptId: 'alignment-001',
+      producer: {
+        system: 'AGENTCACHE',
+        id: 'agentcache.ai',
+        role: 'alignment-router',
+      },
+      runId: 'align-run-001',
+      route: '/api/alignment/route',
+      sourceProvider: 'openai',
+      sourceModel: 'text-embedding-3-small',
+      targetProvider: 'anthropic',
+      targetModel: 'claude-3-5-sonnet',
+      executionMode: 'encrypted_linear',
+      privacyMode: 'encrypted_linear',
+      trust: {
+        verdict: 'PASS',
+        confidence: 0.88,
+      },
+    });
+
+    expect(receipt.subject.kind).toBe('ALIGNMENT_RUN');
+    expect(receipt.operation.action).toBe('alignment.route');
+    expect(receipt.operation.sourceProvider).toBe('openai');
+    expect(receipt.operation.targetProvider).toBe('anthropic');
+    expect(receipt.operation.executionMode).toBe('encrypted_linear');
+  });
+
   it('builds a signed bot cycle receipt', () => {
     const receipt = buildBotCycleReceipt({
       receiptId: 'cycle-001',
@@ -145,5 +179,71 @@ describe('shared receipt builders', () => {
     expect(receipt.operation.action).toBe('soulprint.scan');
     expect(receipt.operation.route).toBe('/api/external-agents/registration-001/soulprint');
     expect(receipt.payload?.findings).toEqual(['Escalates aggressively under low-confidence states']);
+  });
+
+  it('builds execution control receipts', () => {
+    const versionReceipt = buildContextPackVersionReceipt({
+      receiptId: 'ctxv-001',
+      producer: {
+        system: 'AGENTCACHE',
+        id: 'agentcache.ai',
+      },
+      versionId: 'ctxv-001',
+      contextPackId: 'ctx-001',
+      route: '/api/execution/context-packs',
+      trust: {
+        verdict: 'PASS',
+      },
+    });
+
+    const runReceipt = buildExecutionRunReceipt({
+      receiptId: 'run-001',
+      producer: {
+        system: 'AGENTCACHE',
+        id: 'agentcache.ai',
+      },
+      runId: 'run-001',
+      contextPackVersionId: 'ctxv-001',
+      executionMode: 'gated',
+      trust: {
+        verdict: 'REVIEW',
+      },
+    });
+
+    const reviewReceipt = buildExecutionReviewReceipt({
+      receiptId: 'review-001',
+      producer: {
+        system: 'AGENTCACHE',
+        id: 'agentcache.ai',
+      },
+      reviewId: 'review-001',
+      runId: 'run-001',
+      reviewerRole: 'critical',
+      trust: {
+        verdict: 'PASS',
+      },
+    });
+
+    const gateReceipt = buildGateDecisionReceipt({
+      receiptId: 'gate-001',
+      producer: {
+        system: 'AGENTCACHE',
+        id: 'agentcache.ai',
+      },
+      gateId: 'gate-001',
+      runId: 'run-001',
+      gateType: 'publish',
+      trust: {
+        verdict: 'PASS',
+      },
+    });
+
+    expect(versionReceipt.subject.kind).toBe('CONTEXT_PACK_VERSION');
+    expect(runReceipt.subject.kind).toBe('EXECUTION_RUN');
+    expect(runReceipt.operation.executionMode).toBe('gated');
+    expect(reviewReceipt.subject.kind).toBe('EXECUTION_REVIEW');
+    expect(reviewReceipt.refs?.reviewerRole).toBe('critical');
+    expect(gateReceipt.subject.kind).toBe('GATE_DECISION');
+    expect(gateReceipt.refs?.gateType).toBe('publish');
   });
 });

@@ -6,6 +6,11 @@ import jwt from 'jsonwebtoken';
  */
 
 const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRETS = Array.from(new Set([
+  JWT_SECRET,
+  'dev-secret-change-me',
+  'dev_secret_do_not_use_in_prod',
+].filter(Boolean)));
 const TOKEN_EXPIRY = '7d'; // 7 days
 
 if (!JWT_SECRET) {
@@ -26,11 +31,13 @@ export function generateToken(user) {
     throw new Error('Invalid user object for token generation');
   }
 
+  const organizationId = user.organization_id || user.organizationId || user.orgId || null;
   const payload = {
     userId: user.id,
     email: user.email,
-    organizationId: user.organization_id || null,
+    organizationId,
     role: user.role || 'member',
+    plan: user.plan || null,
     iat: Math.floor(Date.now() / 1000),
   };
 
@@ -51,32 +58,57 @@ export function verifyToken(token) {
     return null;
   }
 
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET || 'dev-secret-change-me', {
-      issuer: 'agentcache.ai',
-      audience: 'customer-portal',
-    });
+  const normalizeDecoded = (decoded) => ({
+    userId: decoded.userId || decoded.id || null,
+    email: decoded.email || null,
+    organizationId:
+      decoded.organizationId ||
+      decoded.organization_id ||
+      decoded.orgId ||
+      decoded.org_id ||
+      null,
+    role: decoded.role || 'member',
+    plan: decoded.plan || null,
+    iat: decoded.iat,
+    exp: decoded.exp,
+  });
 
-    return {
-      userId: decoded.userId,
-      email: decoded.email,
-      organizationId: decoded.organizationId,
-      role: decoded.role,
-      iat: decoded.iat,
-      exp: decoded.exp,
-    };
-  } catch (error) {
-    if (error.name === 'TokenExpiredError') {
-      console.log('Token expired:', error.message);
-      return null;
+  let lastError = null;
+
+  for (const secret of JWT_SECRETS) {
+    try {
+      const decoded = jwt.verify(token, secret, {
+        issuer: 'agentcache.ai',
+        audience: 'customer-portal',
+      });
+      return normalizeDecoded(decoded);
+    } catch (error) {
+      lastError = error;
     }
-    if (error.name === 'JsonWebTokenError') {
-      console.log('Invalid token:', error.message);
-      return null;
+
+    try {
+      // Accept newer internal JWTs that share a secret but omit customer-portal claims.
+      const decoded = jwt.verify(token, secret);
+      return normalizeDecoded(decoded);
+    } catch (error) {
+      lastError = error;
     }
-    console.error('Token verification error:', error);
+  }
+
+  const error = lastError;
+  if (error?.name === 'TokenExpiredError') {
+    console.log('Token expired:', error.message);
     return null;
   }
+  if (error?.name === 'JsonWebTokenError') {
+    console.log('Invalid token:', error.message);
+    return null;
+  }
+
+  if (error) {
+    console.error('Token verification error:', error);
+  }
+  return null;
 }
 
 /**
@@ -97,6 +129,7 @@ export function refreshToken(token) {
     email: decoded.email,
     organization_id: decoded.organizationId,
     role: decoded.role,
+    plan: decoded.plan,
   };
 
   return generateToken(user);

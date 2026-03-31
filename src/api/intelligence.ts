@@ -147,4 +147,18 @@ intelligenceRouter.post('/intuition', async (c) => {
     return c.json(result);
 });
 
+/**
+ * POST /api/intelligence/intuition/surprise
+ * Score how surprising an actual outcome is relative to the expected latent trajectory.
+ */
+intelligenceRouter.post('/intuition/surprise', async (c) => {
+    const { expectedQuery, actualQuery } = await c.req.json();
+    if (!expectedQuery || !actualQuery) {
+        return c.json({ error: 'expectedQuery and actualQuery are required' }, 400);
+    }
+
+    const result = await intuitionService.assessRealization(expectedQuery, actualQuery);
+    return c.json(result);
+});
+
 export default intelligenceRouter;

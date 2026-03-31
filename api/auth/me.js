@@ -1,77 +1,65 @@
 export const config = { runtime: 'nodejs' };
 
-import { requireAuth, getUserOrganization, withAuth } from '../../lib/auth-middleware.js';
+import { getAuthErrorStatus, getUserOrganization, requireAuth } from '../../lib/auth-middleware.js';
 
 /**
  * GET /api/auth/me
- * Get current authenticated user profile with organization details
- * 
- * Headers:
- *   Authorization: Bearer {token}
- * 
- * Response:
- * {
- *   success: true,
- *   user: {
- *     id, email, full_name, role,
- *     organization: { id, name, slug, namespaces, api_keys_count }
- *   }
- * }
+ * Get current authenticated user profile with organization details.
  */
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      'cache-control': 'no-store',
-      'access-control-allow-origin': '*',
-      'access-control-allow-methods': 'GET, OPTIONS',
-      'access-control-allow-headers': 'Content-Type, Authorization',
-    },
-  });
-}
-
-async function handleRequest(req) {
   if (req.method === 'OPTIONS') {
-    return json({ ok: true });
+    return res.status(200).json({ ok: true });
   }
 
   if (req.method !== 'GET') {
-    return json({ success: false, error: 'Method not allowed' }, 405);
+    return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
-  // Verify authentication
-  const user = await requireAuth(req);
+  try {
+    const user = await requireAuth(req);
 
-  // Get full organization details if user has one
-  let organization = null;
-  if (user.organizationId) {
-    organization = await getUserOrganization(user.id);
+    let organization = null;
+    if (user.organizationId) {
+      organization = await getUserOrganization(user.id);
+    }
+
+    return res.status(200).json({
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        role: user.role,
+        organization: organization ? {
+          id: organization.id,
+          name: organization.name,
+          slug: organization.slug,
+          sector: organization.sector,
+          plan_tier: organization.plan_tier,
+          status: organization.status,
+          namespaces: organization.namespaces || [],
+          api_keys_count: parseInt(organization.api_keys_count, 10) || 0,
+          max_namespaces: organization.max_namespaces,
+          max_api_keys: organization.max_api_keys,
+          created_at: organization.created_at,
+        } : null,
+      },
+    });
+  } catch (error) {
+    const authStatus = getAuthErrorStatus(error);
+    if (authStatus) {
+      return res.status(authStatus).json({ success: false, error: error.message });
+    }
+
+    console.error('Auth profile error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
   }
-
-  return json({
-    success: true,
-    user: {
-      id: user.id,
-      email: user.email,
-      full_name: user.full_name,
-      role: user.role,
-      organization: organization ? {
-        id: organization.id,
-        name: organization.name,
-        slug: organization.slug,
-        sector: organization.sector,
-        plan_tier: organization.plan_tier,
-        status: organization.status,
-        namespaces: organization.namespaces || [],
-        api_keys_count: parseInt(organization.api_keys_count) || 0,
-        max_namespaces: organization.max_namespaces,
-        max_api_keys: organization.max_api_keys,
-        created_at: organization.created_at,
-      } : null,
-    },
-  });
 }
-
-export default withAuth(handleRequest);

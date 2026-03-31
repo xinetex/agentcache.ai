@@ -267,6 +267,170 @@ export const apiKeys = pgTable('api_keys', {
     expiresAt: timestamp('expires_at'),
 });
 
+export const alignmentModelPairs = pgTable('alignment_model_pairs', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    sourceProvider: text('source_provider').notNull(),
+    sourceModel: text('source_model'),
+    targetProvider: text('target_provider').notNull(),
+    targetModel: text('target_model'),
+    taskFamily: text('task_family').notNull(),
+    compatibilityScore: real('compatibility_score').default(0),
+    tokenizerCompatibility: real('tokenizer_compatibility').default(0),
+    representationSimilarity: real('representation_similarity').default(0),
+    status: text('status').default('estimated'),
+    evidenceLevel: text('evidence_level').default('heuristic-v1'),
+    privateInferenceCapable: boolean('private_inference_capable').default(false),
+    notes: jsonb('notes').default([]),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+    alignmentPairSourceIdx: index('alignment_pairs_source_idx').on(table.sourceProvider, table.targetProvider),
+    alignmentPairTaskIdx: index('alignment_pairs_task_idx').on(table.taskFamily),
+}));
+
+export const alignmentBenchmarks = pgTable('alignment_benchmarks', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    pairId: text('pair_id').notNull(),
+    sourceProvider: text('source_provider').notNull(),
+    targetProvider: text('target_provider').notNull(),
+    taskFamily: text('task_family').notNull(),
+    dataset: text('dataset'),
+    baselineScore: real('baseline_score'),
+    alignedScore: real('aligned_score'),
+    degradationPct: real('degradation_pct'),
+    latencyMs: real('latency_ms'),
+    costUsd: real('cost_usd'),
+    notes: jsonb('notes').default([]),
+    status: text('status').default('recorded'),
+    createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+    alignmentBenchmarkPairIdx: index('alignment_benchmarks_pair_idx').on(table.pairId),
+    alignmentBenchmarkTaskIdx: index('alignment_benchmarks_task_idx').on(table.taskFamily),
+}));
+
+export const alignmentRuns = pgTable('alignment_runs', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    requestId: text('request_id').notNull(),
+    receiptId: text('receipt_id'),
+    sourceProvider: text('source_provider'),
+    sourceModel: text('source_model'),
+    targetProvider: text('target_provider'),
+    targetModel: text('target_model'),
+    taskFamily: text('task_family').notNull(),
+    executionMode: text('execution_mode').notNull(),
+    privacyMode: text('privacy_mode').notNull(),
+    sensitivity: text('sensitivity').notNull(),
+    verdict: text('verdict').notNull(),
+    ontologyRef: text('ontology_ref'),
+    compatibilityScore: real('compatibility_score'),
+    principalId: text('principal_id'),
+    notes: jsonb('notes').default([]),
+    createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+    alignmentRunRequestIdx: index('alignment_runs_request_idx').on(table.requestId),
+    alignmentRunTaskIdx: index('alignment_runs_task_idx').on(table.taskFamily),
+    alignmentRunModeIdx: index('alignment_runs_mode_idx').on(table.executionMode),
+}));
+
+export const contextPacks = pgTable('context_packs', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    orgId: uuid('organization_id').references(() => organizations.id),
+    name: text('name').notNull(),
+    slug: text('slug').notNull(),
+    status: text('status').default('draft'),
+    latestVersion: integer('latest_version').default(1),
+    latestVersionId: text('latest_version_id'),
+    createdBy: text('created_by'),
+    createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+    contextPackSlugIdx: index('context_packs_slug_idx').on(table.slug),
+    contextPackOrgIdx: index('context_packs_org_idx').on(table.orgId),
+}));
+
+export const contextPackVersions = pgTable('context_pack_versions', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    contextPackId: text('context_pack_id').notNull(),
+    version: integer('version').notNull(),
+    objective: text('objective').notNull(),
+    methodology: text('methodology'),
+    conventions: jsonb('conventions').default([]),
+    tools: jsonb('tools').default([]),
+    outputContract: jsonb('output_contract').default({}),
+    policyProfile: jsonb('policy_profile').default({}),
+    ontologyRef: text('ontology_ref'),
+    hash: text('hash').notNull(),
+    receiptId: text('receipt_id'),
+    metadata: jsonb('metadata').default({}),
+    createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+    contextPackVersionPackIdx: index('context_pack_versions_pack_idx').on(table.contextPackId),
+    contextPackVersionHashIdx: index('context_pack_versions_hash_idx').on(table.hash),
+}));
+
+export const contextPackSources = pgTable('context_pack_sources', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    contextPackVersionId: text('context_pack_version_id').notNull(),
+    kind: text('kind').notNull(),
+    uri: text('uri'),
+    title: text('title'),
+    checksum: text('checksum'),
+    metadata: jsonb('metadata').default({}),
+    createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+    contextPackSourceVersionIdx: index('context_pack_sources_version_idx').on(table.contextPackVersionId),
+}));
+
+export const executionRuns = pgTable('execution_runs', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    orgId: uuid('organization_id').references(() => organizations.id),
+    contextPackId: text('context_pack_id').notNull(),
+    contextPackVersionId: text('context_pack_version_id').notNull(),
+    status: text('status').notNull(),
+    currentPhase: text('current_phase').notNull(),
+    trigger: text('trigger').default('manual'),
+    inputPayload: jsonb('input_payload').default({}),
+    outputPayload: jsonb('output_payload').default({}),
+    reviewVerdict: text('review_verdict').default('INFO'),
+    gateStatus: text('gate_status').default('not_required'),
+    receiptId: text('receipt_id'),
+    createdBy: text('created_by'),
+    createdAt: timestamp('created_at').defaultNow(),
+    completedAt: timestamp('completed_at'),
+}, (table) => ({
+    executionRunPackIdx: index('execution_runs_pack_idx').on(table.contextPackId),
+    executionRunStatusIdx: index('execution_runs_status_idx').on(table.status),
+}));
+
+export const executionReviews = pgTable('execution_reviews', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    executionRunId: text('execution_run_id').notNull(),
+    reviewerRole: text('reviewer_role').notNull(),
+    verdict: text('verdict').notNull(),
+    summary: text('summary'),
+    findings: jsonb('findings').default([]),
+    confidence: real('confidence'),
+    receiptId: text('receipt_id'),
+    createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+    executionReviewRunIdx: index('execution_reviews_run_idx').on(table.executionRunId),
+}));
+
+export const executionGates = pgTable('execution_gates', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    executionRunId: text('execution_run_id').notNull(),
+    gateType: text('gate_type').notNull(),
+    status: text('status').notNull(),
+    reason: text('reason'),
+    decidedBy: text('decided_by'),
+    decisionNote: text('decision_note'),
+    receiptId: text('receipt_id'),
+    createdAt: timestamp('created_at').defaultNow(),
+    decidedAt: timestamp('decided_at'),
+}, (table) => ({
+    executionGateRunIdx: index('execution_gates_run_idx').on(table.executionRunId),
+    executionGateStatusIdx: index('execution_gates_status_idx').on(table.status),
+}));
+
 // --- Game Theory & Autonomous Lab ---
 export const gameSessions = pgTable('game_sessions', {
     id: uuid('id').defaultRandom().primaryKey(),

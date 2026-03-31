@@ -34,6 +34,56 @@ import { CognitiveTools } from './tools/cognitive.js';
 import { MemoryTools } from './tools/memory.js';
 import { LidarTools } from './tools/lidar.js';
 
+const SENSITIVE_ENV_KEYS = [
+  'ADMIN_TOKEN',
+  'ANTHROPIC_API_KEY',
+  'AWS_ACCESS_KEY_ID',
+  'AWS_SECRET_ACCESS_KEY',
+  'AWS_SESSION_TOKEN',
+  'DATABASE_URL',
+  'GH_TOKEN',
+  'GITHUB_TOKEN',
+  'GOOGLE_APPLICATION_CREDENTIALS',
+  'JWT_SECRET',
+  'LYVE_ACCESS_KEY_ID',
+  'LYVE_SECRET_ACCESS_KEY',
+  'NEON_API_KEY',
+  'OPENAI_API_KEY',
+  'SHARED_RECEIPT_SECRET',
+  'SSH_AUTH_SOCK',
+  'STRIPE_SECRET_KEY',
+  'TRUSTOPS_SIGNING_SECRET',
+  'UPSTASH_REDIS_REST_TOKEN',
+  'VERCEL_TOKEN',
+];
+
+function findSensitiveHostEnv(): string[] {
+  return SENSITIVE_ENV_KEYS.filter((key) => {
+    const value = process.env[key];
+    return typeof value === 'string' && value.trim().length > 0;
+  });
+}
+
+function enforceContainedRuntime(): void {
+  const override = process.env.AGENTCACHE_MCP_ALLOW_HOST_SECRETS === '1';
+  if (override) {
+    console.warn('[MCP] Host secret exposure guard overridden via AGENTCACHE_MCP_ALLOW_HOST_SECRETS=1.');
+    return;
+  }
+
+  const exposedKeys = findSensitiveHostEnv();
+  if (exposedKeys.length === 0) {
+    return;
+  }
+
+  console.error('[MCP] Refusing to start with sensitive host secrets in the environment.');
+  console.error(`[MCP] Detected: ${exposedKeys.join(', ')}`);
+  console.error('[MCP] Run the server inside the contained Docker wrapper or explicitly acknowledge the risk with AGENTCACHE_MCP_ALLOW_HOST_SECRETS=1.');
+  process.exit(1);
+}
+
+enforceContainedRuntime();
+
 // Initialize Registry
 const registry = new ToolRegistry();
 

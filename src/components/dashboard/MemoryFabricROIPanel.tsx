@@ -11,6 +11,8 @@ type Props = {
         byEngine?: Array<{ engine: string; count: number }>;
         byExecutionMode?: Array<{ executionMode: string; count: number }>;
         byHomeostasisStatus?: Array<{ status: string; count: number }>;
+        averageConfidence?: number;
+        failureRate?: number;
     } | null;
 };
 
@@ -104,9 +106,17 @@ export function MemoryFabricROIPanel({ fabric, browserProof }: Props) {
                     <span className="text-white/60 text-sm">Top Proof Mode</span>
                     <span className="text-violet-300 font-mono text-[11px]">{topBrowserMode?.executionMode || 'n/a'}</span>
                 </div>
+                <div className="flex justify-between items-end border-b border-white/5 pb-2">
+                    <span className="text-white/60 text-sm">Avg. Browser Confidence</span>
+                    <span className="text-emerald-400 font-mono text-sm">
+                        {typeof browserProof?.averageConfidence === 'number' ? `${(browserProof.averageConfidence * 100).toFixed(1)}%` : '0.0%'}
+                    </span>
+                </div>
                 <div className="flex justify-between items-end">
-                    <span className="text-white/60 text-sm">Billable USD</span>
-                    <span className="text-rose-300 font-mono text-sm">{formatMoney(accounting?.usdEquivalent)}</span>
+                    <span className="text-white/60 text-sm">Browser Failure Rate</span>
+                    <span className="text-rose-400 font-mono text-sm">
+                        {typeof browserProof?.failureRate === 'number' ? `${(browserProof.failureRate * 100).toFixed(1)}%` : '0.0%'}
+                    </span>
                 </div>
             </div>
 

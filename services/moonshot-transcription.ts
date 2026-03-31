@@ -3,7 +3,7 @@
  * Replaces OpenAI transcription with Moonshot to avoid quota limits
  */
 
-import { moonshotConfig, callMoonshotAPI } from '../ai-provider-moonshot.js';
+import { moonshotConfig, callMoonshotAPI } from '../scripts/util/ai-provider-moonshot.js';
 
 export interface TranscriptionRequest {
   audioData: Buffer;
@@ -37,7 +37,7 @@ export class MoonshotTranscriptionService {
       },
       {
         role: 'user', 
-        content: `Please transcribe this audio file: ${request.fileName}${request.language ? ` (expected language: ${request.language})` : ''}. The base64-encoded audio content is attached.
+        content: `Please transcribe this audio file: ${request.fileName} (${audioMimeType})${request.language ? ` (expected language: ${request.language})` : ''}. The base64-encoded audio content is attached.
 
 Audio data (base64): ${audioBase64}
 ${request.prompt ? `\nAdditional context: ${request.prompt}` : ''}`

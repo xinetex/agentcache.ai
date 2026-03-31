@@ -14,6 +14,11 @@ export type SharedReceiptVerdict = 'PASS' | 'REVIEW' | 'BLOCK' | 'INFO';
 
 export type SharedReceiptSubjectKind =
   | 'API_CALL'
+  | 'ALIGNMENT_RUN'
+  | 'CONTEXT_PACK_VERSION'
+  | 'EXECUTION_RUN'
+  | 'EXECUTION_REVIEW'
+  | 'GATE_DECISION'
   | 'STATUS_SNAPSHOT'
   | 'PERFORMANCE_SNAPSHOT'
   | 'BOT_CYCLE'
@@ -24,6 +29,7 @@ export type SharedReceiptSubjectKind =
   | 'TRADE_EXECUTION'
   | 'TRUST_EXPORT'
   | 'BROWSER_TASK'
+  | 'ORCHESTRATOR_RUN'
   | 'SOULPRINT_ARTIFACT';
 
 export type SharedReceiptParty = {
@@ -54,9 +60,16 @@ export type SharedReceiptOntology = {
 export type SharedReceiptOperation = {
   action: string;
   provider?: string;
+  sourceProvider?: string;
+  sourceModel?: string;
+  targetProvider?: string;
+  targetModel?: string;
   route?: string;
   method?: string;
   environment?: string;
+  executionMode?: string;
+  privacyMode?: string;
+  statusCode?: number | string | null;
 };
 
 export type SharedReceiptEconomics = {
@@ -114,6 +127,11 @@ const sharedReceiptVerdictSchema = z.enum(['PASS', 'REVIEW', 'BLOCK', 'INFO']);
 
 const sharedReceiptSubjectKindSchema = z.enum([
   'API_CALL',
+  'ALIGNMENT_RUN',
+  'CONTEXT_PACK_VERSION',
+  'EXECUTION_RUN',
+  'EXECUTION_REVIEW',
+  'GATE_DECISION',
   'STATUS_SNAPSHOT',
   'PERFORMANCE_SNAPSHOT',
   'BOT_CYCLE',
@@ -124,6 +142,7 @@ const sharedReceiptSubjectKindSchema = z.enum([
   'TRADE_EXECUTION',
   'TRUST_EXPORT',
   'BROWSER_TASK',
+  'ORCHESTRATOR_RUN',
   'SOULPRINT_ARTIFACT',
 ]);
 
@@ -155,9 +174,16 @@ const sharedReceiptOntologySchema = z.object({
 const sharedReceiptOperationSchema = z.object({
   action: z.string().min(1),
   provider: z.string().min(1).optional(),
+  sourceProvider: z.string().min(1).optional(),
+  sourceModel: z.string().min(1).optional(),
+  targetProvider: z.string().min(1).optional(),
+  targetModel: z.string().min(1).optional(),
   route: z.string().min(1).optional(),
   method: z.string().min(1).optional(),
   environment: z.string().min(1).optional(),
+  executionMode: z.string().min(1).optional(),
+  privacyMode: z.string().min(1).optional(),
+  statusCode: z.union([z.number(), z.string(), z.null()]).optional(),
 });
 
 const sharedReceiptEconomicsSchema = z.object({

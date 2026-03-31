@@ -277,7 +277,7 @@ export function CognitiveMap() {
 
                     {/* Crystal Effect Overlay */}
                     {cluster.state === 'crystallized' && (
-                        <div className="absolute inset-0 bg-[url('/assets/noise.png')] opacity-20 mix-blend-overlay rounded-full" />
+                        <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.18)_0,rgba(255,255,255,0.08)_35%,transparent_70%)] opacity-70 mix-blend-overlay" />
                     )}
                 </motion.div>
             ))}

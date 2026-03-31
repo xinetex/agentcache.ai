@@ -19,6 +19,7 @@ export type BrowserProofInput = {
     timeoutMs?: number;
     waitForMs?: number;
     includeMarkdown?: boolean;
+    cookies?: Array<{ name: string; value: string; domain?: string; path?: string }>;
 };
 
 type SelectorObservation = {
@@ -352,6 +353,16 @@ export class LightpandaBrowserAdapter implements BrowserProofAdapter {
 
             await client.send('Page.enable', {}, sessionId);
             await client.send('Runtime.enable', {}, sessionId);
+
+            if (input.cookies && input.cookies.length > 0) {
+                for (const cookie of input.cookies) {
+                    await client.send('Network.setCookie', {
+                        ...cookie,
+                        url: cookie.domain ? undefined : input.url,
+                    }, sessionId);
+                }
+            }
+
             await client.send('Page.navigate', { url: input.url }, sessionId);
 
             try {
