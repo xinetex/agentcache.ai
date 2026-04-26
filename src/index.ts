@@ -436,6 +436,7 @@ app.all('/api/compliance/:path{.+}?', lazy(() => import('./api/compliance.js')))
 app.all('/api/ontology/:path{.+}?', lazy(() => import('./api/ontology.js')));
 app.all('/api/alignment/:path{.+}?', lazy(() => import('./api/alignment.js')));
 app.all('/api/execution/:path{.+}?', lazy(() => import('./api/execution.js')));
+app.all('/api/cortex/:path{.+}?', lazy(() => import('./api/cortex.js')));
 app.all('/api/helix/:path{.+}?', lazy(() => import('./api/helix.js')));
 
 app.all('/api/sentry/:path{.+}?', lazy(() => import('./api/sentry.js')));
