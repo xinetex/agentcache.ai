@@ -53,7 +53,7 @@
     "drizzle-orm": "^0.44.7",
     "framer-motion": "^12.23.25",
     "hono": "^4.10.6",
-    "inngest": "^3.46.0",
+    "inngest": "^3.54.0",
     "ioredis": "^5.8.2",
     "js-yaml": "^4.1.1",
     "jsonwebtoken": "^9.0.2",
