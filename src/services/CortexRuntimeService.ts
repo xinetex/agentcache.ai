@@ -23,7 +23,6 @@ import {
 import { memoryFabricPolicyService } from './MemoryFabricPolicyService.js';
 import { policyEngine, type PolicyResult } from './PolicyEngine.js';
 import { sharedReceiptService } from './SharedReceiptService.js';
-import { structuredMemoryService } from './StructuredMemoryService.js';
 
 const RETENTION_SECONDS = 180 * 24 * 60 * 60;
 const GOAL_INDEX_KEY = 'cortex:goals:index';
@@ -261,6 +260,17 @@ function safeText(value: unknown): string {
   }
 }
 
+function slugify(value: string, fallback: string): string {
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  return normalized || fallback;
+}
+
 function excerpt(value: string, length = 600): string {
   const compact = value.replace(/\s+/g, ' ').trim();
   return compact.length > length ? `${compact.slice(0, length - 3)}...` : compact;
@@ -268,6 +278,47 @@ function excerpt(value: string, length = 600): string {
 
 function normalizeStrings(values?: string[] | null, max = 25): string[] {
   return Array.from(new Set((values || []).map((value) => safeText(value)).filter(Boolean))).slice(0, max);
+}
+
+function memoryHallForKind(kind: CortexMemoryKind): 'facts' | 'events' | 'advice' | 'preferences' {
+  if (kind === 'episode') return 'events';
+  if (kind === 'procedure') return 'advice';
+  if (kind === 'preference') return 'preferences';
+  return 'facts';
+}
+
+function buildCortexMemoryFilter(input: {
+  orgId?: string | null;
+  tags?: string[] | null;
+}): Record<string, unknown> | undefined {
+  const filter: Record<string, unknown> = {};
+  const orgId = safeText(input.orgId);
+  const tags = normalizeStrings(input.tags, 20);
+
+  if (orgId) filter.namespace = orgId;
+  if (orgId) filter.memoryWing = slugify(orgId, 'cortex');
+  if (tags.length === 1) filter.tags = tags[0];
+
+  return Object.keys(filter).length > 0 ? filter : undefined;
+}
+
+function decorateCortexMemoryMetadata(memory: CortexMemoryRecord): Record<string, unknown> {
+  const wing = slugify(memory.orgId || 'cortex', 'cortex');
+  const hall = memoryHallForKind(memory.kind);
+  const room = slugify(memory.goalId || memory.kind, memory.kind);
+  const layer = memory.kind === 'belief' ? 'critical_facts' : 'deep_search';
+
+  return {
+    ...memory.metadata,
+    namespace: memory.orgId || 'cortex',
+    goalId: memory.goalId || null,
+    memoryKind: memory.kind,
+    memoryWing: wing,
+    memoryHall: hall,
+    memoryRoom: room,
+    memoryLayer: layer,
+    memoryPath: `${wing}/${hall}/${room}`,
+  };
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -812,8 +863,8 @@ export class CortexRuntimeService {
   }> {
     const limit = Math.max(1, Math.min(Number(input.limit || 25), 100));
     const query = safeText(input.query || '');
-    const semanticFilter = structuredMemoryService.buildFilter({
-      namespace: input.orgId || undefined,
+    const semanticFilter = buildCortexMemoryFilter({
+      orgId: input.orgId,
       tags: input.tags || undefined,
     });
     const semanticHits = query
@@ -880,22 +931,7 @@ export class CortexRuntimeService {
 
   private async persistMemory(memory: CortexMemoryRecord) {
     const score = Date.parse(memory.createdAt) || Date.now();
-    const { metadata } = structuredMemoryService.decorateMetadata({
-      content: memory.content,
-      tags: memory.tags,
-      metadata: {
-        ...memory.metadata,
-        namespace: memory.orgId || 'cortex',
-        goalId: memory.goalId || null,
-        memoryKind: memory.kind,
-      },
-      structure: {
-        wing: memory.orgId || 'cortex',
-        hall: memory.kind === 'episode' ? 'events' : memory.kind === 'procedure' ? 'advice' : memory.kind === 'preference' ? 'preferences' : 'facts',
-        room: memory.goalId || memory.kind,
-        layer: memory.kind === 'belief' ? 'critical_facts' : 'deep_search',
-      },
-    });
+    const metadata = decorateCortexMemoryMetadata(memory);
 
     await Promise.all([
       this.redisClient.setex(memoryKey(memory.id), RETENTION_SECONDS, JSON.stringify(memory)),
