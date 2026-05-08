@@ -65,6 +65,116 @@ function sumSubjectKinds(items: Array<{ kind?: string; count?: number }> = [], t
     .reduce((sum, item) => sum + numberValue(item.count), 0);
 }
 
+const OUTCOME_GUIDES = {
+  'reduce-llm-cost': {
+    what: 'A cache-and-reuse lane for LLM prompts, tool results, and safe memory so repeated work does not keep spending tokens.',
+    useFor: [
+      'support answers, research loops, classification, summarization, and repeated tool outputs',
+      'workloads where equivalent requests arrive often enough to reuse safely',
+    ],
+    whenToUse: [
+      'LLM spend is growing faster than usage',
+      'teams need cache hit proof, freshness rules, and model-agnostic reuse',
+    ],
+    why: 'It lowers unit cost while keeping a visible trail for hits, misses, freshness, and savings.',
+    howToStart: 'Send representative prompts through the cache API, then watch hit rate and savings through observability stats.',
+    firstRequest: { method: 'GET', path: '/api/observability/stats' },
+    expectedProof: ['cache_hit_rate', 'cache_hits_today', 'cache_misses_today', 'cost_savings_usd'],
+    agentContract: {
+      chooseWhen: 'The objective mentions LLM cost, duplicate prompts, tool result reuse, freshness, or cache trust.',
+      requiredInputs: ['objective', 'provider/model or tool family', 'freshness policy', 'risk tolerance'],
+      output: 'A cache policy, starter requests, and metrics that prove whether reuse is working.',
+    },
+  },
+  'agent-memory': {
+    what: 'A durable context lane that lets agents store, recall, and inspect task state, decisions, constraints, and tool outcomes.',
+    useFor: [
+      'cross-session context, workspace memory, decision recall, agent handoffs, and audit-friendly memory writes',
+      'teams that need context reuse without mixing tenants, sectors, or workspaces',
+    ],
+    whenToUse: [
+      'agents repeat discovery or lose handoff context',
+      'operators need to know which stored facts influenced an answer',
+    ],
+    why: 'It makes agent work continuous, inspectable, and bounded by namespace and policy controls.',
+    howToStart: 'Create a memory namespace, store a small set of decisions or constraints, then test recall against real workflow prompts.',
+    firstRequest: { method: 'POST', path: '/api/memory/store' },
+    expectedProof: ['fabric.analytics.summary.totalOperations', 'reads', 'writes', 'estimatedTokensSaved'],
+    agentContract: {
+      chooseWhen: 'The objective mentions memory, context, recall, handoffs, workspace state, or decision history.',
+      requiredInputs: ['objective', 'namespace', 'sector', 'systems', 'retention or isolation rules'],
+      output: 'A memory policy, starter store/recall requests, and analytics showing memory operations.',
+    },
+  },
+  'monitor-drift': {
+    what: 'A reliability lane that watches agent runs for unexpected phase movement, surprise, policy pressure, and intervention risk.',
+    useFor: [
+      'production agent monitoring, shadow evaluations, reliability posture, and escalation thresholds',
+      'teams that need to spot drift before customers or operators feel it',
+    ],
+    whenToUse: [
+      'agents make multi-step decisions or touch external systems',
+      'operators cannot tell when behavior is changing from the intended workflow',
+    ],
+    why: 'It turns vague trust concerns into measurable drift, receipt, and posture signals.',
+    howToStart: 'Run one governed workflow, evaluate the run, then inspect reliability posture and recent drift.',
+    firstRequest: { method: 'GET', path: '/api/observability/reliability-mesh' },
+    expectedProof: ['reliabilityScore', 'summary.driftEvaluations', 'recentDrift', 'killSwitch.status'],
+    agentContract: {
+      chooseWhen: 'The objective mentions reliability, drift, monitoring, trust, intervention, or production agent safety.',
+      requiredInputs: ['objective', 'workflow phases', 'expected behavior', 'risk tolerance', 'operator owner'],
+      output: 'A drift watch plan, reliability posture, and evidence fields for intervention decisions.',
+    },
+  },
+  'govern-approvals': {
+    what: 'A governed execution lane that turns recommendations into reviewable decisions with roles, gates, approvals, and receipts.',
+    useFor: [
+      'finance, procurement, RevOps, legal operations, publishing, payments, and irreversible external actions',
+      'workflows where agents can prepare decisions but humans or policies must approve final action',
+    ],
+    whenToUse: [
+      'a wrong action has financial, legal, customer, or compliance impact',
+      'reviewers need context and audit evidence before approving',
+    ],
+    why: 'It separates recommendation from execution so useful autonomy does not erase accountability.',
+    howToStart: 'Create a context pack, start one governed run, then require a gate approval before final action.',
+    firstRequest: { method: 'POST', path: '/api/execution/context-packs' },
+    expectedProof: ['gateId', 'requiredReviewerRoles', 'gateStatus', 'shared receipts'],
+    agentContract: {
+      chooseWhen: 'The objective mentions approvals, gates, budgets, reviewer roles, final actions, or audit requirements.',
+      requiredInputs: ['objective', 'reviewer roles', 'approval policy', 'systems touched', 'risk tolerance'],
+      output: 'A context pack, governed run, approval gate, and receipt trail.',
+    },
+  },
+  'ship-media-workflows': {
+    what: 'A media reliability lane for planning, queueing, validating, caching, and publishing HLS or streaming-ready outputs.',
+    useFor: [
+      'video ingest, FFmpeg transcode planning, HLS renditions, CDN handoff, Roku/web playback readiness',
+      'media teams that need proof before publishing or reusing encoded assets',
+    ],
+    whenToUse: [
+      'encoding jobs are opaque or fail late',
+      'duplicate renditions waste compute and playback readiness is hard to prove',
+    ],
+    why: 'It makes media workflows inspectable before publish: source fingerprint, profile, queue status, manifests, validation, and cache reuse.',
+    howToStart: 'Select a profile, plan one source asset, submit the job, then watch jobs and validation outputs.',
+    firstRequest: { method: 'POST', path: '/api/transcode/plan' },
+    expectedProof: ['profiles', 'queueLength', 'cache.lookupKey', 'output.masterManifestKey', 'validation.rules'],
+    agentContract: {
+      chooseWhen: 'The objective mentions media, video, FFmpeg, HLS, Roku, CDN, transcoding, manifests, or playback readiness.',
+      requiredInputs: ['inputKey', 'profile', 'outputPrefix or bucket policy', 'publishing target'],
+      output: 'A media plan, transcode job, validation rules, queue visibility, and playback-ready output keys.',
+    },
+  },
+} as const;
+
+function withGuide<T extends Record<string, unknown>>(id: keyof typeof OUTCOME_GUIDES, payload: T) {
+  return {
+    ...payload,
+    guide: OUTCOME_GUIDES[id],
+  };
+}
+
 advancedServicesRouter.get('/', (c) => {
   return c.json({
     success: true,
@@ -148,7 +258,7 @@ advancedServicesRouter.get('/signals', async (c) => {
     asOf: now,
     answer: 'Cost, memory, drift, and media workflow signals are accessible now. Approval governance has live APIs and receipts, but needs customer workflow traffic for open-gate and reviewer SLA aggregates.',
     outcomes: {
-      'reduce-llm-cost': {
+      'reduce-llm-cost': withGuide('reduce-llm-cost', {
         status: 'live',
         serviceId: 'workflow-memory-fabric',
         summary: 'Cache and savings counters are exposed through observability and memory-fabric analytics.',
@@ -163,8 +273,8 @@ advancedServicesRouter.get('/signals', async (c) => {
           { method: 'POST', path: '/api/cache/*', fields: ['semantic cache receipts', 'stable cache keys'] },
         ],
         gaps: [],
-      },
-      'agent-memory': {
+      }),
+      'agent-memory': withGuide('agent-memory', {
         status: 'live',
         serviceId: 'workflow-memory-fabric',
         summary: 'Memory operations, reads, writes, hits, and estimated savings are available as aggregate fabric analytics.',
@@ -180,8 +290,8 @@ advancedServicesRouter.get('/signals', async (c) => {
           { method: 'POST', path: '/api/memory/recall', fields: ['policy-aware recall'] },
         ],
         gaps: [],
-      },
-      'monitor-drift': {
+      }),
+      'monitor-drift': withGuide('monitor-drift', {
         status: 'live',
         serviceId: 'agent-reliability-mesh',
         summary: 'Execution drift has a summary endpoint and feeds the reliability mesh posture.',
@@ -196,8 +306,8 @@ advancedServicesRouter.get('/signals', async (c) => {
           { method: 'POST', path: '/api/execution/runs/:id/evaluate', fields: ['surpriseScore', 'driftScore', 'verdict'] },
         ],
         gaps: [],
-      },
-      'govern-approvals': {
+      }),
+      'govern-approvals': withGuide('govern-approvals', {
         status: executionReceiptCount > 0 ? 'live' : 'partial',
         serviceId: 'decisionrail',
         summary: 'DecisionRail APIs are live; dedicated approval queue analytics become meaningful after governed runs produce traffic.',
@@ -212,8 +322,8 @@ advancedServicesRouter.get('/signals', async (c) => {
           { method: 'POST', path: '/api/execution/gates/:id/approve', fields: ['approvedBy', 'gateStatus'] },
         ],
         gaps: ['open gate aging', 'reviewer queue depth', 'approval SLA percentiles'],
-      },
-      'ship-media-workflows': {
+      }),
+      'ship-media-workflows': withGuide('ship-media-workflows', {
         status: 'live',
         serviceId: 'media-workflow-reliability',
         summary: 'Media profiles, planning, queue length, and recent job telemetry are accessible through the transcode API.',
@@ -229,7 +339,7 @@ advancedServicesRouter.get('/signals', async (c) => {
           { method: 'GET', path: '/api/transcode/jobs', fields: ['queueLength', 'jobs'] },
         ],
         gaps: [],
-      },
+      }),
     },
   });
 });

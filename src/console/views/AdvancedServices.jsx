@@ -151,6 +151,79 @@ const outcomePresets = [
     },
 ];
 
+const outcomeGuides = {
+    'reduce-llm-cost': {
+        what: 'A cache-and-reuse lane for LLM prompts, tool results, and safe memory so repeated work does not keep spending tokens.',
+        useFor: ['support answers', 'research loops', 'classification', 'summaries', 'repeated tool outputs'],
+        whenToUse: ['LLM spend grows faster than usage', 'teams need hit/miss proof and freshness rules'],
+        why: 'It lowers unit cost while preserving visibility into hits, misses, freshness, and savings.',
+        howToStart: 'Send representative prompts through cache, then watch hit rate and savings.',
+        firstRequest: { method: 'GET', path: '/api/observability/stats' },
+        expectedProof: ['cache_hit_rate', 'cache_hits_today', 'cost_savings_usd'],
+        agentContract: {
+            chooseWhen: 'Objective mentions LLM cost, duplicate prompts, tool reuse, freshness, or cache trust.',
+            requiredInputs: ['objective', 'provider/model or tool family', 'freshness policy', 'risk tolerance'],
+            output: 'Cache policy, starter requests, and proof that reuse is working.',
+        },
+    },
+    'agent-memory': {
+        what: 'A durable context lane that lets agents store, recall, and inspect task state, decisions, constraints, and tool outcomes.',
+        useFor: ['workspace memory', 'decision recall', 'agent handoffs', 'cross-session context'],
+        whenToUse: ['agents repeat discovery', 'handoffs lose context', 'operators need inspectable memory'],
+        why: 'It makes agent work continuous and bounded by namespace, sector, and retention policy.',
+        howToStart: 'Create a namespace, store decisions or constraints, then test recall against real prompts.',
+        firstRequest: { method: 'POST', path: '/api/memory/store' },
+        expectedProof: ['fabric.analytics.summary', 'reads', 'writes', 'estimatedTokensSaved'],
+        agentContract: {
+            chooseWhen: 'Objective mentions memory, context, recall, handoffs, state, or decision history.',
+            requiredInputs: ['objective', 'namespace', 'sector', 'systems', 'retention rules'],
+            output: 'Memory policy, store/recall requests, and memory operation analytics.',
+        },
+    },
+    'monitor-drift': {
+        what: 'A reliability lane that watches agent runs for unexpected phase movement, surprise, policy pressure, and intervention risk.',
+        useFor: ['production monitoring', 'shadow evaluations', 'reliability posture', 'intervention thresholds'],
+        whenToUse: ['agents run multi-step workflows', 'behavior changes are hard to detect before incidents'],
+        why: 'It turns vague trust concerns into measurable drift, receipt, and posture signals.',
+        howToStart: 'Run one workflow, evaluate it, then inspect reliability posture and recent drift.',
+        firstRequest: { method: 'GET', path: '/api/observability/reliability-mesh' },
+        expectedProof: ['reliabilityScore', 'summary.driftEvaluations', 'recentDrift'],
+        agentContract: {
+            chooseWhen: 'Objective mentions reliability, drift, monitoring, trust, intervention, or production safety.',
+            requiredInputs: ['objective', 'workflow phases', 'expected behavior', 'risk tolerance'],
+            output: 'Drift watch plan, reliability posture, and intervention evidence.',
+        },
+    },
+    'govern-approvals': {
+        what: 'A governed execution lane that turns recommendations into reviewable decisions with roles, gates, approvals, and receipts.',
+        useFor: ['procurement', 'payments', 'publishing', 'legal operations', 'irreversible actions'],
+        whenToUse: ['wrong actions have real cost', 'reviewers need context before approving'],
+        why: 'It separates recommendation from execution so useful autonomy does not erase accountability.',
+        howToStart: 'Create a context pack, start one governed run, then require gate approval before final action.',
+        firstRequest: { method: 'POST', path: '/api/execution/context-packs' },
+        expectedProof: ['gateId', 'requiredReviewerRoles', 'gateStatus', 'shared receipts'],
+        agentContract: {
+            chooseWhen: 'Objective mentions approvals, gates, budgets, reviewers, final actions, or audit evidence.',
+            requiredInputs: ['objective', 'reviewer roles', 'approval policy', 'systems touched'],
+            output: 'Context pack, governed run, approval gate, and receipt trail.',
+        },
+    },
+    'ship-media-workflows': {
+        what: 'A media reliability lane for planning, queueing, validating, caching, and publishing HLS or streaming-ready outputs.',
+        useFor: ['video ingest', 'FFmpeg transcodes', 'HLS renditions', 'CDN handoff', 'Roku and web playback'],
+        whenToUse: ['encoding is opaque', 'manifests fail late', 'duplicate renditions waste compute'],
+        why: 'It proves media readiness before publish with source fingerprints, profiles, queue state, validation, and cache reuse.',
+        howToStart: 'Select a profile, plan one source asset, submit the job, then inspect jobs and validation outputs.',
+        firstRequest: { method: 'POST', path: '/api/transcode/plan' },
+        expectedProof: ['profiles', 'queueLength', 'cache.lookupKey', 'output.masterManifestKey'],
+        agentContract: {
+            chooseWhen: 'Objective mentions media, video, FFmpeg, HLS, Roku, CDN, transcoding, manifests, or playback.',
+            requiredInputs: ['inputKey', 'profile', 'output policy', 'publishing target'],
+            output: 'Media plan, transcode job, validation rules, queue state, and output keys.',
+        },
+    },
+};
+
 const fallbackSignals = {
     outcomes: Object.fromEntries(outcomePresets.map((preset) => [
         preset.id,
@@ -161,6 +234,7 @@ const fallbackSignals = {
             evidence: [],
             sources: [],
             gaps: [],
+            guide: outcomeGuides[preset.id],
         },
     ])),
 };
@@ -219,6 +293,16 @@ const TextInput = (props) => (
     />
 );
 
+const PillList = ({ items }) => (
+    <div className="mt-3 flex flex-wrap gap-2">
+        {(items || []).map((item) => (
+            <span key={item} className="max-w-full break-words rounded-md border border-white/10 bg-black/20 px-2 py-1 text-xs leading-5 text-slate-300">
+                {item}
+            </span>
+        ))}
+    </div>
+);
+
 const AdvancedServices = () => {
     const [services, setServices] = useState(fallbackServices);
     const [selectedId, setSelectedId] = useState('agent-reliability-mesh');
@@ -240,6 +324,7 @@ const AdvancedServices = () => {
     );
 
     const activeSignal = signals?.outcomes?.[activeOutcomeId] || fallbackSignals.outcomes[activeOutcomeId];
+    const activeGuide = activeSignal?.guide || outcomeGuides[activeOutcomeId];
 
     const submitBlueprint = async (event, attempt = 0, overrideForm = null) => {
         event?.preventDefault();
@@ -480,6 +565,67 @@ const AdvancedServices = () => {
                 </form>
 
                 <div className="space-y-6">
+                    <section className="glass rounded-lg p-5">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                            <div>
+                                <div className="flex items-center gap-2 text-cyan-200">
+                                    <ClipboardList size={19} />
+                                    <span className="text-xs uppercase tracking-wide">Use Guide</span>
+                                </div>
+                                <h2 className="mt-2 font-['Rajdhani'] text-3xl font-semibold text-white">{activeOutcome.title}</h2>
+                                <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--hud-text-dim)]">{activeGuide?.what}</p>
+                            </div>
+                            {activeGuide?.firstRequest && (
+                                <code className="max-w-full break-all rounded-md border border-cyan-300/20 bg-cyan-300/10 px-2 py-1 text-xs text-cyan-100">
+                                    {activeGuide.firstRequest.method} {activeGuide.firstRequest.path}
+                                </code>
+                            )}
+                        </div>
+
+                        <div className="mt-5 grid gap-3 lg:grid-cols-2">
+                            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+                                <h3 className="text-sm font-semibold text-white">Use It For</h3>
+                                <PillList items={activeGuide?.useFor} />
+                            </div>
+                            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+                                <h3 className="text-sm font-semibold text-white">Use It When</h3>
+                                <PillList items={activeGuide?.whenToUse} />
+                            </div>
+                            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+                                <h3 className="text-sm font-semibold text-white">Why It Matters</h3>
+                                <p className="mt-3 text-sm leading-6 text-[var(--hud-text-dim)]">{activeGuide?.why}</p>
+                            </div>
+                            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+                                <h3 className="text-sm font-semibold text-white">How To Start</h3>
+                                <p className="mt-3 text-sm leading-6 text-[var(--hud-text-dim)]">{activeGuide?.howToStart}</p>
+                            </div>
+                        </div>
+
+                        <div className="mt-5 rounded-lg border border-cyan-300/20 bg-cyan-300/[0.06] p-4">
+                            <div className="flex items-center gap-2 text-cyan-200">
+                                <Route size={17} />
+                                <h3 className="text-sm font-semibold text-white">Agent Contract</h3>
+                            </div>
+                            <div className="mt-4 grid gap-4 lg:grid-cols-3">
+                                <div>
+                                    <div className="text-[11px] uppercase tracking-wide text-[var(--hud-text-dim)]">Choose when</div>
+                                    <p className="mt-2 text-sm leading-6 text-slate-300">{activeGuide?.agentContract?.chooseWhen}</p>
+                                </div>
+                                <div>
+                                    <div className="text-[11px] uppercase tracking-wide text-[var(--hud-text-dim)]">Required inputs</div>
+                                    <PillList items={activeGuide?.agentContract?.requiredInputs} />
+                                </div>
+                                <div>
+                                    <div className="text-[11px] uppercase tracking-wide text-[var(--hud-text-dim)]">Expected proof</div>
+                                    <PillList items={activeGuide?.expectedProof} />
+                                </div>
+                            </div>
+                            <p className="mt-4 border-t border-white/10 pt-3 text-sm leading-6 text-[var(--hud-text-dim)]">
+                                {activeGuide?.agentContract?.output}
+                            </p>
+                        </div>
+                    </section>
+
                     <section className="glass rounded-lg p-5">
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                             <div>

@@ -409,6 +409,19 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(payload.offers.some((offer: any) => offer.id === 'agent-storage-core')).toBe(true);
   });
 
+  it('exposes outcome guidance that humans and agents can use to pick advanced services', async () => {
+    const signals = await request('/api/advanced-services/signals', undefined, 'GET');
+
+    expect(signals.response.status).toBe(200);
+    expect(signals.payload.answer).toContain('signals are accessible now');
+    expect(signals.payload.outcomes['monitor-drift'].guide.what).toContain('reliability lane');
+    expect(signals.payload.outcomes['monitor-drift'].guide.agentContract.requiredInputs).toContain('workflow phases');
+    expect(signals.payload.outcomes['govern-approvals'].guide.howToStart).toContain('context pack');
+    expect(signals.payload.outcomes['ship-media-workflows'].guide.firstRequest).toEqual(
+      expect.objectContaining({ method: 'POST', path: '/api/transcode/plan' }),
+    );
+  });
+
   it('scores and routes alignment requests with receipt-ready evidence', async () => {
     const scored = await request('/api/alignment/score', {
       sourceProvider: 'openai',
