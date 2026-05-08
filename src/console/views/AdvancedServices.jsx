@@ -113,7 +113,7 @@ const AdvancedServices = () => {
         [services, selectedId],
     );
 
-    const submitBlueprint = async (event) => {
+    const submitBlueprint = async (event, attempt = 0) => {
         event?.preventDefault();
         setLoading(true);
         setError('');
@@ -137,6 +137,9 @@ const AdvancedServices = () => {
             setBlueprint(data.blueprint);
         } catch (err) {
             setError(err.message);
+            if (!event && attempt < 2) {
+                setTimeout(() => submitBlueprint(undefined, attempt + 1), 750 * (attempt + 1));
+            }
         } finally {
             setLoading(false);
         }
