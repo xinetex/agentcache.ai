@@ -14,8 +14,101 @@ let Redis;
 let AWS;
 const crypto = require('crypto');
 
+function normalizeRedisUrl(rawUrl) {
+    if (typeof rawUrl !== 'string') return undefined;
+    const trimmed = rawUrl.trim();
+    if (!trimmed) return undefined;
+
+    if (trimmed.startsWith('redis://') || trimmed.startsWith('rediss://')) {
+        return trimmed;
+    }
+
+    return undefined;
+}
+
+class SimpleLRU {
+    constructor({ max = 100 * 1024 * 1024, maxAge = 5 * 60 * 1000, length = (value) => value?.length || 0 } = {}) {
+        this.max = max;
+        this.maxAge = maxAge;
+        this.length = length;
+        this.store = new Map();
+        this.totalSize = 0;
+    }
+
+    _isExpired(entry) {
+        return entry.expiresAt <= Date.now();
+    }
+
+    _delete(key) {
+        const entry = this.store.get(key);
+        if (!entry) return;
+        this.totalSize -= entry.size;
+        this.store.delete(key);
+    }
+
+    _evictIfNeeded() {
+        while (this.totalSize > this.max && this.store.size > 0) {
+            const oldestKey = this.store.keys().next().value;
+            this._delete(oldestKey);
+        }
+    }
+
+    get(key) {
+        const entry = this.store.get(key);
+        if (!entry) return null;
+        if (this._isExpired(entry)) {
+            this._delete(key);
+            return null;
+        }
+
+        this.store.delete(key);
+        this.store.set(key, entry);
+        return entry.value;
+    }
+
+    set(key, value) {
+        const size = this.length(value);
+        if (size > this.max) {
+            this._delete(key);
+            return;
+        }
+
+        if (this.store.has(key)) {
+            this._delete(key);
+        }
+
+        this.store.set(key, {
+            value,
+            size,
+            expiresAt: Date.now() + this.maxAge,
+        });
+        this.totalSize += size;
+        this._evictIfNeeded();
+    }
+
+    del(key) {
+        this._delete(key);
+    }
+
+    reset() {
+        this.store.clear();
+        this.totalSize = 0;
+    }
+}
+
+function ensureDependenciesLoaded() {
+    if (!Redis) {
+        Redis = require('ioredis');
+    }
+    if (!AWS) {
+        AWS = require('aws-sdk');
+    }
+}
+
 class VideoCache {
     constructor(config = {}) {
+        ensureDependenciesLoaded();
+
         // Configuration
         this.config = {
             // L1: In-memory LRU cache
@@ -23,7 +116,7 @@ class VideoCache {
             l1MaxAge: config.l1MaxAge || 5 * 60 * 1000,       // 5 minutes
 
             // L2: Redis cache
-            redisUrl: config.redisUrl || process.env.REDIS_URL,
+            redisUrl: normalizeRedisUrl(config.redisUrl || process.env.REDIS_URL || process.env.KV_URL),
             l2TTL: config.l2TTL || 3600,                      // 1 hour
 
             // L3: S3/JettyThunder origin
@@ -33,25 +126,42 @@ class VideoCache {
             s3Bucket: config.s3Bucket || process.env.S3_BUCKET || 'jettydata-prod',
             s3Region: config.s3Region || process.env.S3_REGION || 'us-west-1',
 
+            // Warm deduplication
+            recentWarmTtl: config.recentWarmTtl || parseInt(process.env.CDN_RECENT_WARM_TTL || '', 10) || 15 * 60,
+
             // Metrics
             enableMetrics: config.enableMetrics !== false
         };
 
         // L1: In-memory LRU
-        this.l1 = new LRU({
+        this.l1 = new SimpleLRU({
             max: this.config.l1MaxSize,
             length: (value) => value.length,
             maxAge: this.config.l1MaxAge
         });
 
+        this.metrics = {
+            totalRequests: 0,
+            l1Hits: 0,
+            l2Hits: 0,
+            l3Hits: 0,
+            misses: 0,
+        };
+
         // Computed properties for lazy loading
         this._l2 = null;
         this._l3 = null;
+        this._recentWarmMarkers = new Map();
     }
 
     get l2() {
         if (!this._l2 && this.config.redisUrl) {
-            this._l2 = new Redis(this.config.redisUrl);
+            this._l2 = new Redis(this.config.redisUrl, {
+                lazyConnect: true,
+                connectTimeout: 1000,
+                maxRetriesPerRequest: 1,
+                enableOfflineQueue: false,
+            });
             // Suppress error listeners on Vercel to avoid event loop hang
             if (!process.env.VERCEL) {
                 this._l2.on('error', (err) => console.error('VideoCache L2 Redis error:', err));
@@ -84,6 +194,60 @@ class VideoCache {
         return `videocache:${crypto.createHash('md5').update(videoPath).digest('hex')}`;
     }
 
+    _getWarmMarkerKey(videoPath) {
+        return `videocache:warm:${crypto.createHash('md5').update(videoPath).digest('hex')}`;
+    }
+
+    _hasLocalWarmMarker(markerKey) {
+        const expiresAt = this._recentWarmMarkers.get(markerKey);
+        if (!expiresAt) return false;
+        if (expiresAt <= Date.now()) {
+            this._recentWarmMarkers.delete(markerKey);
+            return false;
+        }
+        return true;
+    }
+
+    _setLocalWarmMarker(markerKey) {
+        this._recentWarmMarkers.set(markerKey, Date.now() + this.config.recentWarmTtl * 1000);
+    }
+
+    async _wasRecentlyWarmed(videoPath) {
+        const markerKey = this._getWarmMarkerKey(videoPath);
+        if (this._hasLocalWarmMarker(markerKey)) {
+            return true;
+        }
+
+        if (this.l2) {
+            try {
+                const marker = await this.l2.get(markerKey);
+                if (marker) {
+                    this._setLocalWarmMarker(markerKey);
+                    return true;
+                }
+            } catch (err) {
+                console.warn('VideoCache warm-marker get error:', err.message);
+                this._l2 = null;
+            }
+        }
+
+        return false;
+    }
+
+    async _markRecentlyWarmed(videoPath) {
+        const markerKey = this._getWarmMarkerKey(videoPath);
+        this._setLocalWarmMarker(markerKey);
+
+        if (this.l2) {
+            try {
+                await this.l2.setex(markerKey, this.config.recentWarmTtl, '1');
+            } catch (err) {
+                console.warn('VideoCache warm-marker set error:', err.message);
+                this._l2 = null;
+            }
+        }
+    }
+
     /**
      * Get video segment from cache (L1 → L2 → L3)
      * @param {string} videoPath - Path to video segment (e.g., "hls/job123/720p/segment_001.ts")
@@ -112,6 +276,7 @@ class VideoCache {
                 }
             } catch (err) {
                 console.warn('VideoCache L2 get error:', err.message);
+                this._l2 = null;
             }
         }
 
@@ -153,6 +318,7 @@ class VideoCache {
         if (this.l2) {
             this.l2.setex(cacheKey, this.config.l2TTL, data).catch((err) => {
                 console.warn('VideoCache L2 set error:', err.message);
+                this._l2 = null;
             });
         }
     }
@@ -169,7 +335,12 @@ class VideoCache {
 
         // L2
         if (this.l2) {
-            await this.l2.setex(cacheKey, ttl, data);
+            try {
+                await this.l2.setex(cacheKey, ttl, data);
+            } catch (err) {
+                console.warn('VideoCache L2 set error:', err.message);
+                this._l2 = null;
+            }
         }
 
         // L3 (optional - only if explicitly requested)
@@ -193,11 +364,19 @@ class VideoCache {
      */
     async invalidate(videoPath) {
         const cacheKey = this._getCacheKey(videoPath);
+        const markerKey = this._getWarmMarkerKey(videoPath);
 
         this.l1.del(cacheKey);
+        this._recentWarmMarkers.delete(markerKey);
 
         if (this.l2) {
-            await this.l2.del(cacheKey);
+            try {
+                await this.l2.del(cacheKey);
+                await this.l2.del(markerKey);
+            } catch (err) {
+                console.warn('VideoCache L2 delete error:', err.message);
+                this._l2 = null;
+            }
         }
     }
 
@@ -230,11 +409,16 @@ class VideoCache {
     async warmPlaylist(playlistPath) {
         console.log(`🔥 Warming cache for: ${playlistPath}`);
 
+        if (await this._wasRecentlyWarmed(playlistPath)) {
+            console.log(`  ↺ Skipping recent warm: ${playlistPath}`);
+            return { playlistPath, skipped: true, reason: 'recently_warmed', segmentsWarmed: 0 };
+        }
+
         // Fetch and cache the playlist itself
         const playlist = await this.get(playlistPath);
         if (!playlist) {
             console.warn(`  ✗ Playlist not found: ${playlistPath}`);
-            return;
+            return { playlistPath, skipped: true, reason: 'missing_playlist', segmentsWarmed: 0 };
         }
 
         // Parse M3U8 to find segment URLs
@@ -246,12 +430,31 @@ class VideoCache {
 
         console.log(`  📥 Warming ${segments.length} segments...`);
 
+        let segmentsWarmed = 0;
         for (const segment of segments) {
             const segmentPath = `${basePath}/${segment}`;
-            await this.get(segmentPath);
+            const warmed = await this.warmPath(segmentPath);
+            if (warmed.warmed) segmentsWarmed++;
         }
 
+        await this._markRecentlyWarmed(playlistPath);
+
         console.log(`  ✅ Cache warmed for ${playlistPath}`);
+        return { playlistPath, skipped: false, segmentsWarmed };
+    }
+
+    async warmPath(videoPath) {
+        if (await this._wasRecentlyWarmed(videoPath)) {
+            return { path: videoPath, warmed: false, skipped: true, reason: 'recently_warmed' };
+        }
+
+        const data = await this.get(videoPath);
+        if (!data) {
+            return { path: videoPath, warmed: false, skipped: true, reason: 'missing' };
+        }
+
+        await this._markRecentlyWarmed(videoPath);
+        return { path: videoPath, warmed: true, skipped: false };
     }
 
     /**

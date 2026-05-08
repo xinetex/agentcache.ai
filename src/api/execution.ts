@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { authenticateAdmin, authenticateApiKey } from '../middleware/auth.js';
 import { executionControlService } from '../services/ExecutionControlService.js';
 import { executionDriftService } from '../services/ExecutionDriftService.js';
+import { executionLearningService } from '../services/ExecutionLearningService.js';
 import { sharedReceiptService } from '../services/SharedReceiptService.js';
 
 const executionRouter = new Hono();
@@ -198,6 +199,19 @@ executionRouter.get('/runs/:id/evaluations', async (c) => {
 
   const evaluations = await executionDriftService.listRunEvaluations(run.id, Number(c.req.query('limit') || 25));
   return c.json({ success: true, evaluations });
+});
+
+executionRouter.get('/runs/:id/recommendations', async (c) => {
+  const authError = await authenticateApiKey(c);
+  if (authError) return authError;
+
+  try {
+    const report = await executionLearningService.recommendForRun(c.req.param('id'));
+    return c.json({ success: true, report });
+  } catch (error: any) {
+    const message = error?.message || 'Failed to derive execution recommendations.';
+    return c.json({ error: message }, message.includes('not found') ? 404 : 500);
+  }
 });
 
 executionRouter.post('/runs/:id/evaluate', async (c) => {

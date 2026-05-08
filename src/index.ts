@@ -203,6 +203,8 @@ app.onError((err, c) => {
 
 // Environment
 const PORT = process.env.PORT || 3001;
+const DIRECT_CDN_WARM_MAX_ITEMS = parseInt(process.env.CDN_WARM_MAX_ITEMS || '', 10) || 25;
+const DIRECT_CDN_WARM_ITEM_TIMEOUT_MS = parseInt(process.env.CDN_WARM_ITEM_TIMEOUT_MS || '', 10) || 1500;
 
 // CORS for API routes
 app.use('/api/*', cors({
@@ -282,6 +284,154 @@ const lazy = (loader: () => Promise<any>) => {
     }
   };
 };
+
+function buildDirectObservabilityPayload() {
+  const timestamp = new Date().toISOString();
+
+  return {
+    total_users: 0,
+    active_sessions: 0,
+    system_health: 'DEGRADED',
+    db_latency: '0ms',
+    cache_hits_today: 0,
+    cache_misses_today: 0,
+    cache_hit_rate: 0,
+    cost_savings_usd: 0,
+    hit_rate: 0,
+    cost_saved_today: '$0.00',
+    top_users: [],
+    growth_data: [],
+    timestamp,
+    fabric: {
+      analytics: {
+        asOf: timestamp,
+        summary: {
+          totalOperations: 0,
+          reads: 0,
+          writes: 0,
+          browserProofs: 0,
+          hits: 0,
+          misses: 0,
+          hitRate: 0,
+          estimatedTokensSaved: 0,
+          estimatedUsdSaved: 0,
+          estimatedLatencySavedMs: 0,
+        },
+        timeline: [],
+        topNamespaces: [],
+        topSectors: [],
+        topSkus: [],
+      },
+      accounting: {
+        totalCredits: 0,
+        bySku: [],
+        bySector: [],
+        recentOperations: [],
+      },
+    },
+    browserProof: {
+      proofs: 0,
+      byExecutionMode: [],
+      byEngine: [],
+      byHomeostasisStatus: [],
+      averageConfidence: 0,
+      failureRate: 0,
+    },
+    alignment: {
+      total: 0,
+      validated: 0,
+      blocked: 0,
+      estimated: 0,
+      recentRuns: [],
+      recentBenchmarks: [],
+    },
+    executionDrift: {
+      totalEvaluations: 0,
+      stableEvaluations: 0,
+      watchEvaluations: 0,
+      driftingEvaluations: 0,
+      averageSurpriseScore: 0,
+      recentEvaluations: [],
+    },
+    externalAgents: {
+      total: 0,
+      verified: 0,
+      pending: 0,
+      withSoulprint: 0,
+      bySystem: [],
+      bySector: [],
+      byBiasFlag: [],
+    },
+    receipts: {
+      totalReceipts: 0,
+      bySubjectKind: [],
+      browser: {
+        proofs: 0,
+        byExecutionMode: [],
+        byEngine: [],
+        byHomeostasisStatus: [],
+        averageConfidence: 0,
+        failureRate: 0,
+      },
+    },
+    moltbook: {
+      active_spirits_count: 0,
+      total_predictions: 0,
+      current_vibes: 0,
+      status: 'degraded',
+      recent_spirits: [],
+      spillover_traffic: 0,
+      redirection_yield: '0%',
+      last_sync: timestamp,
+    },
+    liquidity: {
+      total_provisioned_sol: 0,
+      active_provisions_count: 0,
+      latest_provisions: [],
+    },
+    eventCounts: {},
+    latency: 0,
+    lastEvent: null,
+    degraded: true,
+  };
+}
+
+function collectDirectWarmTargets(paths: any, outputs: any, maxItems: number) {
+  const ordered: string[] = [];
+  const seen = new Set<string>();
+
+  const addTarget = (value: any) => {
+    if (typeof value !== 'string') return;
+    const trimmed = value.trim();
+    if (!trimmed || seen.has(trimmed)) return;
+    seen.add(trimmed);
+    ordered.push(trimmed);
+  };
+
+  for (const path of Array.isArray(paths) ? paths : []) addTarget(path);
+  for (const output of Array.isArray(outputs) ? outputs : []) addTarget(output?.key);
+
+  return {
+    targets: ordered.slice(0, maxItems),
+    skippedCount: Math.max(0, ordered.length - maxItems),
+  };
+}
+
+async function warmDirectCdnPath(cache: any, path: string) {
+  const warmPromise = (typeof cache.warmPath === 'function'
+    ? cache.warmPath(path)
+    : cache.get(path).then((data: any) => ({ path, warmed: !!data, skipped: !data, reason: data ? undefined : 'missing' })));
+
+  return await Promise.race([
+    warmPromise,
+    new Promise((resolve) => setTimeout(() => resolve({
+      path,
+      warmed: false,
+      skipped: true,
+      reason: 'timeout',
+    }), DIRECT_CDN_WARM_ITEM_TIMEOUT_MS)),
+  ]);
+}
 
 // Mounted lazily below
 
@@ -364,10 +514,72 @@ app.all('/api/muscle/:path{.+}?', lazy(() => import('./api/muscle.js')));
 app.all('/api/brain/:path{.+}?', lazy(() => import('./api/brain.js')));
 
 // Mount Services
+app.all('/api/intelligence/:path{.+}?', lazy(() => import('./api/intelligence.js')));
+app.all('/api/advanced-services/:path{.+}?', lazy(() => import('./api/advanced-services.js')));
 app.all('/api/memory/:path{.+}?', lazy(() => import('./api/memory.js')));
 app.all('/api/cognitive/:path{.+}?', lazy(() => import('./api/cognitive.js')));
 app.all('/api/security/:path{.+}?', lazy(() => import('./api/security.js')));
 app.all('/api/cache/:path{.+}?', lazy(() => import('./api/cache.js')));
+
+// Direct handlers for the two routes that have been timing out on lazy-loaded serverless invocations.
+app.get('/api/observability/stats', async (c) => {
+  if (!process.env.VERCEL) {
+    const module: any = await import('./api/observability.js');
+    const router = module.default || module.router;
+    return router.request('/stats', c.req.raw, c.env);
+  }
+
+  return c.json(buildDirectObservabilityPayload());
+});
+
+app.post('/api/cdn/warm', async (c) => {
+  try {
+    const body = await c.req.json().catch(() => ({}));
+    const { paths, jobId, outputs } = body || {};
+    const { getVideoCache } = await import('../transcoder-service/videocache.js');
+
+    const cache = getVideoCache({
+      l1MaxSize: parseInt(process.env.CDN_L1_MAX_SIZE || '') || 100 * 1024 * 1024,
+      l1MaxAge: parseInt(process.env.CDN_L1_TTL || '') || 5 * 60 * 1000,
+      redisUrl: process.env.REDIS_URL || process.env.KV_URL || undefined,
+      l2TTL: parseInt(process.env.CDN_L2_TTL || '') || 3600,
+      s3Endpoint: process.env.JETTYTHUNDER_S3_ENDPOINT || process.env.S3_ENDPOINT,
+      s3AccessKey: process.env.JETTYTHUNDER_ACCESS_KEY || process.env.S3_ACCESS_KEY,
+      s3SecretKey: process.env.JETTYTHUNDER_SECRET_KEY || process.env.S3_SECRET_KEY,
+      s3Bucket: process.env.JETTYTHUNDER_BUCKET || 'jettydata-prod',
+    });
+
+    const { targets, skippedCount } = collectDirectWarmTargets(paths, outputs, DIRECT_CDN_WARM_MAX_ITEMS);
+    const warmed: string[] = [];
+    const skipped: { path: string; reason: string }[] = [];
+
+    for (const path of targets) {
+      const result: any = await warmDirectCdnPath(cache, path).catch((error: any) => ({
+        path,
+        warmed: false,
+        skipped: true,
+        reason: error?.message || 'warm_failed',
+      }));
+
+      if (result?.warmed) {
+        warmed.push(path);
+      } else {
+        skipped.push({ path, reason: result?.reason || 'not_warmed' });
+      }
+    }
+
+    return c.json({
+      success: true,
+      warmed,
+      skipped,
+      skippedCount,
+      jobId: jobId || null,
+      limit: DIRECT_CDN_WARM_MAX_ITEMS,
+    });
+  } catch (error: any) {
+    return c.json({ error: 'Cache warming failed', details: error?.message || String(error) }, 500);
+  }
+});
 
 // Mount Decisions & Galaxy API
 app.all('/api/decisions/:path{.+}?', lazy(() => import('./api/decisions.js')));
@@ -436,6 +648,7 @@ app.all('/api/compliance/:path{.+}?', lazy(() => import('./api/compliance.js')))
 app.all('/api/ontology/:path{.+}?', lazy(() => import('./api/ontology.js')));
 app.all('/api/alignment/:path{.+}?', lazy(() => import('./api/alignment.js')));
 app.all('/api/execution/:path{.+}?', lazy(() => import('./api/execution.js')));
+app.all('/api/runtime/:path{.+}?', lazy(() => import('./api/runtime.js')));
 app.all('/api/cortex/:path{.+}?', lazy(() => import('./api/cortex.js')));
 app.all('/api/helix/:path{.+}?', lazy(() => import('./api/helix.js')));
 
@@ -558,8 +771,26 @@ app.get('/skill.md', async (c) => {
 // app.use('/*', serveStatic({ root: './public' }));
 
 // Types
+const SUPPORTED_CACHE_PROVIDERS = [
+  'openai',
+  'anthropic',
+  'gemini',
+  'moonshot',
+  'grok',
+  'perplexity',
+  'inception',
+  'ollama',
+  'abacus',
+  'minimax',
+  'deepseek',
+  'cohere',
+  'together',
+  'groq',
+  'tool',
+] as const;
+
 const CacheRequestSchema = z.object({
-  provider: z.enum(['openai', 'anthropic', 'moonshot', 'cohere', 'together', 'groq']),
+  provider: z.enum(SUPPORTED_CACHE_PROVIDERS),
   model: z.string(),
   messages: z.array(z.object({
     role: z.string(),
@@ -1035,6 +1266,7 @@ app.get('/api/jetty-speed/chunk/:fileId/:chunkIndex', async (c) => {
         status: 200,
         headers: {
           'Content-Type': 'application/octet-stream',
+          'Content-Length': chunkBuffer.length.toString(),
           'X-Cache': 'HIT',
           'X-Cache-Latency': latency.toString(),
         },
@@ -1060,6 +1292,7 @@ app.get('/api/jetty-speed/chunk/:fileId/:chunkIndex', async (c) => {
         status: 200,
         headers: {
           'Content-Type': 'application/octet-stream',
+          'Content-Length': chunkBuffer.length.toString(),
           'X-Cache': 'MISS',
         },
       });

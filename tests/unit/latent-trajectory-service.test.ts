@@ -77,4 +77,23 @@ describe('LatentTrajectoryService', () => {
     expect(result.plausible).toBe(false);
     expect(result.predictionError).toBeGreaterThan(0.2);
   });
+
+  it('treats under-realized latent transitions as surprising too', async () => {
+    const service = new LatentTrajectoryService({
+      embedder,
+      monitor: monitor as any,
+    });
+
+    const result = await service.assessRealization({
+      query: 'finance reconciliation workflow',
+      actualQuery: 'finance reconciliation workflow',
+      sector: 'finance',
+      goalQuery: 'robotics goal',
+    });
+
+    expect(result.expectedShift).toBeGreaterThan(0.05);
+    expect(result.actualShift).toBeLessThan(result.expectedShift / 2);
+    expect(result.surpriseScore).toBeGreaterThan(0.35);
+    expect(result.plausible).toBe(false);
+  });
 });

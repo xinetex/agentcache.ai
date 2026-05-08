@@ -22,6 +22,51 @@ import { buildQuotaExceededPayload, getUpgradeDetails } from '../lib/upgrade-res
 
 // Credits
 const OVERAGE_CREDITS_PER_REQUEST = 1; // 1 credit = $0.01
+const AUTH_PRINCIPAL_CACHE_TTL_SECONDS = Number(process.env.AUTH_PRINCIPAL_CACHE_TTL_SECONDS || 600);
+
+type ResolvedPrincipalContext = {
+    tier: string;
+    orgId: string | null;
+    userId: string | null;
+    principalId: string | null;
+    principalKind: 'agent' | 'organization' | 'user' | 'unknown';
+    principalAgentId?: string | null;
+};
+
+function authPrincipalCacheKey(keyHash: string) {
+    return `auth:principal:${keyHash}`;
+}
+
+function normalizeCachedPrincipal(raw: unknown): ResolvedPrincipalContext | null {
+    if (!raw) return null;
+
+    try {
+        const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        if (!parsed || typeof parsed !== 'object') return null;
+        const record = parsed as Record<string, unknown>;
+        const principalKind = record.principalKind;
+
+        if (
+            principalKind !== 'agent' &&
+            principalKind !== 'organization' &&
+            principalKind !== 'user' &&
+            principalKind !== 'unknown'
+        ) {
+            return null;
+        }
+
+        return {
+            tier: typeof record.tier === 'string' && record.tier ? record.tier : 'free',
+            orgId: typeof record.orgId === 'string' ? record.orgId : null,
+            userId: typeof record.userId === 'string' ? record.userId : null,
+            principalId: typeof record.principalId === 'string' ? record.principalId : null,
+            principalKind,
+            principalAgentId: typeof record.principalAgentId === 'string' ? record.principalAgentId : null,
+        };
+    } catch {
+        return null;
+    }
+}
 
 // Middleware: Track usage in Redis with tier-based quotas
 async function trackUsage(apiKey: string, tier: string = 'free') {
@@ -233,15 +278,10 @@ export async function authenticateApiKey(c: any) {
     // Fetch tier from Postgres with Redis caching
     try {
         const keyHash = createHash('sha256').update(apiKey).digest('hex');
-        const cacheKey = `tier:${keyHash}`;
         const keyPrefix = apiKey.slice(0, 16);
+        const cachedPrincipal = normalizeCachedPrincipal(await redis.get(authPrincipalCacheKey(keyHash)));
 
         const resolveStoredPrincipal = async () => {
-            const legacyResolved = await resolveStoredPrincipalViaLegacySql(apiKey, keyHash, keyPrefix);
-            if (legacyResolved) {
-                return legacyResolved;
-            }
-
             const exactMatches = await db
                 .select({
                     hash: apiKeys.hash,
@@ -288,6 +328,11 @@ export async function authenticateApiKey(c: any) {
                 };
             }
 
+            const legacyResolved = await resolveStoredPrincipalViaLegacySql(apiKey, keyHash, keyPrefix);
+            if (legacyResolved) {
+                return legacyResolved;
+            }
+
             return null;
         };
 
@@ -297,19 +342,12 @@ export async function authenticateApiKey(c: any) {
         let principalId: string | null = null;
         let principalKind: 'agent' | 'organization' | 'user' | 'unknown' = 'unknown';
 
-        // Check Redis cache first (5 min TTL)
-        const cachedTier = await redis.get(cacheKey);
-        if (cachedTier) {
-            tier = cachedTier as string;
+        if (cachedPrincipal) {
+            tier = cachedPrincipal.tier;
             tierFeatures = getTierFeatures(tier);
-            const storedPrincipal = await resolveStoredPrincipal();
-            if (storedPrincipal?.orgId) {
-                principalId = `org:${storedPrincipal.orgId}`;
-                principalKind = 'organization';
-            } else if (storedPrincipal?.userId) {
-                principalId = `user:${storedPrincipal.userId}`;
-                principalKind = 'user';
-            }
+            principalId = cachedPrincipal.principalId;
+            principalKind = cachedPrincipal.principalKind;
+            principalAgentId = cachedPrincipal.principalAgentId || null;
         } else {
             const storedPrincipal = await resolveStoredPrincipal();
             if (storedPrincipal) {
@@ -323,22 +361,32 @@ export async function authenticateApiKey(c: any) {
                     principalId = `user:${storedPrincipal.userId}`;
                     principalKind = 'user';
                 }
-
-                // Cache tier in Redis for 5 minutes
-                await redis.setex(cacheKey, 300, tier);
             }
-        }
 
-        if (!principalId) {
-            try {
-                const { agentRegistry } = await import('../lib/hub/registry.js');
-                principalAgentId = await agentRegistry.getAgentIdFromApiKey(apiKey) || null;
-                if (principalAgentId) {
-                    principalId = `agent:${principalAgentId}`;
-                    principalKind = 'agent';
+            if (!principalId) {
+                try {
+                    const { agentRegistry } = await import('../lib/hub/registry.js');
+                    principalAgentId = await agentRegistry.getAgentIdFromApiKey(apiKey) || null;
+                    if (principalAgentId) {
+                        principalId = `agent:${principalAgentId}`;
+                        principalKind = 'agent';
+                    }
+                } catch (error) {
+                    console.warn('[Auth] Failed to resolve principal agent ID:', error);
                 }
-            } catch (error) {
-                console.warn('[Auth] Failed to resolve principal agent ID:', error);
+            }
+
+            if (principalId) {
+                const orgId = principalKind === 'organization' ? principalId.replace(/^org:/, '') : storedPrincipal?.orgId || null;
+                const userId = principalKind === 'user' ? principalId.replace(/^user:/, '') : storedPrincipal?.userId || null;
+                await redis.setex(authPrincipalCacheKey(keyHash), AUTH_PRINCIPAL_CACHE_TTL_SECONDS, JSON.stringify({
+                    tier,
+                    orgId,
+                    userId,
+                    principalId,
+                    principalKind,
+                    principalAgentId,
+                }));
             }
         }
 

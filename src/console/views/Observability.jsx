@@ -5,6 +5,8 @@ import { LiquidTraceFeed } from '../../components/dashboard/LiquidTraceFeed.tsx'
 import { NeuralGlassLayout } from '../../components/dashboard/NeuralGlassLayout.tsx';
 import { CognitiveMap } from '../../components/dashboard/CognitiveMap.tsx';
 import AgentLeaderboard from '../../components/dashboard/AgentLeaderboard.tsx';
+import DiscoveryFeed from '../../components/dashboard/DiscoveryFeed.tsx';
+import ExperimentCard from '../../components/dashboard/ExperimentCard.tsx';
 
 export default function Observability() {
     const { token } = useAuth();
@@ -29,7 +31,7 @@ export default function Observability() {
             }
         };
         fetchStats();
-        const interval = setInterval(fetchStats, 5000);
+        const interval = setInterval(fetchStats, 30000);
         return () => clearInterval(interval);
     }, []);
 

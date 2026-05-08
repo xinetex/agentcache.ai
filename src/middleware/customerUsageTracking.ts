@@ -129,6 +129,12 @@ interface UsageMetrics {
   errorMessage?: string;
 }
 
+function parseContentLength(value: string | null | undefined): number {
+  if (!value) return 0;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+}
+
 /**
  * Identify customer from request path
  */
@@ -159,7 +165,7 @@ function identifyService(path: string): string {
 async function trackUsageToRedis(metrics: UsageMetrics): Promise<void> {
   if (!redis) return;
 
-  const { customerId, service, statusCode, responseTime, timestamp } = metrics;
+  const { customerId, service, statusCode, responseTime, timestamp, requestSize = 0, responseSize = 0 } = metrics;
   const date = new Date(timestamp);
   const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
   const yearMonthDay = `${yearMonth}-${String(date.getDate()).padStart(2, '0')}`;
@@ -183,6 +189,28 @@ async function trackUsageToRedis(metrics: UsageMetrics): Promise<void> {
     pipeline.incr(serviceKey);
     pipeline.expire(serviceKey, 60 * 60 * 24 * 30);
 
+    // 3b. Track ingress/egress bytes when known
+    if (requestSize > 0) {
+      const dailyIngressKey = `usage:${customerId}:${yearMonthDay}:ingress_bytes`;
+      const monthlyIngressKey = `usage:${customerId}:${yearMonth}:ingress_bytes`;
+      pipeline.incrby(dailyIngressKey, requestSize);
+      pipeline.expire(dailyIngressKey, 60 * 60 * 24 * 30);
+      pipeline.incrby(monthlyIngressKey, requestSize);
+      pipeline.expire(monthlyIngressKey, 60 * 60 * 24 * 90);
+    }
+
+    if (responseSize > 0) {
+      const dailyEgressKey = `usage:${customerId}:${yearMonthDay}:egress_bytes`;
+      const monthlyEgressKey = `usage:${customerId}:${yearMonth}:egress_bytes`;
+      const serviceEgressKey = `usage:${customerId}:${service}:${yearMonthDay}:egress_bytes`;
+      pipeline.incrby(dailyEgressKey, responseSize);
+      pipeline.expire(dailyEgressKey, 60 * 60 * 24 * 30);
+      pipeline.incrby(monthlyEgressKey, responseSize);
+      pipeline.expire(monthlyEgressKey, 60 * 60 * 24 * 90);
+      pipeline.incrby(serviceEgressKey, responseSize);
+      pipeline.expire(serviceEgressKey, 60 * 60 * 24 * 30);
+    }
+
     // 4. Track error rate
     if (statusCode >= 400) {
       const errorKey = `usage:${customerId}:${yearMonthDay}:errors`;
@@ -202,6 +230,8 @@ async function trackUsageToRedis(metrics: UsageMetrics): Promise<void> {
       method: metrics.method,
       status: statusCode,
       responseTime,
+      requestSize,
+      responseSize,
       timestamp,
       error: metrics.errorMessage
     }));
@@ -239,24 +269,34 @@ export async function getCustomerUsage(customerId: string, period: '24h' | '7d' 
     // Get daily stats
     const dailyRequests: number[] = [];
     const dailyErrors: number[] = [];
+    const dailyIngressBytes: number[] = [];
+    const dailyEgressBytes: number[] = [];
     
     for (let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
       const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       const requestKey = `usage:${customerId}:${dateStr}:requests`;
       const errorKey = `usage:${customerId}:${dateStr}:errors`;
+      const ingressKey = `usage:${customerId}:${dateStr}:ingress_bytes`;
+      const egressKey = `usage:${customerId}:${dateStr}:egress_bytes`;
 
-      const [requests, errors] = await Promise.all([
+      const [requests, errors, ingressBytes, egressBytes] = await Promise.all([
         redis.get(requestKey),
-        redis.get(errorKey)
+        redis.get(errorKey),
+        redis.get(ingressKey),
+        redis.get(egressKey)
       ]);
 
       dailyRequests.push(Number(requests) || 0);
       dailyErrors.push(Number(errors) || 0);
+      dailyIngressBytes.push(Number(ingressBytes) || 0);
+      dailyEgressBytes.push(Number(egressBytes) || 0);
     }
 
     const totalRequests = dailyRequests.reduce((a, b) => a + b, 0);
     const totalErrors = dailyErrors.reduce((a, b) => a + b, 0);
     const errorRate = totalRequests > 0 ? (totalErrors / totalRequests) * 100 : 0;
+    const totalIngressBytes = dailyIngressBytes.reduce((a, b) => a + b, 0);
+    const totalEgressBytes = dailyEgressBytes.reduce((a, b) => a + b, 0);
 
     return {
       customerId,
@@ -264,6 +304,8 @@ export async function getCustomerUsage(customerId: string, period: '24h' | '7d' 
       totalRequests,
       totalErrors,
       errorRate: Math.round(errorRate * 100) / 100,
+      totalIngressBytes,
+      totalEgressBytes,
       dailyBreakdown: dailyRequests,
       timestamp: new Date().toISOString()
     };
@@ -280,6 +322,7 @@ export async function customerUsageTracking(c: Context, next: Next) {
   const startTime = Date.now();
   const path = c.req.path;
   const method = c.req.method;
+  const requestSize = parseContentLength(c.req.header('content-length'));
 
   // Identify customer and service
   const customerId = identifyCustomer(path);
@@ -308,6 +351,8 @@ export async function customerUsageTracking(c: Context, next: Next) {
       statusCode,
       responseTime,
       timestamp: startTime,
+      requestSize,
+      responseSize: parseContentLength(c.res.headers.get('content-length')),
     };
 
     trackUsageToRedis(metrics).catch(err => {
@@ -330,6 +375,7 @@ export async function customerUsageTracking(c: Context, next: Next) {
       statusCode: 500,
       responseTime,
       timestamp: startTime,
+      requestSize,
       errorMessage: error.message
     };
 

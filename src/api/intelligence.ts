@@ -134,6 +134,7 @@ intelligenceRouter.get('/feed', async (c) => {
 
 
 import { intuitionService } from '../services/IntuitionService.js';
+import { operatorKnowledgeGraphService } from '../services/OperatorKnowledgeGraphService.js';
 
 /**
  * POST /api/intelligence/intuition
@@ -152,13 +153,38 @@ intelligenceRouter.post('/intuition', async (c) => {
  * Score how surprising an actual outcome is relative to the expected latent trajectory.
  */
 intelligenceRouter.post('/intuition/surprise', async (c) => {
-    const { expectedQuery, actualQuery } = await c.req.json();
-    if (!expectedQuery || !actualQuery) {
-        return c.json({ error: 'expectedQuery and actualQuery are required' }, 400);
-    }
+  const { expectedQuery, actualQuery } = await c.req.json();
+  if (!expectedQuery || !actualQuery) {
+    return c.json({ error: 'expectedQuery and actualQuery are required' }, 400);
+  }
 
     const result = await intuitionService.assessRealization(expectedQuery, actualQuery);
-    return c.json(result);
+  return c.json(result);
+});
+
+/**
+ * GET /api/intelligence/operator-graph
+ * Internal operator graph connecting offers, endpoints, receipts, and drift posture.
+ */
+intelligenceRouter.get('/operator-graph', async (c) => {
+  try {
+    const graph = await operatorKnowledgeGraphService.buildGraph();
+    return c.json(graph);
+  } catch (err: any) {
+    return c.json({
+      error: err?.message || 'Failed to build operator graph',
+      nodes: [],
+      links: [],
+      stats: {
+        offers: 0,
+        receiptTotal: 0,
+        driftEvaluations: 0,
+        driftingEvaluations: 0,
+        browserProofs: 0,
+        storageTransfers: 0,
+      },
+    }, 500);
+  }
 });
 
 export default intelligenceRouter;

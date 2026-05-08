@@ -25,7 +25,7 @@ export default function AgentLeaderboard() {
 
     useEffect(() => {
         fetchAgents();
-        const interval = setInterval(fetchAgents, 5000); // 5s refresh
+        const interval = setInterval(fetchAgents, 30000);
         return () => clearInterval(interval);
     }, []);
 

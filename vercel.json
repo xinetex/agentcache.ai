@@ -139,6 +139,14 @@
       "destination": "/api/content/card/:path*"
     },
     {
+      "source": "/api/observability/stats",
+      "destination": "/api/observability-stats-standalone"
+    },
+    {
+      "source": "/api/cdn/warm",
+      "destination": "/api/cdn-warm-standalone"
+    },
+    {
       "source": "/api/billing/create-checkout",
       "destination": "/api/billing/create-checkout"
     },
@@ -175,7 +183,7 @@
       "destination": "/api/index"
     },
     {
-      "source": "/api/(.*)",
+      "source": "/api/:path((?!observability\\/stats$|cdn\\/warm$|observability-stats-standalone$|cdn-warm-standalone$).*)",
       "destination": "/api/index"
     }
   ],

@@ -37,7 +37,7 @@ export function MoltbookGrowthPanel() {
         };
 
         fetchStats();
-        const interval = setInterval(fetchStats, 10000); // 10s refresh
+        const interval = setInterval(fetchStats, 30000);
         return () => clearInterval(interval);
     }, []);
 

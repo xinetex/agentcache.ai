@@ -8,9 +8,52 @@
  * via any medium, is strictly prohibited.
  */
 import { Hono } from 'hono';
-import { submitTranscodeJob, getJobStatus, getQueueLength } from '../services/transcode-queue.js';
+import {
+    buildMediaPlan,
+    getJobStatus,
+    getQueueLength,
+    getRecentTranscodeJobs,
+    getTranscodeProfiles,
+    submitMediaJob,
+} from '../services/transcode-queue.js';
 
 const transcode = new Hono();
+
+/**
+ * GET /api/transcode/profiles
+ * List supported AgentCache media output targets.
+ */
+transcode.get('/profiles', (c) => {
+    return c.json({
+        profiles: getTranscodeProfiles(),
+    });
+});
+
+/**
+ * POST /api/transcode/plan
+ * Preview cache key, output layout, and validation rules before enqueueing.
+ */
+transcode.post('/plan', async (c) => {
+    try {
+        const body = await c.req.json();
+        const { inputKey, profile, outputPrefix, inputBucket, outputBucket } = body;
+
+        if (!inputKey) {
+            return c.json({ error: 'inputKey is required' }, 400);
+        }
+
+        const plan = buildMediaPlan(inputKey, {
+            profileId: profile || 'roku-hls',
+            output_prefix: outputPrefix,
+            input_bucket: inputBucket,
+            output_bucket: outputBucket,
+        });
+
+        return c.json({ success: true, plan });
+    } catch (error: any) {
+        return c.json({ error: error.message }, 500);
+    }
+});
 
 /**
  * POST /api/transcode/submit
@@ -19,22 +62,31 @@ const transcode = new Hono();
 transcode.post('/submit', async (c) => {
     try {
         const body = await c.req.json();
-        const { inputKey, profile, outputPrefix } = body;
+        const { inputKey, profile, outputPrefix, inputBucket, outputBucket, policyVersion } = body;
 
         if (!inputKey) {
             return c.json({ error: 'inputKey is required' }, 400);
         }
 
-        const jobId = await submitTranscodeJob(inputKey, {
+        const result = await submitMediaJob(inputKey, {
+            profileId: profile || 'roku-hls',
             output_prefix: outputPrefix,
+            input_bucket: inputBucket,
+            output_bucket: outputBucket,
+            policyVersion,
             webhook_url: process.env.WEBHOOK_URL
         });
 
         return c.json({
             success: true,
-            jobId,
-            status: 'queued',
-            message: `Transcoding job submitted. Profile: ${profile || 'roku-hls'}`
+            jobId: result.jobId,
+            status: result.status,
+            cacheHit: result.cacheHit,
+            profile: result.plan.profile.id,
+            plan: result.plan,
+            message: result.cacheHit
+                ? `Transcoding skipped. Cached ${result.plan.profile.name} output is ready.`
+                : `Transcoding job submitted. Profile: ${result.plan.profile.id}`
         });
     } catch (error: any) {
         return c.json({ error: error.message }, 500);
@@ -53,8 +105,21 @@ transcode.get('/status/:jobId', async (c) => {
         return c.json({
             jobId,
             status: status.status,
+            phase: status.phase,
+            progress: status.progress,
+            inputKey: status.inputKey,
+            outputPrefix: status.outputPrefix,
+            profileId: status.profileId,
+            cacheKey: status.cacheKey,
+            cacheHit: status.cacheHit,
             outputs: status.outputs,
-            error: status.error
+            validation: status.validation,
+            probe: status.probe,
+            provenance: status.provenance,
+            plan: status.plan,
+            error: status.error,
+            createdAt: status.createdAt,
+            updatedAt: status.updatedAt
         });
     } catch (error: any) {
         return c.json({ error: error.message }, 500);
@@ -68,10 +133,14 @@ transcode.get('/status/:jobId', async (c) => {
 transcode.get('/jobs', async (c) => {
     try {
         const queueLength = await getQueueLength();
+        const limit = Math.min(50, Math.max(1, Number(c.req.query('limit') || 20)));
+        const jobs = await getRecentTranscodeJobs(limit);
 
         return c.json({ 
             queueLength,
-            message: 'Full job listing not yet implemented'
+            jobs,
+            profiles: getTranscodeProfiles(),
+            message: jobs.length ? 'Recent transcode jobs loaded' : 'No recent transcode jobs'
         });
     } catch (error: any) {
         return c.json({ error: error.message }, 500);

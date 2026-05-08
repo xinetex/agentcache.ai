@@ -9,8 +9,11 @@
  */
 import { sql } from 'drizzle-orm';
 import { db } from '../db/client.js';
+import { redis } from '../lib/redis.js';
 
 const DB_TIMEOUT_MS = Number(process.env.DB_QUERY_TIMEOUT_MS || 5000);
+const GLOBAL_STATS_CACHE_KEY = 'stats:global:v1';
+const GLOBAL_STATS_TTL_SECONDS = Number(process.env.GLOBAL_STATS_TTL_SECONDS || 60);
 
 function withTimeout(promise, ms, label = 'DB_TIMEOUT') {
     return Promise.race([
@@ -49,6 +52,13 @@ export class StatsService {
         };
 
         try {
+            if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
+                const cached = await redis.get(GLOBAL_STATS_CACHE_KEY);
+                if (cached) {
+                    return typeof cached === 'string' ? JSON.parse(cached) : cached;
+                }
+            }
+
             // Aggregate Global Stats from Postgres (pipeline_metrics)
             // We use raw SQL because pipeline_metrics might not be in the loaded schema object
             const statsQuery = sql`
@@ -108,7 +118,7 @@ export class StatsService {
                 };
             });
 
-            return {
+            const payload = {
                 total_users: totalUsers,
                 active_sessions: activeSessions,
                 system_health: 'OPTIMAL',
@@ -123,6 +133,12 @@ export class StatsService {
                 growth_data: growthData,
                 timestamp: new Date().toISOString()
             };
+
+            if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
+                await redis.setex(GLOBAL_STATS_CACHE_KEY, GLOBAL_STATS_TTL_SECONDS, JSON.stringify(payload));
+            }
+
+            return payload;
 
         } catch (error) {
             console.error('[StatsService] DB Error (fallback):', error?.message || error);

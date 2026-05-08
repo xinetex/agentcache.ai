@@ -14,6 +14,7 @@ import { createHash } from 'crypto';
 import { authenticateApiKey } from '../middleware/auth.js';
 import { queryMemory, upsertMemory, vectorIndex } from '../lib/vector.js';
 import { cognitiveMemory } from '../services/cognitive-memory.js';
+import { structuredMemoryService } from '../services/StructuredMemoryService.js';
 
 const memoryRouter = new Hono();
 
@@ -59,9 +60,15 @@ memoryRouter.post('/store', async (c) => {
 
   const tags = Array.isArray(body.tags) ? body.tags.map(safeString).filter(Boolean).slice(0, 25) : [];
   const meta = typeof body.metadata === 'object' && body.metadata ? body.metadata : {};
+  const decorated = structuredMemoryService.decorateMetadata({
+    structure: body.structure,
+    metadata: meta,
+    tags,
+    content,
+  });
 
   await upsertMemory(id, content, {
-    ...meta,
+    ...decorated.metadata,
     keyHash,
     tags,
     timestamp: now,
@@ -72,6 +79,7 @@ memoryRouter.post('/store', async (c) => {
     success: true,
     id,
     timestamp: now,
+    structure: decorated.structure,
   }, 201);
 });
 
@@ -89,20 +97,40 @@ memoryRouter.post('/recall', async (c) => {
   const limitRaw = Number(body.limit);
   const limit = Number.isFinite(limitRaw) ? Math.min(10, Math.max(1, Math.floor(limitRaw))) : 5;
   const previousQuery = safeString(body.previous_query);
-  const results = await queryMemory(query, limit);
+  const filter = structuredMemoryService.buildFilter({
+    structure: body.structure,
+    namespace: body.namespace,
+    tags: body.tags,
+  });
+  const results = await queryMemory(query, limit, filter);
+  const filteredResults = results.filter((result) =>
+    structuredMemoryService.matchesStructure(result.metadata, body.structure)
+  );
   await cognitiveMemory.observeTransition(previousQuery || undefined, query);
   const predictions = await cognitiveMemory.predictNext(query, 1);
+  const summary = structuredMemoryService.summarize(filteredResults);
 
   return c.json({
     success: true,
     query,
-    count: results.length,
-    results: results.map((r) => ({
+    count: filteredResults.length,
+    structure_filter: filter || null,
+    structure_summary: summary,
+    results: filteredResults.map((r) => ({
       id: r.id,
       score: r.score,
       preview: safeString(r.data).slice(0, 240),
       content: safeString(r.data),
       metadata: r.metadata,
+      structure: r.metadata
+        ? {
+            wing: r.metadata.memoryWing,
+            hall: r.metadata.memoryHall,
+            room: r.metadata.memoryRoom,
+            layer: r.metadata.memoryLayer,
+            path: r.metadata.memoryPath,
+          }
+        : null,
     })),
     predictive_prefetch: predictions,
   });
@@ -126,6 +154,15 @@ memoryRouter.get('/:id', async (c) => {
     id,
     data: record.data,
     metadata: record.metadata,
+    structure: record.metadata
+      ? {
+          wing: record.metadata.memoryWing,
+          hall: record.metadata.memoryHall,
+          room: record.metadata.memoryRoom,
+          layer: record.metadata.memoryLayer,
+          path: record.metadata.memoryPath,
+        }
+      : null,
   });
 });
 

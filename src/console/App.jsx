@@ -10,6 +10,9 @@ import DataExplorer from './views/DataExplorer.jsx';
 import Governance from './views/Governance.jsx';
 import Settings from './views/Settings.jsx';
 import Admin from './views/Admin.jsx';
+import AdvancedServices from './views/AdvancedServices.jsx';
+import MediaConsole from './views/MediaConsole.jsx';
+import ReliabilityMesh from './views/ReliabilityMesh.jsx';
 import { AuthProvider, useAuth } from './auth/AuthContext.jsx';
 import LoginOverlay from './components/LoginOverlay.jsx';
 import RegisterOverlay from './components/RegisterOverlay.jsx';
@@ -20,8 +23,11 @@ const AppContent = () => {
     const getInitialView = () => {
         const path = window.location.pathname;
         if (path.includes('observability')) return 'observability';
+        if (path.includes('advanced-services')) return 'advanced-services';
         if (path.includes('pipeline')) return 'pipeline';
+        if (path.includes('reliability')) return 'reliability';
         if (path.includes('lab')) return 'lab';
+        if (path.includes('media')) return 'media';
         if (path.includes('data')) return 'data';
         if (path.includes('governance')) return 'governance';
         if (path.includes('settings')) return 'settings';
@@ -32,6 +38,13 @@ const AppContent = () => {
     const [activeView, setActiveView] = useState(getInitialView());
     const [showTour, setShowTour] = useState(false);
     const { user, loading } = useAuth();
+
+    useEffect(() => {
+        const routedView = getInitialView();
+        if (routedView !== 'swarm') {
+            setActiveView(routedView);
+        }
+    }, []);
 
     useEffect(() => {
         // Show tour on first visit (mock logic using localStorage)
@@ -66,8 +79,11 @@ const AppContent = () => {
         switch (activeView) {
             case 'overview': return <Overview />;
             case 'swarm': return <Swarm />;
+            case 'advanced-services': return <AdvancedServices />;
             case 'pipeline': return <PipelineStudio />;
+            case 'reliability': return <ReliabilityMesh />;
             case 'lab': return <Lab />;
+            case 'media': return <MediaConsole />;
             case 'observability': return <Observability />;
             case 'data': return <DataExplorer />;
             case 'governance': return <Governance />;

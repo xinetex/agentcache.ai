@@ -27,6 +27,7 @@ import { Hono } from 'hono';
 import { desc, eq } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { serviceRequests } from '../db/schema.js';
+import { getRevenueCoreOffers } from '../config/revenueCore.js';
 
 const catalogRouter = new Hono();
 
@@ -430,6 +431,21 @@ function filterByTier(service: ServiceDef, tier?: ServiceDef['tier']) {
     if (!tier) return true;
     return TIER_ORDER[service.tier] <= TIER_ORDER[tier];
 }
+
+/**
+ * GET /api/catalog/revenue-core
+ * The focused, sellable AgentCache service lineup.
+ */
+catalogRouter.get('/revenue-core', (c) => {
+    const offers = getRevenueCoreOffers();
+
+    return c.json({
+        thesis: 'AgentCache sells reliable agent infrastructure: cache, guardrails, execution drift monitoring, and knowledge memory.',
+        mode: 'controlled-alpha',
+        recommendedLaunchWedge: 'Execution Drift Guard',
+        offers,
+    });
+});
 
 // ============================================================================
 // CATALOG ENDPOINTS

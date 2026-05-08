@@ -5,11 +5,13 @@ import {
     Activity,
     FlaskConical,
     Database,
+    BriefcaseBusiness,
     Shield,
+    ShieldCheck,
     Settings,
     LogOut,
-    ChevronRight,
-    Workflow
+    Workflow,
+    Clapperboard
 } from 'lucide-react';
 
 const CommandRail = ({ activeView, setActiveView, user }) => {
@@ -18,7 +20,10 @@ const CommandRail = ({ activeView, setActiveView, user }) => {
     const menuItems = [
         { id: 'swarm', label: 'Neural Ops Center', icon: Activity }, // Default Home
         { id: 'overview', label: 'System Overview', icon: LayoutGrid },
+        { id: 'advanced-services', label: 'Advanced Services', icon: BriefcaseBusiness },
         { id: 'pipeline', label: 'Pipeline Studio', icon: Workflow },
+        { id: 'reliability', label: 'Reliability Mesh', icon: ShieldCheck },
+        { id: 'media', label: 'Media Console', icon: Clapperboard },
         { id: 'observability', label: 'Observability', icon: Database }, // Switched icon for variety
         { id: 'lab', label: 'Research Lab', icon: FlaskConical },
         { id: 'data', label: 'Data Explorer', icon: Database },

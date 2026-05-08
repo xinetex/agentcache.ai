@@ -6,7 +6,21 @@ export interface AgentCacheConfig {
 }
 
 export interface CacheRequest {
-    provider: 'openai' | 'anthropic' | 'moonshot' | 'cohere' | 'together' | 'groq';
+    provider:
+        | 'openai'
+        | 'anthropic'
+        | 'gemini'
+        | 'moonshot'
+        | 'grok'
+        | 'perplexity'
+        | 'inception'
+        | 'ollama'
+        | 'abacus'
+        | 'minimax'
+        | 'cohere'
+        | 'together'
+        | 'groq'
+        | 'tool';
     model: string;
     messages: Array<{
         role: string;

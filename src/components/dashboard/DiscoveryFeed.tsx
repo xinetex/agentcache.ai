@@ -19,7 +19,7 @@ export default function DiscoveryFeed() {
 
     useEffect(() => {
         fetchDiscoveries();
-        const interval = setInterval(fetchDiscoveries, 8000);
+        const interval = setInterval(fetchDiscoveries, 30000);
         return () => clearInterval(interval);
     }, []);
 

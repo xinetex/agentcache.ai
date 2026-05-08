@@ -27,6 +27,9 @@ export interface MoltTrend {
     prediction: string;
 }
 
+const MOLT_ALPHA_STATS_CACHE_KEY = 'molt-alpha:stats:v1';
+const MOLT_ALPHA_STATS_TTL_SECONDS = Number(process.env.MOLT_ALPHA_STATS_TTL_SECONDS || 60);
+
 export class MoltAlphaService {
     /**
      * Predic the next viral trend on Moltbook
@@ -125,15 +128,28 @@ export class MoltAlphaService {
      * Get real-time growth stats for the dashboard.
      */
     async getStats() {
+        try {
+            const cached = await redis.get(MOLT_ALPHA_STATS_CACHE_KEY);
+            if (cached) {
+                return typeof cached === 'string' ? JSON.parse(cached) : cached;
+            }
+        } catch (error) {
+            console.warn('[Molt-Alpha] Failed to read cached stats:', error);
+        }
+
         const magnitude = parseFloat(await redis.get('molt-alpha:last-magnitude') || '0.245');
         const count = await redis.get('molt-alpha:prediction-count') || '128';
         
-        // Fetch active spirits from 'patterns' table
-        const activeSpirits = await db.select().from(patterns)
+        // Keep this query narrow and cache the full payload to reduce Neon churn.
+        const activeSpirits = await db.select({
+            name: patterns.name,
+            status: patterns.status,
+            energyLevel: patterns.energyLevel,
+        }).from(patterns)
             .where(sql`name LIKE 'Spirit:%' AND status = 'active'`)
             .limit(10);
-            
-        return {
+
+        const payload = {
             current_vibes: magnitude,
             total_predictions: parseInt(count),
             active_spirits_count: activeSpirits.length,
@@ -147,6 +163,14 @@ export class MoltAlphaService {
             redirection_yield: (parseFloat(await redis.get('molt-alpha:last-velocity') || '0.01') * 100).toFixed(2) + '%',
             last_sync: new Date().toISOString()
         };
+
+        try {
+            await redis.setex(MOLT_ALPHA_STATS_CACHE_KEY, MOLT_ALPHA_STATS_TTL_SECONDS, JSON.stringify(payload));
+        } catch (error) {
+            console.warn('[Molt-Alpha] Failed to cache stats payload:', error);
+        }
+
+        return payload;
     }
 }
 

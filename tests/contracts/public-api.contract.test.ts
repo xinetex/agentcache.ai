@@ -7,6 +7,7 @@ const mockVideoCacheGet = vi.fn(async (path: string) => {
 });
 
 const mockVideoCacheGetL1Stats = vi.fn(async () => ({ hits: 2, misses: 1 }));
+const mockMemoryStore = new Map<string, { data: string; metadata: Record<string, any> }>();
 
 vi.mock('../../src/services/ArmorService.js', () => ({
   ArmorService: class {
@@ -39,6 +40,22 @@ vi.mock('../../transcoder-service/videocache.js', () => ({
 }));
 
 vi.mock('../../src/services/transcode-queue.js', () => ({
+  buildMediaPlan: (inputKey: string) => ({
+    profile: { id: 'roku-hls', name: 'Roku HLS' },
+    input: { key: inputKey, bucket: 'jettydata-prod', sourceFingerprint: 'test-fingerprint' },
+    output: { prefix: 'transcoded/test', masterManifestKey: 'transcoded/test/master.m3u8', expectedRenditions: 4 },
+    cache: { key: 'cache-test', lookupKey: 'transcodecache:v1:cache-test' },
+    phases: [],
+    validation: { rules: [] },
+    provenance: { engine: 'agentcache-media-engine' },
+  }),
+  getTranscodeProfiles: () => [{ id: 'roku-hls', name: 'Roku HLS' }],
+  submitMediaJob: async () => ({
+    jobId: 'job-test-123',
+    status: 'queued',
+    cacheHit: false,
+    plan: { profile: { id: 'roku-hls', name: 'Roku HLS' } },
+  }),
   submitTranscodeJob: async () => 'job-test-123',
   getJobStatus: async (jobId: string) => ({
     status: 'queued',
@@ -46,6 +63,7 @@ vi.mock('../../src/services/transcode-queue.js', () => ({
     error: null,
     jobId,
   }),
+  getRecentTranscodeJobs: async () => [],
   getQueueLength: async () => 3,
 }));
 
@@ -116,35 +134,79 @@ vi.mock('../../src/services/provisioning.js', () => ({
 }));
 
 vi.mock('../../src/lib/vector.js', () => ({
-  upsertMemory: async () => {},
-  queryMemory: async (query: string) => [
-    { id: 'mock-id', score: 0.1, data: query, metadata: {} }
-  ],
+  upsertMemory: async (id: string, text: string, metadata: Record<string, any>) => {
+    mockMemoryStore.set(id, { data: text, metadata });
+  },
+  queryMemory: async (query: string, _topK?: number, filter?: Record<string, any>) => {
+    const entries = Array.from(mockMemoryStore.entries()).map(([id, record]) => ({
+      id,
+      score: 0.1,
+      data: record.data,
+      metadata: record.metadata,
+    }));
+
+    const filtered = entries.filter((entry) => {
+      const contentMatch =
+        String(entry.data || '').includes(query) ||
+        String(entry.metadata?.query || '').includes(query);
+      if (!contentMatch) return false;
+      if (!filter) return true;
+      return Object.entries(filter).every(([key, value]) => entry.metadata?.[key] === value);
+    });
+
+    return filtered.length > 0
+      ? filtered
+      : [{ id: 'mock-id', score: 0.1, data: query, metadata: filter || {} }];
+  },
   vectorIndex: {
-    fetch: async (ids: string[]) => ids.map(id => ({ 
-      id, 
-      data: 'mock-data', 
-      metadata: {}, 
-      vector: new Array(1536).fill(0.1) 
-    })),
-    upsert: async () => {},
+    fetch: async (ids: string[]) =>
+      ids.map((id) => {
+        const stored = mockMemoryStore.get(id);
+        return {
+          id,
+          data: stored?.data || 'mock-data',
+          metadata: stored?.metadata || {},
+          vector: new Array(1536).fill(0.1),
+        };
+      }),
+    upsert: async (record: any) => {
+      const records = Array.isArray(record) ? record : [record];
+      for (const item of records) {
+        mockMemoryStore.set(item.id, {
+          data: item.data || '',
+          metadata: item.metadata || {},
+        });
+      }
+    },
     query: async (opts: any) => [
-      { id: 'mock-id', score: 0.1, data: opts.data || '', metadata: {} }
+      { id: 'mock-id', score: 0.1, data: opts.data || '', metadata: opts.filter || {} }
     ],
     delete: async () => {},
   },
   HybridVectorIndex: class {
     constructor() {
       return {
-        fetch: async (ids: string[]) => ids.map(id => ({ 
-          id, 
-          data: 'mock-data', 
-          metadata: {}, 
-          vector: new Array(1536).fill(0.1) 
-        })),
-        upsert: async () => {},
+        fetch: async (ids: string[]) =>
+          ids.map((id) => {
+            const stored = mockMemoryStore.get(id);
+            return {
+              id,
+              data: stored?.data || 'mock-data',
+              metadata: stored?.metadata || {},
+              vector: new Array(1536).fill(0.1),
+            };
+          }),
+        upsert: async (record: any) => {
+          const records = Array.isArray(record) ? record : [record];
+          for (const item of records) {
+            mockMemoryStore.set(item.id, {
+              data: item.data || '',
+              metadata: item.metadata || {},
+            });
+          }
+        },
         query: async (opts: any) => [
-          { id: 'mock-id', score: 0.1, data: opts.data || '', metadata: {} }
+          { id: 'mock-id', score: 0.1, data: opts.data || '', metadata: opts.filter || {} }
         ],
         delete: async () => {},
       };
@@ -243,6 +305,32 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(Array.isArray(hit.payload.predictive_prefetch)).toBe(true);
   }, 10000);
 
+  it('cache endpoints accept hosted, local, and tool provider identifiers', async () => {
+    const geminiCheck = await request('/api/cache/check', {
+      provider: 'gemini',
+      model: 'gemini-2.5-flash',
+      messages: [{ role: 'user', content: unique('gemini-cache-provider') }],
+      semantic: false,
+    });
+    expect(geminiCheck.response.status).toBe(200);
+
+    const ollamaCheck = await request('/api/cache/check', {
+      provider: 'ollama',
+      model: 'gemma-local',
+      messages: [{ role: 'user', content: unique('ollama-cache-provider') }],
+      semantic: false,
+    });
+    expect(ollamaCheck.response.status).toBe(200);
+
+    const toolCheck = await request('/api/cache/check', {
+      provider: 'tool',
+      model: 'weather',
+      messages: [{ role: 'user', content: JSON.stringify({ city: 'Detroit' }) }],
+      semantic: false,
+    });
+    expect(toolCheck.response.status).toBe(200);
+  });
+
   it('exposes memory-fabric policy resolution and keeps sector-aware cache keys isolated', async () => {
     const sharedPrompt = unique('fabric-shared');
     const body = {
@@ -308,6 +396,18 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(roi.payload.accounting.totalCreditsEstimated).toBeGreaterThan(0);
     expect(roi.payload.accounting.bySku.some((item: any) => item.sku === 'finance-memory-fabric')).toBe(true);
   }, 10000);
+
+  it('publishes a focused revenue-core catalog for sellable AgentCache offers', async () => {
+    const response = await app.request('/api/catalog/revenue-core', { method: 'GET' });
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.recommendedLaunchWedge).toBe('Execution Drift Guard');
+    expect(Array.isArray(payload.offers)).toBe(true);
+    expect(payload.offers.some((offer: any) => offer.id === 'execution-drift-guard')).toBe(true);
+    expect(payload.offers.some((offer: any) => offer.id === 'agentcache-core')).toBe(true);
+    expect(payload.offers.some((offer: any) => offer.id === 'agent-storage-core')).toBe(true);
+  });
 
   it('scores and routes alignment requests with receipt-ready evidence', async () => {
     const scored = await request('/api/alignment/score', {
@@ -424,22 +524,43 @@ describe.sequential('AgentCache public API contracts', () => {
     const previous = unique('memory-prev');
     const nodeId = unique('node');
     const fleetMemoryId = unique('fleet');
+    const wing = unique('workspace');
 
     const stored = await request('/api/memory/store', {
       content: memoryText,
-      metadata: { query: memoryText, contract: true },
+      metadata: { query: memoryText, contract: true, namespace: wing },
+      structure: {
+        wing,
+        hall: 'facts',
+        room: 'auth-decisions',
+        layer: 'critical_facts',
+      },
     });
     expect(stored.response.status).toBe(201);
+    expect(stored.payload.structure.wing).toBe(wing);
+    expect(stored.payload.structure.hall).toBe('facts');
+    expect(stored.payload.structure.room).toBe('auth-decisions');
+    expect(stored.payload.structure.layer).toBe('critical_facts');
 
     const recalled = await request('/api/memory/recall', {
       query: memoryText,
       previous_query: previous,
       limit: 3,
+      structure: {
+        wing,
+        hall: 'facts',
+      },
     });
     expect(recalled.response.status).toBe(200);
     expect(recalled.payload.success).toBe(true);
     expect(recalled.payload.results[0]?.content).toContain(memoryText);
+    expect(recalled.payload.results[0]?.structure.wing).toBe(wing);
+    expect(recalled.payload.structure_summary.byWing[wing]).toBeGreaterThan(0);
     expect(Array.isArray(recalled.payload.predictive_prefetch)).toBe(true);
+
+    const fetched = await request(`/api/memory/${stored.payload.id}`, undefined, 'GET');
+    expect(fetched.response.status).toBe(200);
+    expect(fetched.payload.structure.path).toBe(`${wing}/facts/auth-decisions`);
 
     const predict = await request('/api/cognitive/predict', {
       query: previous,
@@ -492,6 +613,17 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(stats.payload.externalAgents).toBeDefined();
     expect(typeof stats.payload.externalAgents.total).toBe('number');
   }, 20000);
+
+  it('exposes an operator graph tying offers to receipts and drift posture', async () => {
+    const operatorGraph = await request('/api/intelligence/operator-graph', undefined, 'GET');
+    expect(operatorGraph.response.status).toBe(200);
+    expect(Array.isArray(operatorGraph.payload.nodes)).toBe(true);
+    expect(Array.isArray(operatorGraph.payload.links)).toBe(true);
+    expect(operatorGraph.payload.nodes.some((node: any) => node.id === 'system:agentcache')).toBe(true);
+    expect(operatorGraph.payload.nodes.some((node: any) => node.id === 'offer:execution-drift-guard')).toBe(true);
+    expect(operatorGraph.payload.nodes.some((node: any) => node.id === 'signal:receipts')).toBe(true);
+    expect(typeof operatorGraph.payload.stats.offers).toBe('number');
+  });
 
   it('exposes joint objective sessions without colliding with legacy session history keys', async () => {
     const { redis } = await import('../../src/lib/redis.js');
@@ -992,7 +1124,9 @@ describe.sequential('AgentCache public API contracts', () => {
       }, 'POST');
       expect(cdnWarm.response.status).toBe(200);
       expect(cdnWarm.payload.success).toBe(true);
-      expect(cdnWarm.payload.warmed).toEqual(['test/sample.mp4', 'test/missing-preview.jpg']);
+      expect(cdnWarm.payload.warmed).toEqual(['test/sample.mp4']);
+      expect(cdnWarm.payload.skipped).toHaveLength(1);
+      expect(cdnWarm.payload.skipped[0].path).toBe('test/missing-preview.jpg');
       expect(cdnWarm.response.headers.get('X-Customer-Id')).toBe('audio1_tv');
       expect(cdnWarm.response.headers.get('X-Service-Category')).toBe('cdn_streaming');
       expect(mockVideoCacheGet).toHaveBeenCalledWith('test/sample.mp4');
@@ -1218,5 +1352,14 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(fetched.response.status).toBe(200);
     expect(fetched.payload.reviews).toHaveLength(2);
     expect(fetched.payload.gate.status).toBe('approved');
+
+    const recommendations = await request(
+      `/api/execution/runs/${started.payload.run.id}/recommendations`,
+      undefined,
+      'GET'
+    );
+    expect(recommendations.response.status).toBe(200);
+    expect(recommendations.payload.report.runId).toBe(started.payload.run.id);
+    expect(Array.isArray(recommendations.payload.report.recommendations)).toBe(true);
   });
 });

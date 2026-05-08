@@ -4,6 +4,7 @@ import { MetricFlux } from './MetricFlux.js';
 import { MoltbookGrowthPanel } from './MoltbookGrowthPanel.js';
 import { MemoryFabricROIPanel } from './MemoryFabricROIPanel.js';
 import { RevenueMonitor } from './RevenueMonitor.js';
+import { RevenueCorePanel } from './RevenueCorePanel.js';
 import AgentLeaderboard from './AgentLeaderboard.js';
 import { CognitiveMap } from './CognitiveMap.js';
 import { ComplianceHealthMonitor } from './ComplianceHealthMonitor.js';
@@ -12,9 +13,11 @@ import { ReceiptInspector } from './ReceiptInspector.js';
 import { ProviderTrustScorecard } from './ProviderTrustScorecard.js';
 import { MetabolicPricingPanel } from './MetabolicPricingPanel.js';
 import { AlignmentFabricPanel } from './AlignmentFabricPanel.js';
+import { ExecutionDriftPanel } from './ExecutionDriftPanel.js';
 
 export default function IndustrialDashboard() {
     const [stats, setStats] = useState<any>(null);
+    const labsEnabled = import.meta.env.VITE_ENABLE_LABS === 'true';
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -28,7 +31,7 @@ export default function IndustrialDashboard() {
         };
 
         fetchStats();
-        const interval = setInterval(fetchStats, 10000);
+        const interval = setInterval(fetchStats, 30000);
         return () => clearInterval(interval);
     }, []);
 
@@ -73,12 +76,12 @@ export default function IndustrialDashboard() {
 
                 {/* Middle row: Substrate Health & Market */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 gap-6 shrink-0">
-                    <MoltbookGrowthPanel />
+                    {labsEnabled ? <MoltbookGrowthPanel /> : <RevenueCorePanel />}
                     <ComplianceHealthMonitor />
                     <MemoryFabricROIPanel fabric={stats?.fabric} browserProof={stats?.browserProof} />
-                    <SoulprintTrustPanel externalAgents={stats?.externalAgents} />
-                    <MetabolicPricingPanel />
-                    <RevenueMonitor />
+                    <ExecutionDriftPanel summary={stats?.executionDrift} />
+                    {labsEnabled ? <MetabolicPricingPanel /> : <SoulprintTrustPanel externalAgents={stats?.externalAgents} />}
+                    {labsEnabled ? <RevenueMonitor /> : <ProviderTrustScorecard summary={stats?.receipts} />}
                 </div>
 
                 {/* Infrastructure & Leaderboard */}

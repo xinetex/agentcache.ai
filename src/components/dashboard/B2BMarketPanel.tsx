@@ -24,7 +24,7 @@ export function B2BMarketPanel() {
         };
 
         fetchStats();
-        const interval = setInterval(fetchStats, 15000);
+        const interval = setInterval(fetchStats, 30000);
         return () => clearInterval(interval);
     }, []);
 

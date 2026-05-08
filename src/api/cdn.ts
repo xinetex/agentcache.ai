@@ -27,6 +27,60 @@ const POSTER_CONFIG = {
     fallback: true // Enable smart poster generation
 };
 
+const CDN_WARM_MAX_ITEMS = parseInt(process.env.CDN_WARM_MAX_ITEMS || '', 10) || 25;
+const CDN_WARM_ITEM_TIMEOUT_MS = parseInt(process.env.CDN_WARM_ITEM_TIMEOUT_MS || '', 10) || 1500;
+
+function collectWarmTargets(paths: any, outputs: any, maxItems: number) {
+    const ordered = [];
+    const seen = new Set();
+
+    const addTarget = (value: any) => {
+        if (typeof value !== 'string') return;
+        const trimmed = value.trim();
+        if (!trimmed || seen.has(trimmed)) return;
+        seen.add(trimmed);
+        ordered.push(trimmed);
+    };
+
+    for (const path of Array.isArray(paths) ? paths : []) {
+        addTarget(path);
+    }
+
+    for (const output of Array.isArray(outputs) ? outputs : []) {
+        addTarget(output?.key);
+    }
+
+    return {
+        targets: ordered.slice(0, maxItems),
+        skippedCount: Math.max(0, ordered.length - maxItems),
+    };
+}
+
+async function warmPathWithTimeout(cache: any, path: string) {
+    const warmPromise = (typeof cache.warmPath === 'function'
+        ? cache.warmPath(path)
+        : cache.get(path).then((data: any) => ({ path, warmed: !!data, skipped: !data, reason: data ? undefined : 'missing' })));
+
+    try {
+        return await Promise.race([
+            warmPromise,
+            new Promise((resolve) => setTimeout(() => resolve({
+                path,
+                warmed: false,
+                skipped: true,
+                reason: 'timeout',
+            }), CDN_WARM_ITEM_TIMEOUT_MS)),
+        ]);
+    } catch (error: any) {
+        return {
+            path,
+            warmed: false,
+            skipped: true,
+            reason: error?.message || 'warm_failed',
+        };
+    }
+}
+
 // Initialize cache with smart features
 function initSmartCache(process: any) {
     return getVideoCache({
@@ -123,24 +177,31 @@ cdn.post('/warm', async (c) => {
 
     try {
         const cache = initSmartCache(process);
+        const { targets, skippedCount } = collectWarmTargets(paths, outputs, CDN_WARM_MAX_ITEMS);
         const warmed = [];
+        const skipped = [];
 
-        for (const path of (paths || [])) {
-            await cache.get(path); // This will warm the cache if not exists
-            warmed.push(path);
-        }
+        for (const path of targets) {
+            const result: any = await warmPathWithTimeout(cache, path);
 
-        // Warm up job outputs if provided
-        if (jobId && outputs) {
-            for (const output of outputs) {
-                if (output.key) {
-                    await cache.get(output.key);
-                    warmed.push(output.key);
-                }
+            if (result?.warmed) {
+                warmed.push(path);
+            } else {
+                skipped.push({
+                    path,
+                    reason: result?.reason || 'not_warmed',
+                });
             }
         }
 
-        return c.json({ success: true, warmed });
+        return c.json({
+            success: true,
+            warmed,
+            skipped,
+            skippedCount,
+            jobId: jobId || null,
+            limit: CDN_WARM_MAX_ITEMS,
+        });
 
     } catch (error: any) {
         return c.json({ error: 'Cache warming failed', details: error.message }, 500);

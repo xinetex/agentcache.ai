@@ -112,6 +112,14 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
+function relativeShiftDeviation(expectedShift: number, actualShift: number): number {
+  if (expectedShift <= 0) {
+    return clamp(actualShift, 0, 1);
+  }
+
+  return clamp(Math.abs(actualShift - expectedShift) / expectedShift, 0, 1);
+}
+
 function estimateCollapseRisk(vector: ArrayLike<number>): number {
   if (vector.length === 0) return 1;
   let mean = 0;
@@ -251,12 +259,10 @@ export class LatentTrajectoryService {
     const realizedDrift =
       sector === 'general' ? 0 : await this.monitor.measureDrift(sector as Sector, Array.from(actualVector));
 
-    const shiftOvershoot = prediction.expectedShift > 0
-      ? clamp((actualShift - prediction.expectedShift) / prediction.expectedShift, 0, 1)
-      : clamp(actualShift, 0, 1);
+    const shiftDeviation = relativeShiftDeviation(prediction.expectedShift, actualShift);
 
     const surpriseScore = clamp(
-      predictionError * 0.65 + shiftOvershoot * 0.2 + realizedDrift * 0.15,
+      predictionError * 0.5 + shiftDeviation * 0.35 + realizedDrift * 0.15,
       0,
       1
     );

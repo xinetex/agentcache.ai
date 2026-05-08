@@ -51,7 +51,7 @@ export const ComplianceHealthMonitor: React.FC = () => {
         };
 
         fetchStats();
-        const interval = setInterval(fetchStats, 5000);
+        const interval = setInterval(fetchStats, 30000);
         return () => clearInterval(interval);
     }, []);
 

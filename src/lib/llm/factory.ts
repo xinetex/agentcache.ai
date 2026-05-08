@@ -22,8 +22,9 @@ import './providers/inception.js';
 import './providers/ollama.js';
 import './providers/abacus.js';
 import './providers/minimax.js';
+import './providers/deepseek.js';
 
-export type ProviderType = 'openai' | 'anthropic' | 'gemini' | 'moonshot' | 'grok' | 'perplexity' | 'inception' | 'ollama' | 'abacus' | 'minimax';
+export type ProviderType = 'openai' | 'anthropic' | 'gemini' | 'moonshot' | 'grok' | 'perplexity' | 'inception' | 'ollama' | 'abacus' | 'minimax' | 'deepseek';
 
 export class LLMFactory {
     /**
@@ -39,6 +40,7 @@ export class LLMFactory {
         inception: process.env.INCEPTION_API_KEY,
         abacus: process.env.ABACUS_API_KEY,
         minimax: process.env.MINIMAX_API_KEY,
+        deepseek: process.env.DEEPSEEK_API_KEY,
     };
 
     /**

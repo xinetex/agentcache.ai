@@ -15,7 +15,9 @@ import time
 import tempfile
 import subprocess
 import logging
+import re
 from typing import Dict, List, Optional
+from datetime import datetime, timezone
 import redis
 import boto3
 from botocore.config import Config
@@ -94,34 +96,40 @@ class LyveTranscoder:
         input_key = job.get('input_key')
         output_bucket = job.get('output_bucket', LYVE_BUCKET)
         output_prefix = job.get('output_prefix', f"transcoded/{job_id}")
-        output_bucket = job.get('output_bucket', LYVE_BUCKET)
-        output_prefix = job.get('output_prefix', f"transcoded/{job_id}")
         ladder = job.get('ladder', DEFAULT_LADDER)
         watermark = job.get('watermark')  # Optional: "A1::UID::SID"
+        metadata = job.get('metadata') or {}
         
         if not input_key:
             self.notify_status(job_id, 'failed', error='Missing input_key')
             return
 
         outputs = []
+        commands = []
         
         try:
             with tempfile.TemporaryDirectory() as tmpdir:
                 # 1. Download source
                 input_path = os.path.join(tmpdir, 'source.mp4')
+                self.update_phase(job_id, 'running', 'downloading', 8, metadata=metadata)
                 logger.info(f"⬇️  Downloading: s3://{input_bucket}/{input_key}")
                 self.s3.download_file(input_bucket, input_key, input_path)
+                source_probe = self.run_ffprobe(input_path)
+                self.update_phase(job_id, 'running', 'probing', 14, probe=source_probe)
                 
                 # 2. Transcode each profile to HLS
-                for profile in ladder:
+                for index, profile in enumerate(ladder):
                     profile_name = profile['name']
                     variant_dir = os.path.join(tmpdir, profile_name)
                     os.makedirs(variant_dir, exist_ok=True)
                     
                     output_playlist = os.path.join(variant_dir, "playlist.m3u8")
                     
+                    progress = 20 + int((index / max(len(ladder), 1)) * 52)
+                    self.update_phase(job_id, 'running', f'encoding:{profile_name}', progress)
                     logger.info(f"🎬 Encoding {profile_name} (HLS)...")
-                    self.encode(input_path, output_playlist, profile, watermark, variant_dir)
+                    command = self.encode(input_path, output_playlist, profile, watermark, variant_dir)
+                    commands.append({'profile': profile_name, 'argv': command})
                     
                     # 3. Upload segments and playlist to Lyve
                     # Structure: transcoded/job_id/1080p/playlist.m3u8
@@ -150,6 +158,7 @@ class LyveTranscoder:
                     })
                 
                 # 4. Generate HLS Master Manifest
+                self.update_phase(job_id, 'running', 'publishing', 88)
                 manifest_key = f"{output_prefix}/master.m3u8"
                 manifest_content = self.generate_hls_manifest(outputs, output_prefix)
                 self.s3.put_object(
@@ -159,14 +168,42 @@ class LyveTranscoder:
                     ContentType='application/x-mpegURL'
                 )
                 outputs.append({'profile': 'master', 'key': manifest_key})
+
+                validation = self.validate_hls_outputs(tmpdir, outputs, manifest_content)
+                provenance = {
+                    'engine': 'agentcache-media-engine',
+                    'worker': 'lyve_transcoder.py',
+                    'ffmpegVersion': self.get_ffmpeg_version(),
+                    'source': {
+                        'bucket': input_bucket,
+                        'key': input_key,
+                    },
+                    'output': {
+                        'bucket': output_bucket,
+                        'prefix': output_prefix,
+                    },
+                    'profileId': metadata.get('profileId'),
+                    'cacheKey': metadata.get('cacheKey'),
+                    'commands': commands,
+                    'completedAt': self.now_iso(),
+                }
                 
             # Success
             logger.info(f"✅ Job {job_id} complete: {len(outputs)} outputs")
-            self.notify_status(job_id, 'complete', outputs=outputs)
+            self.notify_status(
+                job_id,
+                'complete',
+                outputs=outputs,
+                phase='complete',
+                progress=100,
+                validation=validation,
+                provenance=provenance,
+                probe=source_probe
+            )
             
         except Exception as e:
             logger.error(f"❌ Job {job_id} failed: {e}")
-            self.notify_status(job_id, 'failed', error=str(e))
+            self.notify_status(job_id, 'failed', phase='failed', progress=0, error=str(e))
 
     def encode(self, input_path: str, output_path: str, profile: Dict, watermark: Optional[str] = None, variant_dir: str = None):
         """Run FFmpeg encoding for a single profile (HLS)"""
@@ -192,7 +229,7 @@ class LyveTranscoder:
             '-vf', filter_str,
             '-b:v', profile['bitrate'],
             '-maxrate', profile['bitrate'],
-            '-bufsize', str(int(profile['bitrate'].rstrip('Mk')) * 2) + 'M',
+            '-bufsize', self.double_bitrate(profile['bitrate']),
             '-g', '60',  # Keyframe interval (2s at 30fps)
             '-keyint_min', '60', # Enforce consistent GOP for HLS
             '-sc_threshold', '0', # Disable scene cut detection for consistent segments
@@ -208,6 +245,20 @@ class LyveTranscoder:
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode != 0:
             raise Exception(f"FFmpeg error: {result.stderr[:500]}")
+
+        return cmd
+
+    def double_bitrate(self, bitrate: str) -> str:
+        match = re.match(r'^(\d+(?:\.\d+)?)([kKmM])$', str(bitrate).strip())
+        if not match:
+            return bitrate
+
+        value = float(match.group(1)) * 2
+        unit = match.group(2)
+        if value.is_integer():
+            value = int(value)
+
+        return f"{value}{unit}"
 
     def generate_hls_manifest(self, outputs: List[Dict], prefix: str) -> str:
         """Generate HLS master playlist"""
@@ -237,7 +288,114 @@ class LyveTranscoder:
         
         return '\n'.join(lines)
 
-    def notify_status(self, job_id: str, status: str, outputs: List = None, error: str = None):
+    def now_iso(self) -> str:
+        return datetime.now(timezone.utc).isoformat()
+
+    def get_ffmpeg_version(self) -> str:
+        try:
+            result = subprocess.run(['ffmpeg', '-version'], capture_output=True, text=True, timeout=5)
+            if result.returncode == 0:
+                return result.stdout.splitlines()[0]
+        except Exception:
+            pass
+        return 'ffmpeg version unavailable'
+
+    def run_ffprobe(self, path: str) -> Dict:
+        try:
+            result = subprocess.run(
+                [
+                    'ffprobe',
+                    '-v', 'error',
+                    '-print_format', 'json',
+                    '-show_format',
+                    '-show_streams',
+                    path
+                ],
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            if result.returncode == 0 and result.stdout:
+                return json.loads(result.stdout)
+            return {'error': result.stderr[:500]}
+        except Exception as e:
+            return {'error': str(e)}
+
+    def validate_hls_outputs(self, tmpdir: str, outputs: List[Dict], manifest_content: str) -> Dict:
+        checks = []
+
+        master_ok = '#EXTM3U' in manifest_content and '#EXT-X-STREAM-INF' in manifest_content
+        checks.append({
+            'id': 'master-manifest',
+            'label': 'Master manifest declares HLS variants',
+            'status': 'passed' if master_ok else 'failed'
+        })
+
+        variant_outputs = [output for output in outputs if output.get('profile') != 'master']
+        for output in variant_outputs:
+            profile = output.get('profile')
+            variant_dir = os.path.join(tmpdir, profile)
+            playlist_path = os.path.join(variant_dir, 'playlist.m3u8')
+            segments = [name for name in os.listdir(variant_dir)] if os.path.exists(variant_dir) else []
+            segment_count = len([name for name in segments if name.endswith('.ts')])
+            playlist_ok = os.path.exists(playlist_path) and segment_count > 0
+
+            checks.append({
+                'id': f'{profile}-playlist',
+                'label': f'{profile} playlist and segments exist',
+                'status': 'passed' if playlist_ok else 'failed',
+                'segmentCount': segment_count
+            })
+
+        return {
+            'status': 'passed' if all(check['status'] == 'passed' for check in checks) else 'failed',
+            'target': 'HLS VOD',
+            'checkedAt': self.now_iso(),
+            'checks': checks
+        }
+
+    def update_phase(
+        self,
+        job_id: str,
+        status: str,
+        phase: str,
+        progress: int,
+        metadata: Dict = None,
+        probe: Dict = None
+    ):
+        mapping = {
+            'status': status,
+            'phase': phase,
+            'progress': str(progress),
+            'updated_at': self.now_iso(),
+        }
+
+        if metadata:
+            mapping.update({
+                'profile_id': metadata.get('profileId') or '',
+                'profile_name': metadata.get('profileName') or '',
+                'cache_key': metadata.get('cacheKey') or '',
+                'source_fingerprint': metadata.get('sourceFingerprint') or '',
+                'plan': json.dumps(metadata.get('plan')) if metadata.get('plan') else '',
+            })
+
+        if probe:
+            mapping['probe'] = json.dumps(probe)
+
+        self.redis.hset(f"job:{job_id}", mapping=mapping)
+
+    def notify_status(
+        self,
+        job_id: str,
+        status: str,
+        outputs: List = None,
+        error: str = None,
+        phase: str = None,
+        progress: int = None,
+        validation: Dict = None,
+        provenance: Dict = None,
+        probe: Dict = None
+    ):
         """Store job status in Redis and optionally call webhook"""
         status_data = {
             'job_id': job_id,
@@ -247,14 +405,29 @@ class LyveTranscoder:
             'error': error
         }
         
+        existing = self.redis.hgetall(f"job:{job_id}") or {}
+
         # Store in Redis
         self.redis.hset(f"job:{job_id}", mapping={
             'status': status,
+            'phase': phase or status,
+            'progress': str(progress if progress is not None else (100 if status == 'complete' else 0)),
             'outputs': json.dumps(outputs or []),
             'error': error or '',
-            'updated_at': str(time.time())
+            'validation': json.dumps(validation or {}),
+            'provenance': json.dumps(provenance or {}),
+            'probe': json.dumps(probe or {}),
+            'updated_at': self.now_iso()
         })
         self.redis.expire(f"job:{job_id}", 86400 * 7)  # 7 days TTL
+
+        cache_key = existing.get('cache_key') or (provenance or {}).get('cacheKey')
+        if status == 'complete' and cache_key and outputs:
+            self.redis.setex(
+                f"transcodecache:v1:{cache_key}:outputs",
+                86400 * 30,
+                json.dumps(outputs)
+            )
         
         # Webhook notification
         if WEBHOOK_URL:

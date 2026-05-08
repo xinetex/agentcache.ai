@@ -74,7 +74,7 @@ export function CognitiveMap() {
 
     useEffect(() => {
         fetchData();
-        const interval = setInterval(fetchData, 5000); // Poll every 5s for live movement
+        const interval = setInterval(fetchData, 30000);
         return () => clearInterval(interval);
     }, []);
 
