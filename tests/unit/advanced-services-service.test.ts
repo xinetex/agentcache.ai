@@ -9,6 +9,7 @@ describe('advanced services service', () => {
     expect(ids).toContain('workflow-memory-fabric');
     expect(ids).toContain('agent-reliability-mesh');
     expect(ids).toContain('decisionrail');
+    expect(ids).toContain('media-workflow-reliability');
     expect(catalog.find((service) => service.id === 'decisionrail')?.endpoints)
       .toEqual(expect.arrayContaining([
         expect.objectContaining({ path: '/api/execution/context-packs' }),
@@ -56,5 +57,23 @@ describe('advanced services service', () => {
     expect(selectedIds).toContain('synthetic-ops-sandbox');
     expect(selectedIds).toContain('agent-reliability-mesh');
     expect(blueprint.policyPack.find((control) => control.control === 'Execution drift evaluation')?.mode).toBe('monitor');
+  });
+
+  it('elevates media workflow reliability for transcode and streaming launches', () => {
+    const blueprint = advancedServicesService.buildBlueprint({
+      objective: 'Ship media workflows that plan FFmpeg transcodes, validate HLS manifests, and publish Roku streams.',
+      sector: 'media',
+      autonomy: 'copilot',
+      riskTolerance: 'medium',
+      systems: ['Lyve S3', 'FFmpeg worker', 'CDN', 'Roku'],
+      painPoints: ['opaque queue', 'duplicate renditions', 'late playback failures'],
+    });
+
+    const selectedIds = blueprint.recommendedBundle.map((item) => item.service.id);
+    expect(selectedIds).toContain('media-workflow-reliability');
+    expect(blueprint.recommendedBundle.find((item) => item.service.id === 'media-workflow-reliability')?.service.endpoints)
+      .toEqual(expect.arrayContaining([
+        expect.objectContaining({ path: '/api/transcode/jobs' }),
+      ]));
   });
 });

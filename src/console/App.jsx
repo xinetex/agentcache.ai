@@ -99,7 +99,7 @@ const AppContent = () => {
             <CommandRail activeView={activeView} setActiveView={setActiveView} user={effectiveUser} />
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col pl-16 transition-all duration-300">
+            <div className="min-w-0 flex-1 flex flex-col pl-16 transition-all duration-300">
                 {/* Demo Mode Banner */}
                 {isDemo && (
                     <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-1 text-center">
@@ -114,7 +114,7 @@ const AppContent = () => {
                 <HUD />
 
                 {/* Scrollable Viewport */}
-                <main className="flex-1 overflow-y-auto overflow-x-hidden pt-16 p-6 relative">
+                <main className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden pt-16 p-6 relative">
                     {/* Grid Background Overlay */}
                     <div className="fixed inset-0 pointer-events-none z-0 opacity-20"
                         style={{

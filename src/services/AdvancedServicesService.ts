@@ -12,6 +12,7 @@ export type AdvancedServiceId =
   | 'workflow-memory-fabric'
   | 'agent-reliability-mesh'
   | 'decisionrail'
+  | 'media-workflow-reliability'
   | 'synthetic-ops-sandbox'
   | 'autonomous-compliance-translator'
   | 'swarm-forensics-vault';
@@ -20,6 +21,7 @@ export type AdvancedServiceCategory =
   | 'memory'
   | 'reliability'
   | 'governance'
+  | 'media'
   | 'simulation'
   | 'compliance'
   | 'audit';
@@ -197,7 +199,7 @@ const SERVICE_CATALOG: AdvancedServiceDefinition[] = [
   },
   {
     id: 'synthetic-ops-sandbox',
-    rank: 4,
+    rank: 5,
     name: 'Synthetic Ops Sandbox',
     category: 'simulation',
     buyer: 'Transformation teams stress-testing agent workflows before rollout',
@@ -223,8 +225,38 @@ const SERVICE_CATALOG: AdvancedServiceDefinition[] = [
     ],
   },
   {
+    id: 'media-workflow-reliability',
+    rank: 4,
+    name: 'Media Workflow Reliability',
+    category: 'media',
+    buyer: 'Streaming platforms, creator networks, FAST channels, and internal media operations teams',
+    outcome: 'Cache-aware planning, queue visibility, rendition validation, and playback-ready evidence for video workflows.',
+    wedge: 'Start with transcode planning and job telemetry, then expand into CDN prewarm, manifest validation, and customer SLAs.',
+    maturity: 'available',
+    pricingUnit: 'per source minute, rendition, cache hit, and monitored media job',
+    implementationTime: '1-3 weeks',
+    capabilities: [
+      'transcode planning',
+      'profile validation',
+      'cache-keyed rendition reuse',
+      'queue and job visibility',
+      'CDN stream handoff',
+    ],
+    controls: [
+      'validate playable manifests',
+      'reuse known-good renditions',
+      'record source fingerprint and FFmpeg build',
+    ],
+    endpoints: [
+      { label: 'Media profiles', method: 'GET', path: '/api/transcode/profiles', status: 'available' },
+      { label: 'Plan media job', method: 'POST', path: '/api/transcode/plan', status: 'available' },
+      { label: 'Submit media job', method: 'POST', path: '/api/transcode/submit', status: 'available' },
+      { label: 'Recent media jobs', method: 'GET', path: '/api/transcode/jobs', status: 'available' },
+    ],
+  },
+  {
     id: 'autonomous-compliance-translator',
-    rank: 5,
+    rank: 6,
     name: 'Autonomous Compliance Translator',
     category: 'compliance',
     buyer: 'Legal, procurement, and enterprise AI governance teams',
@@ -251,7 +283,7 @@ const SERVICE_CATALOG: AdvancedServiceDefinition[] = [
   },
   {
     id: 'swarm-forensics-vault',
-    rank: 6,
+    rank: 7,
     name: 'Swarm Forensics Vault',
     category: 'audit',
     buyer: 'Regulated enterprises, insurers, auditors, and AI platform teams',
@@ -350,6 +382,11 @@ function scoreService(service: AdvancedServiceDefinition, input: {
     if (input.autonomy === 'shadow') score += 7;
   }
 
+  if (service.id === 'media-workflow-reliability') {
+    if (hasAny(corpus, ['media', 'video', 'stream', 'hls', 'transcode', 'ffmpeg', 'roku', 'cdn', 'manifest', 'rendition'])) score += 22;
+    if (hasAny(corpus, ['publish', 'ship', 'workflow', 'playback', 'queue'])) score += 7;
+  }
+
   if (service.id === 'autonomous-compliance-translator') {
     if (hasAny(corpus, ['compliance', 'policy', 'legal', 'hipaa', 'sox', 'gdpr', 'procurement'])) score += 19;
     if (input.regulated || ['finance', 'legal', 'healthcare', 'energy', 'biotech'].includes(input.sector)) score += 9;
@@ -382,6 +419,9 @@ function reasonFor(service: AdvancedServiceDefinition, input: {
   if (service.id === 'synthetic-ops-sandbox') {
     return 'Runs workflow rehearsals in shadow mode before production exposure.';
   }
+  if (service.id === 'media-workflow-reliability') {
+    return 'Turns ingest, transcode, validation, and playback delivery into a visible, cache-aware workflow lane.';
+  }
   if (service.id === 'autonomous-compliance-translator') {
     return 'Converts governance requirements into runtime controls, retention posture, and approval roles.';
   }
@@ -393,6 +433,7 @@ function firstMilestoneFor(service: AdvancedServiceDefinition) {
   if (service.id === 'agent-reliability-mesh') return 'Expose reliability posture, drift watch, and receipt coverage for one production workflow.';
   if (service.id === 'decisionrail') return 'Create one context pack, reviewer role set, and approval gate for a real final action.';
   if (service.id === 'synthetic-ops-sandbox') return 'Run five shadow scenarios and compare expected versus actual workflow phases.';
+  if (service.id === 'media-workflow-reliability') return 'Plan one source asset, submit it through a target profile, and verify queue plus manifest readiness.';
   if (service.id === 'autonomous-compliance-translator') return 'Map one policy pack into runtime gates and retention controls.';
   return 'Export receipt-backed evidence for one completed or failed workflow run.';
 }
@@ -522,7 +563,7 @@ function stableBlueprintId(input: AdvancedServicesBlueprintInput) {
 
 export class AdvancedServicesService {
   getCatalog() {
-    return SERVICE_CATALOG;
+    return [...SERVICE_CATALOG].sort((a, b) => a.rank - b.rank);
   }
 
   getService(id: string) {

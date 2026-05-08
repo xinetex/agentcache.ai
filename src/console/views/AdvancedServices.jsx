@@ -50,6 +50,17 @@ const fallbackServices = [
         capabilities: ['context packs', 'review roles', 'approval gates'],
         endpoints: [{ label: 'Create context pack', method: 'POST', path: '/api/execution/context-packs' }],
     },
+    {
+        id: 'media-workflow-reliability',
+        rank: 4,
+        name: 'Media Workflow Reliability',
+        category: 'media',
+        buyer: 'Streaming and media teams',
+        outcome: 'Cache-aware planning, rendition validation, and playback-ready evidence for video workflows.',
+        maturity: 'available',
+        capabilities: ['transcode planning', 'profile validation', 'queue visibility'],
+        endpoints: [{ label: 'Recent media jobs', method: 'GET', path: '/api/transcode/jobs' }],
+    },
 ];
 
 const initialForm = {
@@ -60,6 +71,98 @@ const initialForm = {
     systems: 'Slack, GitHub, Salesforce, internal procurement API',
     painPoints: 'handoffs lose context, approvals are slow, leaders do not trust autonomous actions, audit evidence is scattered',
     regulated: true,
+};
+
+const outcomePresets = [
+    {
+        id: 'reduce-llm-cost',
+        title: 'Reduce LLM cost',
+        serviceId: 'workflow-memory-fabric',
+        icon: Sparkles,
+        form: {
+            objective: 'Reduce LLM spend for support and research agents by reusing safe answers, tool results, and memory without serving stale responses.',
+            sector: 'saas',
+            autonomy: 'copilot',
+            riskTolerance: 'medium',
+            systems: 'OpenAI, Anthropic, LangChain, support desk, product docs',
+            painPoints: 'duplicate prompts are expensive, cache hits are hard to trust, freshness rules are unclear',
+            regulated: false,
+        },
+    },
+    {
+        id: 'agent-memory',
+        title: 'Give agents memory',
+        serviceId: 'workflow-memory-fabric',
+        icon: BrainCircuit,
+        form: {
+            objective: 'Give agents durable workspace memory so they can recall prior decisions, constraints, handoffs, and tool outcomes across sessions.',
+            sector: 'operations',
+            autonomy: 'copilot',
+            riskTolerance: 'medium',
+            systems: 'Slack, Linear, GitHub, Google Drive, internal tools',
+            painPoints: 'agents repeat discovery, handoffs lose context, teams cannot inspect what memory influenced an answer',
+            regulated: false,
+        },
+    },
+    {
+        id: 'monitor-drift',
+        title: 'Monitor drift',
+        serviceId: 'agent-reliability-mesh',
+        icon: GitBranch,
+        form: {
+            objective: 'Monitor production agent workflows for execution drift, unexpected phase movement, and rising intervention risk.',
+            sector: 'enterprise-ai',
+            autonomy: 'copilot',
+            riskTolerance: 'low',
+            systems: 'agent runtime, telemetry stream, ticketing system, policy service',
+            painPoints: 'operators cannot tell when agents are drifting, incidents lack replayable evidence, intervention thresholds are fuzzy',
+            regulated: true,
+        },
+    },
+    {
+        id: 'govern-approvals',
+        title: 'Govern approvals',
+        serviceId: 'decisionrail',
+        icon: Scale,
+        form: {
+            objective: 'Govern recommendations so agents can prepare decisions, but final external actions require reviewer roles, approval gates, and receipts.',
+            sector: 'finance',
+            autonomy: 'copilot',
+            riskTolerance: 'low',
+            systems: 'Slack, Salesforce, procurement API, ERP, audit archive',
+            painPoints: 'approvals are slow, reviewers lack context, payment and procurement actions need audit evidence',
+            regulated: true,
+        },
+    },
+    {
+        id: 'ship-media-workflows',
+        title: 'Ship media workflows',
+        serviceId: 'media-workflow-reliability',
+        icon: Workflow,
+        form: {
+            objective: 'Ship reliable media workflows that plan transcodes, validate HLS outputs, reuse cached renditions, and expose queue status before publishing.',
+            sector: 'media',
+            autonomy: 'copilot',
+            riskTolerance: 'medium',
+            systems: 'Lyve S3, FFmpeg worker, CDN stream route, Roku channel, web player',
+            painPoints: 'encoding jobs are opaque, manifests fail late, duplicate renditions waste compute, playback readiness is hard to prove',
+            regulated: false,
+        },
+    },
+];
+
+const fallbackSignals = {
+    outcomes: Object.fromEntries(outcomePresets.map((preset) => [
+        preset.id,
+        {
+            status: 'loading',
+            serviceId: preset.serviceId,
+            summary: 'Checking local runtime signals.',
+            evidence: [],
+            sources: [],
+            gaps: [],
+        },
+    ])),
 };
 
 function splitList(value) {
@@ -74,6 +177,22 @@ function badgeClass(value) {
     if (value === 'review' || value === 'beta' || value === 'copilot') return 'border-amber-400/30 bg-amber-500/10 text-amber-200';
     if (value === 'block' || value === 'autonomous') return 'border-rose-400/30 bg-rose-500/10 text-rose-200';
     return 'border-cyan-400/30 bg-cyan-500/10 text-cyan-100';
+}
+
+function statusClass(value) {
+    if (value === 'live') return 'border-emerald-400/30 bg-emerald-500/10 text-emerald-200';
+    if (value === 'partial') return 'border-amber-400/30 bg-amber-500/10 text-amber-200';
+    if (value === 'loading') return 'border-cyan-400/30 bg-cyan-500/10 text-cyan-100';
+    return 'border-white/10 bg-white/[0.04] text-slate-200';
+}
+
+function formatMetricValue(metric) {
+    if (typeof metric?.value === 'number') {
+        if (metric.unit === '%') return `${Number(metric.value).toFixed(metric.value % 1 ? 1 : 0)}%`;
+        if (metric.unit === 'USD') return `$${Number(metric.value).toFixed(2)}`;
+        return Number(metric.value).toLocaleString();
+    }
+    return metric?.value || '0';
 }
 
 const Field = ({ label, children }) => (
@@ -103,6 +222,8 @@ const TextInput = (props) => (
 const AdvancedServices = () => {
     const [services, setServices] = useState(fallbackServices);
     const [selectedId, setSelectedId] = useState('agent-reliability-mesh');
+    const [activeOutcomeId, setActiveOutcomeId] = useState('monitor-drift');
+    const [signals, setSignals] = useState(fallbackSignals);
     const [form, setForm] = useState(initialForm);
     const [blueprint, setBlueprint] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -113,23 +234,31 @@ const AdvancedServices = () => {
         [services, selectedId],
     );
 
-    const submitBlueprint = async (event, attempt = 0) => {
+    const activeOutcome = useMemo(
+        () => outcomePresets.find((outcome) => outcome.id === activeOutcomeId) || outcomePresets[2],
+        [activeOutcomeId],
+    );
+
+    const activeSignal = signals?.outcomes?.[activeOutcomeId] || fallbackSignals.outcomes[activeOutcomeId];
+
+    const submitBlueprint = async (event, attempt = 0, overrideForm = null) => {
         event?.preventDefault();
         setLoading(true);
         setError('');
+        const sourceForm = overrideForm || form;
 
         try {
             const res = await fetch('/api/advanced-services/blueprint', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    objective: form.objective,
-                    sector: form.sector,
-                    autonomy: form.autonomy,
-                    riskTolerance: form.riskTolerance,
-                    systems: splitList(form.systems),
-                    painPoints: splitList(form.painPoints),
-                    regulated: form.regulated,
+                    objective: sourceForm.objective,
+                    sector: sourceForm.sector,
+                    autonomy: sourceForm.autonomy,
+                    riskTolerance: sourceForm.riskTolerance,
+                    systems: splitList(sourceForm.systems),
+                    painPoints: splitList(sourceForm.painPoints),
+                    regulated: sourceForm.regulated,
                 }),
             });
             const data = await res.json();
@@ -145,17 +274,30 @@ const AdvancedServices = () => {
         }
     };
 
+    const applyOutcome = (outcome) => {
+        const nextForm = { ...form, ...outcome.form };
+        setActiveOutcomeId(outcome.id);
+        setSelectedId(outcome.serviceId);
+        setForm(nextForm);
+        setBlueprint(null);
+        submitBlueprint(undefined, 0, nextForm);
+    };
+
     useEffect(() => {
         let mounted = true;
 
-        fetch('/api/advanced-services/catalog')
-            .then((res) => res.json())
-            .then((data) => {
-                if (mounted && Array.isArray(data.services)) {
-                    setServices(data.services);
-                }
-            })
-            .catch(() => null);
+        Promise.allSettled([
+            fetch('/api/advanced-services/catalog').then((res) => res.json()),
+            fetch('/api/advanced-services/signals').then((res) => res.json()),
+        ]).then(([catalogResult, signalResult]) => {
+            if (!mounted) return;
+            if (catalogResult.status === 'fulfilled' && Array.isArray(catalogResult.value.services)) {
+                setServices(catalogResult.value.services);
+            }
+            if (signalResult.status === 'fulfilled' && signalResult.value?.outcomes) {
+                setSignals(signalResult.value);
+            }
+        }).catch(() => null);
 
         return () => {
             mounted = false;
@@ -177,7 +319,7 @@ const AdvancedServices = () => {
                     </div>
                     <h1 className="mt-3 font-['Rajdhani'] text-4xl font-bold tracking-wide text-white">Advanced Services</h1>
                     <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--hud-text-dim)]">
-                        Package AgentCache into buyer-ready lanes: memory substrate, reliability controls, governed decisions, sandbox rehearsal, compliance, and forensics.
+                        Start from the reliability outcome a buyer cares about, then map the service bundle, evidence, and first production lane.
                     </p>
                 </div>
                 <button
@@ -199,6 +341,57 @@ const AdvancedServices = () => {
                     </div>
                 </div>
             )}
+
+            <section className="glass rounded-lg p-5">
+                <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+                    <div>
+                        <div className="text-xs uppercase tracking-[0.2em] text-cyan-200">Outcome first</div>
+                        <h2 className="mt-2 font-['Rajdhani'] text-3xl font-semibold text-white">What are you trying to make reliable?</h2>
+                    </div>
+                    <p className="max-w-2xl text-sm leading-6 text-[var(--hud-text-dim)]">
+                        The badges below come from current AgentCache routes. Live means aggregate data is accessible now; partial means the APIs exist and need governed workflow traffic.
+                    </p>
+                </div>
+
+                <div className="mt-5 grid gap-3 xl:grid-cols-5">
+                    {outcomePresets.map((outcome) => {
+                        const Icon = outcome.icon;
+                        const signal = signals?.outcomes?.[outcome.id] || fallbackSignals.outcomes[outcome.id];
+                        return (
+                            <button
+                                key={outcome.id}
+                                type="button"
+                                onClick={() => applyOutcome(outcome)}
+                                className={`flex min-h-[210px] flex-col rounded-lg border p-4 text-left transition ${activeOutcomeId === outcome.id
+                                    ? 'border-cyan-300/50 bg-cyan-300/10'
+                                    : 'border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.06]'
+                                    }`}
+                            >
+                                <div className="flex items-start justify-between gap-3">
+                                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-cyan-300/20 bg-cyan-300/10 text-cyan-100">
+                                        <Icon size={20} />
+                                    </span>
+                                    <span className={`rounded-md border px-2 py-1 text-[11px] uppercase ${statusClass(signal?.status)}`}>
+                                        {signal?.status || 'loading'}
+                                    </span>
+                                </div>
+                                <h3 className="mt-4 font-['Rajdhani'] text-xl font-semibold leading-6 text-white">{outcome.title}</h3>
+                                <p className="mt-2 line-clamp-3 text-xs leading-5 text-[var(--hud-text-dim)]">{signal?.summary}</p>
+                                <div className="mt-auto pt-4">
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {(signal?.evidence || []).slice(0, 4).map((item) => (
+                                            <div key={item.label} className="rounded-md border border-white/10 bg-black/20 px-2 py-2">
+                                                <div className="truncate text-[10px] uppercase tracking-wide text-[var(--hud-text-dim)]">{item.label}</div>
+                                                <div className="mt-1 truncate font-mono text-sm text-white">{formatMetricValue(item)}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+            </section>
 
             <section className="grid gap-6 xl:grid-cols-[0.95fr_1.65fr]">
                 <form onSubmit={submitBlueprint} className="glass rounded-lg p-5">
@@ -287,26 +480,53 @@ const AdvancedServices = () => {
                 </form>
 
                 <div className="space-y-6">
-                    <div className="grid gap-3 md:grid-cols-3">
-                        {services.slice(0, 6).map((service) => (
-                            <button
-                                key={service.id}
-                                type="button"
-                                onClick={() => setSelectedId(service.id)}
-                                className={`rounded-lg border p-4 text-left transition ${selectedId === service.id
-                                    ? 'border-cyan-300/50 bg-cyan-300/10'
-                                    : 'border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.06]'
-                                    }`}
-                            >
-                                <div className="flex items-center justify-between gap-3">
-                                    <span className="font-mono text-xs text-cyan-200">#{service.rank}</span>
-                                    <span className={`rounded-md border px-2 py-1 text-[11px] ${badgeClass(service.maturity)}`}>{service.maturity}</span>
+                    <section className="glass rounded-lg p-5">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                            <div>
+                                <div className="flex items-center gap-2 text-cyan-200">
+                                    <ShieldCheck size={19} />
+                                    <span className="text-xs uppercase tracking-wide">{activeOutcome.title}</span>
                                 </div>
-                                <h3 className="mt-3 min-h-[44px] font-['Rajdhani'] text-xl font-semibold leading-5 text-white">{service.name}</h3>
-                                <p className="mt-2 line-clamp-3 text-xs leading-5 text-[var(--hud-text-dim)]">{service.outcome}</p>
-                            </button>
-                        ))}
-                    </div>
+                                <h2 className="mt-2 font-['Rajdhani'] text-3xl font-semibold text-white">Accessible Data Points</h2>
+                                <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--hud-text-dim)]">{activeSignal?.summary}</p>
+                            </div>
+                            <span className={`rounded-md border px-2 py-1 text-xs uppercase ${statusClass(activeSignal?.status)}`}>{activeSignal?.status || 'loading'}</span>
+                        </div>
+
+                        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                            {(activeSignal?.evidence || []).map((item) => (
+                                <div key={item.label} className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                                    <div className="text-[11px] uppercase tracking-wide text-[var(--hud-text-dim)]">{item.label}</div>
+                                    <div className="mt-2 font-mono text-lg text-white">{formatMetricValue(item)}</div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_0.8fr]">
+                            <div>
+                                <h3 className="text-sm font-semibold text-white">Sources</h3>
+                                <div className="mt-3 space-y-2">
+                                    {(activeSignal?.sources || []).map((source) => (
+                                        <div key={`${source.method}-${source.path}`} className="flex items-center justify-between gap-3 border-b border-white/10 pb-2 text-sm last:border-b-0">
+                                            <span className="text-slate-300">{source.fields?.slice(0, 2).join(', ') || 'runtime fields'}</span>
+                                            <code className="rounded bg-white/10 px-2 py-1 text-xs text-cyan-100">{source.method} {source.path}</code>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-semibold text-white">Next Instrumentation</h3>
+                                <div className="mt-3 space-y-2">
+                                    {(activeSignal?.gaps?.length ? activeSignal.gaps : ['no immediate gaps']).map((gap) => (
+                                        <div key={gap} className="flex items-center gap-2 text-sm text-slate-300">
+                                            <CheckCircle2 size={15} className={gap === 'no immediate gaps' ? 'text-emerald-300' : 'text-amber-300'} />
+                                            <span>{gap}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </section>
 
                     <section className="glass rounded-lg p-5">
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -315,7 +535,8 @@ const AdvancedServices = () => {
                                     <BrainCircuit size={19} />
                                     <span className="text-xs uppercase tracking-wide">{selected?.category}</span>
                                 </div>
-                                <h2 className="mt-2 font-['Rajdhani'] text-3xl font-semibold text-white">{selected?.name}</h2>
+                                <h2 className="mt-2 font-['Rajdhani'] text-3xl font-semibold text-white">Selected Control Plane</h2>
+                                <div className="mt-1 text-sm font-semibold text-cyan-100">{selected?.name}</div>
                                 <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--hud-text-dim)]">{selected?.outcome}</p>
                             </div>
                             <span className={`rounded-md border px-2 py-1 text-xs ${badgeClass(selected?.maturity)}`}>{selected?.maturity}</span>
