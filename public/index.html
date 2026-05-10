@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgentCache | AI Cache + Memory Infrastructure</title>
+    <title>AgentCache | Execution Drift Guard, Cache & Memory Infrastructure</title>
     <meta name="description"
-        content="AgentCache helps teams and autonomous agents cut repeated LLM and tool costs, serve cached responses in milliseconds, and add persistent memory." />
+        content="AgentCache helps teams cut repeated LLM and tool costs, add persistent memory, and detect execution drift before production agents go off-script." />
 
     <!-- Agent discovery alternates -->
     <link rel="alternate" type="application/json" href="/.well-known/agents.json">
@@ -204,7 +204,7 @@
             <h1
                 class="font-black text-2xl tracking-tighter uppercase text-slate-800 dark:text-white pointer-events-auto">
                 AgentCache</h1>
-            <p class="text-[10px] font-mono tracking-[0.2em] text-slate-500 uppercase">AI Cache + Memory Platform</p>
+            <p class="text-[10px] font-mono tracking-[0.2em] text-slate-500 uppercase">Cache, Guardrails & Drift Control</p>
         </div>
         <div class="pointer-events-auto flex items-center gap-2">
             <a href="/services"
@@ -214,9 +214,9 @@
             <a href="/skill.md"
                 class="hidden md:inline-flex px-3 py-2 rounded-full text-xs font-bold tracking-widest uppercase text-cyan-600 hover:text-cyan-500 transition">For
                 Agents</a>
-            <a href="/services#cache"
+            <a href="/signup.html?next=%2Fonboarding.html%3Ffocus%3Ddrift"
                 class="inline-flex px-4 py-2 rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-black tracking-widest uppercase transition shadow-lg shadow-cyan-500/20">Get
-                API Key</a>
+                Started</a>
             <button onclick="toggleTheme()"
                 class="p-2 rounded-full bg-slate-200 dark:bg-slate-800 hover:opacity-80 transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -236,11 +236,11 @@
                 Protocol</div>
 
             <div id="mission-text" class="cycling-text relative z-10">
-                COGNITIVE OS<br>FOR AGENTS
+                TRUSTED CONTROL<br>FOR AGENTS
             </div>
 
             <p class="mt-8 text-slate-400 max-w-lg text-lg leading-relaxed font-light relative z-10">
-                The standard library for the agentic era. Add one line of code to get semantic memory, risk-aware governance, and 90% cost savings for your swarm.
+                Agent infrastructure for teams running real workflows. Cut repeated model spend, preserve memory, and detect execution drift before it becomes a production incident.
             </p>
 
             <div class="mt-8 relative z-10 flex flex-wrap justify-center gap-3">
@@ -253,8 +253,10 @@
                         </div>
                     </div>
                 </div>
-                <a href="/docs"
-                    class="inline-flex items-center rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-6 py-4 text-xs font-black tracking-widest uppercase transition shadow-xl shadow-cyan-500/10">Get Started</a>
+                <a href="/signup.html?next=%2Fonboarding.html%3Ffocus%3Ddrift"
+                    class="inline-flex items-center rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-6 py-4 text-xs font-black tracking-widest uppercase transition shadow-xl shadow-cyan-500/10">Start Drift Guard</a>
+                <a href="/demo-execution-drift-guard.html"
+                    class="inline-flex items-center rounded-full bg-slate-800 hover:bg-slate-700 text-white px-6 py-4 text-xs font-black tracking-widest uppercase transition shadow-xl shadow-slate-900/20">See the wedge</a>
             </div>
 
             <!-- Savings Ticker -->

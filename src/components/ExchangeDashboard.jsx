@@ -13,7 +13,7 @@ const ExchangeDashboard = ({ onBack, agentId }) => {
 
     useEffect(() => {
         fetchData();
-        const interval = setInterval(fetchData, 5000); // Live ticker updates
+        const interval = setInterval(fetchData, 30000); // Live ticker updates
         return () => clearInterval(interval);
     }, []);
 

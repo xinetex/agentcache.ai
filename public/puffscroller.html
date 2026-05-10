@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Gasless Chronicles: PuffScroller</title>
+    <meta
+      name="description"
+      content="A playable Clean Puff Enterprises prototype: Shogun Sheba or Ninja Flatulus run through Queefdom Capital Plaza collecting Clean Puff Coins."
+    />
+    <link rel="stylesheet" href="puffscroller/styles.css" />
+  </head>
+  <body>
+    <main class="shell" aria-label="Gasless Chronicles PuffScroller prototype">
+      <section class="cabinet" aria-label="PuffScroller game cabinet">
+        <div class="brand-strip">
+          <span>CleanPuff Enterprises</span>
+          <strong>Gasless Chronicles: PuffScroller</strong>
+          <span>Zero-Gas Run 1.0</span>
+        </div>
+
+        <div class="game-frame">
+          <canvas id="game" width="480" height="854" aria-label="PuffScroller game canvas"></canvas>
+
+          <div class="hud" aria-live="polite">
+            <div class="meter">
+              <span id="routeName">Route</span>
+              <strong id="coinCount">0</strong>
+              <small>Clean Puffs</small>
+            </div>
+            <div class="meter">
+              <span id="biomeName">Queefdom Capital Plaza</span>
+              <strong id="distanceCount">0m</strong>
+              <small id="treeCount">0 symbolic trees</small>
+            </div>
+            <div class="meter">
+              <span>Vitals</span>
+              <strong id="heartCount">III</strong>
+              <small id="powerName">Ready</small>
+            </div>
+          </div>
+
+          <div id="quip" class="quip" aria-live="polite"></div>
+
+          <section id="menu" class="screen screen-active" aria-label="Character selection">
+            <div class="title-block">
+              <p class="eyebrow">The lungs of the planet have entered the chat</p>
+              <h1>PuffScroller</h1>
+              <p>Pick a route and sprint the first hand-built biome: Queefdom Capital Plaza.</p>
+            </div>
+
+            <div class="route-grid">
+              <article class="route-card route-hero" data-route="shogun" tabindex="0">
+                <img src="puffscroller/assets/shogun-sheba-ref.jpg" alt="Shogun Sheba character sheet" />
+                <div>
+                  <h2>Shogun Sheba</h2>
+                  <p>Balanced jumps, staff slam, honorable Clean Puff wave.</p>
+                  <button type="button" data-start="shogun">Rise of the Puff</button>
+                </div>
+              </article>
+
+              <article class="route-card route-chaos" data-route="ninja" tabindex="0">
+                <img src="puffscroller/assets/flatulus-ref.jpg" alt="Ninja Flatulus character sheet" />
+                <div>
+                  <h2>Ninja Flatulus</h2>
+                  <p>Fast dash, slippery phasing, extremely suspicious motives.</p>
+                  <button type="button" data-start="ninja">Key to the Kingdom</button>
+                </div>
+              </article>
+            </div>
+
+            <div class="mini-roster" aria-label="Prototype cast">
+              <figure>
+                <img src="puffscroller/assets/general-puff-ref.jpg" alt="General Puff reference sheet" />
+                <figcaption>General Puff morale drops</figcaption>
+              </figure>
+              <figure>
+                <img src="puffscroller/assets/empress-puff-ref.png" alt="Empress Puff reference sheet" />
+                <figcaption>Empress Puff fortress finale</figcaption>
+              </figure>
+            </div>
+          </section>
+
+          <section id="result" class="screen" aria-label="Run result">
+            <div class="result-panel">
+              <p class="eyebrow" id="resultEyebrow">Run Complete</p>
+              <h2 id="resultTitle">Clean Puff Protocol</h2>
+              <p id="resultCopy"></p>
+              <div class="receipt">
+                <span>Clean Puffs</span>
+                <strong id="receiptCoins">0</strong>
+                <span>Symbolic Trees</span>
+                <strong id="receiptTrees">0</strong>
+                <span>CO2 Offset Meme Math</span>
+                <strong id="receiptCarbon">0.00 kg</strong>
+                <span>Receipt Hash</span>
+                <strong id="receiptHash">0xPUFF</strong>
+              </div>
+              <div class="result-actions">
+                <button type="button" id="retryButton">Run It Back</button>
+                <button type="button" id="menuButton">Route Select</button>
+              </div>
+            </div>
+          </section>
+
+          <div id="pauseBadge" class="pause-badge" hidden>Paused</div>
+        </div>
+
+        <div class="touch-pad" aria-label="Touch controls">
+          <button type="button" data-control="jump" aria-label="Jump">^</button>
+          <button type="button" data-control="dash" aria-label="Dash">&gt;&gt;</button>
+          <button type="button" data-control="attack" aria-label="Attack">X</button>
+          <button type="button" id="pauseButton" aria-label="Pause">II</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="puffscroller/game.js" defer></script>
+  </body>
+</html>

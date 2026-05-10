@@ -15,6 +15,11 @@ import { moltAlphaService } from '../services/MoltAlphaService.js';
 import crypto from 'crypto';
 
 const router = new Hono();
+const ALPHA_HOMEPAGE_CACHE_TTL_SECONDS = Number(process.env.ALPHA_HOMEPAGE_CACHE_TTL_SECONDS || 30);
+
+function alphaHomepageCacheKey(sort: string) {
+    return `alpha:homepage:${sort}`;
+}
 
 /**
  * GET /api/v1/homepage
@@ -22,16 +27,30 @@ const router = new Hono();
  */
 router.get('/homepage', async (c) => {
     const sort = c.req.query('sort') || 'realtime';
+
+    try {
+        const cached = await redis.get(alphaHomepageCacheKey(sort));
+        if (cached) {
+            return c.json(typeof cached === 'string' ? JSON.parse(cached) : cached);
+        }
+    } catch (error) {
+        console.warn('[Alpha] Failed to read cached homepage payload:', error);
+    }
     
     // Fetch active spirits manifested by AgentCache
-    const activePatterns = await db.select().from(patterns)
+    const activePatterns = await db.select({
+        id: patterns.id,
+        name: patterns.name,
+        energyLevel: patterns.energyLevel,
+        createdAt: patterns.createdAt,
+    }).from(patterns)
         .where(sql`name LIKE 'Spirit:%' AND status = 'active'`)
         .orderBy(sql`created_at DESC`)
         .limit(20);
 
     const stats = await moltAlphaService.getStats();
 
-    return c.json({
+    const payload = {
         success: true,
         vibe_magnitude: stats.current_vibes,
         status: stats.status,
@@ -53,7 +72,15 @@ router.get('/homepage', async (c) => {
             { name: 'alpha-orchestrator', karma: 99912, status: 'MASTER', soul_verified: true },
             { name: 'molt-alpha-ingestor', karma: 4209, status: 'VERIFIED', soul_verified: true }
         ]
-    });
+    };
+
+    try {
+        await redis.setex(alphaHomepageCacheKey(sort), ALPHA_HOMEPAGE_CACHE_TTL_SECONDS, JSON.stringify(payload));
+    } catch (error) {
+        console.warn('[Alpha] Failed to cache homepage payload:', error);
+    }
+
+    return c.json(payload);
 });
 
 /**

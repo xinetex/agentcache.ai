@@ -1,0 +1,68 @@
+Vercel CLI 48.4.0
+WARN! Did you mean to deploy the subdirectory "logs"? Use `vc --cwd logs` instead.
+The "--limit" option was ignored because it is now deprecated. Please remove it.
+Fetching deployment "agentcache.ai" in drgnflai-jetty
+Displaying runtime logs for deployment agentcache-4uzjoupqy-drgnflai-jetty.vercel.app (dpl_EK6tF1KdttV5HdQB35UKy9mUCtHU) starting from Mar Tu 11:06:15.57
+
+waiting for new logs...
+11:06:57.18  ℹ️  POST  ---  agentcache.ai  ƒ  /api/v1/chat/completions
+----------------------------------------------------------------------
+☁️ Using Upstash Vector as Cloud Fallback Layer.
+
+waiting for new logs...
+11:06:57.31  🚫  POST  ---  agentcache.ai  ƒ  /api/v1/chat/completions
+----------------------------------------------------------------------
+❌ Upstash Query Failed: Unexpected token '<', "<html>
+<h"... is not valid JSON
+
+waiting for new logs...
+11:06:57.32  ℹ️  POST  ---  agentcache.ai  ƒ  /api/v1/chat/completions
+----------------------------------------------------------------------
+[34m[GATEWAY] Cache MISS: forwarding to openai/openai/gpt-4o[0m
+
+waiting for new logs...
+11:06:57.32  ℹ️  POST  ---  agentcache.ai  ƒ  /api/v1/chat/completions
+----------------------------------------------------------------------
+⚡ Found Redis Credentials. Initializing Upstash Redis (HTTP)
+
+waiting for new logs...
+11:06:57.41  ⚠️  POST  ---  agentcache.ai  ƒ  /api/v1/chat/completions
+----------------------------------------------------------------------
+⚠️ Redis unavailable during op. Switching to In-Memory Mock.
+
+waiting for new logs...
+11:06:58.35  ℹ️  POST  ---  agentcache.ai  ƒ  /api/v1/chat/completions
+----------------------------------------------------------------------
+[31m[GATEWAY] Gateway Failure: [openai] Failed after 3 retries. Original Error: OpenAI API Error: {
+    "error": {
+        "message": "invalid model ID",
+        "type": "invalid_request_error",
+        "param": null,
+        "code": null
+    }
+}
+[0m
+
+waiting for new logs...
+11:06:58.36  🚫  POST  ---  agentcache.ai  ƒ  /api/v1/chat/completions
+----------------------------------------------------------------------
+Gateway Error: Error: [openai] Failed after 3 retries. Original Error: OpenAI API Error: {
+    "error": {
+        "message": "invalid model ID",
+        "type": "invalid_request_error",
+        "param": null,
+        "code": null
+    }
+}
+
+    at OpenAIProvider.chat (/vercel/path0/src/lib/llm/AbstractLLMProvider.ts:56:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async OpenAIProvider.chat (/vercel/path0/src/lib/cache/tool.ts:56:24)
+    at async Object.handler (/vercel/path0/api/v1/chat/completions.ts:114:24)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10190)
+
+waiting for new logs...
+WARN! Command automatically interrupted after 5 minutes.
+

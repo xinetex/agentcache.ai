@@ -35,7 +35,7 @@ const IntelligenceDashboard = ({ onBack, initialView = 'graph' }) => {
         if (viewMode === 'graph') {
             fetchGraph();
         } else {
-            const interval = setInterval(fetchBoids, 100); // 10 FPS poll for swarm
+            const interval = setInterval(fetchBoids, 10000); // Reduced poll for swarm
             return () => clearInterval(interval);
         }
     }, [viewMode]);

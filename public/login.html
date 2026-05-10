@@ -111,7 +111,7 @@
 
     function resolvePostLoginRedirect(userData, onboarding) {
       if (onboarding && onboarding.required) {
-        return onboarding.url || '/onboarding.html';
+        return onboarding.url || '/onboarding.html?focus=drift';
       }
 
       if (userData && userData.organization) {
@@ -133,7 +133,7 @@
           }
           window.location.href = resolvePostLoginRedirect(
             data.user,
-            { required: !data.user?.organization, url: '/onboarding.html' }
+            { required: !data.user?.organization, url: '/onboarding.html?focus=drift' }
           );
         })
         .catch(err => {

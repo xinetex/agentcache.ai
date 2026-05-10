@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Execution Drift Guard Demo | AgentCache</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background:
+                radial-gradient(circle at top, rgba(34, 211, 238, 0.14), transparent 28%),
+                linear-gradient(180deg, #020617 0%, #020617 100%);
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+        }
+        code, pre {
+            font-family: 'JetBrains Mono', monospace;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="mx-auto max-w-5xl px-6 py-10">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <a href="/" class="text-sm font-semibold tracking-[0.16em] uppercase text-cyan-300">AgentCache</a>
+            <div class="flex flex-wrap gap-3">
+                <a href="/docs/quick-start.html" class="rounded-full border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-900">Quick Start</a>
+                <a href="/contact.html?interest=execution-drift-guard" class="rounded-full bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-400">Talk to us</a>
+            </div>
+        </div>
+
+        <section class="mt-10 rounded-3xl border border-slate-800 bg-slate-950/70 p-8 shadow-[0_30px_120px_rgba(2,6,23,0.45)]">
+            <div class="text-[11px] font-semibold uppercase tracking-[0.24em] text-cyan-300">Clean Demo Path</div>
+            <h1 class="mt-4 text-4xl font-black tracking-tight text-white sm:text-5xl">Execution Drift Guard</h1>
+            <p class="mt-5 max-w-3xl text-lg leading-8 text-slate-300">
+                This is the shortest believable walkthrough for AgentCache’s first paid wedge: create one workflow, evaluate it in shadow mode, and inspect what Drift Guard says about the run.
+            </p>
+            <div class="mt-8 grid gap-4 md:grid-cols-3">
+                <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
+                    <div class="text-sm font-semibold text-white">1. Provision access</div>
+                    <p class="mt-2 text-sm text-slate-400">Create an account, generate an API key, and keep one namespace handy.</p>
+                </div>
+                <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
+                    <div class="text-sm font-semibold text-white">2. Create one run</div>
+                    <p class="mt-2 text-sm text-slate-400">Use one context pack and one execution run. No broad setup, no feature safari.</p>
+                </div>
+                <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
+                    <div class="text-sm font-semibold text-white">3. Evaluate drift</div>
+                    <p class="mt-2 text-sm text-slate-400">Run Drift Guard in shadow mode, then inspect recommendations and receipts.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mt-8 rounded-3xl border border-slate-800 bg-slate-950/70 p-8">
+            <h2 class="text-2xl font-bold text-white">Step 1. Create access</h2>
+            <p class="mt-3 text-slate-400">
+                Sign up, finish onboarding, then open the <a href="/portal-dashboard.html" class="text-cyan-400 hover:underline">workspace portal</a>.
+                Generate one API key and export it locally.
+            </p>
+            <pre class="mt-5 overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900 p-4 text-sm text-slate-200"><code>export AGENTCACHE_API_KEY="ac_live_your_key"
+export AGENTCACHE_BASE_URL="https://agentcache.ai"</code></pre>
+        </section>
+
+        <section class="mt-8 rounded-3xl border border-slate-800 bg-slate-950/70 p-8">
+            <h2 class="text-2xl font-bold text-white">Step 2. Create one context pack</h2>
+            <p class="mt-3 text-slate-400">This defines the expected workflow. Keep it simple and explicit.</p>
+            <pre class="mt-5 overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900 p-4 text-sm text-slate-200"><code>curl -X POST "$AGENTCACHE_BASE_URL/api/execution/context-packs" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: $AGENTCACHE_API_KEY" \
+  -d '{
+    "name": "Finance Memo Review Demo",
+    "objective": "Review a finance memo before external publication.",
+    "methodology": "Draft, review, hold for gate approval, then finalize.",
+    "workflowPhases": ["draft", "review", "gate", "finalize"],
+    "reviewerRoles": ["critical", "compliance"],
+    "policyProfile": { "verticalSku": "finance-memory-fabric" },
+    "sectorHint": "finance"
+  }'</code></pre>
+            <p class="mt-4 text-sm text-slate-500">Copy the returned <code>pack.id</code>.</p>
+        </section>
+
+        <section class="mt-8 rounded-3xl border border-slate-800 bg-slate-950/70 p-8">
+            <h2 class="text-2xl font-bold text-white">Step 3. Start one run</h2>
+            <p class="mt-3 text-slate-400">This gives Drift Guard something real to evaluate.</p>
+            <pre class="mt-5 overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900 p-4 text-sm text-slate-200"><code>curl -X POST "$AGENTCACHE_BASE_URL/api/execution/runs" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: $AGENTCACHE_API_KEY" \
+  -d '{
+    "contextPackId": "PACK_ID_HERE",
+    "inputPayload": {
+      "documentId": "memo-demo-001",
+      "channel": "external-release"
+    },
+    "finalAction": "publish"
+  }'</code></pre>
+            <p class="mt-4 text-sm text-slate-500">Copy the returned <code>run.id</code>.</p>
+        </section>
+
+        <section class="mt-8 rounded-3xl border border-slate-800 bg-slate-950/70 p-8">
+            <h2 class="text-2xl font-bold text-white">Step 4. Evaluate drift</h2>
+            <p class="mt-3 text-slate-400">This is the core demo. We are not blocking execution yet. We are showing what the system sees.</p>
+            <pre class="mt-5 overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900 p-4 text-sm text-slate-200"><code>curl -X POST "$AGENTCACHE_BASE_URL/api/execution/runs/RUN_ID_HERE/evaluate" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: $AGENTCACHE_API_KEY" \
+  -d '{ "mode": "shadow" }'</code></pre>
+        </section>
+
+        <section class="mt-8 rounded-3xl border border-slate-800 bg-slate-950/70 p-8">
+            <h2 class="text-2xl font-bold text-white">Step 5. Show recommendations</h2>
+            <p class="mt-3 text-slate-400">This is the failure-to-playbook loop. It turns drift and workflow gaps into concrete suggested actions.</p>
+            <pre class="mt-5 overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900 p-4 text-sm text-slate-200"><code>curl "$AGENTCACHE_BASE_URL/api/execution/runs/RUN_ID_HERE/recommendations" \
+  -H "X-API-Key: $AGENTCACHE_API_KEY"</code></pre>
+        </section>
+
+        <section class="mt-8 rounded-3xl border border-cyan-500/30 bg-cyan-500/10 p-8">
+            <h2 class="text-2xl font-bold text-white">What the buyer should see</h2>
+            <ul class="mt-5 space-y-3 text-slate-200">
+                <li>One workflow with an expected path.</li>
+                <li>One drift evaluation in shadow mode.</li>
+                <li>Clear evidence about reviewer coverage, phase gaps, or trajectory instability.</li>
+                <li>Concrete next-step recommendations instead of vague “AI observability” language.</li>
+            </ul>
+            <div class="mt-6 flex flex-wrap gap-3">
+                <a href="/contact.html?interest=execution-drift-guard" class="rounded-full bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 hover:bg-cyan-400">Request a pilot</a>
+                <a href="/docs/quick-start.html" class="rounded-full border border-slate-700 px-5 py-3 text-sm text-slate-200 hover:bg-slate-900">Back to docs</a>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

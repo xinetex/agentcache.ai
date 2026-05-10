@@ -25,7 +25,11 @@
     <!-- Header -->
     <div class="auth-header">
       <h1 class="auth-title">Create your account</h1>
-      <p class="auth-subtitle">Create your workspace and start caching in minutes</p>
+      <p class="auth-subtitle">Create your workspace, get your API key, and start with Execution Drift Guard in minutes</p>
+    </div>
+
+    <div class="auth-message auth-message-success" style="display:block;margin-bottom:20px;background:rgba(244,63,94,0.08);border-color:rgba(244,63,94,0.35);color:#fecdd3;">
+      Recommended first move: run your first workflow, then score it with Drift Guard in shadow mode before you automate more.
     </div>
 
     <!-- Form -->
@@ -86,7 +90,11 @@
     const form = document.getElementById('signup-form');
     const errorMsg = document.getElementById('error-msg');
     const successMsg = document.getElementById('success-msg');
-    const REDIRECT_URL = '/onboarding.html'; // Dedicated onboarding wizard
+    const urlParams = new URLSearchParams(window.location.search);
+    const requestedNext = urlParams.get('next');
+    const REDIRECT_URL = requestedNext && requestedNext.startsWith('/') && !requestedNext.startsWith('//')
+      ? requestedNext
+      : '/onboarding.html?focus=drift';
 
     form.addEventListener('submit', async function (e) {
       e.preventDefault();

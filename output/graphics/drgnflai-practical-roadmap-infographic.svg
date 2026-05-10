@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1620" viewBox="0 0 1080 1620" role="img" aria-labelledby="title desc">
+  <title id="title">A Practical Roadmap for Districts</title>
+  <desc id="desc">A portrait infographic showing five implementation steps for district AI readiness: assess, govern, train, implement, and monitor.</desc>
+  <defs>
+    <linearGradient id="headerGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#12343B"/>
+      <stop offset="0.55" stop-color="#1B5C61"/>
+      <stop offset="1" stop-color="#D39C3F"/>
+    </linearGradient>
+    <linearGradient id="pageFade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F8FBFA"/>
+      <stop offset="1" stop-color="#EEF5F2"/>
+    </linearGradient>
+    <filter id="softShadow" x="-15%" y="-20%" width="130%" height="150%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#0B1F24" flood-opacity="0.15"/>
+    </filter>
+    <style>
+      .font-main { font-family: Inter, Avenir Next, Helvetica, Arial, sans-serif; }
+      .brand { font-size: 31px; font-weight: 800; letter-spacing: 0; fill: #FFFFFF; }
+      .kicker { font-size: 22px; font-weight: 700; letter-spacing: 0; fill: #DDEDE8; }
+      .title { font-size: 66px; font-weight: 850; letter-spacing: 0; fill: #FFFFFF; }
+      .subtitle { font-size: 27px; font-weight: 500; letter-spacing: 0; fill: #E9F5F1; }
+      .section-label { font-size: 19px; font-weight: 800; letter-spacing: 0; fill: #8A641B; }
+      .step-num { font-size: 30px; font-weight: 850; fill: #FFFFFF; }
+      .step-title { font-size: 36px; font-weight: 850; letter-spacing: 0; fill: #12343B; }
+      .step-body { font-size: 23px; font-weight: 500; letter-spacing: 0; fill: #30474B; }
+      .footer-title { font-size: 24px; font-weight: 850; fill: #12343B; }
+      .footer-copy { font-size: 20px; font-weight: 500; fill: #486063; }
+      .small { font-size: 17px; font-weight: 650; fill: #5E7274; }
+    </style>
+  </defs>
+
+  <rect width="1080" height="1620" fill="url(#pageFade)"/>
+
+  <path d="M0 0H1080V454C950 416 847 438 738 476C575 532 431 536 282 485C175 448 85 439 0 463V0Z" fill="url(#headerGradient)"/>
+  <path d="M0 393C121 364 237 374 360 420C510 476 648 464 786 416C903 375 991 366 1080 390V478C975 449 881 456 764 496C607 550 462 558 300 501C180 459 83 452 0 479V393Z" fill="#FFFFFF" opacity="0.16"/>
+
+  <g class="font-main">
+    <text x="86" y="86" class="brand">DRGNFLAI</text>
+    <text x="86" y="143" class="kicker">K-12 AI READINESS</text>
+    <text x="86" y="235" class="title">A Practical</text>
+    <text x="86" y="307" class="title">Roadmap for</text>
+    <text x="86" y="379" class="title">Districts</text>
+    <text x="86" y="431" class="subtitle">Governance first. Teachers supported. Students protected.</text>
+  </g>
+
+  <g transform="translate(857 78)">
+    <circle cx="72" cy="72" r="72" fill="#F2C15C" opacity="0.95"/>
+    <path d="M51 72C31 51 28 31 42 20C57 8 78 24 72 48C66 24 87 8 102 20C116 31 113 51 93 72C113 93 116 113 102 124C87 136 66 120 72 96C78 120 57 136 42 124C28 113 31 93 51 72Z" fill="#12343B"/>
+    <circle cx="72" cy="72" r="12" fill="#FFFFFF"/>
+  </g>
+
+  <g transform="translate(86 526)">
+    <text class="font-main section-label" x="0" y="0">FIVE STEPS TO IMPLEMENT SAFELY</text>
+  </g>
+
+  <line x1="143" y1="635" x2="143" y2="1364" stroke="#C8D9D4" stroke-width="8" stroke-linecap="round"/>
+
+  <g class="font-main" filter="url(#softShadow)">
+    <g transform="translate(86 574)">
+      <rect x="0" y="0" width="908" height="154" rx="22" fill="#FFFFFF"/>
+      <circle cx="57" cy="77" r="43" fill="#1B5C61"/>
+      <text x="57" y="88" text-anchor="middle" class="step-num">1</text>
+      <g transform="translate(126 43)">
+        <path d="M7 32C7 18 18 7 32 7C46 7 57 18 57 32C57 46 46 57 32 57C18 57 7 46 7 32ZM52 52L74 74" fill="none" stroke="#D39C3F" stroke-width="8" stroke-linecap="round"/>
+      </g>
+      <text x="230" y="61" class="step-title">Assess</text>
+      <text x="230" y="99" class="step-body">Review current AI use, literacy priorities, approved tools,</text>
+      <text x="230" y="130" class="step-body">policies, vendor contracts, and staff readiness.</text>
+    </g>
+
+    <g transform="translate(86 755)">
+      <rect x="0" y="0" width="908" height="154" rx="22" fill="#FFFFFF"/>
+      <circle cx="57" cy="77" r="43" fill="#C96C47"/>
+      <text x="57" y="88" text-anchor="middle" class="step-num">2</text>
+      <g transform="translate(126 39)">
+        <path d="M40 5L73 18V42C73 62 60 76 40 85C20 76 7 62 7 42V18L40 5Z" fill="none" stroke="#1B5C61" stroke-width="8" stroke-linejoin="round"/>
+        <path d="M25 43L36 54L56 31" fill="none" stroke="#D39C3F" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+      <text x="230" y="61" class="step-title">Govern</text>
+      <text x="230" y="99" class="step-body">Create or refine AI guidelines aligned with FERPA, COPPA,</text>
+      <text x="230" y="130" class="step-body">CIPA, IDEA, district policy, and board expectations.</text>
+    </g>
+
+    <g transform="translate(86 936)">
+      <rect x="0" y="0" width="908" height="154" rx="22" fill="#FFFFFF"/>
+      <circle cx="57" cy="77" r="43" fill="#D39C3F"/>
+      <text x="57" y="88" text-anchor="middle" class="step-num">3</text>
+      <g transform="translate(122 37)">
+        <path d="M10 27L42 12L74 27L42 42L10 27Z" fill="none" stroke="#12343B" stroke-width="8" stroke-linejoin="round"/>
+        <path d="M22 38V58C32 70 52 70 62 58V38" fill="none" stroke="#1B5C61" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M74 27V54" fill="none" stroke="#C96C47" stroke-width="8" stroke-linecap="round"/>
+      </g>
+      <text x="230" y="61" class="step-title">Train</text>
+      <text x="230" y="99" class="step-body">Equip administrators, teachers, interventionists, and staff</text>
+      <text x="230" y="130" class="step-body">with practical workflows and clear boundaries.</text>
+    </g>
+
+    <g transform="translate(86 1117)">
+      <rect x="0" y="0" width="908" height="176" rx="22" fill="#FFFFFF"/>
+      <circle cx="57" cy="88" r="43" fill="#2F7E7E"/>
+      <text x="57" y="99" text-anchor="middle" class="step-num">4</text>
+      <g transform="translate(124 48)">
+        <path d="M15 58L35 22C39 15 48 15 52 22L72 58C76 65 71 74 63 74H24C16 74 11 65 15 58Z" fill="none" stroke="#D39C3F" stroke-width="8" stroke-linejoin="round"/>
+        <path d="M43 32V55" stroke="#12343B" stroke-width="8" stroke-linecap="round"/>
+        <path d="M32 44H55" stroke="#12343B" stroke-width="8" stroke-linecap="round"/>
+      </g>
+      <text x="230" y="58" class="step-title">Implement</text>
+      <text x="230" y="96" class="step-body">Pilot tools in focused use cases: lesson planning,</text>
+      <text x="230" y="127" class="step-body">differentiation, structured literacy support, IEP drafting,</text>
+      <text x="230" y="158" class="step-body">communications, and operations.</text>
+    </g>
+
+    <g transform="translate(86 1320)">
+      <rect x="0" y="0" width="908" height="154" rx="22" fill="#FFFFFF"/>
+      <circle cx="57" cy="77" r="43" fill="#7C587F"/>
+      <text x="57" y="88" text-anchor="middle" class="step-num">5</text>
+      <g transform="translate(126 41)">
+        <path d="M7 38C18 19 30 10 43 10C56 10 68 19 79 38C68 57 56 66 43 66C30 66 18 57 7 38Z" fill="none" stroke="#12343B" stroke-width="8" stroke-linejoin="round"/>
+        <circle cx="43" cy="38" r="13" fill="none" stroke="#D39C3F" stroke-width="8"/>
+      </g>
+      <text x="230" y="61" class="step-title">Monitor</text>
+      <text x="230" y="99" class="step-body">Evaluate impact, equity, privacy, workload reduction, and</text>
+      <text x="230" y="130" class="step-body">instructional quality before scaling.</text>
+    </g>
+  </g>
+
+  <g class="font-main" transform="translate(86 1532)">
+    <rect x="0" y="-34" width="908" height="1.5" fill="#C8D9D4"/>
+    <text x="0" y="6" class="footer-title">DRGNFLAI</text>
+    <text x="134" y="6" class="footer-copy">AI governance, structured literacy, and educator readiness for K-12 schools.</text>
+    <text x="0" y="48" class="small">Use this roadmap to guide policy, training, pilot selection, and board-level AI conversations.</text>
+  </g>
+</svg>

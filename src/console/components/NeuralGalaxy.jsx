@@ -28,7 +28,7 @@ const NeuralGalaxy = ({ onNodeClick }) => {
         };
 
         fetchGraph();
-        const interval = setInterval(fetchGraph, 10000); // Poll for updates
+        const interval = setInterval(fetchGraph, 30000); // Poll for updates
 
         return () => clearInterval(interval);
     }, []);

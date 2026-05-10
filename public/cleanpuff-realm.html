@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>CleanPuff Realm: Protocol Tactics</title>
+    <meta
+      name="description"
+      content="A standalone CleanPuff Realm squad tactics prototype with lane battles, restoration, faction trust, and Clean Flow."
+    />
+    <link rel="stylesheet" href="cleanpuff-realm/styles.css" />
+  </head>
+  <body>
+    <main class="realm-app" aria-label="CleanPuff Realm Protocol Tactics">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <span>CleanPuff Realm</span>
+          <strong>Protocol Tactics</strong>
+        </div>
+        <div id="resourceBar" class="resource-bar" aria-live="polite"></div>
+      </header>
+
+      <section class="game-layout">
+        <aside class="left-rail" aria-label="Regions and squad">
+          <section class="panel region-panel">
+            <div class="panel-heading">
+              <span>Regions</span>
+              <button type="button" id="resetButton" class="quiet-button">Reset</button>
+            </div>
+            <div id="regionList" class="region-list"></div>
+          </section>
+
+          <section class="panel squad-panel">
+            <div class="panel-heading">
+              <span>Squad</span>
+              <span id="squadCount" class="pill">0/5</span>
+            </div>
+            <div id="squadSlots" class="squad-slots"></div>
+            <div id="rosterList" class="roster-list"></div>
+          </section>
+        </aside>
+
+        <section class="stage" aria-label="Battle stage">
+          <div class="stage-toolbar">
+            <div>
+              <span id="stageEyebrow" class="stage-eyebrow">Isle of Bide</span>
+              <h1 id="stageTitle">Exile and Spark</h1>
+            </div>
+            <div class="stage-actions">
+              <button type="button" id="speedButton" class="icon-button" aria-label="Battle speed">1x</button>
+              <button type="button" id="pauseButton" class="icon-button" aria-label="Pause">II</button>
+              <button type="button" id="battleButton">Engage</button>
+            </div>
+          </div>
+
+          <div class="arena-wrap">
+            <canvas id="arena" width="960" height="540" aria-label="CleanPuff Realm battle arena"></canvas>
+            <div id="arenaBanner" class="arena-banner" aria-live="polite"></div>
+          </div>
+
+          <div class="combat-meters" aria-live="polite">
+            <div class="meter-row clean">
+              <span>Clean Flow</span>
+              <div><i id="cleanFill"></i></div>
+              <strong id="cleanValue">0</strong>
+            </div>
+            <div class="meter-row gas">
+              <span>Gas Pressure</span>
+              <div><i id="gasFill"></i></div>
+              <strong id="gasValue">0</strong>
+            </div>
+          </div>
+
+          <div id="ultimateBar" class="ultimate-bar" aria-label="Hero ultimates"></div>
+        </section>
+
+        <aside class="right-rail" aria-label="Restoration and battle log">
+          <section class="panel intel-panel">
+            <div class="panel-heading">
+              <span id="regionName">Region</span>
+              <span id="regionState" class="pill">Corruption</span>
+            </div>
+            <div id="regionBrief" class="region-brief"></div>
+            <div id="restorationNodes" class="node-list"></div>
+          </section>
+
+          <section class="panel log-panel">
+            <div class="panel-heading">
+              <span>Field Log</span>
+              <span id="battleWave" class="pill">Ready</span>
+            </div>
+            <ol id="battleLog" class="battle-log"></ol>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <script src="cleanpuff-realm/game.js" defer></script>
+  </body>
+</html>

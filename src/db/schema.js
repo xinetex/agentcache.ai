@@ -65,7 +65,11 @@ export const patterns = pgTable('patterns', {
     status: text('status').default('active'), // 'active', 'dormant', 'banished'
     createdAt: timestamp('created_at').defaultNow(),
     lastInvokedAt: timestamp('last_invoked_at'),
-});
+}, (table) => ({
+    patternsStatusIdx: index('patterns_status_idx').on(table.status),
+    patternsStatusCreatedIdx: index('patterns_status_created_idx').on(table.status, table.createdAt),
+    patternsStatusNameIdx: index('patterns_status_name_idx').on(table.status, table.name),
+}));
 
 // --- Governance: Organizations & Access ---
 export const organizations = pgTable('organizations', {
@@ -248,7 +252,10 @@ export const members = pgTable('members', {
     userId: uuid('user_id').references(() => users.id),
     role: text('role').default('viewer'), // 'owner', 'admin', 'member', 'viewer'
     joinedAt: timestamp('joined_at').defaultNow(),
-});
+}, (table) => ({
+    membersOrgIdx: index('members_org_idx').on(table.orgId),
+    membersUserIdx: index('members_user_idx').on(table.userId),
+}));
 
 export const apiKeys = pgTable('api_keys', {
     id: uuid('id').defaultRandom().primaryKey(),
@@ -265,7 +272,14 @@ export const apiKeys = pgTable('api_keys', {
     revokedAt: timestamp('revoked_at'),
     createdAt: timestamp('created_at').defaultNow(),
     expiresAt: timestamp('expires_at'),
-});
+}, (table) => ({
+    apiKeysHashIdx: index('api_keys_hash_idx').on(table.hash),
+    apiKeysPrefixIdx: index('api_keys_prefix_idx').on(table.prefix),
+    apiKeysOrgActiveIdx: index('api_keys_org_active_idx').on(table.orgId, table.isActive),
+    apiKeysOrgCreatedIdx: index('api_keys_org_created_idx').on(table.orgId, table.createdAt),
+    apiKeysUserIdx: index('api_keys_user_idx').on(table.userId),
+    apiKeysActiveIdx: index('api_keys_active_idx').on(table.isActive),
+}));
 
 export const alignmentModelPairs = pgTable('alignment_model_pairs', {
     id: uuid('id').defaultRandom().primaryKey(),

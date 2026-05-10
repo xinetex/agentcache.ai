@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Services — AgentCache | Cache, Memory, Ontology & Security for AI Agents</title>
-  <meta name="description" content="AgentCache platform services: LLM caching, persistent memory, 6-sector data lake ontology, and security guardrails for autonomous AI agents.">
+  <title>Services — AgentCache | Core, Guardrails, Drift Guard & Knowledge for AI Agents</title>
+  <meta name="description" content="AgentCache services: semantic cache, execution drift guard, policy guardrails, and knowledge memory for production AI agents.">
   <script src="https://cdn.tailwindcss.com"></script>
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&family=JetBrains+Mono:wght@400;600&display=swap"
@@ -69,7 +69,7 @@
       </div>
       <h1 class="mt-6 text-5xl md:text-6xl font-black tracking-tight">Ship smarter agents,<br><span class="text-cyan-400">spend less on LLMs.</span></h1>
       <p class="mt-4 text-lg text-slate-300 max-w-2xl">
-        Four production-grade services that make your agents faster, safer, and more intelligent — while cutting your inference costs by up to 73%.
+        Four production-grade services that make your agents faster, safer, and easier to trust in production — while cutting repeated model spend.
       </p>
 
       <!-- Live Stats -->
@@ -96,25 +96,62 @@
       <div class="mt-8 grid md:grid-cols-4 gap-4">
         <a href="#cache" class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 hover:border-cyan-400/30 transition group">
           <div class="text-xs font-mono text-cyan-300">⚡ Core</div>
-          <div class="mt-1 text-lg font-bold group-hover:text-cyan-400 transition">Cache & Proxy</div>
-          <div class="mt-2 text-sm text-slate-400">Cut repeat LLM spend. Zero-latency hits.</div>
+          <div class="mt-1 text-lg font-bold group-hover:text-cyan-400 transition">Cache & Memory</div>
+          <div class="mt-2 text-sm text-slate-400">Cut repeat LLM spend and preserve durable context.</div>
         </a>
-        <a href="#memory" class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 hover:border-purple-400/30 transition group">
-          <div class="text-xs font-mono text-purple-300">🧠 Core</div>
-          <div class="mt-1 text-lg font-bold group-hover:text-purple-400 transition">Memory</div>
-          <div class="mt-2 text-sm text-slate-400">Persistent context for long-running agents.</div>
+        <a href="#drift" class="rounded-2xl border border-rose-400/20 bg-rose-500/[0.05] p-5 hover:border-rose-400/40 transition group ring-1 ring-rose-500/10">
+          <div class="text-xs font-mono text-rose-200">📡 Drift Guard</div>
+          <div class="mt-1 text-lg font-bold group-hover:text-rose-300 transition">Execution Drift Guard</div>
+          <div class="mt-2 text-sm text-slate-400">Detect when production agents drift off expected paths.</div>
+          <div class="mt-2 inline-flex items-center rounded-full bg-rose-500/20 px-2 py-0.5 text-[10px] font-bold text-rose-300 uppercase tracking-wider">Launch wedge</div>
         </a>
         <a href="#ontology" class="rounded-2xl border border-cyan-400/20 bg-cyan-500/[0.05] p-5 hover:border-cyan-400/40 transition group ring-1 ring-cyan-500/10">
           <div class="text-xs font-mono text-cyan-200">🏗️ Knowledge</div>
-          <div class="mt-1 text-lg font-bold group-hover:text-cyan-400 transition">Data Lake Ontology</div>
-          <div class="mt-2 text-sm text-slate-400">6-sector schemas. Cross-industry federation.</div>
-          <div class="mt-2 inline-flex items-center rounded-full bg-cyan-500/20 px-2 py-0.5 text-[10px] font-bold text-cyan-300 uppercase tracking-wider">New</div>
+          <div class="mt-1 text-lg font-bold group-hover:text-cyan-400 transition">Knowledge Memory</div>
+          <div class="mt-2 text-sm text-slate-400">Retrieval-ready memory and sector-aware workspace context.</div>
         </a>
         <a href="#security" class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 hover:border-emerald-400/30 transition group">
           <div class="text-xs font-mono text-emerald-300">🛡️ Guardrails</div>
-          <div class="mt-1 text-lg font-bold group-hover:text-emerald-400 transition">Security</div>
-          <div class="mt-2 text-sm text-slate-400">Injection detection. Tool safety scanning.</div>
+          <div class="mt-1 text-lg font-bold group-hover:text-emerald-400 transition">Policy Guardrails</div>
+          <div class="mt-2 text-sm text-slate-400">Injection detection, tool safety, and policy-safe execution.</div>
         </a>
+      </div>
+
+      <div class="mt-8 rounded-2xl border border-rose-400/20 bg-gradient-to-r from-rose-500/10 via-slate-950/60 to-cyan-500/10 p-6">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <div class="text-xs font-mono tracking-widest uppercase text-rose-200">Recommended launch wedge</div>
+            <h2 class="mt-2 text-2xl font-black text-white">Execution Drift Guard</h2>
+            <p class="mt-2 text-sm text-slate-300 max-w-2xl">
+              Start with the service buyers understand fastest: monitor production agent runs, flag drift from expected workflow patterns, and keep evidence receipts for operators.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-3">
+            <a href="#drift" class="inline-flex items-center rounded-xl bg-rose-500 hover:bg-rose-400 text-white px-4 py-2 text-sm font-black">Explore Drift Guard</a>
+            <a href="/pricing" class="inline-flex items-center rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 px-4 py-2 text-sm font-semibold">See pricing</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 grid gap-4 md:grid-cols-2">
+        <div class="rounded-2xl border border-rose-400/20 bg-rose-500/[0.05] p-5">
+          <div class="text-xs font-mono tracking-widest uppercase text-rose-200">Paid pilot 01</div>
+          <div class="mt-2 text-xl font-black text-white">Execution Drift Guard</div>
+          <p class="mt-2 text-sm text-slate-300">The fastest offer to sell now: shadow-mode run evaluation, operator receipts, and a concrete path to safer production agents.</p>
+          <div class="mt-4 flex flex-wrap gap-3">
+            <a href="/contact.html?interest=execution-drift-guard" class="inline-flex items-center rounded-xl bg-rose-500 hover:bg-rose-400 px-4 py-2 text-sm font-black text-white">Start pilot</a>
+            <a href="/docs/quick-start.html#pilot-flow" class="inline-flex items-center rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold">See demo flow</a>
+          </div>
+        </div>
+        <div class="rounded-2xl border border-cyan-400/20 bg-cyan-500/[0.05] p-5">
+          <div class="text-xs font-mono tracking-widest uppercase text-cyan-200">Paid pilot 02</div>
+          <div class="mt-2 text-xl font-black text-white">Agent Storage Core</div>
+          <p class="mt-2 text-sm text-slate-300">Artifact storage for agents built on the JettyThunder data plane, with AgentCache memory, namespace isolation, and trust-layer expansion above it.</p>
+          <div class="mt-4 flex flex-wrap gap-3">
+            <a href="/contact.html?interest=agent-storage-core" class="inline-flex items-center rounded-xl bg-cyan-500 hover:bg-cyan-400 px-4 py-2 text-sm font-black text-slate-950">Start pilot</a>
+            <a href="#storage-core" class="inline-flex items-center rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold">See storage offer</a>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -301,6 +338,108 @@
 
             <pre id="ac_memory_out"
               class="mt-4 whitespace-pre-wrap rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-xs text-slate-200">—</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════ EXECUTION DRIFT ═══════════════ -->
+      <div id="drift" class="scroll-mt-24 rounded-2xl border border-rose-400/20 bg-rose-500/[0.04] p-8">
+        <div class="flex items-start justify-between gap-6">
+          <div>
+            <div class="text-xs font-mono tracking-widest uppercase text-rose-300">📡 Drift Guard :: Launch Wedge</div>
+            <h2 class="mt-2 text-3xl font-black">Know when your agents go off-script</h2>
+            <p class="mt-3 text-slate-300 max-w-3xl">
+              Execution Drift Guard watches production workflows in shadow mode, compares expected path vs. actual path, and gives operators a receipt-backed way to intervene before damage ships.
+            </p>
+          </div>
+          <a href="/pricing"
+            class="hidden sm:inline-flex items-center rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-4 py-2 text-sm font-semibold">Pricing</a>
+        </div>
+
+        <div class="mt-6 grid md:grid-cols-2 gap-6">
+          <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-6">
+            <div class="text-xs font-mono tracking-widest uppercase text-slate-400">What it does</div>
+            <ul class="mt-4 space-y-3 text-sm text-slate-300">
+              <li>Compare expected workflow phases to actual execution phases.</li>
+              <li>Score surprise and drift without blocking live customer traffic by default.</li>
+              <li>Record shadow-mode evaluations and receipts for operators.</li>
+              <li>Surface high-risk runs before they become customer-visible failures.</li>
+            </ul>
+            <div class="mt-5 text-xs font-mono tracking-widest uppercase text-slate-500">Endpoints</div>
+            <ul class="mt-2 space-y-2 text-sm text-slate-300">
+              <li><span class="font-mono text-slate-200">POST /api/execution/runs</span> — create workflow run</li>
+              <li><span class="font-mono text-slate-200">POST /api/execution/runs/:id/evaluate</span> — score drift</li>
+              <li><span class="font-mono text-slate-200">GET /api/execution/runs/:id/evaluations</span> — inspect shadow evaluations</li>
+            </ul>
+          </div>
+
+          <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-6">
+            <div class="text-xs font-mono tracking-widest uppercase text-slate-400">Who buys this first</div>
+            <div class="mt-4 grid gap-3 text-sm text-slate-300">
+              <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+                <div class="font-semibold text-white">Operations teams</div>
+                <div class="mt-1 text-slate-400">Need early warning when multi-step agents behave differently in production.</div>
+              </div>
+              <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+                <div class="font-semibold text-white">Enterprise copilots</div>
+                <div class="mt-1 text-slate-400">Need receipts, review coverage, and trust signals before rollout expands.</div>
+              </div>
+              <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+                <div class="font-semibold text-white">Regulated workflows</div>
+                <div class="mt-1 text-slate-400">Need shadow-mode monitoring before policy or human approval gets stricter.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════ AGENT STORAGE ═══════════════ -->
+      <div id="storage-core" class="scroll-mt-24 rounded-2xl border border-cyan-400/20 bg-cyan-500/[0.04] p-8">
+        <div class="flex items-start justify-between gap-6">
+          <div>
+            <div class="text-xs font-mono tracking-widest uppercase text-cyan-300">💾 Storage Core :: Design-Partner Pilot</div>
+            <h2 class="mt-2 text-3xl font-black">Give agents a real artifact layer</h2>
+            <p class="mt-3 max-w-3xl text-slate-300">
+              Agent Storage Core is the storage control plane built on JettyThunder. Use it to store, retrieve, and recall agent artifacts with namespace isolation, memory linkage, and a path to receipts and policy controls.
+            </p>
+          </div>
+          <a href="/contact.html?interest=agent-storage-core"
+            class="hidden sm:inline-flex items-center rounded-xl border border-cyan-400/20 bg-cyan-500/10 hover:bg-cyan-500/20 px-4 py-2 text-sm font-semibold text-cyan-100">Talk to sales</a>
+        </div>
+
+        <div class="mt-6 grid gap-6 md:grid-cols-2">
+          <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-6">
+            <div class="text-xs font-mono tracking-widest uppercase text-slate-400">What it is good for</div>
+            <ul class="mt-4 space-y-3 text-sm text-slate-300">
+              <li>Store generated reports, screenshots, media, and intermediate artifacts from agents.</li>
+              <li>Link stored artifacts to memory and workflow context instead of raw object keys alone.</li>
+              <li>Separate hot metadata recall from heavier storage and transfer paths.</li>
+              <li>Prepare for receipts, sharing, and policy-controlled access as the trust layer matures.</li>
+            </ul>
+            <div class="mt-5 text-xs font-mono tracking-widest uppercase text-slate-500">Pilot endpoints</div>
+            <ul class="mt-2 space-y-2 text-sm text-slate-300">
+              <li><span class="font-mono text-slate-200">POST /api/claw/storage</span> — storage orchestration surface</li>
+              <li><span class="font-mono text-slate-200">POST /api/claw/memory/store</span> — bind artifacts to memory</li>
+              <li><span class="font-mono text-slate-200">POST /api/claw/memory/recall</span> — recall artifacts by context</li>
+            </ul>
+          </div>
+
+          <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-6">
+            <div class="text-xs font-mono tracking-widest uppercase text-slate-400">Who buys this first</div>
+            <div class="mt-4 grid gap-3 text-sm text-slate-300">
+              <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+                <div class="font-semibold text-white">File-heavy agent teams</div>
+                <div class="mt-1 text-slate-400">Need a cleaner way to manage outputs, artifacts, and retrieval than raw object storage.</div>
+              </div>
+              <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+                <div class="font-semibold text-white">Ops teams on JettyThunder</div>
+                <div class="mt-1 text-slate-400">Already trust the storage backbone and want a sellable control plane above it.</div>
+              </div>
+              <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+                <div class="font-semibold text-white">Design partners</div>
+                <div class="mt-1 text-slate-400">Need direct transfer paths now and receipts, sharing, and policy controls next.</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

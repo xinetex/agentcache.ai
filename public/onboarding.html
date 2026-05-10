@@ -48,6 +48,11 @@
                 <p class="text-sm font-semibold text-emerald-300 mb-2">💰 Projected Savings</p>
                 <p class="text-3xl font-bold text-emerald-400">$${data.projectedSavings.toLocaleString()}<span class="text-lg text-slate-400">/month</span></p>
               </div>
+
+              <div class="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4">
+                <p class="text-sm font-semibold text-rose-300 mb-2">📡 Recommended Next Step</p>
+                <p class="text-sm text-slate-300">Start with <strong>Execution Drift Guard</strong> in shadow mode so your first production workflows have operator-visible drift scoring and receipts.</p>
+              </div>
               
               <div>
                 <p class="text-sm font-semibold text-slate-300 mb-2">📋 Your Starter Pipeline</p>
@@ -79,6 +84,15 @@
                   <p class="text-xs text-slate-500">Compliance</p>
                   <p class="text-lg font-bold text-purple-400">${data.pipeline.compliance?.join(', ') || 'Standard'}</p>
                 </div>
+              </div>
+
+              <div class="rounded-xl border border-white/10 bg-slate-800/50 p-4">
+                <p class="text-sm font-semibold text-slate-200 mb-2">First customer path</p>
+                <ol class="space-y-2 text-sm text-slate-400 list-decimal list-inside">
+                  <li>Create a starter workflow in your workspace.</li>
+                  <li>Run it once and capture the baseline response.</li>
+                  <li>Score it with Drift Guard before enabling stricter automation.</li>
+                </ol>
               </div>
             </div>
             
