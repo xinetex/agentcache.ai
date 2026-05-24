@@ -390,5 +390,12 @@ Dashboard at maxxeval.com/loop/ displays the whole picture
 - **3 solutions exist** (crypto-price-tool, rag-summarize-validate, vector-cache) to match against needs
 - **Top critical needs** (from focus group): Agent SDK, Streaming API, Semantic Search, Multi-tenancy, IDE Integration, Built-in Vector DB
 
+## Pending Actions
+- **Seed ontology graph tables** — When ready (first enterprise ontology customer or after HyperAgent approval), run:
+  1. `npm run db:push` (creates `ontology_nodes` + `ontology_edges` tables on Neon)
+  2. `AGENTCACHE_GRAPH_SEED=1 npx tsx -e "import { postgresGraphAdapter } from './src/ontology/connectors/PostgresGraphAdapter.js'; postgresGraphAdapter.seedFromRegistry();"`
+  - This is a one-time ~180 row write. All subsequent user queries are metered/billed.
+
 ## Contact
 - User: Platform team @ jettythunder.app
+- Primary email: verdoni@gmail.com
