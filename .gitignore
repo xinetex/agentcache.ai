@@ -23,3 +23,10 @@ docs/VERCEL_ENV_SETUP.md
 .env.backup
 .env.bak
 studio-dist/
+
+# AI injection prevention (TrapDoor / supply chain defense)
+# These files instruct AI coding tools — poisoned versions via PRs could
+# trick assistants into exfiltrating secrets. Keep local only.
+.cursorrules
+CLAUDE.md
+.claude/
