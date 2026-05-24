@@ -11,6 +11,7 @@
 import { SectorOntology } from '../ontology/OntologyRegistry.js';
 import { DataLakeConnector } from '../ontology/DataLakeConnector.js';
 import { GraphAdapter } from '../ontology/connectors/GraphAdapter.js';
+import { postgresGraphAdapter } from '../ontology/connectors/PostgresGraphAdapter.js';
 import { semanticBusService } from './SemanticBusService.js';
 
 export interface SectorWiring {
@@ -35,8 +36,13 @@ export class SectorEngine {
 
     /**
      * Ignite a sector engine, connecting its ontology and data sources to the bus.
+     * If no graphAdapter is provided in the wiring, defaults to PostgresGraphAdapter.
      */
     async ignite(sectorId: string, wiring: SectorWiring): Promise<void> {
+        // Default to PostgresGraphAdapter if none provided
+        if (!wiring.graphAdapter) {
+            wiring.graphAdapter = postgresGraphAdapter;
+        }
         console.log(`[SectorEngine] 🔥 Igniting engine for sector: ${sectorId}`);
         
         // 1. Register wiring

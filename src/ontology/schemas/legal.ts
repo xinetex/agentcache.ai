@@ -45,7 +45,20 @@ export const LegalOntology = z.object({
 });
 
 export const LEGAL_VOCABULARY = {
-    canonicalTerms: ['obligation', 'liability', 'compliance', 'risk', 'jurisdiction', 'termination', 'indemnity'],
+    canonicalTerms: [
+        // Core concepts
+        'obligation', 'liability', 'compliance', 'risk', 'jurisdiction',
+        'termination', 'indemnity', 'indemnification', 'materiality',
+        // Document structure
+        'clause', 'contract', 'amendment', 'filing', 'patent', 'license',
+        'policy', 'regulation', 'opinion', 'precedent', 'statute',
+        // Parties & roles
+        'party', 'plaintiff', 'defendant', 'licensor', 'licensee',
+        'guarantor', 'vendor', 'client',
+        // Protections
+        'confidentiality', 'ip_rights', 'force_majeure', 'governing_law',
+        'arbitration', 'disclosure', 'warranty', 'consent',
+    ],
     sectorId: 'legal',
-    version: '1.0.0',
+    version: '1.1.0',
 } as const;

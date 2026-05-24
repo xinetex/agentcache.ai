@@ -8,10 +8,29 @@
  * via any medium, is strictly prohibited.
  */
 import { z } from 'zod';
-import { LLMFactory } from '../lib/llm/factory.js';
-import { LLMProvider } from '../lib/llm/types.js';
+import { LLMFactory, ProviderType } from '../lib/llm/factory.js';
+import { LLMProvider, Message, CompletionResponse } from '../lib/llm/types.js';
 import { ontologyCacheStrategy } from '../ontology/OntologyCacheStrategy.js';
 import { ontologyRegistry } from '../ontology/OntologyRegistry.js';
+
+/**
+ * Default fallback chain for ontology mapping.
+ * Order: fastest/cheapest → most reliable.
+ * Each provider's AbstractLLMProvider.chat() has its own 3-retry exponential backoff
+ * before we fall through to the next provider in the chain.
+ */
+const DEFAULT_PROVIDER_CHAIN: ProviderType[] = ['inception', 'deepseek', 'openai', 'anthropic'];
+
+/**
+ * Provider-specific model overrides for ontology mapping.
+ * Each provider uses the model best suited for structured JSON output.
+ */
+const PROVIDER_MODEL_MAP: Partial<Record<ProviderType, string>> = {
+    inception: 'mercury',
+    deepseek: 'deepseek-chat',
+    openai: 'gpt-5.4-mini',
+    anthropic: 'claude-3-5-sonnet',
+};
 
 /**
  * ValidationResult: Outcome of Zod schema validation on LLM output.
@@ -25,12 +44,69 @@ export interface ValidationResult {
 }
 
 export class OntologyService {
-    private llm: LLMProvider;
+    private providerChain: ProviderType[];
+    private providers: Map<ProviderType, LLMProvider> = new Map();
 
-    constructor(llm?: LLMProvider) {
-        // Dependency Injection: Allow custom LLM to be injected (e.g. for testing)
-        // Defaults to Inception for high-speed mapping performance
-        this.llm = llm || LLMFactory.createProvider('inception');
+    constructor(llm?: LLMProvider, providerChain?: ProviderType[]) {
+        this.providerChain = providerChain || DEFAULT_PROVIDER_CHAIN;
+
+        // If a single LLM is injected (e.g. for testing), use it directly
+        if (llm) {
+            this.providers.set(this.providerChain[0], llm);
+        }
+    }
+
+    /**
+     * Lazily resolve a provider from the chain.
+     * Only creates providers when actually needed (avoids initializing
+     * providers whose API keys aren't configured).
+     */
+    private getProvider(type: ProviderType): LLMProvider {
+        let provider = this.providers.get(type);
+        if (!provider) {
+            provider = LLMFactory.createProvider(type);
+            this.providers.set(type, provider);
+        }
+        return provider;
+    }
+
+    /**
+     * Execute a chat request with fallback across the provider chain.
+     * Each provider attempt uses AbstractLLMProvider's built-in retry logic
+     * (3 retries with exponential backoff) before falling through.
+     *
+     * Non-retriable errors (auth/key issues) immediately skip to the next provider.
+     */
+    private async chatWithFallback(
+        messages: Message[],
+        options?: { model?: string; temperature?: number; maxTokens?: number }
+    ): Promise<{ response: CompletionResponse; provider: ProviderType }> {
+        const errors: Array<{ provider: ProviderType; error: string }> = [];
+
+        for (const providerType of this.providerChain) {
+            try {
+                const provider = this.getProvider(providerType);
+                const model = PROVIDER_MODEL_MAP[providerType] || options?.model;
+                const response = await provider.chat(messages, { ...options, model });
+
+                if (errors.length > 0) {
+                    console.warn(
+                        `[OntologyService] ⚠️ Fallback activated: ${errors.map(e => e.provider).join(' → ')} failed, succeeded on ${providerType}`
+                    );
+                }
+
+                return { response, provider: providerType };
+            } catch (err: any) {
+                const errorMsg = err?.message || String(err);
+                console.error(`[OntologyService] Provider ${providerType} failed: ${errorMsg}`);
+                errors.push({ provider: providerType, error: errorMsg });
+                // Continue to next provider in chain
+            }
+        }
+
+        // All providers exhausted
+        const summary = errors.map(e => `${e.provider}: ${e.error}`).join('; ');
+        throw new Error(`[OntologyService] All ${this.providerChain.length} providers failed. Chain: ${summary}`);
     }
 
     /**
@@ -90,12 +166,12 @@ Rules:
 `;
 
         try {
-            const response = await this.llm.chat([
+            const { response, provider: usedProvider } = await this.chatWithFallback([
                 { role: 'system', content: 'You are a machine-to-machine ontology mapper. Return ONLY JSON.' },
                 { role: 'user', content: prompt }
-            ], {
-                model: 'mercury'
-            });
+            ]);
+
+            console.log(`[OntologyService] Mapping completed via provider: ${usedProvider}`);
 
             // Parse result
             const jsonMatch = response.content.match(/\{[\s\S]*\}|\[[\s\S]*\]/);

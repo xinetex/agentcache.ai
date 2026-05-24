@@ -53,7 +53,19 @@ export const BiotechOntology = z.object({
 });
 
 export const BIOTECH_VOCABULARY = {
-    canonicalTerms: ['target', 'pathway', 'compound', 'trial', 'efficacy', 'toxicity', 'biomarker'],
+    canonicalTerms: [
+        // Discovery & targets
+        'target', 'pathway', 'receptor', 'antibody', 'gene', 'protein',
+        'molecule', 'sequence', 'assay', 'biomarker',
+        // Compounds & pharmacology
+        'compound', 'efficacy', 'toxicity', 'dose', 'pharmacokinetics',
+        'mechanism', 'therapeutic', 'adverse_event', 'potency',
+        // Clinical development
+        'trial', 'phase', 'indication', 'endpoint', 'enrollment',
+        'clinical', 'pipeline', 'clinical_data',
+        // Regulatory & IP
+        'patent', 'approval', 'collaboration', 'regulatory_approval',
+    ],
     sectorId: 'biotech',
-    version: '1.0.0',
+    version: '1.1.0',
 } as const;

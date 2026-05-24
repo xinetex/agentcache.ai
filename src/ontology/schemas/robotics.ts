@@ -56,7 +56,20 @@ export const RoboticsOntology = z.object({
 });
 
 export const ROBOTICS_VOCABULARY = {
-    canonicalTerms: ['hazard', 'obstacle', 'navigation', 'payload', 'autonomy', 'sensor', 'actuator'],
+    canonicalTerms: [
+        // Perception
+        'sensor', 'lidar', 'camera', 'imu', 'gps', 'depth',
+        'slam', 'odometry', 'localization', 'telemetry',
+        // Motion & control
+        'actuator', 'kinematics', 'trajectory', 'navigation',
+        'planner', 'gripper', 'end_effector', 'joint', 'payload',
+        // Safety & environment
+        'hazard', 'obstacle', 'collision', 'safety_rating',
+        'safety_threshold', 'certification',
+        // Operations
+        'autonomy', 'manipulation', 'inspection', 'swarm',
+        'teleoperation', 'ros', 'mission',
+    ],
     sectorId: 'robotics',
-    version: '1.0.0',
+    version: '1.1.0',
 } as const;

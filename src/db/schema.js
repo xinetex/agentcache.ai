@@ -947,3 +947,33 @@ export const externalAgents = pgTable('external_agents', {
     externalAgentOwnerIdx: index('external_agent_owner_idx').on(table.ownerPrincipalId),
     externalAgentSystemIdIdx: index('external_agent_system_id_idx').on(table.externalSystem, table.externalAgentId),
 }));
+
+// --- Ontology Graph Storage (Phase Q4 Hardening) ---
+
+export const ontologyNodes = pgTable('ontology_nodes', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    sectorId: text('sector_id').notNull(),
+    canonicalTerm: text('canonical_term').notNull(),
+    nodeType: text('node_type').notNull(), // Semantic type from OntologyConstraints (Entity, Metric, Process, etc.)
+    displayName: text('display_name'),
+    properties: jsonb('properties').default({}),
+    ontologyVersion: text('ontology_version'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+    ontologyNodeSectorTermIdx: index('ontology_node_sector_term_idx').on(table.sectorId, table.canonicalTerm),
+    ontologyNodeTypeIdx: index('ontology_node_type_idx').on(table.nodeType),
+}));
+
+export const ontologyEdges = pgTable('ontology_edges', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    sourceNodeId: uuid('source_node_id').references(() => ontologyNodes.id).notNull(),
+    targetNodeId: uuid('target_node_id').references(() => ontologyNodes.id).notNull(),
+    predicate: text('predicate').notNull(), // e.g., HAS_EXPOSURE, PERFORMS, GOVERNED_BY
+    confidence: real('confidence').default(1.0),
+    metadata: jsonb('metadata').default({}),
+    createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+    ontologyEdgeSourceIdx: index('ontology_edge_source_idx').on(table.sourceNodeId, table.predicate),
+    ontologyEdgeTargetIdx: index('ontology_edge_target_idx').on(table.targetNodeId),
+}));

@@ -37,3 +37,6 @@ export { OntologyCacheStrategy, ontologyCacheStrategy } from './OntologyCacheStr
 
 // Bridge
 export { OntologyBridge, ontologyBridge } from './OntologyBridge.js';
+
+// Graph Storage
+export { PostgresGraphAdapter, postgresGraphAdapter } from './connectors/PostgresGraphAdapter.js';

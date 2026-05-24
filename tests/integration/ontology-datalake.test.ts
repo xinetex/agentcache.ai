@@ -96,7 +96,7 @@ describe('Data Lake Ontology System', () => {
 
     describe('Schema Registry', () => {
 
-        it('resolves all 6 built-in sectors', async () => {
+        it('resolves all 6 built-in sectors with expanded v1.1.0 vocabularies', async () => {
             const { OntologyRegistry } = await import('../../src/ontology/OntologyRegistry.js');
             const registry = new OntologyRegistry();
 
@@ -108,7 +108,9 @@ describe('Data Lake Ontology System', () => {
                 expect(sector).toBeDefined();
                 expect(sector!.sectorId).toBe(sectorId);
                 expect(sector!.schema).toBeDefined();
-                expect(sector!.vocabulary.length).toBeGreaterThan(0);
+                // v1.1.0: Each sector has 25+ canonical terms (expanded from 7)
+                expect(sector!.vocabulary.length).toBeGreaterThanOrEqual(25);
+                expect(sector!.version).toBe('1.1.0');
             }
         });
 
@@ -181,6 +183,27 @@ describe('Data Lake Ontology System', () => {
             const equivalents = bridge.bridge('risk', 'finance', 'robotics');
             expect(equivalents.length).toBeGreaterThan(0);
             expect(equivalents).toContain('hazard');
+        });
+
+        it('bridges new synonym groups (identity, threshold, evidence, authorization)', async () => {
+            const { OntologyBridge } = await import('../../src/ontology/OntologyBridge.js');
+            const bridge = new OntologyBridge();
+
+            // Identity: finance counterparty → legal party
+            const identityBridge = bridge.bridge('counterparty', 'finance', 'legal');
+            expect(identityBridge).toContain('party');
+
+            // Threshold: finance margin → healthcare reference_range
+            const thresholdBridge = bridge.bridge('margin', 'finance', 'healthcare');
+            expect(thresholdBridge).toContain('reference_range');
+
+            // Evidence: federated query for 'audit' should span multiple sectors
+            const evidenceFederation = bridge.federatedQuery('audit');
+            expect(evidenceFederation.length).toBeGreaterThanOrEqual(2);
+
+            // Authorization: legal consent → healthcare consent
+            const authBridge = bridge.bridge('consent', 'legal', 'healthcare');
+            expect(authBridge).toContain('consent');
         });
 
         it('performs federated query across all sectors', async () => {
@@ -279,15 +302,15 @@ describe('Data Lake Ontology System', () => {
             const { OntologyRegistry } = await import('../../src/ontology/OntologyRegistry.js');
             const registry = new OntologyRegistry();
 
-            // Latest finance should be v1.0.0
+            // Latest finance should be v1.1.0
             const latest = registry.resolve('finance');
             expect(latest).toBeDefined();
-            expect(latest!.version).toBe('1.0.0');
+            expect(latest!.version).toBe('1.1.0');
 
-            // Pinned v1.0.0 should match latest
-            const pinned = registry.resolve('finance', '1.0.0');
+            // Pinned v1.1.0 should match latest
+            const pinned = registry.resolve('finance', '1.1.0');
             expect(pinned).toBeDefined();
-            expect(pinned!.version).toBe('1.0.0');
+            expect(pinned!.version).toBe('1.1.0');
 
             // Non-existent version returns undefined
             const ghost = registry.resolve('finance', '99.99.99');
@@ -299,7 +322,7 @@ describe('Data Lake Ontology System', () => {
             const registry = new OntologyRegistry();
 
             const versions = registry.listVersions('finance');
-            expect(versions).toContain('1.0.0');
+            expect(versions).toContain('1.1.0');
         });
 
         it('supports registering a new version without breaking the old', async () => {
@@ -323,15 +346,15 @@ describe('Data Lake Ontology System', () => {
             expect(latest!.version).toBe('2.0.0');
             expect(Object.keys(latest!.schema.shape)).toContain('newFieldV2');
 
-            // But v1.0.0 should still be resolvable
-            const v1 = registry.resolve('finance', '1.0.0');
+            // But v1.1.0 should still be resolvable
+            const v1 = registry.resolve('finance', '1.1.0');
             expect(v1).toBeDefined();
-            expect(v1!.version).toBe('1.0.0');
+            expect(v1!.version).toBe('1.1.0');
             expect(Object.keys(v1!.schema.shape)).not.toContain('newFieldV2');
 
             // Both versions listed
             const versions = registry.listVersions('finance');
-            expect(versions).toContain('1.0.0');
+            expect(versions).toContain('1.1.0');
             expect(versions).toContain('2.0.0');
         });
 

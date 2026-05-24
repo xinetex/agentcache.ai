@@ -59,7 +59,20 @@ export const EnergyOntology = z.object({
 });
 
 export const ENERGY_VOCABULARY = {
-    canonicalTerms: ['generation', 'load', 'grid', 'carbon', 'renewable', 'storage', 'demand'],
+    canonicalTerms: [
+        // Generation
+        'generation', 'solar', 'wind', 'hydro', 'nuclear', 'battery',
+        'hydrogen', 'renewable', 'capacity_factor', 'baseload',
+        // Grid operations
+        'grid', 'transmission', 'distribution', 'substation',
+        'transformer', 'outage', 'curtailment', 'dispatch',
+        'frequency', 'frequency_tolerance', 'interconnection',
+        // Markets & demand
+        'load', 'demand', 'peak', 'storage', 'ppa', 'tariff',
+        // Carbon & compliance
+        'carbon', 'emissions', 'meter_reading',
+        'regulatory', 'ferc',
+    ],
     sectorId: 'energy',
-    version: '1.0.0',
+    version: '1.1.0',
 } as const;

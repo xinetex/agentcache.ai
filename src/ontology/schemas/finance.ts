@@ -43,7 +43,19 @@ export const FinanceOntology = z.object({
 });
 
 export const FINANCE_VOCABULARY = {
-    canonicalTerms: ['risk', 'return', 'settlement', 'compliance', 'exposure', 'liquidity', 'volatility'],
+    canonicalTerms: [
+        // Core metrics
+        'risk', 'return', 'exposure', 'liquidity', 'volatility',
+        'alpha', 'beta', 'sharpe', 'drawdown', 'var', 'yield',
+        // Instruments & positions
+        'instrument', 'position', 'holding', 'portfolio', 'equity',
+        'bond', 'derivative', 'commodity', 'hedge', 'option', 'future',
+        // Operations
+        'settlement', 'clearing', 'custody', 'margin', 'collateral',
+        'maturity', 'counterparty', 'trade', 'execution',
+        // Governance
+        'compliance', 'audit', 'regulator', 'aum', 'reporting',
+    ],
     sectorId: 'finance',
-    version: '1.0.0',
+    version: '1.1.0',
 } as const;

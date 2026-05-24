@@ -234,8 +234,14 @@ export async function authenticateApiKey(c: any) {
         const { agentSettlementService } = await import('../services/AgentSettlementService.js');
         const agentId = apiKey || 'x402-agent';
 
-        // Settle a larger amount (10.0) to avoid any potential sub-cent rounding issues/misunderstandings in real-type
-        const settlement = await agentSettlementService.settle(preauthorization, agentId, 10.0);
+        // Derive settlement cost from request path and tier pricing
+        // Default: 10.0 credits for standard API calls, adjustable per route
+        const path = c.req.path || '';
+        const isOntologyRoute = path.includes('/ontology/') || path.includes('/alignment/');
+        const isCdnRoute = path.includes('/cdn/') || path.includes('/transcode/');
+        const settlementCost = isOntologyRoute ? 25.0 : isCdnRoute ? 5.0 : 10.0;
+
+        const settlement = await agentSettlementService.settle(preauthorization, agentId, settlementCost);
 
         if (settlement.success) {
             c.set('apiKey', agentId);

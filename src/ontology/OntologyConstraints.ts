@@ -18,22 +18,34 @@ export class OntologyConstraints {
     
     // Mapping of term -> Semantic Type
     private static typeMap: Record<string, string> = {
-        'risk': 'Metric',
-        'return': 'Metric',
-        'exposure': 'Metric',
-        'volatility': 'Metric',
-        'liquidity': 'Metric',
-        'settlement': 'Process',
-        'compliance': 'Governance',
-        'asset': 'Entity',
-        'instrument': 'Entity',
-        'position': 'Entity',
-        'patient': 'Entity',
-        'doctor': 'Entity',
-        'diagnosis': 'ClinicalData',
-        'treatment': 'Process',
-        'agent': 'AI',
-        'circle': 'Infrastructure'
+        // Metrics
+        'risk': 'Metric', 'return': 'Metric', 'exposure': 'Metric',
+        'volatility': 'Metric', 'liquidity': 'Metric', 'alpha': 'Metric',
+        'beta': 'Metric', 'sharpe': 'Metric', 'drawdown': 'Metric',
+        'var': 'Metric', 'yield': 'Metric', 'efficacy': 'Metric',
+        'toxicity': 'Metric', 'potency': 'Metric', 'biomarker': 'Metric',
+        'capacity_factor': 'Metric', 'frequency': 'Metric',
+        // Processes
+        'settlement': 'Process', 'clearing': 'Process', 'treatment': 'Process',
+        'trial': 'Process', 'navigation': 'Process', 'dispatch': 'Process',
+        'execution': 'Process', 'arbitration': 'Process', 'procedure': 'Process',
+        // Governance
+        'compliance': 'Governance', 'audit': 'Governance', 'consent': 'Governance',
+        'hipaa': 'Governance', 'certification': 'Governance', 'regulatory': 'Governance',
+        'jurisdiction': 'Governance', 'ferc': 'Governance',
+        // Entities
+        'asset': 'Entity', 'instrument': 'Entity', 'position': 'Entity',
+        'patient': 'Entity', 'practitioner': 'Entity', 'counterparty': 'Entity',
+        'party': 'Entity', 'utility': 'Entity', 'compound': 'Entity',
+        'facility': 'Entity', 'platform': 'Entity',
+        // Clinical Data
+        'diagnosis': 'ClinicalData', 'observation': 'ClinicalData',
+        'lab_result': 'ClinicalData', 'vital_sign': 'ClinicalData',
+        'adverse_event': 'ClinicalData', 'clinical_data': 'ClinicalData',
+        // Infrastructure
+        'agent': 'AI', 'circle': 'Infrastructure',
+        'sensor': 'Infrastructure', 'grid': 'Infrastructure',
+        'ehr': 'Infrastructure', 'substation': 'Infrastructure',
     };
 
     // Allowed Triples: (SubjectType, Predicate, ObjectType)

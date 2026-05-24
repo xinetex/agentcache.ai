@@ -195,6 +195,46 @@ export class OntologyBridge {
             healthcare: ['length_of_stay', 'recovery_time', 'follow_up'],
             energy: ['contract_term', 'peak_hours', 'ramp_time'],
         });
+
+        // Identity / Principal
+        this.addSynonym('identity', {
+            finance: ['counterparty', 'entity', 'fund'],
+            legal: ['party', 'plaintiff', 'defendant'],
+            biotech: ['organization', 'sponsor', 'collaborator'],
+            robotics: ['operator', 'manufacturer', 'platform'],
+            healthcare: ['patient', 'practitioner', 'facility'],
+            energy: ['utility', 'producer', 'consumer'],
+        });
+
+        // Threshold / Limit
+        this.addSynonym('threshold', {
+            finance: ['margin', 'collateral', 'limit'],
+            legal: ['materiality', 'de_minimis', 'cap'],
+            biotech: ['therapeutic_index', 'dose_limit', 'mtd'],
+            robotics: ['safety_threshold', 'payload_limit', 'range_limit'],
+            healthcare: ['reference_range', 'critical_value', 'tolerance'],
+            energy: ['frequency_tolerance', 'capacity_limit', 'curtailment_threshold'],
+        });
+
+        // Evidence / Proof
+        this.addSynonym('evidence', {
+            finance: ['audit', 'reporting', 'statement'],
+            legal: ['disclosure', 'exhibit', 'testimony'],
+            biotech: ['clinical_data', 'assay', 'endpoint'],
+            robotics: ['telemetry', 'sensor_log', 'odometry'],
+            healthcare: ['lab_result', 'observation', 'vital_sign'],
+            energy: ['meter_reading', 'telemetry', 'dispatch_log'],
+        });
+
+        // Authorization / Approval
+        this.addSynonym('authorization', {
+            finance: ['clearing', 'settlement', 'approval'],
+            legal: ['consent', 'authorization', 'waiver'],
+            biotech: ['approval', 'regulatory_approval', 'fda'],
+            robotics: ['certification', 'safety_rating', 'commissioning'],
+            healthcare: ['consent', 'prior_authorization', 'accreditation'],
+            energy: ['interconnection', 'permit', 'grid_code'],
+        });
     }
 }
 

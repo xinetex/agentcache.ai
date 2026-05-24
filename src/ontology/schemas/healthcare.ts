@@ -54,7 +54,19 @@ export const HealthcareOntology = z.object({
 });
 
 export const HEALTHCARE_VOCABULARY = {
-    canonicalTerms: ['diagnosis', 'medication', 'observation', 'encounter', 'patient', 'compliance', 'risk'],
+    canonicalTerms: [
+        // Clinical core
+        'diagnosis', 'medication', 'observation', 'encounter', 'patient',
+        'procedure', 'condition', 'allergy', 'immunization', 'vital_sign',
+        // Care delivery
+        'practitioner', 'referral', 'discharge', 'readmission',
+        'care_plan', 'telehealth', 'lab_result', 'reference_range',
+        // Governance & interop
+        'compliance', 'risk', 'consent', 'insurance', 'claim',
+        'formulary', 'interoperability', 'ehr', 'adverse_event',
+        // Systems
+        'fhir', 'snomed', 'icd', 'loinc', 'hipaa',
+    ],
     sectorId: 'healthcare',
-    version: '1.0.0',
+    version: '1.1.0',
 } as const;
