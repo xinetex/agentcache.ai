@@ -12,6 +12,7 @@ import { LLMFactory, ProviderType } from '../lib/llm/factory.js';
 import { LLMProvider, Message, CompletionResponse } from '../lib/llm/types.js';
 import { ontologyCacheStrategy } from '../ontology/OntologyCacheStrategy.js';
 import { ontologyRegistry } from '../ontology/OntologyRegistry.js';
+import { sectorAdapterService } from '../lib/cayley/SectorAdapterService.js';
 
 /**
  * Default fallback chain for ontology mapping.
@@ -214,6 +215,18 @@ Rules:
                 } catch (cacheErr: any) {
                     console.error(`[OntologyService] Cache write failed (non-fatal): ${cacheErr.message}`);
                     // Agent still gets their data — we just miss the cache benefit next time
+                }
+
+                // CAYLEY ADAPTER: Capture high-confidence mappings as training data
+                // Non-blocking, non-fatal — accumulates examples for future adapter training
+                if (validation.confidence === 'high') {
+                    sectorAdapterService.captureExample({
+                        sectorId,
+                        input: strData,
+                        output: outputData,
+                        confidence: 'high',
+                        capturedAt: new Date().toISOString(),
+                    }).catch(() => {}); // Fire and forget
                 }
             }
 
