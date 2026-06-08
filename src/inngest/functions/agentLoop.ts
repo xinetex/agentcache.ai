@@ -16,6 +16,7 @@ import { db } from "../../db/client.js";
 import { needsSignals } from "../../db/schema.js";
 import { and, eq, desc } from 'drizzle-orm';
 import { routerExperimentService } from "../../services/RouterExperimentService.js";
+import { agentHarnessEvolverService } from "../../services/AgentHarnessEvolverService.js";
 
 /**
  * The Heartbeat of the Economy.
@@ -143,7 +144,20 @@ export const runAgentLoop = inngest.createFunction(
             }
         });
 
+        // Step 5: Harness Engineering (Continual Harness)
+        const harnessEvolver = await step.run("harness-evolution-cycle", async () => {
+            logger.info("🧬 HarnessEvolver: Running reset-free online adaptation...");
+            try {
+                const result = await agentHarnessEvolverService.runEvolverCycle();
+                return result;
+            } catch (err) {
+                logger.error("HarnessEvolver cycle failed:", err);
+                // Non-critical — don't throw, just log
+                return { status: "error", error: String(err) };
+            }
+        });
+
         logger.info("💤 Heartbeat complete. Agents sleeping.");
-        return { trends, research, needsRefresh, optimization };
+        return { trends, research, needsRefresh, optimization, harnessEvolver };
     }
 );
