@@ -251,7 +251,7 @@ export default async function handler(req, res) {
       if (features[targetAddon.featureKey] || addonState.active) {
         if (actor.organization.stripe_customer_id) {
           const stripe = process.env.STRIPE_SECRET_KEY
-            ? new Stripe(process.env.STRIPE_SECRET_KEY)
+            ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2026-03-25.dahlia' })
             : null;
 
           if (stripe) {
@@ -295,7 +295,7 @@ export default async function handler(req, res) {
         });
       }
 
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2026-03-25.dahlia' });
       const metadata = {
         type: 'addon_purchase',
         organization_id: actor.organization.id,
@@ -362,7 +362,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2026-03-25.dahlia' });
 
     if (
       actor.organization.stripe_customer_id &&

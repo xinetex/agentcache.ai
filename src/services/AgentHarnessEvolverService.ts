@@ -11,10 +11,58 @@
 import { db } from '../db/client.js';
 import { needsSignals } from '../db/schema.js';
 import { desc, eq, gt } from 'drizzle-orm';
-import { agentRegistry, AgentProfile, AgentRegistration } from '../lib/hub/registry.js';
+import { agentRegistry, AgentRegistration } from '../lib/hub/registry.js';
+import type { AgentProfile } from '../lib/focus-group/agent-profile.js';
+import { LLMFactory, type ProviderType } from '../lib/llm/factory.js';
 import { router } from '../lib/llm/router.js';
 import fs from 'fs';
 import path from 'path';
+
+type ProposedSubAgent = {
+    name?: string;
+    role?: string;
+    capabilities?: string[];
+    domain?: string[];
+};
+
+type ProposedTool = {
+    name?: string;
+    description?: string;
+    code?: string;
+};
+
+type HarnessEdits = Partial<AgentProfile> & {
+    newSubAgent?: ProposedSubAgent;
+    newTool?: ProposedTool;
+};
+
+function parseJsonObject(text: string): Record<string, any> {
+    const stripped = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    try {
+        return JSON.parse(stripped);
+    } catch {
+        const start = stripped.indexOf('{');
+        const end = stripped.lastIndexOf('}');
+        if (start === -1 || end <= start) {
+            throw new Error('Harness refiner did not return a JSON object.');
+        }
+        return JSON.parse(stripped.slice(start, end + 1));
+    }
+}
+
+function sanitizeToolFileName(name: string): string {
+    const safeName = name
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 80);
+
+    if (!safeName) {
+        throw new Error('Generated tool name must contain at least one alphanumeric character.');
+    }
+
+    return `${safeName}.ts`;
+}
 
 export class AgentHarnessEvolverService {
     
@@ -55,7 +103,7 @@ export class AgentHarnessEvolverService {
             .limit(limit);
     }
 
-    private async proposeHarnessEdits(agent: AgentProfile, signals: any[]): Promise<Partial<AgentProfile> | null> {
+    private async proposeHarnessEdits(agent: AgentProfile, signals: any[]): Promise<HarnessEdits | null> {
         // Construct the prompt for the Refiner model
         const signalsText = signals.map(s => `- [${s.type}] ${s.title}: ${s.description}`).join('\n');
         
@@ -81,19 +129,24 @@ Based on the friction signals, propose JSON updates to the agent's harness. You 
 Respond ONLY with valid JSON containing the keys you wish to update or generate. If no update is necessary, return {}.`;
 
         try {
-            // We route this refiner task via our balanced tier (e.g., Anthropic Sonnet or Gemini Flash)
-            const completion = await router.route('balanced', [
+            // Route selection is separate from generation: the router chooses the model, then the provider produces edits.
+            const route = router.route(systemPrompt);
+            const llm = LLMFactory.createProvider(route.provider as ProviderType);
+            const completion = await llm.chat([
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: 'Propose harness edits in JSON.' }
-            ]);
+            ], {
+                model: route.model,
+                temperature: 0.2,
+                maxTokens: 1200,
+            });
 
-            const responseText = completion.content.replace(/```json/g, '').replace(/```/g, '').trim();
-            const edits = JSON.parse(responseText);
+            const edits = parseJsonObject(completion.content);
 
             if (Object.keys(edits).length === 0) return null;
 
             // Safely merge arrays for reflections, tools, and guardrails
-            const mergedEdits: Partial<AgentProfile> = {};
+            const mergedEdits: HarnessEdits = {};
             if (edits.reflections && Array.isArray(edits.reflections)) {
                 mergedEdits.reflections = [...new Set([...agent.reflections, ...edits.reflections])];
             }
@@ -122,15 +175,15 @@ Respond ONLY with valid JSON containing the keys you wish to update or generate.
         }
     }
 
-    private async applyEdits(agentId: string, edits: Partial<AgentProfile> & { newSubAgent?: any, newTool?: any }) {
+    private async applyEdits(agentId: string, edits: HarnessEdits) {
         console.log(`[HarnessEvolver] Applying harness edits to ${agentId}:`, Object.keys(edits).filter(k => k !== 'newSubAgent' && k !== 'newTool'));
         
         // 1. Handle Sub-Agent Generation
         if (edits.newSubAgent) {
             console.log(`[HarnessEvolver] Spawning new specialist sub-agent: ${edits.newSubAgent.name}`);
             const registration: AgentRegistration = {
-                name: edits.newSubAgent.name,
-                role: edits.newSubAgent.role,
+                name: edits.newSubAgent.name || `specialist-${agentId}`,
+                role: edits.newSubAgent.role || 'specialist',
                 capabilities: edits.newSubAgent.capabilities || [],
                 domain: edits.newSubAgent.domain || []
             };
@@ -147,7 +200,7 @@ Respond ONLY with valid JSON containing the keys you wish to update or generate.
             const proposedDir = path.resolve(process.cwd(), 'src/mcp/tools/proposed');
             await fs.promises.mkdir(proposedDir, { recursive: true });
             
-            const filePath = path.join(proposedDir, `${edits.newTool.name}.ts`);
+            const filePath = path.join(proposedDir, sanitizeToolFileName(edits.newTool.name));
             const fileContent = `/**
  * PROPOSED AUTO-GENERATED TOOL
  * Name: ${edits.newTool.name}

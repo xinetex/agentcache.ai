@@ -10,6 +10,7 @@
 import { Hono } from 'hono';
 import { authMiddleware } from './auth.js';
 import { getAllTiers, TIERS } from '../config/tiers.js';
+import { getAgenticMonetizationSummary } from '../config/agenticMonetization.js';
 import Stripe from 'stripe';
 import { db } from '../db/client.js';
 import { users, organizations, members } from '../db/schema.js';
@@ -18,7 +19,9 @@ import { memoryFabricBillingService } from '../services/MemoryFabricBillingServi
 
 const app = new Hono<{ Variables: { user: any } }>();
 // Initialize Stripe lazily
-const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY as string, { apiVersion: '2025-02-24.acacia' }) : null;
+const stripe = process.env.STRIPE_SECRET_KEY
+    ? new Stripe(process.env.STRIPE_SECRET_KEY as string, { apiVersion: '2026-03-25.dahlia' as any })
+    : null;
 
 // --- Public Endpoints ---
 
@@ -29,8 +32,17 @@ const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SEC
 app.get('/plans', (c) => {
     return c.json({
         tiers: getAllTiers(),
+        agentic: getAgenticMonetizationSummary(),
         currency: 'USD'
     });
+});
+
+/**
+ * GET /monetization
+ * Agent-readable commercial contract for plans, add-ons, and usage SKUs.
+ */
+app.get('/monetization', (c) => {
+    return c.json(getAgenticMonetizationSummary());
 });
 
 // --- Protected Endpoints ---

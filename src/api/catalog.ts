@@ -28,6 +28,12 @@ import { desc, eq } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { serviceRequests } from '../db/schema.js';
 import { getRevenueCoreOffers } from '../config/revenueCore.js';
+import {
+    getAgenticMonetizationSummary,
+    getAgenticUpgradePath,
+    getProductCommercialModel,
+    type AgenticPlanId,
+} from '../config/agenticMonetization.js';
 
 const catalogRouter = new Hono();
 
@@ -437,12 +443,16 @@ function filterByTier(service: ServiceDef, tier?: ServiceDef['tier']) {
  * The focused, sellable AgentCache service lineup.
  */
 catalogRouter.get('/revenue-core', (c) => {
-    const offers = getRevenueCoreOffers();
+    const offers = getRevenueCoreOffers().map((offer) => ({
+        ...offer,
+        commercial: getProductCommercialModel(offer.id),
+    }));
 
     return c.json({
         thesis: 'AgentCache sells reliable agent infrastructure: cache, guardrails, execution drift monitoring, and knowledge memory.',
         mode: 'controlled-alpha',
         recommendedLaunchWedge: 'Execution Drift Guard',
+        monetization: getAgenticMonetizationSummary(),
         offers,
     });
 });
@@ -474,6 +484,7 @@ catalogRouter.get('/', (c) => {
             wallet: '0xAgentCacheMasterWallet',
             amountPer10k: '0.01'
         },
+        monetization: getAgenticMonetizationSummary(),
         services: filtered.map(s => ({
             id: s.id,
             name: s.name,
@@ -537,6 +548,33 @@ catalogRouter.get('/tool-shed', (c) => {
             endpoint: string;
         } => entry !== null);
 
+    const lockedRecommendations = requestedTier
+        ? config.selections
+            .map((selection) => {
+                const service = SERVICE_MAP.get(selection.serviceId);
+                if (!service) return null;
+                if (!includeBeta && service.status === 'beta') return null;
+                if (filterByTier(service, requestedTier)) return null;
+
+                return {
+                    id: service.id,
+                    name: service.name,
+                    tier: service.tier,
+                    required: selection.required,
+                    reason: selection.reason,
+                    unlock: getAgenticUpgradePath(requestedTier as AgenticPlanId),
+                };
+            })
+            .filter((entry): entry is {
+                id: string;
+                name: string;
+                tier: ServiceDef['tier'];
+                required: boolean;
+                reason: string;
+                unlock: ReturnType<typeof getAgenticUpgradePath>;
+            } => entry !== null)
+        : [];
+
     return c.json({
         profile,
         profileName: config.name,
@@ -549,6 +587,11 @@ catalogRouter.get('/tool-shed', (c) => {
         },
         count: recommended.length,
         recommendations: recommended,
+        lockedRecommendations,
+        monetization: {
+            pricingUrl: 'https://agentcache.ai/pricing.html',
+            checkout: getAgenticMonetizationSummary().checkout,
+        },
         availableProfiles: Object.keys(TOOL_SHED_PROFILES)
     });
 });

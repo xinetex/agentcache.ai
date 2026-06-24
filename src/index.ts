@@ -26,6 +26,7 @@ import { ContextManager } from './infrastructure/ContextManager.js';
 // import vercelIntegration from './integrations/vercel.js'; // Lazy loaded below
 import { antiCache, CacheInvalidator, UrlMonitor, FreshnessCalculator, FreshnessRuleEngine } from './mcp/anticache.js';
 import { getTierQuota, getTierFeatures, getAllTiers } from './config/tiers.js';
+import { getAgenticMonetizationSummary } from './config/agenticMonetization.js';
 import { canUseNamespace, isTTLAllowed, getFeatureLimit } from './lib/tierChecker.js';
 import { stableStringify, stableHash } from './lib/stable-json.js';
 import { generateEmbedding } from './lib/llm/embeddings.js';
@@ -39,9 +40,6 @@ import { externalAgentRegistrationService } from './services/ExternalAgentRegist
 import { customerUsageTracking } from './middleware/customerUsageTracking.js';
 import * as bcrypt from 'bcryptjs';
 import { neon } from '@neondatabase/serverless';
-
-// Environment & Safety Checks
-const safeEnv = (key: string) => process.env[key] || '';
 
 // Initialize Neon (Fail gracefully)
 let sql: any;
@@ -192,11 +190,18 @@ app.get('/api/debug-env', (c) => {
 });
 
 // Global Error Handler
+// Security/compliance: never leak internal error details or stack traces to
+// clients in production. Correlate via errorId in server logs instead.
 app.onError((err, c) => {
-  console.error('[Global Error]', err);
+  const errorId = `err_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+  console.error(`[Global Error] ${errorId}`, err);
+  const isProd = process.env.NODE_ENV === 'production';
   return c.json({
     error: 'Internal Server Error',
-    message: err.message,
+    errorId,
+    message: isProd
+      ? 'An unexpected error occurred. Reference errorId when contacting support.'
+      : err.message,
     stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
   }, 500);
 });
@@ -209,7 +214,9 @@ const DIRECT_CDN_WARM_ITEM_TIMEOUT_MS = parseInt(process.env.CDN_WARM_ITEM_TIMEO
 // CORS for API routes
 app.use('/api/*', cors({
   origin: '*',
-  allowMethods: ['GET', 'POST', 'OPTIONS'],
+  // Includes DELETE/PATCH/PUT so browser preflight succeeds for routes like
+  // DELETE /api/agent/memory and DELETE /api/listeners (matches vercel.json).
+  allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'X-Helix-Shield', 'X-Helix-Source', 'X-Helix-Target'],
 }));
 
@@ -225,6 +232,8 @@ app.use('*', async (c, next) => {
   c.header('X-Frame-Options', 'DENY');
   c.header('X-XSS-Protection', '1; mode=block');
   c.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+  // HSTS: platform is served exclusively over HTTPS (Vercel). Enforce TLS.
+  c.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
 
   await next();
 
@@ -713,7 +722,7 @@ app.all('/api/receipts/:path{.+}?', lazy(() => import('./api/receipts.js')));
 app.all('/api/external-agents/:path{.+}?', lazy(() => import('./api/external-agents.js')));
 // Tool Safety Scanner (supply chain security for agent tools)
 app.all('/api/tools/scan/:path{.+}?', lazy(() => import('./api/tool-scanner.js')));
-app.all('/api/sentry/:path{.+}?', lazy(() => import('./api/sentry.js')));
+// NOTE: /api/sentry is already mounted above; not re-registered here.
 app.all('/api/observability/:path{.+}?', lazy(() => import('./api/observability.js')));
 
 // Serve specific discovery paths for agents
@@ -762,11 +771,6 @@ app.get('/galaxy', (c) => c.redirect('/index.html?view=galaxy'));
 
 // Agent Hub Routes
 app.get('/hub', (c) => c.redirect('/hub.html'));
-app.get('/skill.md', async (c) => {
-  const { generateSkillMd } = await import('./lib/hub/discovery.js');
-  c.header('Content-Type', 'text/markdown; charset=utf-8');
-  return c.body(generateSkillMd());
-});
 
 // app.use('/*', serveStatic({ root: './public' }));
 
@@ -817,15 +821,55 @@ function generateCacheKey(req: CacheRequest): string {
 }
 
 /**
- * GET /api/health
+ * GET /api/health - lightweight liveness probe (always 200 if the app is up)
  */
 app.get('/api/health', (c) => {
   return c.json({
     status: 'healthy',
     service: 'AgentCache.ai',
-    version: '1.0.0-mvp',
+    version: '1.0.0',
     timestamp: new Date().toISOString(),
   });
+});
+
+/**
+ * GET /api/ready - readiness probe. Verifies critical dependencies (Redis, DB)
+ * with short timeouts and never throws. Returns 503 when degraded so load
+ * balancers / uptime monitors can route around an unhealthy instance.
+ */
+app.get('/api/ready', async (c) => {
+  const withTimeout = <T>(p: Promise<T>, ms: number) =>
+    Promise.race([p, new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))]);
+
+  const checks: Record<string, string> = {};
+  let ready = true;
+
+  try {
+    await withTimeout(Promise.resolve(redis.get('health:ready:probe')), 1500);
+    checks.redis = 'ok';
+  } catch {
+    checks.redis = 'unavailable';
+    ready = false;
+  }
+
+  try {
+    if (sql) {
+      await withTimeout(sql`SELECT 1`, 1500);
+      checks.database = 'ok';
+    } else {
+      checks.database = 'not_configured';
+    }
+  } catch {
+    checks.database = 'unavailable';
+    ready = false;
+  }
+
+  return c.json({
+    status: ready ? 'ready' : 'degraded',
+    service: 'AgentCache.ai',
+    checks,
+    timestamp: new Date().toISOString(),
+  }, ready ? 200 : 503);
 });
 
 
@@ -1141,7 +1185,10 @@ app.get('/api/pricing', (c) => {
     }
   }));
 
-  return c.json({ tiers });
+  return c.json({
+    tiers,
+    agentic: getAgenticMonetizationSummary(),
+  });
 });
 
 
@@ -1675,9 +1722,8 @@ app.get('/api', (c) => {
   return c.json({
     service: 'AgentCache.ai',
     tagline: 'Edge caching for AI responses - Save 90% on LLM costs',
-    version: '1.0.0-mvp',
-    status: 'beta',
-    demoKey: 'ac_demo_test123',
+    version: '1.0.0',
+    status: 'stable',
     docs: 'https://agentcache.ai/docs',
     agentOnboarding: {
       '/skill.md': 'Agent onboarding doc (markdown)',

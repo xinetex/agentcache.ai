@@ -403,10 +403,16 @@ describe.sequential('AgentCache public API contracts', () => {
 
     expect(response.status).toBe(200);
     expect(payload.recommendedLaunchWedge).toBe('Execution Drift Guard');
+    expect(payload.monetization.version).toBe('agentic-monetization-v1');
     expect(Array.isArray(payload.offers)).toBe(true);
     expect(payload.offers.some((offer: any) => offer.id === 'execution-drift-guard')).toBe(true);
     expect(payload.offers.some((offer: any) => offer.id === 'agentcache-core')).toBe(true);
     expect(payload.offers.some((offer: any) => offer.id === 'agent-storage-core')).toBe(true);
+    const guardrails = payload.offers.find((offer: any) => offer.id === 'agentcache-guardrails');
+    expect(guardrails.commercial).toMatchObject({
+      minimumPlan: 'pro',
+      addonIds: ['guardrails'],
+    });
   });
 
   it('exposes outcome guidance that humans and agents can use to pick advanced services', async () => {

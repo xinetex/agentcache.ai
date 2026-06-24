@@ -599,7 +599,7 @@ export default async function handler(req, res) {
       return json(res, { error: 'Missing Stripe configuration' }, 400);
     }
 
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2026-03-25.dahlia' });
     const rawBody = await readRawBody(req);
 
     let event;

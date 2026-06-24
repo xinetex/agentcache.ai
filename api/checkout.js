@@ -1,9 +1,42 @@
 import Stripe from 'stripe';
+import {
+  getBillingPlanByStripePriceId,
+  isPlaceholderStripePriceId,
+} from '../lib/billing-plans.js';
+import {
+  getBillingAddonByStripePriceId,
+  isPlaceholderAddonStripePriceId,
+} from '../lib/billing-addons.js';
 
 // Specify Node.js runtime for Stripe SDK compatibility
 export const config = {
   runtime: 'nodejs',
 };
+
+function firstQueryValue(value) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function getAllowedPriceMetadata(priceId) {
+  const plan = getBillingPlanByStripePriceId(priceId);
+  if (plan && !isPlaceholderStripePriceId(priceId)) {
+    return {
+      type: 'plan_upgrade',
+      target_public_plan: plan.publicId,
+      target_plan: plan.internalId,
+    };
+  }
+
+  const addon = getBillingAddonByStripePriceId(priceId);
+  if (addon && !isPlaceholderAddonStripePriceId(priceId)) {
+    return {
+      type: 'addon_purchase',
+      addon_id: addon.id,
+    };
+  }
+
+  return null;
+}
 
 export default async function handler(req, res) {
   // Debug: Check if Stripe key is available
@@ -16,17 +49,26 @@ export default async function handler(req, res) {
   }
 
   // Initialize Stripe with the secret key
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2026-03-25.dahlia' });
 
   // Only allow POST and GET
   if (req.method !== 'POST' && req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { price, email } = req.query;
+  const price = firstQueryValue(req.query.price);
+  const email = firstQueryValue(req.query.email);
 
   if (!price) {
     return res.status(400).json({ error: 'Price ID required' });
+  }
+
+  const priceMetadata = getAllowedPriceMetadata(price);
+  if (!priceMetadata) {
+    return res.status(400).json({
+      error: 'Invalid price ID',
+      message: 'Use a configured AgentCache plan or add-on price. Authenticated billing should use /api/billing/create-checkout.',
+    });
   }
 
   try {
@@ -59,9 +101,8 @@ export default async function handler(req, res) {
       billing_address_collection: 'auto',
       metadata: {
         source: 'agentcache_website',
-        userId: email ? undefined : 'TODO_USER_ID_FROM_AUTH', // We need to fix this to actually get user context if possible, or rely on email match
-        // Ideally checkout.js should be an authenticated endpoint like billing.js
-        // For now, we will rely on email matching in the webhook if userId is missing
+        legacyCheckout: 'true',
+        ...priceMetadata,
       },
       client_reference_id: email // helping us match just in case
     });
@@ -77,4 +118,3 @@ export default async function handler(req, res) {
     });
   }
 };
-

@@ -2,16 +2,39 @@
 import { db } from '../../src/db/client.js';
 import { systemSettings, users } from '../../src/db/schema.js';
 import { eq } from 'drizzle-orm';
-import { parseBody } from '../../lib/request.js';
 
 export const config = { runtime: 'nodejs' };
+
+function getHeader(req: any, name: string): string | null {
+    if (typeof req.headers?.get === 'function') {
+        return req.headers.get(name) || req.headers.get(name.toLowerCase());
+    }
+    const value = req.headers?.[name.toLowerCase()] || req.headers?.[name];
+    return Array.isArray(value) ? value[0] : value || null;
+}
+
+function extractBearerToken(req: any): string | null {
+    const authHeader = getHeader(req, 'authorization');
+    if (!authHeader?.startsWith('Bearer ')) return null;
+    return authHeader.slice('Bearer '.length);
+}
+
+function isAdminTokenAuthorized(req: any): boolean {
+    const configuredToken = process.env.ADMIN_TOKEN;
+    if (!configuredToken) return process.env.NODE_ENV !== 'production';
+
+    const suppliedToken = getHeader(req, 'x-admin-token') || extractBearerToken(req);
+    return suppliedToken === configuredToken;
+}
 
 export default async function handler(req) {
     const { method } = req;
 
-    // TODO: Middleware for Admin Check (Authorization: Bearer + Role Check)
-    // For now, we rely on x-user-id header and simple role check query
-    const userId = req.headers.get('x-user-id');
+    if (!isAdminTokenAuthorized(req)) {
+        return new Response('Unauthorized - Admin token required', { status: 401 });
+    }
+
+    const userId = getHeader(req, 'x-user-id');
     if (!userId) return new Response('Unauthorized', { status: 401 });
 
     try {

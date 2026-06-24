@@ -107,7 +107,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2026-03-25.dahlia' });
     const publicUrl = getBaseUrl(req);
     const session = await stripe.billingPortal.sessions.create({
       customer: organization.stripe_customer_id,
