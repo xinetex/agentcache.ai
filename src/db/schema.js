@@ -231,6 +231,7 @@ export const users = pgTable('users', {
     avatarUrl: text('avatar_url'),
     role: text('role').default('user'), // 'admin', 'user'
     plan: text('plan').default('free'),
+    settings: jsonb('settings').default({}), // UI and HPC preferences (added in working refactor)
     stripeCustomerId: text('stripe_customer_id'),
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
@@ -977,3 +978,155 @@ export const ontologyEdges = pgTable('ontology_edges', {
     ontologyEdgeSourceIdx: index('ontology_edge_source_idx').on(table.sourceNodeId, table.predicate),
     ontologyEdgeTargetIdx: index('ontology_edge_target_idx').on(table.targetNodeId),
 }));
+
+
+// ═══════════════════════════════════════════════════════════════
+// AgentForge: The Folder That Thinks (Node Control Plane)
+// (restored alongside the full schema; tables added in the working refactor)
+// ═══════════════════════════════════════════════════════════════
+export const smartNodes = pgTable('smart_nodes', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    ownerId: uuid('owner_id').references(() => users.id),
+    workflowId: uuid('workflow_id'),  // Group nodes into workflows/canvases
+    name: text('name').notNull(),
+    nodeType: text('node_type').default('directory'),
+    // 'directory' — standard folder node
+    // 'trigger'   — event source (file drop, schedule, webhook)
+    // 'transform' — data transformation (summarize, classify, format)
+    // 'action'    — output action (notify, export, publish)
+    // 'condition' — branching logic (if/else routing)
+    status: text('status').default('active'),
+
+    // Canvas position (for the visual editor)
+    posX: real('pos_x').default(0),
+    posY: real('pos_y').default(0),
+
+    // Node configuration
+    memoryContext: jsonb('memory_context').default({}),
+    specTruth: jsonb('spec_truth').default({}),
+    properties: jsonb('properties').default({}),
+    // properties schema: {
+    //   inputs:  [{ key, label, type, default }],
+    //   outputs: [{ key, label, type }],
+    //   settings: { model, temperature, schedule, ... }
+    // }
+
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+    ownerIdx: index('smart_nodes_owner_idx').on(table.ownerId),
+    workflowIdx: index('smart_nodes_workflow_idx').on(table.workflowId),
+}));
+
+// --- Workflows: Named canvases that group connected nodes ---
+export const workflows = pgTable('workflows', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    ownerId: uuid('owner_id').references(() => users.id),
+    name: text('name').notNull(),
+    description: text('description'),
+    status: text('status').default('draft'), // 'draft', 'active', 'paused', 'archived'
+    settings: jsonb('settings').default({}),
+    // settings: { autoExecute, errorHandling, retryPolicy, ... }
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+    ownerIdx: index('workflows_owner_idx').on(table.ownerId),
+}));
+
+// --- Node Connections: Edges between nodes (the wires) ---
+// Models the data flow graph. Source output port → target input port.
+export const nodeConnections = pgTable('node_connections', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    workflowId: uuid('workflow_id').references(() => workflows.id).notNull(),
+    sourceNodeId: uuid('source_node_id').references(() => smartNodes.id).notNull(),
+    targetNodeId: uuid('target_node_id').references(() => smartNodes.id).notNull(),
+    sourcePort: text('source_port').default('output'),  // Output port name on source
+    targetPort: text('target_port').default('input'),    // Input port name on target
+    dataMapping: jsonb('data_mapping').default({}),
+    // dataMapping: { "summary" → "input_text", "tags" → "categories" }
+    // Maps source output fields to target input fields
+    condition: jsonb('condition'),
+    // Optional: only pass data if condition is met
+    // { field: "status", operator: "equals", value: "approved" }
+    isActive: boolean('is_active').default(true),
+    createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+    sourceIdx: index('node_conn_source_idx').on(table.sourceNodeId),
+    targetIdx: index('node_conn_target_idx').on(table.targetNodeId),
+    workflowIdx: index('node_conn_workflow_idx').on(table.workflowId),
+}));
+
+// --- Node Properties: Typed, versioned configuration per node ---
+export const nodeProperties = pgTable('node_properties', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    nodeId: uuid('node_id').references(() => smartNodes.id).notNull(),
+    key: text('key').notNull(),       // e.g. 'model', 'temperature', 'outputFormat'
+    value: jsonb('value').notNull(),   // The actual value (typed via schema)
+    valueType: text('value_type').default('string'),
+    // 'string', 'number', 'boolean', 'select', 'json', 'code', 'credential'
+    displayLabel: text('display_label'),
+    groupName: text('group_name'),     // For UI grouping: 'General', 'Advanced', 'Auth'
+    sortOrder: integer('sort_order').default(0),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+    nodeKeyIdx: index('node_props_node_key_idx').on(table.nodeId, table.key),
+}));
+
+// --- Node Agents: Agent assignments per node ---
+export const nodeAgents = pgTable('node_agents', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    nodeId: uuid('node_id').references(() => smartNodes.id).notNull(),
+    agentId: uuid('agent_id').references(() => agents.id),
+    roleName: text('role_name').notNull(),
+    permissions: jsonb('permissions').default({}),
+    assignedAt: timestamp('assigned_at').defaultNow(),
+});
+
+// --- Node Intents: Scheduled/triggered actions per node ---
+export const nodeIntents = pgTable('node_intents', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    nodeId: uuid('node_id').references(() => smartNodes.id).notNull(),
+    actionType: text('action_type').notNull(),
+    status: text('status').default('idle'),
+    executionLog: jsonb('execution_log').default([]),
+    scheduledTime: timestamp('scheduled_time'),
+    createdAt: timestamp('created_at').defaultNow(),
+});
+
+// --- Workflow Executions: Runtime trace of a workflow run ---
+export const workflowExecutions = pgTable('workflow_executions', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    workflowId: uuid('workflow_id').references(() => workflows.id).notNull(),
+    triggeredBy: text('triggered_by'), // 'manual', 'schedule', 'file_drop', 'webhook'
+    status: text('status').default('running'),
+    // 'running', 'completed', 'failed', 'cancelled'
+    startedAt: timestamp('started_at').defaultNow(),
+    completedAt: timestamp('completed_at'),
+    nodeResults: jsonb('node_results').default({}),
+    // { nodeId: { status, output, duration_ms, error? } }
+    errorMessage: text('error_message'),
+}, (table) => ({
+    workflowIdx: index('wf_exec_workflow_idx').on(table.workflowId),
+    statusIdx: index('wf_exec_status_idx').on(table.status),
+}));
+
+// --- Sector Packs & Templates ---
+export const sectorPacks = pgTable('sector_packs', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: text('name').notNull(),
+    description: text('description'),
+    version: text('version').default('1.0.0'),
+    isOfficial: boolean('is_official').default(false),
+    createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const actionTemplates = pgTable('action_templates', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    packId: uuid('pack_id').references(() => sectorPacks.id),
+    name: text('name').notNull(),
+    description: text('description'),
+    category: text('category'), 
+    workflowSchema: jsonb('workflow_schema').default({}), 
+    requiredInputs: jsonb('required_inputs').default([]),
+    createdAt: timestamp('created_at').defaultNow(),
+});

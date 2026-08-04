@@ -86,20 +86,32 @@ export default async function handler(req: Request) {
         }).catch(err => console.error('Failed to record usage:', err));
 
         if (value === null) {
-            return new Response(JSON.stringify({ 
-                error: 'Not found',
-                message: `Cache miss for key: ${userKey}`,
-                namespace
-            }), { status: 404 });
+            // A cache miss is a normal, expected outcome — NOT an HTTP error.
+            // The documented SDK checks `cached.hit`, so return 200 with hit:false.
+            return new Response(JSON.stringify({
+                hit: false,
+                cached: false,
+                value: null,
+                namespace,
+                organizationSlug: keyContext.organizationSlug
+            }), {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Cache-Status': 'MISS',
+                    'X-Cache-Namespace': namespace
+                }
+            });
         }
 
-        return new Response(JSON.stringify({ 
+        return new Response(JSON.stringify({
+            hit: true,
             value,
             namespace,
             organizationSlug: keyContext.organizationSlug,
             cached: true
         }), {
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
                 'X-Cache-Status': 'HIT',
                 'X-Cache-Namespace': namespace

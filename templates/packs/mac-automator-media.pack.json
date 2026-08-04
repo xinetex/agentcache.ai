@@ -1,0 +1,18 @@
+{
+  "pack": {
+    "id": "automator-media",
+    "name": "Media Converter",
+    "suite_name": "macOS Automator",
+    "description": "Resize images, convert formats, or apply filters to dropped media.",
+    "category": "utilities",
+    "version": "1.0.0",
+    "icon": "image"
+  },
+  "nodes": [
+    { "id": "trigger-drop", "type": "trigger", "label": "Media Dropped" },
+    { "id": "action-convert", "type": "action", "label": "Convert Format" }
+  ],
+  "edges": [
+    { "source": "trigger-drop", "target": "action-convert" }
+  ]
+}

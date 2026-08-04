@@ -1,923 +1,269 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgentCache | Execution Drift Guard, Cache & Memory Infrastructure</title>
-    <meta name="description"
-        content="AgentCache helps teams cut repeated LLM and tool costs, add persistent memory, and detect execution drift before production agents go off-script." />
-
-    <!-- Agent discovery alternates -->
-    <link rel="alternate" type="application/json" href="/.well-known/agents.json">
-    <link rel="alternate" type="text/markdown" href="/skill.md">
-
-    <!-- Structured metadata for agent/bot parsers -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "AgentCache",
-      "applicationCategory": "AIInfrastructure",
-      "operatingSystem": "Any",
-      "url": "https://agentcache.ai/",
-      "description": "API-first cache and memory infrastructure for AI agents. Cache repeated LLM and tool calls, add persistent memory, and onboard autonomous agents through MCP and hub APIs.",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD",
-        "category": "Free tier available"
-      },
-      "softwareHelp": {
-        "@type": "TechArticle",
-        "name": "Agent Onboarding",
-        "url": "https://agentcache.ai/skill.md"
-      },
-      "featureList": [
-        "semantic-cache",
-        "tool-cache",
-        "session-memory",
-        "security-guardrails",
-        "agent-discovery"
-      ],
-      "additionalProperty": [
-        {"@type": "PropertyValue", "name": "manifest", "value": "https://agentcache.ai/.well-known/agents.json"},
-        {"@type": "PropertyValue", "name": "mcp", "value": "https://agentcache.ai/mcp/manifest"},
-        {"@type": "PropertyValue", "name": "register", "value": "https://agentcache.ai/api/hub/agents/register"},
-        {"@type": "PropertyValue", "name": "heartbeat", "value": "https://agentcache.ai/api/hub/heartbeat"},
-        {"@type": "PropertyValue", "name": "catalog", "value": "https://agentcache.ai/api/catalog"}
-      ]
-    }
-    </script>
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&family=JetBrains+Mono:wght@400;600&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="/assets/premium.css">
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace']
-                    },
-                    colors: {
-                        brand: {
-                            50: '#f0f9ff',
-                            500: '#0ea5e9',
-                            900: '#0c4a6e',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        /* Specific Bento Styles */
-        body {
-            background-color: #e2e8f0;
-            /* Light/silver bg like Drgnflai */
-            overflow-x: hidden;
-            color: #0f172a;
-        }
-
-        .dark-mode {
-            background-color: #0f172a;
-            color: #f8fafc;
-        }
-
-        .card-bg {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(20px);
-        }
-
-        .dark-mode .card-bg {
-            background: rgba(15, 23, 42, 0.8);
-        }
-
-        .bento-grid {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            grid-template-rows: repeat(12, 1fr);
-            /* Fixed rows for dashboard feel */
-            gap: 1.5rem;
-            height: 100vh;
-            padding: 2rem;
-            max-width: 1600px;
-            margin: 0 auto;
-        }
-
-        @media (max-width: 768px) {
-            body {
-                overflow-y: auto;
-            }
-
-            .bento-grid {
-                display: flex;
-                flex-direction: column;
-                height: auto;
-                overflow-y: auto;
-            }
-        }
-
-        /* Mission Tile (Top Left) */
-        .tile-mission {
-            grid-column: span 8;
-            grid-row: span 8;
-            background-color: #020617;
-            /* Dark navy */
-            color: white;
-            position: relative;
-            overflow: hidden;
-            border-radius: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 2rem;
-        }
-
-        /* Side Tiles (Top Right) */
-        .tile-side {
-            grid-column: span 4;
-            grid-row: span 4;
-            border-radius: 1.5rem;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-            /* transition: transform 0.2s; Handled by anime.js now */
-        }
-
-        /* .tile-side:hover {
-            transform: scale(1.02);
-            z-index: 10;
-        } */
-
-        /* Bottom Section (Incubator/Status) */
-        .tile-bottom {
-            grid-column: span 12;
-            grid-row: span 4;
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-        }
-
-        .cycling-text {
-            font-size: 5rem;
-            font-weight: 900;
-            line-height: 0.9;
-            text-transform: uppercase;
-            letter-spacing: -0.05em;
-            /* transition: opacity 0.5s; Handled by anime.js */
-        }
-
-        .slide-panel {
-            position: fixed;
-            bottom: -100%;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            z-index: 100;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .dark-mode .slide-panel {
-            background: rgba(15, 23, 42, 0.95);
-        }
-    </style>
+    <title>AgentCache — The Folder That Thinks</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
 </head>
-
-<body class="selection:bg-cyan-500 selection:text-white transition-colors duration-500">
-
-    <!-- Header -->
-    <div class="fixed top-0 left-0 w-full p-6 flex justify-between items-center z-50 pointer-events-none">
-        <div>
-            <h1
-                class="font-black text-2xl tracking-tighter uppercase text-slate-800 dark:text-white pointer-events-auto">
-                AgentCache</h1>
-            <p class="text-[10px] font-mono tracking-[0.2em] text-slate-500 uppercase">Cache, Guardrails & Drift Control</p>
-        </div>
-        <div class="pointer-events-auto flex items-center gap-2">
-            <a href="/services"
-                class="hidden md:inline-flex px-3 py-2 rounded-full text-xs font-bold tracking-widest uppercase text-slate-500 hover:text-slate-800 dark:hover:text-white transition">Services</a>
-            <a href="/docs"
-                class="hidden md:inline-flex px-3 py-2 rounded-full text-xs font-bold tracking-widest uppercase text-slate-500 hover:text-slate-800 dark:hover:text-white transition">Docs</a>
-            <a href="/skill.md"
-                class="hidden md:inline-flex px-3 py-2 rounded-full text-xs font-bold tracking-widest uppercase text-cyan-600 hover:text-cyan-500 transition">For
-                Agents</a>
-            <a href="/signup.html?next=%2Fonboarding.html%3Ffocus%3Ddrift"
-                class="inline-flex px-4 py-2 rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-black tracking-widest uppercase transition shadow-lg shadow-cyan-500/20">Get
-                Started</a>
-            <button onclick="toggleTheme()"
-                class="p-2 rounded-full bg-slate-200 dark:bg-slate-800 hover:opacity-80 transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                </svg>
-            </button>
-        </div>
-    </div>
-
-    <!-- Main Grid -->
-    <div class="bento-grid pt-24" id="main-grid">
-
-        <!-- Mission Tile (Left Large) -->
-        <div class="tile-mission shadow-2xl group">
-            <div class="text-[10px] font-mono tracking-[0.3em] text-slate-500 absolute top-8 left-8 uppercase">Mission
-                Protocol</div>
-
-            <div id="mission-text" class="cycling-text relative z-10">
-                TRUSTED CONTROL<br>FOR AGENTS
-            </div>
-
-            <p class="mt-8 text-slate-400 max-w-lg text-lg leading-relaxed font-light relative z-10">
-                Agent infrastructure for teams running real workflows. Cut repeated model spend, preserve memory, and detect execution drift before it becomes a production incident.
+<body>
+    
+    <!-- AUTH MODAL (Hidden by default) -->
+    <div id="auth-modal" class="modal-overlay hidden">
+        <div class="modal-content glass-panel">
+            <h2 id="auth-title">Connect to AgentCache</h2>
+            <p class="subtitle">Secure access to your intelligent folders.</p>
+            
+            <form id="auth-form">
+                <div class="input-group">
+                    <label for="auth-email">Email</label>
+                    <input type="email" id="auth-email" placeholder="researcher@institute.edu" required>
+                </div>
+                <div class="input-group">
+                    <label for="auth-password">Password</label>
+                    <input type="password" id="auth-password" placeholder="••••••••" required>
+                </div>
+                <p id="auth-error" class="error-text hidden"></p>
+                <button type="submit" class="btn-primary" id="auth-submit">Login</button>
+            </form>
+            
+            <p class="auth-switch">
+                <span id="auth-switch-text">New to AgentCache?</span>
+                <a href="#" id="auth-switch-link">Create an account</a>
             </p>
+        </div>
+    </div>
 
-            <div class="mt-8 relative z-10 flex flex-wrap justify-center gap-3">
-                <div class="inline-flex items-center gap-3 rounded-full bg-slate-800 border border-slate-700 px-6 py-4 shadow-2xl group/snippet cursor-pointer transition-all active:scale-95" id="install-snippet" onclick="copyInstall()">
-                    <div class="flex items-center gap-3" id="snippet-inner">
-                        <code class="text-cyan-400 font-mono text-sm">npm install agentcache-node</code>
-                        <div class="flex items-center gap-1">
-                            <i data-lucide="copy" class="w-4 h-4 text-slate-500 group-hover/snippet:text-cyan-400 transition"></i>
-                            <span class="text-[10px] font-mono text-slate-600 group-hover/snippet:text-slate-400 transition uppercase tracking-widest hidden md:inline ml-1">Copy</span>
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="modal-overlay hidden">
+        <div class="modal-content glass-panel" style="max-width: 500px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h2 id="settings-title">Preferences & Security</h2>
+                <button id="settings-close" class="icon-btn"><i data-feather="x"></i></button>
+            </div>
+            
+            <form id="settings-form">
+                <!-- PQC Security -->
+                <div class="settings-section">
+                    <h4 class="section-title">Quantum Security</h4>
+                    <div class="input-group checkbox-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="setting-pqc">
+                            <span class="slider"></span>
+                        </label>
+                        <div>
+                            <div style="font-size: 13px; font-weight: 500;">Strict Post-Quantum Mode</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">Enforce ML-DSA signatures and ML-KEM file encryption.</div>
                         </div>
                     </div>
                 </div>
-                <a href="/signup.html?next=%2Fonboarding.html%3Ffocus%3Ddrift"
-                    class="inline-flex items-center rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-6 py-4 text-xs font-black tracking-widest uppercase transition shadow-xl shadow-cyan-500/10">Start Drift Guard</a>
-                <a href="/demo-execution-drift-guard.html"
-                    class="inline-flex items-center rounded-full bg-slate-800 hover:bg-slate-700 text-white px-6 py-4 text-xs font-black tracking-widest uppercase transition shadow-xl shadow-slate-900/20">See the wedge</a>
-            </div>
 
-            <!-- Savings Ticker -->
-            <div class="mt-8 relative z-10">
-                <div class="text-[10px] font-mono tracking-[0.3em] text-slate-600 uppercase mb-2">COLLECTIVE SAVINGS DISTRIBUTED</div>
-                <div id="savings-ticker" class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600 tracking-tighter">
-                    $1,429,203.42
-                </div>
-            </div>
-
-            <div class="mt-4 relative z-10 text-[10px] font-mono tracking-[0.16em] uppercase text-slate-500">
-                Quickstart: <span class="text-slate-400">check</span> -> <span class="text-slate-400">miss</span> ->
-                provider -> <span class="text-slate-400">set</span>
-            </div>
-
-            <!-- Background Animation Element -->
-            <div
-                class="absolute inset-0 bg-gradient-to-br from-cyan-900/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-1000">
-            </div>
-
-
-            <div class="absolute bottom-8 right-8 flex gap-2">
-                <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-ping"></span>
-                <span class="text-[10px] font-mono text-slate-500 tracking-widest">SYSTEM ONLINE</span>
-            </div>
-        </div>
-
-        <!-- Tile 1: Use Cases (Dynamic) -->
-        <div class="tile-side card-bg shadow-xl border border-white/50 group" onmouseenter="hoverCard(this)"
-            onmouseleave="unhoverCard(this)" onclick="openPanel('usecases')">
-            <img src="/assets/studio-dashboard.png"
-                class="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:scale-110 transition duration-1000">
-            <div class="relative z-10 p-8 h-full flex flex-col justify-between">
-                <div>
-                    <h3 class="text-3xl font-black uppercase tracking-tight mb-1">Use Cases</h3>
-                    <p class="text-xs font-mono tracking-widest text-cyan-600 uppercase">LLM + Tool + Memory Paths</p>
-                </div>
-                <!-- Dynamic Content Container -->
-                <div id="usecases-cycle"
-                    class="text-xl font-bold text-slate-700 dark:text-slate-300 h-16 overflow-hidden flex items-end">
-                    <span>Loading...</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tile 2: Pricing (Dynamic) -->
-        <div class="tile-side card-bg shadow-xl border border-white/50 group"
-            onmouseenter="hoverCard(this); showServicePreview('START FREE', '10,000 requests/month included. No credit card required. Upgrade only when you scale.')"
-            onmouseleave="unhoverCard(this); hideServicePreview()" onclick="openPanel('pricing')">
-            <img src="/assets/console-preview.jpg"
-                class="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:scale-110 transition duration-1000">
-            <div class="relative z-10 p-8 h-full flex flex-col justify-between">
-                <div>
-                    <h3 class="text-3xl font-black uppercase tracking-tight mb-1">Pricing</h3>
-                    <p class="text-xs font-mono tracking-widest text-cyan-600 uppercase">10k Requests/Month Free</p>
-                </div>
-                <!-- Dynamic Content Container -->
-                <div id="pricing-cycle"
-                    class="text-xl font-bold text-slate-700 dark:text-slate-300 h-16 overflow-hidden flex items-end">
-                    <span>Loading...</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bottom Row: Services + Stats -->
-        <div class="tile-bottom px-8 flex justify-between items-center group">
-            <!-- Left: Services -->
-            <div class="flex items-center gap-6">
-                <!-- Cache Icon -->
-                <div class="group/icon relative cursor-pointer"
-                    onmouseenter="pulseIcon(this); showServicePreview('CACHE', 'Instant cognitive retrieval. Serve millions of users with zero latency by caching thought processes.')"
-                    onmouseleave="hideServicePreview()" onclick="window.location.href='/services#cache'">
-                    <div
-                        class="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center text-3xl group-hover/icon:scale-105 transition">
-                        ⚡️</div>
-                    <div
-                        class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-bold tracking-widest uppercase opacity-0 group-hover/icon:opacity-100 transition">
-                        Cache</div>
+                <!-- BYOK (LLM) -->
+                <div class="settings-section mt-4">
+                    <h4 class="section-title">Agent AI Providers (BYOK)</h4>
+                    <div class="input-group">
+                        <label for="setting-openai">OpenAI API Key</label>
+                        <input type="password" id="setting-openai" placeholder="sk-...">
+                    </div>
+                    <div class="input-group">
+                        <label for="setting-anthropic">Anthropic API Key</label>
+                        <input type="password" id="setting-anthropic" placeholder="sk-ant-...">
+                    </div>
+                    <div class="input-group">
+                        <label for="setting-ollama">Local Ollama Endpoint</label>
+                        <input type="text" id="setting-ollama" placeholder="http://localhost:11434">
+                    </div>
                 </div>
 
-                <!-- Memory Icon -->
-                <div class="group/icon relative cursor-pointer"
-                    onmouseenter="pulseIcon(this); showServicePreview('MEMORY', 'Hopfield Network state management. Give your agents infinite context window without the token cost.')"
-                    onmouseleave="hideServicePreview()" onclick="window.location.href='/services#memory'">
-                    <div
-                        class="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center text-3xl group-hover/icon:scale-105 transition">
-                        🧠</div>
-                    <div
-                        class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-bold tracking-widest uppercase opacity-0 group-hover/icon:opacity-100 transition">
-                        Memory</div>
+                <!-- HPC external services -->
+                <div class="settings-section mt-4">
+                    <h4 class="section-title">HPC & External Services</h4>
+                    <div class="input-group">
+                        <label for="setting-slurm">Default Slurm Cluster</label>
+                        <input type="text" id="setting-slurm" placeholder="user@login.hpc.university.edu">
+                    </div>
                 </div>
-
-                <!-- Security Icon -->
-                <div class="group/icon relative cursor-pointer"
-                    onmouseenter="pulseIcon(this); showServicePreview('SECURITY', 'Real-time PII redaction and injection firewall. Protect your LLMs from malicious prompts and data leaks.')"
-                    onmouseleave="hideServicePreview()" onclick="window.location.href='/services#security'">
-                    <div
-                        class="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center text-3xl group-hover/icon:scale-105 transition">
-                        🛡️</div>
-                    <div
-                        class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-bold tracking-widest uppercase opacity-0 group-hover/icon:opacity-100 transition">
-                        Security</div>
-                </div>
-
-                <div class="h-12 w-px bg-slate-300 dark:bg-slate-700 mx-4"></div>
-                <div class="text-xl font-black uppercase tracking-tight text-slate-300 dark:text-slate-700 select-none cursor-pointer"
-                    onclick="window.location.href='/services'">
-                    SERVICES</div>
-
-                <div class="h-12 w-px bg-slate-300 dark:bg-slate-700 mx-4"></div>
-                <a href="/services"
-                    class="text-[10px] font-mono tracking-[0.2em] text-slate-500 dark:text-slate-400 uppercase hover:text-slate-300 transition cursor-pointer">
-                    For Developers
-                </a>
-                <a href="/skill.md"
-                    class="text-[10px] font-mono tracking-[0.2em] text-cyan-600 dark:text-cyan-500 uppercase hover:text-cyan-400 transition cursor-pointer">
-                    For Agents
-                </a>
-            </div>
-
-            <!-- Right: Live Stats Cycle -->
-            <div id="stats-cycle" class="flex-1 flex justify-end items-center h-full ml-12">
-                <!-- Content injected by JS -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Slide Up Panel -->
-    <div id="panel" class="slide-panel">
-        <div class="max-w-4xl w-full h-full overflow-y-auto p-12 pt-24 relative">
-            <button onclick="closePanel()"
-                class="absolute top-8 right-8 p-4 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                    </path>
-                </svg>
-            </button>
-
-            <div id="panel-content" class="mt-8 opacity-0 translate-y-8">
-                <!-- Content injected here -->
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // State
-        let contentData = null;
-        let cycles = {}; // Store intervals
-        let isHoveringService = false; // Add state for service hover
-        let activeCycleInterval = null; // Track specific interval for pause/resume
-
-        const FALLBACK_CONTENT = {
-            lanes: [
-                { id: 'mission', title: 'MISSION PROTOCOL', size: 'large', speed: 8000 },
-                { id: 'usecases', title: 'USE CASES', size: 'medium', speed: 4000 },
-                { id: 'stats', title: 'LIVE STATS', size: 'small', speed: 3000 }
-            ],
-            cards: [
-                {
-                    id: 'mission-1',
-                    laneId: 'mission',
-                    template: 'hero',
-                    data: {
-                        title: 'CACHE AI WORKLOADS',
-                        subtitle: 'ZERO LATENCY',
-                        content: 'Cache repeated LLM and tool calls to cut spend and serve instant answers.'
-                    }
-                },
-                {
-                    id: 'mission-2',
-                    laneId: 'mission',
-                    template: 'hero',
-                    data: {
-                        title: 'PERSISTENT MEMORY',
-                        subtitle: 'STATEFUL AGENTS',
-                        content: 'Store long-lived context so agents can recall facts without token bloat.'
-                    }
-                },
-                {
-                    id: 'mission-3',
-                    laneId: 'mission',
-                    template: 'hero',
-                    data: {
-                        title: 'START FREE',
-                        subtitle: '10K REQUESTS',
-                        content: 'Get started in minutes and scale with namespaces, guardrails, and observability.'
-                    }
-                },
-                {
-                    id: 'case-ai',
-                    laneId: 'usecases',
-                    template: 'standard',
-                    data: {
-                        title: 'LLM Responses',
-                        subtitle: 'SEMANTIC CACHE',
-                        content: 'Reuse equivalent responses across repeated prompts and models.'
-                    }
-                },
-                {
-                    id: 'case-tools',
-                    laneId: 'usecases',
-                    template: 'standard',
-                    data: {
-                        title: 'Tool Calls',
-                        subtitle: 'DETERMINISTIC CACHE',
-                        content: 'Cache high-frequency API and tool outputs to remove redundant work.'
-                    }
-                },
-                {
-                    id: 'price-free',
-                    laneId: 'pricing',
-                    template: 'standard',
-                    data: {
-                        title: 'Community',
-                        subtitle: '$0 / MONTH',
-                        content: '10,000 requests/month with core cache and memory features.'
-                    }
-                },
-                {
-                    id: 'price-pro',
-                    laneId: 'pricing',
-                    template: 'standard',
-                    data: {
-                        title: 'Pro',
-                        subtitle: '$49 / MONTH',
-                        content: '1M requests/month, private namespaces, and extended TTL controls.'
-                    }
-                },
-                {
-                    id: 'stat-requests',
-                    laneId: 'stats',
-                    template: 'stat',
-                    data: { title: 'LIVE', subtitle: 'REQUESTS CACHED', content: 'Serving cached traffic from the edge.' }
-                },
-                {
-                    id: 'stat-latency',
-                    laneId: 'stats',
-                    template: 'stat',
-                    data: { title: '<50ms', subtitle: 'EDGE LATENCY', content: 'Target latency for cache hits.' }
-                }
-            ]
-        };
-
-        function cloneFallbackContent() {
-            return JSON.parse(JSON.stringify(FALLBACK_CONTENT));
-        }
-
-        function normalizeContent(payload) {
-            if (!payload || !Array.isArray(payload.cards) || payload.cards.length === 0) {
-                return cloneFallbackContent();
-            }
-
-            return {
-                lanes: Array.isArray(payload.lanes) && payload.lanes.length ? payload.lanes : cloneFallbackContent().lanes,
-                cards: payload.cards
-            };
-        }
-
-        // DOM Elements
-        const els = {
-            mission: document.getElementById('mission-text'),
-            missionDesc: document.querySelector('.tile-mission p'), // Grab description too
-            usecases: document.getElementById('usecases-cycle'),
-            pricing: document.getElementById('pricing-cycle'),
-            stats: document.getElementById('stats-cycle'),
-            panel: document.getElementById('panel'),
-            panelContent: document.getElementById('panel-content')
-        };
-
-        // Initialize
-        async function init() {
-            // Theme check
-            if (!document.body.classList.contains('dark-mode')) {
-                document.body.classList.add('dark-mode');
-            }
-
-            // Fetch Data
-            try {
-                const res = await fetch('/api/content', { cache: 'no-store' });
-                if (!res.ok) {
-                    throw new Error(`Unexpected status ${res.status}`);
-                }
-                const payload = await res.json();
-                contentData = normalizeContent(payload);
                 
-                // Initialize Savings with real data
-                if (payload.cumulativeSavings) {
-                    currentSavings = payload.cumulativeSavings;
-                }
-            } catch (err) {
-                console.warn('Falling back to local landing content:', err);
-                contentData = cloneFallbackContent();
-            }
+                <p id="settings-msg" class="success-text hidden" style="color:#4caf50; font-size:12px; margin-bottom:16px;">Settings saved successfully!</p>
+                <button type="submit" class="btn-primary" id="settings-submit">Save Preferences</button>
+            </form>
+        </div>
+    </div>
 
-            // Start Cycles
-            setupCycles();
+    <!-- TEMPLATE GALLERY MODAL -->
+    <div id="template-modal" class="modal-overlay hidden">
+        <div class="modal-content glass-panel" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h2>Template Gallery</h2>
+                <button id="template-close" class="icon-btn"><i data-feather="x"></i></button>
+            </div>
+            <p class="subtitle">Install an Action Pack template to this folder.</p>
+            
+            <div id="template-list" style="display:flex; flex-direction:column; gap:16px;">
+                <!-- Populated by JS -->
+                <div style="text-align:center; padding: 20px;"><i data-feather="loader" class="spin"></i></div>
+            </div>
+        </div>
+    </div>
 
-            // Animate Entrance
-            anime({
-                targets: '.bento-grid > div',
-                opacity: [0, 1],
-                translateY: [20, 0],
-                delay: anime.stagger(100),
-                easing: 'easeOutExpo',
-                duration: 1200
-            });
-        }
-
-        // Setup Cycles based on API data
-        function setupCycles() {
-            if (!contentData || !Array.isArray(contentData.cards)) return;
-
-            const missionCards = contentData.cards.filter(c => c.laneId === 'mission');
-            const usecaseCards = contentData.cards.filter(c => c.laneId === 'usecases');
-            // Support both pricing and monitor lanes for backward compat
-            const pricingCards = contentData.cards.filter(c => c.laneId === 'pricing').length ?
-                contentData.cards.filter(c => c.laneId === 'pricing') :
-                contentData.cards.filter(c => c.laneId === 'monitor');
-            const statsCards = contentData.cards.filter(c => c.laneId === 'stats');
-
-            startCycle(els.mission, missionCards, 4000);
-            startCycle(els.usecases, usecaseCards, 3000);
-            startCycle(els.pricing, pricingCards, 3500);
-            startCycle(els.stats, statsCards, 3000);
-        }
-
-        // RSVP "Flying" Animation
-        function startCycle(element, cards, speed) {
-            if (!cards || !cards.length || !element) return;
-
-            // Store original data on element for restoring after hover
-            element.dataset.originalCards = JSON.stringify(cards);
-            element.dataset.currentIndex = 0;
-            element.dataset.speed = speed;
-
-            let i = 0;
-            // Initial render
-            renderCard(element, cards[0]);
-
-            const interval = setInterval(() => {
-                // Skip update if hovering logic is overriding (specifically for mission card)
-                if (element.id === 'mission-text' && isHoveringService) return;
-
-                i = (i + 1) % cards.length;
-                element.dataset.currentIndex = i;
-
-                // Anime.js RSVP Transition: Fly OUT (towards user) then Fly IN (from background)
-                anime({
-                    targets: element,
-                    opacity: [1, 0],
-                    scale: [1, 1.5], // Fly towards user
-                    easing: 'easeInExpo',
-                    duration: 300,
-                    complete: () => {
-                        renderCard(element, cards[i]);
-                        anime({
-                            targets: element,
-                            opacity: [0, 1],
-                            scale: [0.8, 1], // Fly in from back
-                            easing: 'easeOutExpo',
-                            duration: 400
-                        });
-                    }
-                });
-            }, speed);
-
-            cycles[element.id] = interval;
-        }
-
-        function renderCard(element, card) {
-            // Check if it's the Mission Hero text or standard card
-            if (!card) return;
-
-            if (card.template === 'hero') {
-                element.innerHTML = card.data.title.replace(' ', '<br>');
-                // Also update description if available and we are rendering main mission
-                if (els.missionDesc && card.data.content) {
-                    els.missionDesc.innerText = card.data.content;
-                    // Simple fade for description to match
-                    anime({
-                        targets: els.missionDesc,
-                        opacity: [0.5, 1],
-                        easing: 'linear',
-                        duration: 300
-                    });
-                }
-            } else if (card.template === 'stat') {
-                element.innerHTML = `
-                    <div class="flex items-center gap-8 w-full justify-end pr-8">
-                        <div class="text-right">
-                            <div class="text-xs font-mono tracking-widest text-slate-500 uppercase mb-1">${card.data.subtitle}</div>
-                            <div class="text-sm text-slate-400 max-w-xs leading-tight">${card.data.content}</div>
-                        </div>
-                        <div class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-cyan-500 tracking-tighter">${card.data.title}</div>
-                    </div>
-                `;
-            } else {
-                element.innerHTML = `
-                    <div>
-                        <div class="text-indigo-400 text-xs font-mono uppercase mb-1">${card.data.subtitle}</div>
-                        <div>${card.data.title}</div>
-                    </div>
-                `;
-            }
-        }
-
-        // Interactions
-        window.hoverCard = (el) => {
-            anime({
-                targets: el,
-                scale: 1.02,
-                duration: 400,
-                easing: 'easeOutExpo'
-            });
-        };
-
-        window.unhoverCard = (el) => {
-            anime({
-                targets: el,
-                scale: 1.0,
-                duration: 400,
-                easing: 'easeOutExpo'
-            });
-        };
-
-        window.pulseIcon = (el) => {
-            anime({
-                targets: el,
-                scale: [1, 1.2, 1],
-                duration: 600,
-                easing: 'easeOutElastic(1, .5)'
-            });
-        }
-
-        // Service Hover Effects
-        window.showServicePreview = (title, description) => {
-            isHoveringService = true;
-
-            // Immediate update for "RSVP" feel - snap to new content
-            els.mission.innerHTML = title.replace(' ', '<br>');
-            els.missionDesc.innerText = description;
-
-            // Visual pop to indicate change
-            anime({
-                targets: els.mission,
-                scale: [0.9, 1],
-                opacity: [0, 1],
-                duration: 200,
-                easing: 'easeOutExpo'
-            });
-        };
-
-        window.hideServicePreview = () => {
-            isHoveringService = false;
-            // Cycle will resume naturally on next interval, but let's restore current card immediately
-            const cards = JSON.parse(els.mission.dataset.originalCards || '[]');
-            const idx = parseInt(els.mission.dataset.currentIndex || '0');
-            if (cards.length) {
-                renderCard(els.mission, cards[idx]);
-            }
-        };
-
-        // Panel Logic
-        window.openPanel = (laneId) => {
-            // Retrieve cards with fallback for pricing/monitor logic similar to setupCycles
-            let cards = [];
-            if (laneId === 'pricing') {
-                const pricingCards = contentData.cards.filter(c => c.laneId === 'pricing');
-                cards = pricingCards.length ? pricingCards : contentData.cards.filter(c => c.laneId === 'monitor');
-            } else {
-                cards = contentData.cards.filter(c => c.laneId === laneId);
-            }
-
-            if (!cards.length) return;
-
-            // Simple render of all cards in that lane for "Deep Dive"
-            const laneTitleObj = contentData.lanes.find(l => l.id === laneId);
-            const title = laneTitleObj ? laneTitleObj.title : laneId.toUpperCase();
-
-            let html = `<h2 class="text-6xl font-black mb-12 uppercase tracking-tighter text-slate-900 dark:text-white">${title}</h2>`;
-
-            html += '<div class="grid grid-cols-1 md:grid-cols-2 gap-8">';
-            cards.forEach(card => {
-                html += `
-                    <div class="p-8 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                        <div class="text-indigo-500 font-bold tracking-widest text-xs uppercase mb-4">${card.data.subtitle}</div>
-                        <h3 class="font-bold text-3xl mb-4 text-slate-800 dark:text-white">${card.data.title}</h3>
-                        <p class="text-slate-500 text-lg leading-relaxed">${card.data.content}</p>
-                    </div>
-                `;
-            });
-            html += '</div>';
-
-            html += `
-                <div class="mt-16 flex justify-center pb-24">
-                    <button onclick="closePanel()" class="inline-flex items-center gap-2 px-8 py-4 bg-cyan-600 text-white font-bold rounded-full hover:bg-cyan-500 transition shadow-lg hover:shadow-cyan-500/25">
-                        <span>CLOSE PANEL</span>
-                    </button>
+    <!-- HUMAN-IN-THE-LOOP INPUT MODAL -->
+    <div id="input-modal" class="modal-overlay hidden">
+        <div class="modal-content glass-panel">
+            <h2 style="color: var(--accent-amber);"><i data-feather="alert-circle" style="vertical-align: middle; margin-right: 8px;"></i> Agent Requires Input</h2>
+            <p class="subtitle" id="input-modal-desc">The workflow has paused. Please provide the requested information to continue.</p>
+            
+            <form id="input-form">
+                <div id="input-fields-container">
+                    <!-- Dynamically generated fields go here -->
                 </div>
-            `;
+                <button type="submit" class="btn-primary mt-4" id="input-submit">Submit & Resume</button>
+            </form>
+        </div>
+    </div>
 
-            els.panelContent.innerHTML = html;
+    <!-- MAIN APP LAYOUT -->
+    <div class="app-container">
+        
+        <!-- LEFT SIDEBAR -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="logo-icon"><i data-feather="box"></i></div>
+                <span class="logo-text">AgentCache</span>
+            </div>
 
-            // Slide Up Panel
-            anime({
-                targets: els.panel,
-                bottom: '0%',
-                easing: 'cubicBezier(0.16, 1, 0.3, 1)', // Apple-style ease
-                duration: 600
-            });
+            <nav class="main-nav">
+                <a href="#" class="nav-item"><i data-feather="search"></i> Search</a>
+                <a href="#" class="nav-item"><i data-feather="inbox"></i> Inbox <span class="badge">3</span></a>
+                <a href="#" class="nav-item active"><i data-feather="folder"></i> All Folders</a>
+            </nav>
 
-            // Fade in content
-            anime({
-                targets: els.panelContent,
-                opacity: [0, 1],
-                translateY: [20, 0],
-                delay: 200,
-                easing: 'easeOutExpo',
-                duration: 800
-            });
-        };
-
-        window.openServicePanel = (service) => {
-            window.openPanel(service);
-        };
-
-        function getServicePanelContent(type) {
-            const styles = {
-                title: "text-7xl font-black uppercase tracking-tighter mb-4 text-slate-900 dark:text-white",
-                subtitle: "text-xl font-mono text-cyan-500 tracking-widest uppercase mb-12",
-                section: "grid grid-cols-1 lg:grid-cols-2 gap-16 items-center",
-                p: "text-xl text-slate-500 leading-relaxed font-light mb-8",
-                featureList: "space-y-4 font-mono text-sm text-slate-400"
-            };
-
-            const data = {
-                cache: {
-                    title: "Semantic Cache",
-                    subtitle: "Zero Latency Intelligence",
-                    desc: "Stop paying for the same thought twice. Our semantic cache fingerprints every request, storing the cognitive output for instant retrieval.",
-                    features: [
-                        "⚡️ 4ms Latency (Edge Cached)",
-                        "💰 95% Cost Reduction",
-                        "🌍 Global Distribution",
-                        "🔌 Plug-and-Play Middleware"
-                    ],
-                    visual: "⚡️" // Placeholder for visual asset
-                },
-                memory: {
-                    title: "Neural Memory",
-                    subtitle: "Infinite Context Window",
-                    desc: "Hopfield Network architecture allows agents to recall information from millions of past interactions without exploding your token budget.",
-                    features: [
-                        "🧠 Associative Recall",
-                        "📚 Long-term Persistence",
-                        "🔗 Cross-Session Context",
-                        "🔒 Private Namespaces"
-                    ],
-                    visual: "🧠"
-                },
-                security: {
-                    title: "Aegis Security",
-                    subtitle: "Enterprise Grade Protection",
-                    desc: "Real-time PII redaction, prompt injection defense, and hallucinations checks before the LLM even sees the request.",
-                    features: [
-                        "🛡️ PII/PHI Redaction",
-                        "🚫 Injection Firewall",
-                        "⚖️ Compliance Logging",
-                        "👁️ Drift Detection"
-                    ],
-                    visual: "🛡️"
-                }
-            }[type];
-
-            return `
-                <div class="${styles.section}">
-                    <div>
-                        <h2 class="${styles.title}">${data.title}</h2>
-                        <div class="${styles.subtitle}">${data.subtitle}</div>
-                        <p class="${styles.p}">${data.desc}</p>
-                        <ul class="${styles.featureList}">
-                            ${data.features.map(f => `
-                                <li class="flex items-center gap-4">
-                                    <span class="w-2 h-2 bg-cyan-500 rounded-full"></span>
-                                    ${f}
-                                </li>
-                            `).join('')}
-                        </ul>
-                    </div>
-                    <div class="h-96 bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl flex items-center justify-center relative overflow-hidden group">
-                        <div class="absolute inset-0 bg-[url('/assets/grid.svg')] opacity-20"></div>
-                        <div class="text-9xl group-hover:scale-110 transition duration-700 ease-in-out cursor-default select-none animate-pulse">${data.visual}</div>
+            <div class="folder-tree">
+                <div class="tree-header">
+                    <span>WORKSPACES</span>
+                    <button class="icon-btn"><i data-feather="plus"></i></button>
+                </div>
+                
+                <div class="tree-item expanded">
+                    <div class="tree-row active">
+                        <i data-feather="chevron-down" class="tree-toggle"></i>
+                        <i data-feather="zap" class="folder-icon magic-icon"></i>
+                        <span>Creative Assets</span>
                     </div>
                 </div>
-            `;
-        }
+            </div>
 
-        window.closePanel = () => {
-            anime({
-                targets: els.panel,
-                bottom: '-100%',
-                easing: 'cubicBezier(0.16, 1, 0.3, 1)',
-                duration: 500
-            });
-        };
-
-        // Copy Implementation
-        window.copyInstall = () => {
-            const text = 'npm install agentcache-node';
-            navigator.clipboard.writeText(text);
-            const el = document.getElementById('snippet-inner');
-            const originalContent = el.innerHTML;
-            
-            // Premium Success State
-            el.innerHTML = `
-                <div class="flex items-center gap-2 text-green-400 animate-bounce">
-                    <i data-lucide="check-circle" class="w-4 h-4"></i>
-                    <code class="font-mono text-sm">VERIFIED & COPIED</code>
+            <div class="sidebar-footer">
+                <a href="#" class="nav-item" id="settings-btn"><i data-feather="settings"></i> Settings</a>
+                <div class="user-profile" id="user-profile-btn">
+                    <div class="avatar">JD</div>
+                    <div class="user-info">
+                        <span class="user-name">Dr. Doe</span>
+                        <span class="user-role">Not Connected</span>
+                    </div>
                 </div>
-            `;
-            lucide.createIcons();
-            
-            setTimeout(() => { 
-                el.innerHTML = originalContent; 
-                lucide.createIcons(); 
-            }, 1500);
-        };
+            </div>
+        </aside>
 
-        // Savings Ticker Logic
-        let currentSavings = 1429203.42;
-        function updateSavings() {
-            const ticker = document.getElementById('savings-ticker');
-            if (!ticker) return;
+        <!-- CENTER CONTENT (The Magical Folder) -->
+        <main class="content-area">
+            <header class="content-header">
+                <div class="breadcrumbs">
+                    <span>Workspaces</span> <i data-feather="chevron-right"></i> <span>Creative Assets</span>
+                </div>
+                <div class="title-row" style="justify-content: space-between;">
+                    <div style="display:flex; align-items:center; gap:16px;">
+                        <h1>Creative Assets</h1>
+                        <span class="tag magic-tag" id="folder-template-badge"><i data-feather="zap"></i> Standard Folder</span>
+                    </div>
+                    <button class="btn-outline" id="install-template-btn"><i data-feather="grid"></i> Install Template</button>
+                </div>
+                <p class="folder-description" id="folder-desc">Standard directory. Drop files to store them, or install a Template to make this folder intelligent.</p>
+            </header>
 
-            // Simulate real-time collective savings increment
-            currentSavings += (Math.random() * 0.5); 
-            ticker.innerText = '$' + currentSavings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            
-            // Subtle "tick" animation
-            anime({
-                targets: ticker,
-                scale: [1, 1.05, 1],
-                duration: 400,
-                easing: 'easeOutExpo'
-            });
+            <div class="file-list" id="file-list">
+                <!-- Populated via JS -->
+                <div class="file-row empty-state hidden">
+                    <i data-feather="wind"></i>
+                    <p>Folder is empty.</p>
+                </div>
+            </div>
 
-            setTimeout(updateSavings, 2000 + (Math.random() * 3000));
-        }
+            <div class="drop-zone" id="drop-zone">
+                <div class="drop-content">
+                    <i data-feather="upload-cloud"></i>
+                    <p>Drop datasets here...</p>
+                    <span class="drop-sub">Agents will automatically process ingested data.</span>
+                </div>
+            </div>
+        </main>
 
-        // Theme Toggle
-        window.toggleTheme = () => {
-            document.body.classList.toggle('dark-mode');
-        };
+        <!-- RIGHT PANEL (Properties & Actions) -->
+        <aside class="properties-panel glass-panel">
+            <div class="panel-header">
+                <h3>Workflow Intelligence</h3>
+                <button class="icon-btn"><i data-feather="more-horizontal"></i></button>
+            </div>
 
-        // Run
-        document.addEventListener('DOMContentLoaded', () => {
-            init();
-            updateSavings();
-            lucide.createIcons();
-        });
+            <div class="active-tasks">
+                <h4 class="section-title">Autonomous Agents</h4>
+                
+                <div class="task-card">
+                    <div class="task-header">
+                        <span class="task-name">Slurm Job Submission</span>
+                        <span class="task-percent">85%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 85%;"></div>
+                    </div>
+                    <ul class="task-details">
+                        <li><i data-feather="check-circle"></i> Parsing FASTA headers</li>
+                        <li class="active-step"><i data-feather="loader" class="spin"></i> Requesting compute nodes</li>
+                    </ul>
+                </div>
+
+                <div class="task-card">
+                    <div class="task-header">
+                        <span class="task-name">Log Anomaly Detection</span>
+                        <span class="task-percent">Idle</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill idle" style="width: 0%;"></div>
+                    </div>
+                    <ul class="task-details">
+                        <li>Waiting for slurm.out generation</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="workflow-graph">
+                <h4 class="section-title">Node Connections</h4>
+                <div class="mini-graph">
+                    <div class="graph-node trigger">File Drop</div>
+                    <div class="graph-edge"></div>
+                    <div class="graph-node action">Parse Headers</div>
+                    <div class="graph-edge"></div>
+                    <div class="graph-node action slurm">sbatch align.sh</div>
+                </div>
+                <button class="btn-outline w-full mt-4"><i data-feather="git-merge"></i> Edit Workflow Canvas</button>
+            </div>
+
+            <div class="panel-tabs">
+                <button class="tab active">Rules</button>
+                <button class="tab">Memory</button>
+                <button class="tab">History</button>
+            </div>
+        </aside>
+
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        feather.replace();
     </script>
 </body>
-
 </html>

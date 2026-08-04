@@ -1,0 +1,18 @@
+{
+  "pack": {
+    "id": "automator-pdf",
+    "name": "PDF Extractor",
+    "suite_name": "macOS Automator",
+    "description": "Extract text, metadata, or annotations from PDF documents automatically.",
+    "category": "utilities",
+    "version": "1.0.0",
+    "icon": "file-text"
+  },
+  "nodes": [
+    { "id": "trigger-drop", "type": "trigger", "label": "PDF Dropped" },
+    { "id": "action-extract", "type": "action", "label": "Extract Text" }
+  ],
+  "edges": [
+    { "source": "trigger-drop", "target": "action-extract" }
+  ]
+}

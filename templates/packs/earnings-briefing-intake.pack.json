@@ -1,0 +1,71 @@
+{
+  "pack": {
+    "id": "earnings-briefing-intake",
+    "name": "Earnings Briefing Intake",
+    "description": "When financial reports, transcripts, or guidance documents land in the folder, extract key metrics, forward-looking statements, and risks. Produce a grounded summary suitable for investor or internal briefings, with full receipt lineage for audit and drift tracking over quarters.",
+    "version": "0.1.0",
+    "icon": "📈",
+    "category": "finance"
+  },
+  "triggers": [
+    {
+      "type": "file:added",
+      "description": "10-Q, 10-K, earnings transcript, or guidance PDF dropped into the folder."
+    }
+  ],
+  "steps": [
+    {
+      "id": "classify",
+      "tool": "builtin.classify",
+      "inputs": {
+        "content": "{{file.content}}",
+        "file_meta": "{{file.meta}}"
+      },
+      "outputs": ["doc_type", "quarter", "company"],
+      "emits_receipt": true
+    },
+    {
+      "id": "extract_metrics",
+      "tool": "sector.entity-extract",
+      "inputs": {
+        "document": "{{file.content}}",
+        "domain": "financial_report"
+      },
+      "outputs": ["key_metrics", "forward_looking_statements", "risk_factors"],
+      "emits_receipt": true,
+      "invention_policy": "flag"
+    },
+    {
+      "id": "summarize",
+      "tool": "builtin.summarize",
+      "inputs": {
+        "text": "{{file.content}}",
+        "max_tokens": 1000,
+        "context": "earnings report or guidance for investor briefing"
+      },
+      "outputs": ["executive_summary", "notable_changes"],
+      "emits_receipt": true
+    },
+    {
+      "id": "create_memory",
+      "tool": "builtin.classify",
+      "description": "Link extracted metrics and statements into the folder's long-term memory for cross-quarter comparison.",
+      "inputs": {
+        "content": "{{summarize.executive_summary}}",
+        "quarter": "{{classify.quarter}}"
+      },
+      "emits_receipt": true
+    }
+  ],
+  "receipt_requirements": {
+    "must_emit": ["classify", "extract_metrics", "summarize"],
+    "summary_drift_threshold": 0.10,
+    "invention_policy": "flag"
+  },
+  "variables": {
+    "auto_link_previous_quarters": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

@@ -27,6 +27,7 @@ import TraceViewer from './components/TraceViewer.jsx';
 import StreamInterface from './integral/StreamInterface.jsx';
 import IntelligenceDashboard from './components/IntelligenceDashboard.jsx';
 import IndustrialDashboard from './components/dashboard/IndustrialDashboard.tsx';
+import AletheiaSmartFolderView from './components/AletheiaSmartFolderView.jsx';
 
 const edgeTypes = {
   traffic: TrafficEdge,
@@ -414,6 +415,15 @@ function App() {
     );
   }
 
+  // Show Aletheia Smart Folder view (unification slice — 5173 talking to wired 3000 API)
+  if (view === 'aletheia') {
+    return (
+      <div className="app">
+        <AletheiaSmartFolderView />
+      </div>
+    );
+  }
+
   // Show builder view
   return (
     <div className="app">
@@ -455,6 +465,13 @@ function App() {
           </button>
           <button className="btn btn-secondary" onClick={() => setView('galaxy')}>
             🌌 Galaxy View
+          </button>
+          <button 
+            className="btn btn-secondary" 
+            onClick={() => setView('aletheia')}
+            title="Aletheia Smart Folders — live unification with the wired Grounded API on :3000"
+          >
+            📁 Aletheia Folders
           </button>
         </div>
       </header>

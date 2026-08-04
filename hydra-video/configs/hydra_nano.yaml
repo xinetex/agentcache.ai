@@ -1,0 +1,74 @@
+# Hydra Nano — ~150M parameters, trainable on 1x 8GB GPU
+# Proof-of-concept configuration for architecture validation
+
+vae:
+  in_channels: 3
+  latent_dim: 4
+  channels: [64, 128, 256]
+  num_res_blocks: 2
+  spatial_downsample: 8
+  temporal_downsample: 4
+  attention_resolutions: [32]
+  group_size: 4
+  kl_weight: 1.0e-6
+
+transformer:
+  visual:
+    hidden_dim: 512
+    num_heads: 8
+    num_blocks: 12
+    patch_size: [1, 2, 2]
+    mlp_ratio: 4.0
+    use_rope3d: true
+    attention_mode: factorized
+
+  audio:
+    hidden_dim: 256
+    num_heads: 4
+    num_blocks: 6
+    patch_size: [2, 16]
+    mlp_ratio: 4.0
+
+  bridge:
+    frequency: 3
+    num_heads: 8
+    use_gradient_gating: true
+    gate_init: 0.0
+    use_rhythmic_attention: true
+    rhythmic_heads: 2
+
+  enable_audio_branch: true
+
+flow:
+  timestep_distribution: logit_normal
+  logit_normal_mean: 0.0
+  logit_normal_std: 1.0
+  num_inference_steps: 20
+  cfg_scale: 4.0
+  use_pyramidal: true
+  pyramid_levels: 3
+  pyramid_schedule: [0.3, 0.6, 1.0]
+
+conditioning:
+  text_encoder: t5-small
+  text_max_length: 128
+  use_image_encoder: true
+  image_encoder: clip-vit-base
+  max_reference_images: 9
+  use_audio_encoder: true
+  mel_channels: 80
+
+training:
+  resolution: 256
+  num_frames: 16
+  batch_size: 1
+  gradient_accumulation_steps: 4
+  learning_rate: 1.0e-4
+  weight_decay: 0.01
+  warmup_steps: 1000
+  num_steps: 100000
+  precision: bf16
+  ema_decay: 0.9999
+  max_grad_norm: 1.0
+  save_every: 5000
+  seed: 42

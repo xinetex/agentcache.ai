@@ -21,20 +21,6 @@ function json(data, status = 200) {
   });
 }
 
-// ... helper functions (generateEmbedding, cosineSimilarity, searchSemanticCache, storeSemanticCache) remain the same ...
-// Note: We need to keep the helper functions in the file or move them to a library. 
-// For this refactor, I will assume the helper functions are still present in the file but I am only replacing the handler and imports.
-// However, since replace_file_content replaces a block, I need to be careful.
-// The previous file content showed helper functions from line 58 to 218.
-// I will target the top of the file and the handler function.
-
-// Wait, I should probably do this in two chunks or replace the whole file if I want to be clean, 
-// but replace_file_content is better for chunks.
-// Let's replace the top imports and the handler.
-
-// Actually, I need to make sure I don't delete the helper functions.
-// I'll use multi_replace_file_content to be safe and precise.
-
 import { generateEmbedding } from '../../src/lib/llm/embeddings.js';
 
 const VECTOR_URL = process.env.UPSTASH_VECTOR_REST_URL;
@@ -48,14 +34,27 @@ if (VECTOR_URL && VECTOR_TOKEN) {
   });
 }
 
-async function searchSemanticCache(text, namespace, provider, model, threshold = 0.85) {
+// Build an Upstash Vector metadata filter that constrains results to a single
+// tenant. Without this, topK matching runs across EVERY org's cached responses,
+// so one customer's query could return another customer's cached answer.
+function tenantFilter(tenant, namespace) {
+  const esc = (v) => String(v).replace(/'/g, "");
+  let f = `tenant = '${esc(tenant)}'`;
+  if (namespace) f += ` AND namespace = '${esc(namespace)}'`;
+  return f;
+}
+
+async function searchSemanticCache(text, namespace, provider, model, threshold = 0.85, tenant = null) {
   if (!index) return null;
+  // Fail closed: never run an unfiltered cross-tenant vector search.
+  if (!tenant) return null;
 
   try {
     const results = await index.query({
       data: text,
       topK: 1,
-      includeMetadata: true
+      includeMetadata: true,
+      filter: tenantFilter(tenant, namespace)
     });
 
     if (results.length > 0) {
@@ -76,8 +75,9 @@ async function searchSemanticCache(text, namespace, provider, model, threshold =
   }
 }
 
-async function storeSemanticCache(text, request, response, namespace) {
+async function storeSemanticCache(text, request, response, namespace, tenant = null) {
   if (!index) return null;
+  if (!tenant) return null;
 
   // Generate hash of request (for unique key)
   const requestStr = JSON.stringify({
@@ -92,9 +92,9 @@ async function storeSemanticCache(text, request, response, namespace) {
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-  // Build key
+  // Build key — tenant-prefixed so entries never collide across orgs.
   const nsPrefix = namespace ? `ns:${namespace}:` : '';
-  const key = `${nsPrefix}semantic:v1:${request.provider}:${request.model}:${hash}`;
+  const key = `t:${tenant}:${nsPrefix}semantic:v1:${request.provider}:${request.model}:${hash}`;
   const ttl = request.ttl || 604800; // 7 days default
 
   try {
@@ -107,7 +107,8 @@ async function storeSemanticCache(text, request, response, namespace) {
         ttl: ttl,
         provider: request.provider,
         model: request.model,
-        namespace: namespace
+        namespace: namespace,
+        tenant: tenant
       }
     });
     return key;
@@ -174,6 +175,13 @@ export default withAuth(async (req, auth) => {
     // Get namespace
     const namespace = req.headers.get('x-cache-namespace');
 
+    // Tenant identity — derived from the authenticated key. Every vector read/write
+    // is scoped to this so one org can never match another org's cached responses.
+    const tenant = auth?.key?.hash || auth?.key?.id || null;
+    if (!tenant) {
+      return json({ error: 'Unauthorized', message: 'Could not resolve tenant from API key' }, 401);
+    }
+
     // Convert messages to text for embedding
     const messagesText = messages.map(m =>
       `${m.role}: ${m.content}`
@@ -192,7 +200,8 @@ export default withAuth(async (req, auth) => {
         namespace,
         provider,
         model,
-        threshold
+        threshold,
+        tenant
       );
 
       if (match) {
@@ -239,7 +248,8 @@ export default withAuth(async (req, auth) => {
         messagesText,
         { provider, model, messages, ttl },
         response,
-        namespace
+        namespace,
+        tenant
       );
 
       // Publish event for live visualization

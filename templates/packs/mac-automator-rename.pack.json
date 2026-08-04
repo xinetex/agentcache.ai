@@ -1,0 +1,18 @@
+{
+  "pack": {
+    "id": "automator-rename",
+    "name": "Batch Renamer",
+    "suite_name": "macOS Automator",
+    "description": "Automatically rename dropped files based on regex, dates, or sequences.",
+    "category": "utilities",
+    "version": "1.0.0",
+    "icon": "type"
+  },
+  "nodes": [
+    { "id": "trigger-drop", "type": "trigger", "label": "File Dropped" },
+    { "id": "action-rename", "type": "action", "label": "Rename File" }
+  ],
+  "edges": [
+    { "source": "trigger-drop", "target": "action-rename" }
+  ]
+}

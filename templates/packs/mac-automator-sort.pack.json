@@ -1,0 +1,18 @@
+{
+  "pack": {
+    "id": "automator-sort",
+    "name": "Smart Sorter",
+    "suite_name": "macOS Automator",
+    "description": "Route files into sub-directories automatically based on content type.",
+    "category": "utilities",
+    "version": "1.0.0",
+    "icon": "folder-tree"
+  },
+  "nodes": [
+    { "id": "trigger-drop", "type": "trigger", "label": "File Dropped" },
+    { "id": "action-route", "type": "action", "label": "Route File" }
+  ],
+  "edges": [
+    { "source": "trigger-drop", "target": "action-route" }
+  ]
+}

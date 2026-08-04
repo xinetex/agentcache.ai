@@ -1,0 +1,77 @@
+{
+  "pack": {
+    "id": "legal-contracts-triage",
+    "name": "Legal Contracts Triage",
+    "description": "Drop a contract or NDA into the folder. Automatically extract parties, dates, obligations, termination clauses, and governing law. Flag any unusual or high-risk terms as potential inventions. Produce a grounded summary and receipt trail suitable for audit or handoff to legal counsel.",
+    "version": "0.1.0",
+    "icon": "📜",
+    "category": "legal"
+  },
+  "triggers": [
+    {
+      "type": "file:added",
+      "description": "PDF or document dropped into the contracts folder."
+    }
+  ],
+  "steps": [
+    {
+      "id": "extract",
+      "tool": "sector.entity-extract",
+      "inputs": {
+        "document": "{{file.content}}",
+        "domain": "legal_contract"
+      },
+      "outputs": ["parties", "dates", "obligations", "termination_clauses", "governing_law", "unusual_terms"],
+      "emits_receipt": true,
+      "invention_policy": "flag"
+    },
+    {
+      "id": "risk_scan",
+      "tool": "builtin.classify",
+      "inputs": {
+        "content": "{{file.content}}",
+        "entities": "{{extract.unusual_terms}}"
+      },
+      "outputs": ["risk_flags", "suggested_reviewers"],
+      "emits_receipt": true,
+      "invention_policy": "flag"
+    },
+    {
+      "id": "summarize",
+      "tool": "builtin.summarize",
+      "inputs": {
+        "text": "{{file.content}}",
+        "max_tokens": 1200,
+        "context": "legal contract for business review"
+      },
+      "outputs": ["executive_summary", "key_obligations", "red_flags"],
+      "emits_receipt": true
+    },
+    {
+      "id": "notify_legal",
+      "tool": "action.notify",
+      "inputs": {
+        "message": "New contract processed. See attached receipt and summary.",
+        "targets": ["legal-team@company.com"],
+        "attachments": ["{{summarize.executive_summary}}", "{{receipt}}"]
+      },
+      "emits_receipt": true
+    }
+  ],
+  "receipt_requirements": {
+    "must_emit": ["extract", "risk_scan", "summarize"],
+    "summary_drift_threshold": 0.08,
+    "invention_policy": "flag_and_create_plan_step"
+  },
+  "variables": {
+    "auto_notify_legal": {
+      "type": "boolean",
+      "default": true
+    },
+    "high_risk_threshold": {
+      "type": "number",
+      "default": 2,
+      "description": "Number of unusual terms that triggers immediate human review."
+    }
+  }
+}

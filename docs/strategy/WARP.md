@@ -1,5 +1,7 @@
 # WARP.md
 
+> ⚠️ **Historical / partially outdated.** For the current architecture, commands, and constraints, see the root [`AGENTS.md`](../../AGENTS.md), which is authoritative. In particular, the Hono app in `src/index.ts` (not `api/*.js`) is the production routing source of truth; the platform now has Stripe billing and a Vitest test suite. The customer-dependency notes below remain useful.
+
 This file provides guidance to WARP (warp.dev) when working with code in this repository.
 
 **🚀 New Agent? Start here:** [AGENT_QUICKSTART.md](./AGENT_QUICKSTART.md) - 2-minute frictionless onboarding with executable commands.

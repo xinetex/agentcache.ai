@@ -10,23 +10,29 @@
 /**
  * Pricing System Configuration
  * AgentCache.ai - Cognitive Memory OS
- * 
+ *
+ * @deprecated NOT the source of truth. `src/config/tiers.ts` (TIERS) is the
+ * canonical pricing/quota/feature config used by the live `/api/pricing`
+ * endpoint, billing checkout (`src/api/billing.ts`), and quota enforcement.
+ * This legacy file is currently imported by nothing in `src/`; values here are
+ * mirrored from tiers.ts only to avoid drift. Update tiers.ts first.
+ *
  * Stripe Price IDs must be created in Stripe Dashboard
  * and set in environment variables.
  */
-
+// Production prices (in cents for Stripe) — mirror of tiers.ts (free/pro/enterprise)
 // Production prices (in cents for Stripe)
 export const PLAN_PRICES = {
     starter: 0,          // Free tier
     professional: 9900,  // $99/month
-    enterprise: 29900    // $299/month
+    enterprise: 49900    // $499/month (canonical: tiers.ts ENTERPRISE)
 };
 
 // Human-readable prices
 export const PLAN_PRICES_DISPLAY = {
     starter: '$0',
     professional: '$99',
-    enterprise: '$299'
+    enterprise: '$499'
 };
 
 // Stripe Price IDs (set in environment or use defaults)

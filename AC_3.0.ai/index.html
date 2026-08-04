@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgentCache — Intelligent Folders for Agentic Automation</title>
+  <meta name="description" content="AgentCache transforms folders into living automation engines. Drop files, data, or intent — watch your agents execute." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- SCANLINE OVERLAY -->
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <!-- ═══════════════════════════════════════════
+       NAV
+  ═══════════════════════════════════════════ -->
+  <header class="nav">
+    <div class="nav-inner">
+
+      <!-- Logo -->
+      <a href="/" class="nav-logo">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+          <!-- Chamfered outer shell -->
+          <polygon points="6,2 30,2 34,6 34,30 30,34 6,34 2,30 2,6" stroke="var(--c-orange)" stroke-width="1" fill="none" opacity="0.6"/>
+          <!-- Inner folder shape -->
+          <path d="M8 12 L8 26 L28 26 L28 14 L18 14 L16 12 Z" stroke="var(--c-orange)" stroke-width="1.5" fill="none"/>
+          <!-- Active dot -->
+          <circle cx="25" cy="20" r="2" fill="var(--c-orange)"/>
+          <circle cx="25" cy="20" r="4" fill="none" stroke="var(--c-orange)" stroke-width="0.5" opacity="0.4"/>
+        </svg>
+        <div class="nav-logo-text">
+          <span class="nav-logo-main">AGENTCACHE</span>
+          <span class="nav-logo-sub">SYS v2.4.1</span>
+        </div>
+      </a>
+
+      <!-- Nav links -->
+      <nav class="nav-links">
+        <a href="#how-it-works" class="nav-link">PROTOCOL</a>
+        <a href="#features" class="nav-link">INTERFACE</a>
+        <a href="#use-cases" class="nav-link">DEPLOYMENTS</a>
+        <a href="#waitlist" class="nav-link">ACCESS</a>
+      </nav>
+
+      <!-- Actions -->
+      <div class="nav-actions">
+        <div class="nav-status">
+          <span class="status-dot"></span>
+          <span class="status-label">BETA ACTIVE</span>
+        </div>
+        <a href="#waitlist" class="btn btn-primary">REQUEST ACCESS</a>
+        <button class="btn btn-icon" data-theme-toggle aria-label="Toggle theme">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+    </div>
+    <!-- Nav edge decoration -->
+    <div class="nav-edge-left" aria-hidden="true"></div>
+    <div class="nav-edge-right" aria-hidden="true"></div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════
+       HERO
+  ═══════════════════════════════════════════ -->
+  <section class="hero">
+
+    <!-- Background grid -->
+    <div class="hero-grid" aria-hidden="true">
+      <div class="hg-lines"></div>
+      <div class="hg-glow-1"></div>
+      <div class="hg-glow-2"></div>
+      <div class="hg-glow-3"></div>
+    </div>
+
+    <!-- Corner decorations -->
+    <div class="corner corner-tl" aria-hidden="true">
+      <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+        <path d="M0 20 L0 0 L20 0" stroke="var(--c-orange)" stroke-width="1.5"/>
+        <path d="M0 10 L10 10 L10 0" stroke="var(--c-orange)" stroke-width="0.5" opacity="0.4"/>
+        <circle cx="0" cy="0" r="3" fill="var(--c-orange)"/>
+      </svg>
+    </div>
+    <div class="corner corner-tr" aria-hidden="true">
+      <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+        <path d="M60 20 L60 0 L40 0" stroke="var(--c-cyan)" stroke-width="1.5"/>
+        <path d="M60 10 L50 10 L50 0" stroke="var(--c-cyan)" stroke-width="0.5" opacity="0.4"/>
+        <circle cx="60" cy="0" r="3" fill="var(--c-cyan)"/>
+      </svg>
+    </div>
+    <div class="corner corner-bl" aria-hidden="true">
+      <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+        <path d="M0 40 L0 60 L20 60" stroke="var(--c-orange)" stroke-width="1.5" opacity="0.5"/>
+        <circle cx="0" cy="60" r="2" fill="var(--c-orange)" opacity="0.5"/>
+      </svg>
+    </div>
+    <div class="corner corner-br" aria-hidden="true">
+      <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+        <path d="M60 40 L60 60 L40 60" stroke="var(--c-cyan)" stroke-width="1.5" opacity="0.5"/>
+        <circle cx="60" cy="60" r="2" fill="var(--c-cyan)" opacity="0.5"/>
+      </svg>
+    </div>
+
+    <div class="container hero-layout">
+
+      <!-- Left: copy -->
+      <div class="hero-copy">
+        <div class="hero-eyebrow">
+          <div class="eyebrow-ticker">
+            <span class="ticker-label">SYS</span>
+            <span class="ticker-val" id="tickerA">────</span>
+          </div>
+          <div class="eyebrow-badge">PRIVATE BETA</div>
+          <div class="eyebrow-ticker">
+            <span class="ticker-label">BUILD</span>
+            <span class="ticker-val">2026.05</span>
+          </div>
+        </div>
+
+        <h1 class="hero-h1">
+          <span class="h1-line1">THE FOLDER</span>
+          <span class="h1-line2">THAT THINKS<span class="h1-cursor">_</span></span>
+        </h1>
+
+        <p class="hero-desc">
+          AgentCache transforms any folder into a living automation engine.
+          Drop in files, data, or intent — a sophisticated layer of AI agents,
+          actions, and connections activates around it.
+        </p>
+
+        <div class="hero-spec-row">
+          <div class="spec-item">
+            <span class="spec-val">80+</span>
+            <span class="spec-key">INTEGRATIONS</span>
+          </div>
+          <div class="spec-divider"></div>
+          <div class="spec-item">
+            <span class="spec-val">∞</span>
+            <span class="spec-key">WORKFLOWS</span>
+          </div>
+          <div class="spec-divider"></div>
+          <div class="spec-item">
+            <span class="spec-val">0</span>
+            <span class="spec-key">MANUAL STEPS</span>
+          </div>
+        </div>
+
+        <div class="hero-cta-row">
+          <a href="#waitlist" class="btn btn-primary btn-lg">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            INITIALIZE ACCESS
+          </a>
+          <a href="#features" class="btn btn-outline btn-lg">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+            VIEW DEMO
+          </a>
+        </div>
+
+        <!-- Integration strip -->
+        <div class="int-strip">
+          <span class="int-strip-label">CONNECTED TO</span>
+          <div class="int-strip-items">
+            <span class="int-tag">SLACK</span>
+            <span class="int-tag">GITHUB</span>
+            <span class="int-tag">NOTION</span>
+            <span class="int-tag">GMAIL</span>
+            <span class="int-tag">WEBHOOK</span>
+            <span class="int-tag int-more">+78</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: folder UI mockup -->
+      <div class="hero-mockup">
+        <div class="mockup-frame">
+          <!-- Frame corner clips -->
+          <div class="frame-corner fc-tl" aria-hidden="true"></div>
+          <div class="frame-corner fc-tr" aria-hidden="true"></div>
+          <div class="frame-corner fc-bl" aria-hidden="true"></div>
+          <div class="frame-corner fc-br" aria-hidden="true"></div>
+
+          <!-- Frame header bar -->
+          <div class="frame-header">
+            <div class="fh-left">
+              <span class="fh-dot fh-dot-active"></span>
+              <span class="fh-label">CACHE://launch-campaign</span>
+            </div>
+            <div class="fh-right">
+              <span class="fh-stat">4 AGENTS</span>
+              <span class="fh-divider">|</span>
+              <span class="fh-stat fh-stat-live">LIVE</span>
+            </div>
+          </div>
+
+          <!-- Main panel area -->
+          <div class="frame-body">
+
+            <!-- File list panel -->
+            <div class="panel-block panel-files">
+              <div class="pb-header">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                CONTENTS
+                <span class="pb-count">3 FILES</span>
+              </div>
+              <div class="file-list">
+                <div class="fl-item fl-active">
+                  <span class="fl-icon">◈</span>
+                  <span class="fl-name">brief.md</span>
+                  <span class="fl-meta">2.1 KB</span>
+                </div>
+                <div class="fl-item">
+                  <span class="fl-icon">◫</span>
+                  <span class="fl-name">assets/</span>
+                  <span class="fl-meta">DIR</span>
+                </div>
+                <div class="fl-item">
+                  <span class="fl-icon">◧</span>
+                  <span class="fl-name">analytics.csv</span>
+                  <span class="fl-meta">18 KB</span>
+                </div>
+                <div class="fl-drop">
+                  <span>DROP ANYTHING HERE ··· </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Agent status panel -->
+            <div class="panel-block panel-agents-status">
+              <div class="pb-header">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                AGENT SWARM
+              </div>
+              <div class="agent-rows">
+                <div class="agent-row ar-running">
+                  <div class="ar-indicator">
+                    <span class="ar-pulse"></span>
+                  </div>
+                  <span class="ar-name">SUMMARIZER</span>
+                  <div class="ar-progress">
+                    <div class="ar-bar" style="--w:72%"></div>
+                  </div>
+                  <span class="ar-pct">72%</span>
+                </div>
+                <div class="agent-row ar-waiting">
+                  <div class="ar-indicator">
+                    <span class="ar-pulse-idle"></span>
+                  </div>
+                  <span class="ar-name">ROUTER</span>
+                  <div class="ar-progress">
+                    <div class="ar-bar ar-bar-idle" style="--w:0%"></div>
+                  </div>
+                  <span class="ar-pct ar-pct-idle">WAIT</span>
+                </div>
+                <div class="agent-row ar-done">
+                  <div class="ar-indicator">
+                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <span class="ar-name">FORMATTER</span>
+                  <div class="ar-progress">
+                    <div class="ar-bar ar-bar-done" style="--w:100%"></div>
+                  </div>
+                  <span class="ar-pct ar-pct-done">DONE</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Active panel: Actions -->
+            <div class="panel-block panel-active">
+              <div class="pb-header pb-header-accent">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                ACTIONS
+                <span class="pb-count pb-count-active">3 ACTIVE</span>
+                <div class="pb-header-expand">▸ EXPAND</div>
+              </div>
+              <div class="action-rows">
+                <div class="action-item ai-on">
+                  <div class="ai-led ai-led-on"></div>
+                  <div class="ai-body">
+                    <span class="ai-name">AUTO-SUMMARIZE</span>
+                    <span class="ai-desc">on drop · claude-sonnet</span>
+                  </div>
+                  <div class="ai-toggle-wrap">
+                    <div class="hud-toggle hud-toggle-on"></div>
+                  </div>
+                </div>
+                <div class="action-item ai-on">
+                  <div class="ai-led ai-led-cyan"></div>
+                  <div class="ai-body">
+                    <span class="ai-name">SLACK NOTIFY</span>
+                    <span class="ai-desc">#marketing-updates</span>
+                  </div>
+                  <div class="ai-toggle-wrap">
+                    <div class="hud-toggle hud-toggle-on hud-toggle-cyan"></div>
+                  </div>
+                </div>
+                <div class="action-item ai-off">
+                  <div class="ai-led ai-led-off"></div>
+                  <div class="ai-body">
+                    <span class="ai-name">NOTION EXPORT</span>
+                    <span class="ai-desc">campaign brief db</span>
+                  </div>
+                  <div class="ai-toggle-wrap">
+                    <div class="hud-toggle"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Side panel tabs -->
+            <div class="side-tabs">
+              <div class="st-tab st-active">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <span>ACT</span>
+              </div>
+              <div class="st-tab">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                <span>CON</span>
+              </div>
+              <div class="st-tab">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                <span>MEM</span>
+              </div>
+              <div class="st-tab">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>SCH</span>
+              </div>
+            </div>
+
+          </div><!-- /frame-body -->
+
+          <!-- Frame footer -->
+          <div class="frame-footer">
+            <span class="ff-item">CPU <span class="ff-val">34%</span></span>
+            <span class="ff-sep">·</span>
+            <span class="ff-item">MEM <span class="ff-val">1.2 GB</span></span>
+            <span class="ff-sep">·</span>
+            <span class="ff-item ff-item-live">EVT <span class="ff-val ff-val-live" id="lastEvent">3s AGO</span></span>
+          </div>
+        </div><!-- /mockup-frame -->
+      </div><!-- /hero-mockup -->
+
+    </div><!-- /hero-layout -->
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       HOW IT WORKS
+  ═══════════════════════════════════════════ -->
+  <section class="section" id="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <div class="sh-rule"></div>
+        <div class="sh-label">PROTOCOL // 01</div>
+        <div class="sh-rule"></div>
+      </div>
+      <h2 class="section-h2">THREE COMMANDS.<br/><span class="h2-accent">INFINITE SURFACE.</span></h2>
+      <p class="section-sub">AgentCache wraps intent around your data. The folder understands context — and recruits the right agents to execute.</p>
+
+      <div class="steps-grid">
+        <div class="step-card fade-in">
+          <div class="step-num">01</div>
+          <div class="step-icon-wrap">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3>DROP ANYTHING IN</h3>
+          <p>Files, URLs, text, data, images. The folder ingests and understands context immediately — no configuration required.</p>
+          <div class="step-terminal">
+            <div class="term-line"><span class="term-prompt">$</span> cache add brief.md assets/ data.csv</div>
+            <div class="term-line term-out"><span class="term-ok">✓</span> 3 objects cached · context inferred</div>
+          </div>
+        </div>
+
+        <div class="step-card step-card-accent fade-in" style="animation-delay:0.1s">
+          <div class="step-num">02</div>
+          <div class="step-icon-wrap step-icon-accent">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <h3>CONFIGURE PANELS</h3>
+          <p>Sliding preference panels surface contextual options — actions, connections, schedules, memory — scoped to what's inside.</p>
+          <div class="step-terminal">
+            <div class="term-line"><span class="term-prompt">→</span> ACTIONS · CONNECTIONS · AGENTS</div>
+            <div class="term-line term-out"><span class="term-ok">◈</span> 4 panels · 12 ops available</div>
+          </div>
+        </div>
+
+        <div class="step-card fade-in" style="animation-delay:0.2s">
+          <div class="step-num">03</div>
+          <div class="step-icon-wrap">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <h3>AGENTS EXECUTE</h3>
+          <p>A coordinated swarm acts on your intent — summarizing, routing, scheduling, publishing, triggering external systems.</p>
+          <div class="step-terminal">
+            <div class="term-line"><span class="term-prompt">✓</span> 4 agents · 12 actions fired</div>
+            <div class="term-line term-out"><span class="term-ok">◉</span> <span class="term-highlight">0 manual steps required</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       INTERACTIVE PANEL DEMO
+  ═══════════════════════════════════════════ -->
+  <section class="section section-panels" id="features">
+    <div class="container">
+      <div class="section-header">
+        <div class="sh-rule"></div>
+        <div class="sh-label">INTERFACE // 02</div>
+        <div class="sh-rule"></div>
+      </div>
+      <h2 class="section-h2">A NEW KIND OF<br/><span class="h2-accent">WORKSPACE PRIMITIVE.</span></h2>
+      <p class="section-sub">Each panel slides from the context of what's inside — not a generic settings screen. The interface emerges from intent.</p>
+    </div>
+
+    <div class="panels-demo-layout">
+
+      <!-- Tab list -->
+      <div class="pdl-tabs" role="tablist">
+        <button class="pdl-tab pdl-tab-active" data-panel="actions" role="tab" aria-selected="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span>ACTIONS</span>
+          <span class="pdl-tab-count">3</span>
+        </button>
+        <button class="pdl-tab" data-panel="connections" role="tab" aria-selected="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          <span>CONNECTIONS</span>
+          <span class="pdl-tab-count">2</span>
+        </button>
+        <button class="pdl-tab" data-panel="memory" role="tab" aria-selected="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+          <span>MEMORY</span>
+        </button>
+        <button class="pdl-tab" data-panel="schedule" role="tab" aria-selected="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>SCHEDULE</span>
+        </button>
+        <button class="pdl-tab" data-panel="agents" role="tab" aria-selected="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <span>AGENTS</span>
+        </button>
+      </div>
+
+      <!-- Panel area -->
+      <div class="pdl-panel-area">
+
+        <!-- ACTIONS PANEL -->
+        <div class="pdl-panel pdl-panel-active" id="panel-actions" role="tabpanel">
+          <div class="pdl-panel-top">
+            <div class="ppt-left">
+              <h3>ACTIONS</h3>
+              <p>Operations triggered by folder events — drop, modify, delete, or scheduled.</p>
+            </div>
+            <button class="btn btn-primary btn-sm">+ ADD ACTION</button>
+          </div>
+          <div class="pdl-list">
+            <div class="pdl-item">
+              <div class="pdl-item-led pdl-led-orange"></div>
+              <div class="pdl-item-icon pdl-icon-orange">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+              </div>
+              <div class="pdl-item-body">
+                <div class="pdl-item-title">AUTO-SUMMARIZE ON DROP</div>
+                <div class="pdl-item-sub">Generate a markdown summary for every new file dropped in · Claude Sonnet</div>
+              </div>
+              <div class="pdl-item-right">
+                <span class="hud-badge hud-badge-active">ACTIVE</span>
+                <div class="hud-toggle hud-toggle-on"></div>
+              </div>
+            </div>
+            <div class="pdl-item">
+              <div class="pdl-item-led pdl-led-cyan"></div>
+              <div class="pdl-item-icon pdl-icon-cyan">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </div>
+              <div class="pdl-item-body">
+                <div class="pdl-item-title">SLACK NOTIFICATION</div>
+                <div class="pdl-item-sub">Post summary to #marketing-updates on content change</div>
+              </div>
+              <div class="pdl-item-right">
+                <span class="hud-badge hud-badge-active">ACTIVE</span>
+                <div class="hud-toggle hud-toggle-on hud-toggle-cyan"></div>
+              </div>
+            </div>
+            <div class="pdl-item pdl-item-off">
+              <div class="pdl-item-led pdl-led-off"></div>
+              <div class="pdl-item-icon pdl-icon-dim">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              </div>
+              <div class="pdl-item-body">
+                <div class="pdl-item-title">NOTION EXPORT</div>
+                <div class="pdl-item-sub">Push final summaries to campaign brief database</div>
+              </div>
+              <div class="pdl-item-right">
+                <span class="hud-badge hud-badge-idle">IDLE</span>
+                <div class="hud-toggle"></div>
+              </div>
+            </div>
+            <div class="pdl-item pdl-item-add">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+              ADD FROM 80+ INTEGRATIONS
+            </div>
+          </div>
+        </div>
+
+        <!-- CONNECTIONS PANEL -->
+        <div class="pdl-panel" id="panel-connections" role="tabpanel" hidden>
+          <div class="pdl-panel-top">
+            <div class="ppt-left">
+              <h3>CONNECTIONS</h3>
+              <p>External services your folder can read from or write to.</p>
+            </div>
+            <button class="btn btn-primary btn-sm">+ CONNECT</button>
+          </div>
+          <div class="pdl-list">
+            <div class="pdl-item">
+              <div class="pdl-item-led pdl-led-orange"></div>
+              <div class="pdl-item-icon pdl-icon-orange">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+              </div>
+              <div class="pdl-item-body">
+                <div class="pdl-item-title">GITHUB</div>
+                <div class="pdl-item-sub">Watch repo for changes · sync docs automatically</div>
+              </div>
+              <div class="pdl-item-right">
+                <span class="hud-badge hud-badge-active">CONNECTED</span>
+              </div>
+            </div>
+            <div class="pdl-item">
+              <div class="pdl-item-led pdl-led-cyan"></div>
+              <div class="pdl-item-icon pdl-icon-cyan">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </div>
+              <div class="pdl-item-body">
+                <div class="pdl-item-title">GMAIL</div>
+                <div class="pdl-item-sub">Route email attachments into this folder automatically</div>
+              </div>
+              <div class="pdl-item-right">
+                <span class="hud-badge hud-badge-active">CONNECTED</span>
+              </div>
+            </div>
+            <div class="pdl-item pdl-item-off">
+              <div class="pdl-item-led pdl-led-off"></div>
+              <div class="pdl-item-icon pdl-icon-dim">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.64 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              </div>
+              <div class="pdl-item-body">
+                <div class="pdl-item-title">WEBHOOK</div>
+                <div class="pdl-item-sub">Fire custom HTTP POST on any folder event</div>
+              </div>
+              <div class="pdl-item-right">
+                <span class="hud-badge hud-badge-idle">CONFIGURE</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MEMORY PANEL -->
+        <div class="pdl-panel" id="panel-memory" role="tabpanel" hidden>
+          <div class="pdl-panel-top">
+            <div class="ppt-left">
+              <h3>MEMORY</h3>
+              <p>Persistent context your agents reference when operating on this folder's contents.</p>
+            </div>
+            <button class="btn btn-outline btn-sm">VIEW ALL</button>
+          </div>
+          <div class="pdl-list">
+            <div class="mem-block">
+              <div class="mem-tag">BRAND VOICE</div>
+              <p>Tone is confident and minimal. Avoid jargon. Audience: technical founders aged 28–45.</p>
+            </div>
+            <div class="mem-block">
+              <div class="mem-tag">CAMPAIGN GOAL</div>
+              <p>This campaign targets Series A fundraise. All outputs should reinforce traction narrative and demonstrate product velocity.</p>
+            </div>
+            <div class="mem-block">
+              <div class="mem-tag">OUTPUT FORMAT</div>
+              <p>Deliverables are markdown by default. When exporting to Notion, use structured page with H2 sections.</p>
+            </div>
+            <div class="pdl-item pdl-item-add">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+              INJECT MEMORY CONTEXT
+            </div>
+          </div>
+        </div>
+
+        <!-- SCHEDULE PANEL -->
+        <div class="pdl-panel" id="panel-schedule" role="tabpanel" hidden>
+          <div class="pdl-panel-top">
+            <div class="ppt-left">
+              <h3>SCHEDULE</h3>
+              <p>Time-triggered operations for this folder.</p>
+            </div>
+            <button class="btn btn-primary btn-sm">+ NEW SCHEDULE</button>
+          </div>
+          <div class="pdl-list">
+            <div class="pdl-item">
+              <div class="pdl-item-led pdl-led-orange"></div>
+              <div class="pdl-item-icon pdl-icon-orange">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div class="pdl-item-body">
+                <div class="pdl-item-title">WEEKLY DIGEST</div>
+                <div class="pdl-item-sub">MON 09:00 UTC · summarize new content → Slack</div>
+              </div>
+              <div class="pdl-item-right">
+                <span class="hud-badge hud-badge-active">ACTIVE</span>
+                <div class="hud-toggle hud-toggle-on"></div>
+              </div>
+            </div>
+            <div class="pdl-item">
+              <div class="pdl-item-led pdl-led-cyan"></div>
+              <div class="pdl-item-icon pdl-icon-cyan">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              </div>
+              <div class="pdl-item-body">
+                <div class="pdl-item-title">ANALYTICS SYNC</div>
+                <div class="pdl-item-sub">DAILY 06:00 UTC · pull GA4 metrics → analytics.csv</div>
+              </div>
+              <div class="pdl-item-right">
+                <span class="hud-badge hud-badge-active">ACTIVE</span>
+                <div class="hud-toggle hud-toggle-on hud-toggle-cyan"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AGENTS PANEL -->
+        <div class="pdl-panel" id="panel-agents" role="tabpanel" hidden>
+          <div class="pdl-panel-top">
+            <div class="ppt-left">
+              <h3>AGENTS</h3>
+              <p>Specialized AI workers assigned to this folder's context.</p>
+            </div>
+            <button class="btn btn-primary btn-sm">+ ASSIGN</button>
+          </div>
+          <div class="pdl-list">
+            <div class="pdl-item">
+              <div class="pdl-item-led pdl-led-orange ar-pulse-inline"></div>
+              <div class="pdl-item-icon pdl-icon-orange">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+              </div>
+              <div class="pdl-item-body">
+                <div class="pdl-item-title">SUMMARIZER</div>
+                <div class="pdl-item-sub">Claude Sonnet 4.5 · contextual summaries tuned to brand voice</div>
+              </div>
+              <div class="pdl-item-right">
+                <span class="hud-badge hud-badge-running">RUNNING</span>
+              </div>
+            </div>
+            <div class="pdl-item">
+              <div class="pdl-item-led pdl-led-cyan"></div>
+              <div class="pdl-item-icon pdl-icon-cyan">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+              </div>
+              <div class="pdl-item-body">
+                <div class="pdl-item-title">ROUTER</div>
+                <div class="pdl-item-sub">Classifies content type · routes to appropriate pipelines</div>
+              </div>
+              <div class="pdl-item-right">
+                <span class="hud-badge hud-badge-active">STANDBY</span>
+              </div>
+            </div>
+            <div class="pdl-item">
+              <div class="pdl-item-led pdl-led-orange"></div>
+              <div class="pdl-item-icon pdl-icon-orange">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              </div>
+              <div class="pdl-item-body">
+                <div class="pdl-item-title">ANALYST</div>
+                <div class="pdl-item-sub">Interprets CSV/structured data · generates insight reports</div>
+              </div>
+              <div class="pdl-item-right">
+                <span class="hud-badge hud-badge-active">STANDBY</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /pdl-panel-area -->
+    </div><!-- /panels-demo-layout -->
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       USE CASES
+  ═══════════════════════════════════════════ -->
+  <section class="section" id="use-cases">
+    <div class="container">
+      <div class="section-header">
+        <div class="sh-rule"></div>
+        <div class="sh-label">DEPLOYMENTS // 03</div>
+        <div class="sh-rule"></div>
+      </div>
+      <h2 class="section-h2">ONE PRIMITIVE.<br/><span class="h2-accent">EVERY WORKFLOW.</span></h2>
+      <p class="section-sub">AgentCache folders adapt their panels based on what's inside — the interface emerges from intent.</p>
+
+      <div class="uc-grid">
+        <div class="uc-card fade-in">
+          <div class="uc-card-top">
+            <div class="uc-num">01</div>
+            <div class="uc-icon uc-icon-orange">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/><path d="M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/><path d="M9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5z"/><path d="M3.5 14H5v1.5c0 .83-.67 1.5-1.5 1.5S2 16.33 2 15.5 2.67 14 3.5 14z"/><path d="M14 14.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5z"/><path d="M15.5 19H14v1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z"/><path d="M10 9.5C10 8.67 9.33 8 8.5 8h-5C2.67 8 2 8.67 2 9.5S2.67 11 3.5 11h5c.83 0 1.5-.67 1.5-1.5z"/><path d="M8.5 5H10V3.5C10 2.67 9.33 2 8.5 2S7 2.67 7 3.5 7.67 5 8.5 5z"/></svg>
+            </div>
+          </div>
+          <h3>CONTENT PIPELINES</h3>
+          <p>Drop briefs, assets, and research. The folder summarizes, formats, and distributes to your CMS, Slack, and social channels.</p>
+          <div class="uc-tags">
+            <span>SUMMARIZE</span><span>PUBLISH</span><span>NOTIFY</span>
+          </div>
+        </div>
+
+        <div class="uc-card fade-in" style="animation-delay:0.05s">
+          <div class="uc-card-top">
+            <div class="uc-num">02</div>
+            <div class="uc-icon uc-icon-cyan">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+          </div>
+          <h3>DATA INTELLIGENCE</h3>
+          <p>Load CSVs, database exports, or API snapshots. Agents analyze trends, generate reports, and alert you to anomalies.</p>
+          <div class="uc-tags">
+            <span>ANALYZE</span><span>REPORT</span><span>ALERT</span>
+          </div>
+        </div>
+
+        <div class="uc-card fade-in" style="animation-delay:0.1s">
+          <div class="uc-card-top">
+            <div class="uc-num">03</div>
+            <div class="uc-icon uc-icon-orange">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            </div>
+          </div>
+          <h3>DEV WORKFLOWS</h3>
+          <p>Connect a GitHub folder. Agents watch PRs, summarize diffs, auto-assign reviewers, and post updates to your team Slack.</p>
+          <div class="uc-tags">
+            <span>WATCH</span><span>REVIEW</span><span>ROUTE</span>
+          </div>
+        </div>
+
+        <div class="uc-card fade-in" style="animation-delay:0.15s">
+          <div class="uc-card-top">
+            <div class="uc-num">04</div>
+            <div class="uc-icon uc-icon-cyan">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+          </div>
+          <h3>RESEARCH SYNTHESIS</h3>
+          <p>Dump sources, PDFs, and URLs. Agents extract key insights, cross-reference claims, and produce structured reports.</p>
+          <div class="uc-tags">
+            <span>EXTRACT</span><span>SYNTHESIZE</span><span>EXPORT</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       WAITLIST / CTA
+  ═══════════════════════════════════════════ -->
+  <section class="section section-cta" id="waitlist">
+    <div class="container">
+      <div class="cta-frame">
+        <!-- Corner clips -->
+        <div class="cta-corner cta-c-tl" aria-hidden="true"></div>
+        <div class="cta-corner cta-c-tr" aria-hidden="true"></div>
+        <div class="cta-corner cta-c-bl" aria-hidden="true"></div>
+        <div class="cta-corner cta-c-br" aria-hidden="true"></div>
+        <!-- Glow -->
+        <div class="cta-glow" aria-hidden="true"></div>
+
+        <div class="section-header" style="margin-bottom: var(--s8)">
+          <div class="sh-rule"></div>
+          <div class="sh-label">ACCESS // 04</div>
+          <div class="sh-rule"></div>
+        </div>
+
+        <h2 class="section-h2" style="text-align:center">BE FIRST<br/><span class="h2-accent">IN THE FOLDER.</span></h2>
+        <p class="section-sub" style="text-align:center; margin-left:auto; margin-right:auto">
+          AgentCache is in private beta. Join the waitlist and get early access,
+          plus a free team workspace at launch.
+        </p>
+
+        <form class="cta-form" novalidate>
+          <div class="cta-form-inner">
+            <div class="cta-input-wrap">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cta-input-icon"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <input type="email" placeholder="operator@mission.io" class="cta-input" required aria-label="Email address"/>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg">INITIALIZE ACCESS</button>
+          </div>
+          <p class="cta-note">NO SPAM · NO COMMITMENT · ABORT ANYTIME</p>
+        </form>
+
+        <!-- Stats row -->
+        <div class="cta-stats">
+          <div class="cta-stat">
+            <span class="cs-val">1,240+</span>
+            <span class="cs-key">ON WAITLIST</span>
+          </div>
+          <div class="cta-stat-div"></div>
+          <div class="cta-stat">
+            <span class="cs-val">Q3 2026</span>
+            <span class="cs-key">LAUNCH TARGET</span>
+          </div>
+          <div class="cta-stat-div"></div>
+          <div class="cta-stat">
+            <span class="cs-val">FREE</span>
+            <span class="cs-key">TEAM WORKSPACE</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════ -->
+  <footer class="footer">
+    <div class="footer-scan" aria-hidden="true"></div>
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <a href="/" class="nav-logo">
+          <svg width="28" height="28" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+            <polygon points="6,2 30,2 34,6 34,30 30,34 6,34 2,30 2,6" stroke="var(--c-orange)" stroke-width="1" fill="none" opacity="0.6"/>
+            <path d="M8 12 L8 26 L28 26 L28 14 L18 14 L16 12 Z" stroke="var(--c-orange)" stroke-width="1.5" fill="none"/>
+            <circle cx="25" cy="20" r="2" fill="var(--c-orange)"/>
+          </svg>
+          <div class="nav-logo-text">
+            <span class="nav-logo-main">AGENTCACHE</span>
+            <span class="nav-logo-sub">SYS v2.4.1</span>
+          </div>
+        </a>
+        <p class="footer-tag">THE FOLDER THAT THINKS.</p>
+        <div class="footer-status">
+          <span class="status-dot"></span>
+          <span class="status-label">ALL SYSTEMS OPERATIONAL</span>
+        </div>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <div class="fc-label">PRODUCT</div>
+          <a href="#">How It Works</a>
+          <a href="#">Features</a>
+          <a href="#">Integrations</a>
+          <a href="#">Pricing</a>
+        </div>
+        <div class="footer-col">
+          <div class="fc-label">COMPANY</div>
+          <a href="#">About</a>
+          <a href="#">Blog</a>
+          <a href="#">Careers</a>
+          <a href="#">Contact</a>
+        </div>
+        <div class="footer-col">
+          <div class="fc-label">DEVELOPERS</div>
+          <a href="#">API Docs</a>
+          <a href="#">GitHub</a>
+          <a href="#">Changelog</a>
+          <a href="#">Status</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container footer-bottom-inner">
+        <span>© 2026 AGENTCACHE.AI — ALL RIGHTS RESERVED</span>
+        <div class="footer-legal">
+          <a href="#">PRIVACY</a>
+          <a href="#">TERMS</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+<script data-pplx-inline-edit>
+(function () {
+  if (window === window.top) return;
+
+  const allowedParentOrigins = ["https://www.perplexity.ai","https://perplexity.ai","https://testing.perplexity.ai","https://staging.perplexity.ai","https://*.preview.i.perplexity.ai","http://localhost:3000","http://127.0.0.1:3000","http://localhost:5173","http://127.0.0.1:5173"];
+  const MAX_FONT_BYTES = 500 * 1024;
+  const MAX_TOTAL_FONT_BYTES = 2 * 1024 * 1024;
+  let scrollForwarding = false;
+  let scrollRaf = 0;
+  let trustedTopOrigin = null;
+
+  // Allow entries like "https://*.preview.i.perplexity.ai" — the wildcard
+  // matches a single DNS label (no dots), so "https://*.foo" cannot stretch
+  // across multiple labels.
+  function matchesAllowedOrigin(origin) {
+    if (!origin) return false;
+    for (const entry of allowedParentOrigins) {
+      if (!entry.includes("*")) {
+        if (entry === origin) return true;
+        continue;
+      }
+      const pattern = new RegExp(
+        "^" +
+          entry.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, "[^.]+") +
+          "$",
+      );
+      if (pattern.test(origin)) return true;
+    }
+    return false;
+  }
+
+  // Trust decision: when the sender is same-origin-visible (event.origin is a
+  // real origin like https://www.perplexity.ai) we trust event.origin directly.
+  // When event.origin is "null" (opaque broker srcdoc), we fall back to the
+  // broker's stamped `parentOrigin` to identify the top window. The fallback
+  // is claim-only — we rely on the browser's native `targetOrigin` enforcement
+  // on the response path (see postToTrustedTop) to ensure replies can't be
+  // delivered to anyone but the actual top window of that claimed origin.
+  function getTrustedParentOrigin(event) {
+    const forwardedParentOrigin =
+      typeof event.data.parentOrigin === "string" ? event.data.parentOrigin : null;
+    const parentOrigin = event.origin === "null" ? forwardedParentOrigin : event.origin;
+    return matchesAllowedOrigin(parentOrigin) ? parentOrigin : null;
+  }
+
+  // All responses go to window.top with targetOrigin = the allowlisted origin.
+  // An attacker that iframes us inside their own null-origin broker can claim
+  // any parentOrigin they like, but the browser will drop the reply whenever
+  // the real top's origin doesn't match — so the screenshot never leaves.
+  function postToTrustedTop(message) {
+    if (!trustedTopOrigin) return;
+    try {
+      window.top.postMessage(message, trustedTopOrigin);
+    } catch (_error) {}
+  }
+
+  function inlineAll(original, clone) {
+    if (original.nodeType !== 1 || clone.nodeType !== 1) return;
+
+    try {
+      const computedStyle = getComputedStyle(original);
+      // cssText on a computed style is the serialized declaration in modern
+      // Chromium/Safari — a single read beats enumerating ~400 longhand
+      // properties. Firefox returns "" here, so we fall back on empty.
+      const serialized = computedStyle.cssText;
+      if (serialized) {
+        clone.style.cssText = serialized;
+      } else {
+        const parts = new Array(computedStyle.length);
+        for (let index = 0; index < computedStyle.length; index += 1) {
+          const property = computedStyle[index];
+          parts[index] = `${property}:${computedStyle.getPropertyValue(property)};`;
+        }
+        clone.style.cssText = parts.join("");
+      }
+    } catch (_error) {}
+
+    const originalChildren = original.children;
+    const clonedChildren = clone.children;
+    for (
+      let index = 0;
+      index < originalChildren.length && index < clonedChildren.length;
+      index += 1
+    ) {
+      inlineAll(originalChildren[index], clonedChildren[index]);
+    }
+  }
+
+  function extractFontUrl(srcValue) {
+    const matches = [
+      ...srcValue.matchAll(
+        /url\(["']?([^"')]+)["']?\)(?:\s*format\(["']?([^"')]+)["']?\))?/gi,
+      ),
+    ];
+    if (matches.length === 0) return null;
+    const woff2 = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff2"));
+    if (woff2) return woff2[1];
+    const woff = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff"));
+    if (woff) return woff[1];
+    return matches[0][1];
+  }
+
+  // Cache resolved font URL -> data URI across captures. Fonts on a page
+  // essentially never change, and a batch run emits multiple captures back to
+  // back — without this we'd refetch + re-base64 every time.
+  const fontDataUriCache = new Map();
+  const SRC_DECLARATION_RE = /src\s*:\s*[^;}]+/i;
+
+  async function fetchAsDataUri(url) {
+    if (fontDataUriCache.has(url)) return fontDataUriCache.get(url);
+    let dataUri = null;
+    try {
+      const response = await fetch(url, { mode: "cors", credentials: "omit" });
+      if (response.ok) {
+        const blob = await response.blob();
+        if (blob.size <= MAX_FONT_BYTES) {
+          dataUri = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () =>
+              resolve(typeof reader.result === "string" ? reader.result : null);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(blob);
+          });
+        }
+      }
+    } catch (_error) {
+      dataUri = null;
+    }
+    fontDataUriCache.set(url, dataUri);
+    return dataUri;
+  }
+
+  function collectFontFaceRuleTexts() {
+    const rules = [];
+    for (const sheet of document.styleSheets) {
+      let cssRules;
+      try {
+        cssRules = sheet.cssRules;
+      } catch (_error) {
+        continue;
+      }
+      if (!cssRules) continue;
+      for (const rule of cssRules) {
+        const cssText = rule.cssText || "";
+        if (cssText.startsWith("@font-face")) rules.push(cssText);
+      }
+    }
+    return rules;
+  }
+
+  async function buildInlinedFontCss() {
+    const ruleTexts = collectFontFaceRuleTexts();
+    if (ruleTexts.length === 0) return null;
+
+    const resolved = ruleTexts.map((cssText) => {
+      if (!SRC_DECLARATION_RE.test(cssText)) return null;
+      const srcMatch = cssText.match(/src\s*:\s*([^;}]+)[;}]/i);
+      if (!srcMatch) return null;
+      const url = extractFontUrl(srcMatch[1]);
+      if (!url) return null;
+      try {
+        return { cssText, url: new URL(url, document.baseURI).href };
+      } catch (_error) {
+        return null;
+      }
+    });
+
+    const dataUris = await Promise.all(
+      resolved.map((entry) => (entry ? fetchAsDataUri(entry.url) : Promise.resolve(null))),
+    );
+
+    const inlined = [];
+    let totalBytes = 0;
+    for (let index = 0; index < resolved.length; index += 1) {
+      const entry = resolved[index];
+      const dataUri = dataUris[index];
+      if (!entry || !dataUri) continue;
+      const approxBytes = dataUri.length * 0.75;
+      if (totalBytes + approxBytes > MAX_TOTAL_FONT_BYTES) break;
+      totalBytes += approxBytes;
+      inlined.push(entry.cssText.replace(SRC_DECLARATION_RE, `src: url("${dataUri}")`));
+    }
+    return inlined.length > 0 ? inlined.join("\n") : null;
+  }
+
+  function stripExternal(clone) {
+    const images = clone.querySelectorAll("img");
+    for (let index = 0; index < images.length; index += 1) {
+      const src = images[index].getAttribute("src");
+      if (src && !src.startsWith("data:")) images[index].removeAttribute("src");
+    }
+
+    const elements = clone.querySelectorAll("*");
+    for (let index = 0; index < elements.length; index += 1) {
+      const style = elements[index].style.cssText;
+      if (style && style.includes("url(")) {
+        elements[index].style.cssText = style.replace(
+          /url\(["']?(?!data:)[^)"']*["']?\)/gi,
+          "none",
+        );
+      }
+    }
+  }
+
+  function emitScroll() {
+    scrollRaf = 0;
+    if (!scrollForwarding) return;
+    postToTrustedTop({
+      type: "INLINE_EDIT_SCROLL",
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+    });
+  }
+
+  window.addEventListener(
+    "scroll",
+    function () {
+      if (!scrollForwarding || scrollRaf) return;
+      scrollRaf = requestAnimationFrame(emitScroll);
+    },
+    { passive: true, capture: true },
+  );
+
+  async function handleCaptureRequest(event) {
+    const requestId = event.data.requestId;
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    function postResult(dataUrl) {
+      postToTrustedTop({
+        type: "INLINE_EDIT_SCREENSHOT_RESULT",
+        requestId,
+        dataUrl,
+        scrollX,
+        scrollY,
+      });
+    }
+
+    try {
+      // Wait for any pending web fonts to resolve so both inline metrics and
+      // the @font-face inlining below see the same loaded faces.
+      if (document.fonts && document.fonts.ready) {
+        try {
+          await document.fonts.ready;
+        } catch (_error) {}
+      }
+
+      const clone = document.documentElement.cloneNode(true);
+      inlineAll(document.documentElement, clone);
+
+      const removedNodes = clone.querySelectorAll("script,link[rel=\"stylesheet\"],style");
+      for (let index = 0; index < removedNodes.length; index += 1) {
+        removedNodes[index].remove();
+      }
+
+      stripExternal(clone);
+
+      // Re-embed web fonts as data-URI @font-face rules so the SVG rasterizer
+      // can resolve them — external font URLs aren't fetched during
+      // foreignObject rendering, which would otherwise force a fallback face
+      // and change text metrics.
+      const inlinedFontCss = await buildInlinedFontCss();
+      if (inlinedFontCss) {
+        const styleEl = document.createElement("style");
+        styleEl.textContent = inlinedFontCss;
+        const head = clone.querySelector("head");
+        if (head) head.appendChild(styleEl);
+        else clone.insertBefore(styleEl, clone.firstChild);
+      }
+
+      const html = new XMLSerializer().serializeToString(clone);
+      const svg =
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">` +
+        '<foreignObject width="100%" height="100%">' +
+        `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${width}px;height:${height}px;overflow:hidden">` +
+        `<div style="position:relative;left:-${scrollX}px;top:-${scrollY}px">` +
+        html +
+        "</div></div></foreignObject></svg>";
+      const svgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+      const image = new Image();
+      image.onload = function () {
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(image, 0, 0);
+        postResult(canvas.toDataURL("image/png"));
+      };
+      image.onerror = function () {
+        postResult(null);
+      };
+      image.src = svgUrl;
+    } catch (_error) {
+      postResult(null);
+    }
+  }
+
+  window.addEventListener("message", function (event) {
+    if (!event.data) return;
+    // Only accept messages from the direct parent frame. Blocks sibling /
+    // unrelated-window postMessage senders that could otherwise reach us.
+    if (event.source !== window.parent) return;
+
+    const trustedParentOrigin = getTrustedParentOrigin(event);
+    if (!trustedParentOrigin) return;
+    trustedTopOrigin = trustedParentOrigin;
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_START") {
+      scrollForwarding = true;
+      emitScroll();
+      return;
+    }
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_STOP") {
+      scrollForwarding = false;
+      if (scrollRaf) cancelAnimationFrame(scrollRaf);
+      scrollRaf = 0;
+      return;
+    }
+
+    if (event.data.type !== "INLINE_EDIT_CAPTURE_REQUEST") return;
+
+    handleCaptureRequest(event);
+  });
+})();
+
+
+</script></body>
+</html>

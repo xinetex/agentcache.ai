@@ -78,7 +78,7 @@ npm run mcp:dev
 Public packaging is now:
 - Free: 10K requests/month
 - Pro: $99/month, 1M requests/month
-- Enterprise: $299/month, 10M requests/month
+- Enterprise: $499/month, 10M requests/month
 
 Add-ons:
 - Guardrails

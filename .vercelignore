@@ -10,3 +10,4 @@ scripts/verify_*
 
 # Exclude local dev server (Hono) - NOT the Vite build!
 dist/
+_attic/

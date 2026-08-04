@@ -1,0 +1,79 @@
+{
+  "pack": {
+    "id": "research-folder-intake",
+    "name": "Research Folder Intake",
+    "description": "When new files (PDFs, notes, articles, datasets) land in a research folder, automatically classify them, extract key entities and open questions, create a grounded summary, and log everything with receipts for drift tracking and future recall.",
+    "version": "0.1.0",
+    "icon": "🔬",
+    "category": "research"
+  },
+  "triggers": [
+    {
+      "type": "file:added",
+      "description": "Any new file dropped into the folder or any of its sub-nodes."
+    }
+  ],
+  "steps": [
+    {
+      "id": "classify",
+      "tool": "builtin.classify",
+      "inputs": {
+        "content": "{{file.content}}",
+        "file_meta": "{{file.meta}}"
+      },
+      "outputs": ["labels", "suggested_actions", "domain"],
+      "emits_receipt": true,
+      "invention_policy": "flag"
+    },
+    {
+      "id": "extract_entities",
+      "tool": "sector.entity-extract",
+      "inputs": {
+        "document": "{{file.content}}",
+        "domain": "{{classify.domain}}"
+      },
+      "outputs": ["entities", "open_questions", "key_claims"],
+      "emits_receipt": true,
+      "invention_policy": "flag"
+    },
+    {
+      "id": "summarize",
+      "tool": "builtin.summarize",
+      "inputs": {
+        "text": "{{file.content}}",
+        "max_tokens": 800,
+        "context": "research paper or note"
+      },
+      "outputs": ["summary", "key_facts"],
+      "emits_receipt": true,
+      "invention_policy": "flag"
+    },
+    {
+      "id": "log_to_memory",
+      "tool": "builtin.classify",
+      "description": "Create memory fragments and link to ontology (placeholder until dedicated memory tool is wired).",
+      "inputs": {
+        "content": "{{summarize.summary}}",
+        "entities": "{{extract_entities.entities}}"
+      },
+      "outputs": ["memory_node_id"],
+      "emits_receipt": true
+    }
+  ],
+  "receipt_requirements": {
+    "must_emit": ["classify", "extract_entities", "summarize"],
+    "summary_drift_threshold": 0.12,
+    "invention_policy": "flag_and_create_plan_step"
+  },
+  "variables": {
+    "auto_create_memory_nodes": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to automatically create linked memory nodes for extracted entities and open questions."
+    },
+    "notify_on_high_drift": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}
