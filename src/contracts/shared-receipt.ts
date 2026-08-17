@@ -31,7 +31,8 @@ export type SharedReceiptSubjectKind =
   | 'BROWSER_TASK'
   | 'ORCHESTRATOR_RUN'
   | 'SOULPRINT_ARTIFACT'
-  | 'EVIDENCE_PACK';
+  | 'EVIDENCE_PACK'
+  | 'CERTIFIED_RUN';
 
 export type SharedReceiptParty = {
   system: SharedReceiptSystem;
@@ -146,6 +147,7 @@ const sharedReceiptSubjectKindSchema = z.enum([
   'ORCHESTRATOR_RUN',
   'SOULPRINT_ARTIFACT',
   'EVIDENCE_PACK',
+  'CERTIFIED_RUN',
 ]);
 
 const sharedReceiptPartySchema = z.object({

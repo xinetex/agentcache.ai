@@ -822,6 +822,42 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(evidenceKind?.count).toBeGreaterThanOrEqual(1);
   }, 10000);
 
+  it('creates and human-approves certified agent runs through the Trust Ledger API', async () => {
+    const evidence = await request('/api/evidence/packs', {
+      title: unique('Trust Ledger evidence'),
+      source: { locator: 'https://agentcache.ai/policy/release', content: 'Human approval is required before external publication.' },
+      claims: [{ text: 'Human approval is required before external publication.', sourceRef: '#approval', spans: [{ start: 0, end: 54 }], confidence: 0.95, status: 'SUPPORTED' }],
+      namespace: 'trust-ledger-contract',
+    });
+    expect(evidence.response.status).toBe(201);
+
+    const created = await request('/api/certified-runs', {
+      title: unique('Certified run'),
+      intent: 'Publish an evidence-backed policy answer.',
+      evidencePackIds: [evidence.payload.pack.id],
+      actions: [{ tool: 'workspace.publish', operation: 'create_document', risk: 'high', arguments: { document: 'private-input' }, result: { documentId: 'doc-contract-1' } }],
+      policy: { allowedTools: ['workspace.publish'], maxRisk: 'high', requireHumanApproval: true },
+    });
+    expect(created.response.status).toBe(201);
+    expect(created.payload.run.status).toBe('pending_approval');
+    expect(created.payload.run.receipt.subject.kind).toBe('CERTIFIED_RUN');
+    expect(created.payload.run.actions[0].arguments).toBeUndefined();
+    expect(created.payload.run.ledgerHash).toMatch(/^[a-f0-9]{64}$/);
+
+    const approved = await requestAdmin(`/api/certified-runs/${created.payload.run.id}/approve`, {
+      decidedBy: 'contract-admin',
+      note: 'Evidence and tool scope reviewed.',
+    });
+    expect(approved.response.status).toBe(200);
+    expect(approved.payload.run.status).toBe('approved');
+    expect(approved.payload.receipt.receipt.subject.kind).toBe('CERTIFIED_RUN');
+
+    const receiptSummary = await request('/api/receipts/summary?subjectKind=CERTIFIED_RUN', undefined, 'GET');
+    expect(receiptSummary.response.status).toBe(200);
+    const certifiedKind = receiptSummary.payload.summary.bySubjectKind.find((item: any) => item.kind === 'CERTIFIED_RUN');
+    expect(certifiedKind?.count).toBeGreaterThanOrEqual(2);
+  }, 10000);
+
   it('summarizes MaxxEval commerce lifecycle receipts through the public receipt API', async () => {
     process.env.SHARED_RECEIPT_SECRET = 'public-contract-receipt-secret';
     const receipt = attachSharedReceiptSignature(buildSharedReceipt({

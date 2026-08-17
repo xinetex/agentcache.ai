@@ -44,7 +44,7 @@ const catalogRouter = new Hono();
 interface ServiceDef {
     id: string;
     name: string;
-    category: 'cache' | 'intelligence' | 'infrastructure' | 'intake';
+    category: 'cache' | 'intelligence' | 'infrastructure' | 'intake' | 'security';
     description: string;
     tier: 'free' | 'pro' | 'enterprise';
     endpoint: string;
@@ -187,6 +187,26 @@ const SERVICES: ServiceDef[] = [
             { field: 'candidateId', type: 'string', description: 'Draft answer, artifact, or extraction candidate being evidenced' }
         ],
         pricing: 'Knowledge add-on | Usage-based evidence-claim credits',
+        status: 'available'
+    },
+    {
+        id: 'certified-runs',
+        name: 'Certified Agent Runs',
+        category: 'security',
+        description: 'Trust Ledger records that bind evidence, policy decisions, hashed tool actions, human approval, and auditable receipts into one portable run record.',
+        tier: 'pro',
+        endpoint: 'POST /api/certified-runs, GET /api/certified-runs, GET /api/certified-runs/:runId, POST /api/certified-runs/:runId/approve',
+        requiredInputs: [
+            { field: 'title', type: 'string', description: 'Human-readable run name' },
+            { field: 'intent', type: 'string', description: 'The outcome the agent was authorized to pursue' },
+            { field: 'actions', type: 'array', description: 'Tool operations with risk and argument/result hashes or hashable values' }
+        ],
+        optionalInputs: [
+            { field: 'evidencePackIds', type: 'array', description: 'Source-bound Evidence Pack IDs used by the run' },
+            { field: 'policy', type: 'object', description: 'Allowed tools, maximum risk, and human approval policy' },
+            { field: 'namespace', type: 'string', description: 'Isolation namespace for the Trust Ledger' }
+        ],
+        pricing: 'Pro add-on | Usage-based certified-run and governed-action credits',
         status: 'available'
     },
     {
@@ -394,6 +414,7 @@ const TOOL_SHED_PROFILES: Record<ToolShedProfile, ToolShedProfileConfig> = {
             { serviceId: 'plan-cache', reason: 'Replay stable plan segments to avoid repeated planning calls.', required: true },
             { serviceId: 'tool-cache', reason: 'Deduplicate deterministic task/tool executions.', required: true },
             { serviceId: 'semantic-cache', reason: 'Cache repeated sub-prompts in the workflow.', required: true },
+            { serviceId: 'certified-runs', reason: 'Create a replayable authorization record for consequential tool actions.', required: false },
             { serviceId: 'needs-intake', reason: 'Feed operational friction back into service planning.', required: false }
         ]
     },
@@ -404,6 +425,7 @@ const TOOL_SHED_PROFILES: Record<ToolShedProfile, ToolShedProfileConfig> = {
             { serviceId: 'security-guardrails', reason: 'First-line defense for prompt input and workflow boundaries.', required: true },
             { serviceId: 'pathological-api', reason: 'Stress-test agent workflows and produce hardening receipts before production rollout.', required: false },
             { serviceId: 'evidence-packs', reason: 'Require reviewable source evidence before trusted agent claims enter enterprise memory.', required: true },
+            { serviceId: 'certified-runs', reason: 'Bind evidence, policy, approval, and tool actions into an auditable Trust Ledger.', required: true },
             { serviceId: 'anti-cache', reason: 'Policy-safe invalidation when sensitive sources change.', required: true },
             { serviceId: 'semantic-cache', reason: 'Control spend while preserving predictable service performance.', required: true },
             { serviceId: 'session-memory', reason: 'Private namespace memory for regulated workflows.', required: false }

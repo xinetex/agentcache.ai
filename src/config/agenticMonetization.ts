@@ -196,6 +196,16 @@ export const AGENTIC_METERED_SKUS: AgenticMeteredSku[] = [
     sourceOfTruth: 'src/services/EvidencePackService.ts',
   },
   {
+    id: 'certified-run',
+    productId: 'execution-drift-guard',
+    name: 'Certified agent run',
+    unit: 'run',
+    billingMode: 'usage_meter',
+    pricing: 'Metered by certified runs, governed actions, and retained Trust Ledger evidence.',
+    minimumPlan: 'pro',
+    sourceOfTruth: 'src/services/CertifiedRunService.ts',
+  },
+  {
     id: 'hardening-assessment',
     productId: 'execution-drift-guard',
     name: 'Hardening assessment',
@@ -292,7 +302,7 @@ const PRODUCT_COMMERCIAL_MODELS: Record<string, Omit<ProductCommercialModel, 'pr
     checkoutUrl: '/contact.html?interest=execution-drift-guard',
     billingNote: 'Included in Pro for core monitoring; high-touch rollout is sold as a paid pilot.',
     addonIds: [],
-    meterSkuIds: ['hardening-assessment'],
+    meterSkuIds: ['hardening-assessment', 'certified-run'],
     pilotIds: ['execution-drift-guard-pilot'],
   },
   'agent-storage-core': {

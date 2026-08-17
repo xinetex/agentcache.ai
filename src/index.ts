@@ -714,6 +714,8 @@ app.all('/api/needs/:path{.+}?', lazy(() => import('./api/needs.js')));
 app.all('/api/catalog/:path{.+}?', lazy(() => import('./api/catalog.js')));
 // Evidence packs for source-bound agent claims and reviewable knowledge promotion
 app.all('/api/evidence/:path{.+}?', lazy(() => import('./api/evidence.js')));
+// Certified Agent Runs: source-bound authorization and replayable action receipts
+app.all('/api/certified-runs/:path{.+}?', lazy(() => import('./api/certified-runs.js')));
 // Pathological API (adversarial hardening and recovery assessments)
 app.all('/api/pathological/:path{.+}?', lazy(() => import('./api/pathological.js')));
 // Focus Group API (full study/session/analysis system)

@@ -178,6 +178,13 @@ setInterval(async () => {
 \`GET /api/evidence/packs\` — List recent evidence packs by verdict, sector, or namespace
 \`GET /api/receipts?subjectKind=EVIDENCE_PACK\` — Audit evidence-pack receipts
 
+### Certified Agent Runs / Trust Ledger
+\`POST /api/certified-runs\` — Authorize a hash-only agent run against evidence and policy
+\`GET /api/certified-runs/:runId\` — Retrieve a replayable certified run bundle
+\`POST /api/certified-runs/:runId/approve\` — Human-approve a pending run and issue a decision receipt
+\`POST /api/certified-runs/:runId/reject\` — Human-reject a pending run and issue a decision receipt
+\`GET /api/receipts?subjectKind=CERTIFIED_RUN\` — Audit Trust Ledger receipts
+
 ### Service Catalog
 \`GET /api/catalog\` — List all available services
 \`GET /api/catalog/revenue-core\` — Focused sellable AgentCache offers with commercial model
@@ -421,6 +428,14 @@ export function generateAgentsJson(): object {
             method: "POST",
             requiredFields: ["title", "source", "claims"],
             optionalFields: ["namespace", "sectorId", "candidateId", "reviewerHint"]
+        },
+
+        certifiedRuns: {
+            url: "https://agentcache.ai/api/certified-runs",
+            description: "Create portable Trust Ledger records that bind evidence, policy, hashed tool actions, human approval, and receipts.",
+            method: "POST",
+            requiredFields: ["title", "intent", "actions"],
+            optionalFields: ["evidencePackIds", "policy", "namespace", "sectorId"]
         },
 
         // Tool Safety Scanner
