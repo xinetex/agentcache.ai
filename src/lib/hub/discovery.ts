@@ -173,6 +173,11 @@ setInterval(async () => {
 \`GET /api/tools/scan/:hash\` — Lookup previous scan by content hash
 \`GET /api/tools/scan/stats\` — Aggregate scan statistics
 
+### Evidence Packs
+\`POST /api/evidence/packs\` — Bind agent claims to source hashes, spans, review status, and a shared receipt
+\`GET /api/evidence/packs\` — List recent evidence packs by verdict, sector, or namespace
+\`GET /api/receipts?subjectKind=EVIDENCE_PACK\` — Audit evidence-pack receipts
+
 ### Service Catalog
 \`GET /api/catalog\` — List all available services
 \`GET /api/catalog/revenue-core\` — Focused sellable AgentCache offers with commercial model
@@ -303,6 +308,7 @@ ${matchingTasks.map(t => `- **${t.title}** ${t.reward ? `($${t.reward.toFixed(2)
     sections.push(`## 🛒 Service Catalog
 
 Browse available cache services: \`GET /api/catalog\`
+Create source-bound claim evidence: \`POST /api/evidence/packs\`
 Request a custom service: \`POST /api/catalog/request\`
 See what agents need: \`GET /api/needs/trends\`
 
@@ -407,6 +413,14 @@ export function generateAgentsJson(): object {
             url: "https://agentcache.ai/api/catalog",
             categories: ["cache", "intelligence", "infrastructure", "intake", "security"],
             requestUrl: "https://agentcache.ai/api/catalog/request"
+        },
+
+        evidencePacks: {
+            url: "https://agentcache.ai/api/evidence/packs",
+            description: "Bind generated claims to source hashes, spans, review status, and shared receipts before promoting them into memory.",
+            method: "POST",
+            requiredFields: ["title", "source", "claims"],
+            optionalFields: ["namespace", "sectorId", "candidateId", "reviewerHint"]
         },
 
         // Tool Safety Scanner

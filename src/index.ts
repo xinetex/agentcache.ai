@@ -712,6 +712,8 @@ app.post('/api/agents/register', async (c) => {
 app.all('/api/needs/:path{.+}?', lazy(() => import('./api/needs.js')));
 // Service catalog + custom cache requests
 app.all('/api/catalog/:path{.+}?', lazy(() => import('./api/catalog.js')));
+// Evidence packs for source-bound agent claims and reviewable knowledge promotion
+app.all('/api/evidence/:path{.+}?', lazy(() => import('./api/evidence.js')));
 // Pathological API (adversarial hardening and recovery assessments)
 app.all('/api/pathological/:path{.+}?', lazy(() => import('./api/pathological.js')));
 // Focus Group API (full study/session/analysis system)

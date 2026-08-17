@@ -186,6 +186,16 @@ export const AGENTIC_METERED_SKUS: AgenticMeteredSku[] = [
     sourceOfTruth: 'src/services/MemoryFabricBillingService.ts',
   },
   {
+    id: 'evidence-claim',
+    productId: 'agentcache-knowledge',
+    name: 'Evidence claim',
+    unit: 'claim',
+    billingMode: 'credit_estimate',
+    pricing: 'Estimated by source-bound claim count and review status.',
+    minimumPlan: 'pro',
+    sourceOfTruth: 'src/services/EvidencePackService.ts',
+  },
+  {
     id: 'hardening-assessment',
     productId: 'execution-drift-guard',
     name: 'Hardening assessment',
@@ -268,12 +278,12 @@ const PRODUCT_COMMERCIAL_MODELS: Record<string, Omit<ProductCommercialModel, 'pr
     pilotIds: [],
   },
   'agentcache-knowledge': {
-    revenueMotions: ['add_on'],
+    revenueMotions: ['add_on', 'usage_meter'],
     minimumPlan: 'pro',
     checkoutUrl: '/addons.html?addon=knowledge',
-    billingNote: 'Available as a Pro add-on and bundled into Enterprise.',
+    billingNote: 'Available as a Pro add-on and bundled into Enterprise, with evidence claims estimated as Knowledge credits.',
     addonIds: ['knowledge'],
-    meterSkuIds: [],
+    meterSkuIds: ['evidence-claim'],
     pilotIds: [],
   },
   'execution-drift-guard': {

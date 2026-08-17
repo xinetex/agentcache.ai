@@ -170,6 +170,26 @@ const SERVICES: ServiceDef[] = [
         status: 'available'
     },
     {
+        id: 'evidence-packs',
+        name: 'Evidence Packs',
+        category: 'intelligence',
+        description: 'Claim-level evidence envelopes for agent outputs. Normalize source snapshots, claim spans, verdicts, and shared receipts before anything becomes canonical memory.',
+        tier: 'pro',
+        endpoint: 'POST /api/evidence/packs, GET /api/evidence/packs, GET /api/receipts?subjectKind=EVIDENCE_PACK',
+        requiredInputs: [
+            { field: 'title', type: 'string', description: 'Human-readable label for the evidence pack' },
+            { field: 'source', type: 'object', description: 'Source locator, snapshotId, contentHash, or inline content to hash' },
+            { field: 'claims', type: 'array', description: 'Claim objects with text, confidence, sourceRef, quote, or spans' }
+        ],
+        optionalInputs: [
+            { field: 'namespace', type: 'string', description: 'Workspace namespace for review and memory promotion' },
+            { field: 'sectorId', type: 'string', description: 'Ontology sector for trust and billing summaries' },
+            { field: 'candidateId', type: 'string', description: 'Draft answer, artifact, or extraction candidate being evidenced' }
+        ],
+        pricing: 'Knowledge add-on | Usage-based evidence-claim credits',
+        status: 'available'
+    },
+    {
         id: 'cdn-streaming',
         name: 'CDN & Streaming',
         category: 'infrastructure',
@@ -362,6 +382,7 @@ const TOOL_SHED_PROFILES: Record<ToolShedProfile, ToolShedProfileConfig> = {
         selections: [
             { serviceId: 'semantic-cache', reason: 'Cache retrieval + generation outputs to reduce repeated cost.', required: true },
             { serviceId: 'session-memory', reason: 'Track document/query memory and iterative exploration state.', required: true },
+            { serviceId: 'evidence-packs', reason: 'Bind generated claims to source snapshots before promoting answers into reusable context.', required: true },
             { serviceId: 'anti-cache', reason: 'Invalidate stale answers when upstream documents change.', required: true },
             { serviceId: 'security-guardrails', reason: 'Reduce risk from malicious retrieved content.', required: false }
         ]
@@ -382,6 +403,7 @@ const TOOL_SHED_PROFILES: Record<ToolShedProfile, ToolShedProfileConfig> = {
         selections: [
             { serviceId: 'security-guardrails', reason: 'First-line defense for prompt input and workflow boundaries.', required: true },
             { serviceId: 'pathological-api', reason: 'Stress-test agent workflows and produce hardening receipts before production rollout.', required: false },
+            { serviceId: 'evidence-packs', reason: 'Require reviewable source evidence before trusted agent claims enter enterprise memory.', required: true },
             { serviceId: 'anti-cache', reason: 'Policy-safe invalidation when sensitive sources change.', required: true },
             { serviceId: 'semantic-cache', reason: 'Control spend while preserving predictable service performance.', required: true },
             { serviceId: 'session-memory', reason: 'Private namespace memory for regulated workflows.', required: false }

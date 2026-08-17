@@ -413,6 +413,10 @@ describe.sequential('AgentCache public API contracts', () => {
       minimumPlan: 'pro',
       addonIds: ['guardrails'],
     });
+    const knowledge = payload.offers.find((offer: any) => offer.id === 'agentcache-knowledge');
+    expect(knowledge.endpoints).toContain('/api/evidence/packs');
+    expect(knowledge.commercial.meterSkuIds).toContain('evidence-claim');
+    expect(payload.monetization.meteredSkus.some((sku: any) => sku.id === 'evidence-claim')).toBe(true);
   });
 
   it('exposes outcome guidance that humans and agents can use to pick advanced services', async () => {
@@ -756,6 +760,66 @@ describe.sequential('AgentCache public API contracts', () => {
     expect(stats.response.status).toBe(200);
     expect(stats.payload.receipts.total).toBeGreaterThanOrEqual(1);
     expect(stats.payload.browserProof).toBeDefined();
+  }, 10000);
+
+  it('creates evidence packs and links them to shared receipts', async () => {
+    const title = unique('Evidence pack contract');
+    const body = {
+      title,
+      source: {
+        locator: 'https://agentcache.ai/docs/knowledge',
+        content: 'Evidence Packs create reviewable claim evidence before memory promotion.',
+        mimeType: 'text/plain',
+        retrievedAt: new Date().toISOString(),
+      },
+      claims: [
+        {
+          id: 'claim-1',
+          text: 'Evidence Packs create reviewable claim evidence before memory promotion.',
+          sourceRef: 'docs/knowledge#evidence-packs',
+          spans: [{ start: 0, end: 68 }],
+          confidence: 0.92,
+          status: 'supported',
+        },
+      ],
+      namespace: 'contract-suite',
+      sectorId: 'ai-infrastructure',
+      ontologyRef: 'agentcache-knowledge@v1',
+      candidateId: unique('candidate'),
+    };
+
+    const created = await request('/api/evidence/packs', body);
+    expect(created.response.status).toBe(201);
+    expect(created.payload.success).toBe(true);
+    expect(created.payload.pack.verdict).toBe('PASS');
+    expect(created.payload.pack.receipt.subject.kind).toBe('EVIDENCE_PACK');
+    expect(created.payload.pack.receipt.economics.sku).toBe('evidence-claim');
+    expect(created.payload.pack.source.contentHash).toMatch(/^[a-f0-9]{64}$/);
+    expect(created.payload.pack.source.content).toBeUndefined();
+    expect(created.payload.receiptId).toBe(created.payload.pack.receipt.receiptId);
+
+    const duplicate = await request('/api/evidence/packs', body);
+    expect(duplicate.response.status).toBe(200);
+    expect(duplicate.payload.duplicate).toBe(true);
+    expect(duplicate.payload.pack.id).toBe(created.payload.pack.id);
+
+    const listed = await request('/api/evidence/packs?verdict=PASS&namespace=contract-suite&limit=10', undefined, 'GET');
+    expect(listed.response.status).toBe(200);
+    expect(listed.payload.packs.some((pack: any) => pack.id === created.payload.pack.id)).toBe(true);
+
+    const fetched = await request(`/api/evidence/packs/${created.payload.pack.id}`, undefined, 'GET');
+    expect(fetched.response.status).toBe(200);
+    expect(fetched.payload.pack.id).toBe(created.payload.pack.id);
+
+    const receipt = await request(`/api/receipts/${created.payload.receiptId}`, undefined, 'GET');
+    expect(receipt.response.status).toBe(200);
+    expect(receipt.payload.receipt.subject.kind).toBe('EVIDENCE_PACK');
+    expect(receipt.payload.receipt.evidence.payloadHash).toBe(created.payload.pack.packHash);
+
+    const summary = await request('/api/receipts/summary?subjectKind=EVIDENCE_PACK', undefined, 'GET');
+    expect(summary.response.status).toBe(200);
+    const evidenceKind = summary.payload.summary.bySubjectKind.find((item: any) => item.kind === 'EVIDENCE_PACK');
+    expect(evidenceKind?.count).toBeGreaterThanOrEqual(1);
   }, 10000);
 
   it('summarizes MaxxEval commerce lifecycle receipts through the public receipt API', async () => {
