@@ -1,0 +1,78 @@
+{
+  "$schema": "agentcache/knowledge-catalog@0.1",
+  "generated": "2026-08-17",
+  "disclaimer": "Licenses and terms change. Every source is marked with its best-known license, but `verifyBeforeIngest` sources MUST have their current terms re-checked at ingest time. 'publicly accessible' never implies 'redistributable' — the ingestion gate (lib/ingest-guard.js) fails closed on restricted/unknown licenses. This catalog is the governed subset of public data, not 'all' of it.",
+  "licenseKeys": {
+    "public-domain": "US Government works / public domain — free reuse, no attribution required",
+    "cc0": "Creative Commons Zero — public-domain dedication",
+    "cc-by": "Creative Commons Attribution — reuse with credit",
+    "cc-by-sa": "CC Attribution-ShareAlike — credit + same license on derivatives",
+    "odbl": "Open Database License — attribution + share-alike for databases",
+    "restricted": "Reuse limited by terms (commercial/redistribution/share-alike constraints) — gate blocks by default",
+    "unknown": "License not established — gate blocks until resolved"
+  },
+  "piiScale": ["none", "low", "med", "high"],
+  "sectors": [
+    {
+      "sector": "Government & Public Records",
+      "sources": [
+        { "id": "us-data-gov", "name": "Data.gov (US)", "license": "public-domain", "licenseUrl": "https://www.usa.gov/government-works", "access": "portal", "endpoint": "https://catalog.data.gov/api/3", "rateLimit": "generous", "freshness": "varies", "piiRisk": "low", "verifyBeforeIngest": false, "notes": "Federal open-data catalog; individual datasets carry their own terms." },
+        { "id": "sec-edgar", "name": "SEC EDGAR", "license": "public-domain", "licenseUrl": "https://www.sec.gov/os/webmaster-faq#developers", "access": "api", "endpoint": "https://data.sec.gov", "rateLimit": "10 req/s", "freshness": "daily", "piiRisk": "low", "verifyBeforeIngest": false, "notes": "Corporate filings; fair-access rate limit + declared User-Agent required." },
+        { "id": "us-census", "name": "US Census Bureau API", "license": "public-domain", "licenseUrl": "https://www.census.gov/data/developers/about/terms-of-service.html", "access": "api", "endpoint": "https://api.census.gov/data", "rateLimit": "500/day unkeyed", "freshness": "annual", "piiRisk": "none", "verifyBeforeIngest": false, "notes": "Aggregated statistics; no individual records." },
+        { "id": "federal-register", "name": "Federal Register API", "license": "public-domain", "licenseUrl": "https://www.federalregister.gov/reader-aids/developer-resources", "access": "api", "endpoint": "https://www.federalregister.gov/api/v1", "rateLimit": "generous", "freshness": "daily", "piiRisk": "none", "verifyBeforeIngest": false, "notes": "Rules, notices, executive orders." },
+        { "id": "uspto-patentsview", "name": "USPTO PatentsView", "license": "public-domain", "licenseUrl": "https://patentsview.org/download/data-download-terms", "access": "api", "endpoint": "https://search.patentsview.org", "rateLimit": "45/min keyed", "freshness": "weekly", "piiRisk": "low", "verifyBeforeIngest": false, "notes": "Inventor names are public record but are personal data — treat as low PII." },
+        { "id": "clinicaltrials", "name": "ClinicalTrials.gov", "license": "public-domain", "licenseUrl": "https://clinicaltrials.gov/about-site/terms-conditions", "access": "api", "endpoint": "https://clinicaltrials.gov/api/v2", "rateLimit": "generous", "freshness": "daily", "piiRisk": "low", "verifyBeforeIngest": false, "notes": "Trial registrations; contact fields can carry investigator PII." },
+        { "id": "openfda", "name": "openFDA", "license": "cc0", "licenseUrl": "https://open.fda.gov/license/", "access": "api", "endpoint": "https://api.fda.gov", "rateLimit": "240/min keyed", "freshness": "weekly", "piiRisk": "low", "verifyBeforeIngest": false, "notes": "Adverse-event reports are de-identified but narrative fields need a PII scan." }
+      ]
+    },
+    {
+      "sector": "Financial & Economic",
+      "sources": [
+        { "id": "worldbank", "name": "World Bank Open Data", "license": "cc-by", "licenseUrl": "https://datacatalog.worldbank.org/public-licenses", "access": "api", "endpoint": "https://api.worldbank.org/v2", "rateLimit": "generous", "freshness": "quarterly", "piiRisk": "none", "verifyBeforeIngest": false, "notes": "CC BY 4.0 — attribution required in served output." },
+        { "id": "imf", "name": "IMF Data", "license": "restricted", "licenseUrl": "https://www.imf.org/en/About/copyright-and-terms", "access": "api", "endpoint": "https://www.imf.org/external/datamapper/api/v1", "rateLimit": "moderate", "freshness": "monthly", "piiRisk": "none", "verifyBeforeIngest": true, "notes": "Terms limit redistribution — confirm before caching for re-serve." },
+        { "id": "fred", "name": "FRED (St. Louis Fed)", "license": "restricted", "licenseUrl": "https://fred.stlouisfed.org/legal/", "access": "api", "endpoint": "https://api.stlouisfed.org/fred", "rateLimit": "120/min keyed", "freshness": "daily", "piiRisk": "none", "verifyBeforeIngest": true, "notes": "Many series carry the originating provider's own terms — per-series check." }
+      ]
+    },
+    {
+      "sector": "Scientific & Research",
+      "sources": [
+        { "id": "arxiv", "name": "arXiv", "license": "cc0", "licenseUrl": "https://info.arxiv.org/help/api/tou.html", "access": "api", "endpoint": "http://export.arxiv.org/api", "rateLimit": "1 req/3s", "freshness": "daily", "piiRisk": "none", "verifyBeforeIngest": true, "notes": "Metadata is CC0; full-text license is per-paper (author choice) — verify before caching bodies." },
+        { "id": "pmc-oa", "name": "PubMed Central Open Access Subset", "license": "cc-by", "licenseUrl": "https://www.ncbi.nlm.nih.gov/pmc/tools/openftlist/", "access": "bulk", "endpoint": "https://www.ncbi.nlm.nih.gov/pmc/utils/oa/oa.fcgi", "rateLimit": "moderate", "freshness": "daily", "piiRisk": "low", "verifyBeforeIngest": true, "notes": "OA subset only; individual articles carry CC-BY/BY-NC/BY-SA variants — read per-article license." },
+        { "id": "wikidata", "name": "Wikidata", "license": "cc0", "licenseUrl": "https://www.wikidata.org/wiki/Wikidata:Licensing", "access": "api", "endpoint": "https://query.wikidata.org/sparql", "rateLimit": "moderate", "freshness": "realtime", "piiRisk": "low", "verifyBeforeIngest": false, "notes": "CC0 structured facts; excellent entity backbone." },
+        { "id": "nasa-open", "name": "NASA Open APIs", "license": "public-domain", "licenseUrl": "https://api.nasa.gov/", "access": "api", "endpoint": "https://api.nasa.gov", "rateLimit": "1000/hr keyed", "freshness": "varies", "piiRisk": "none", "verifyBeforeIngest": false, "notes": "Imagery/space-weather; some imagery has third-party rights — check per-endpoint." },
+        { "id": "noaa-nws", "name": "NOAA / National Weather Service", "license": "public-domain", "licenseUrl": "https://www.weather.gov/disclaimer", "access": "api", "endpoint": "https://api.weather.gov", "rateLimit": "generous", "freshness": "realtime", "piiRisk": "none", "verifyBeforeIngest": false, "notes": "Forecasts, alerts, observations." },
+        { "id": "gbif", "name": "GBIF (Biodiversity)", "license": "cc-by", "licenseUrl": "https://www.gbif.org/terms", "access": "api", "endpoint": "https://api.gbif.org/v1", "rateLimit": "generous", "freshness": "daily", "piiRisk": "low", "verifyBeforeIngest": true, "notes": "Dataset-level licenses vary (CC0/BY/BY-NC) — resolve per occurrence dataset." }
+      ]
+    },
+    {
+      "sector": "Geospatial",
+      "sources": [
+        { "id": "osm", "name": "OpenStreetMap", "license": "odbl", "licenseUrl": "https://www.openstreetmap.org/copyright", "access": "bulk", "endpoint": "https://planet.openstreetmap.org", "rateLimit": "use extracts/tiles", "freshness": "realtime", "piiRisk": "low", "verifyBeforeIngest": false, "notes": "ODbL — attribution + share-alike on derived databases. Don't hammer the main API; use extracts." },
+        { "id": "census-tiger", "name": "US Census TIGER/Line", "license": "public-domain", "licenseUrl": "https://www.census.gov/programs-surveys/geography.html", "access": "bulk", "endpoint": "https://www2.census.gov/geo/tiger", "rateLimit": "n/a (bulk)", "freshness": "annual", "piiRisk": "none", "verifyBeforeIngest": false, "notes": "Boundaries, roads, geographic reference." },
+        { "id": "natural-earth", "name": "Natural Earth", "license": "public-domain", "licenseUrl": "https://www.naturalearthdata.com/about/terms-of-use/", "access": "bulk", "endpoint": "https://www.naturalearthdata.com", "rateLimit": "n/a (bulk)", "freshness": "static", "piiRisk": "none", "verifyBeforeIngest": false, "notes": "Public-domain base-map vectors/rasters." }
+      ]
+    },
+    {
+      "sector": "Legal & Regulatory",
+      "sources": [
+        { "id": "courtlistener", "name": "CourtListener / RECAP", "license": "public-domain", "licenseUrl": "https://www.courtlistener.com/terms/", "access": "api", "endpoint": "https://www.courtlistener.com/api/rest/v4", "rateLimit": "5000/hr keyed", "freshness": "daily", "piiRisk": "med", "verifyBeforeIngest": true, "notes": "Opinions are public domain; dockets/filings can contain personal data — PII scan mandatory." },
+        { "id": "cap", "name": "Caselaw Access Project (Harvard)", "license": "cc0", "licenseUrl": "https://case.law/", "access": "bulk", "endpoint": "https://static.case.law", "rateLimit": "n/a (bulk)", "freshness": "static", "piiRisk": "med", "verifyBeforeIngest": true, "notes": "US case law, now openly published; older cases may name private individuals." },
+        { "id": "eurlex", "name": "EUR-Lex (EU law)", "license": "restricted", "licenseUrl": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html", "access": "api", "endpoint": "https://eur-lex.europa.eu/EURLexWebService", "rateLimit": "moderate", "freshness": "daily", "piiRisk": "low", "verifyBeforeIngest": true, "notes": "Reuse allowed with conditions (attribution + non-distortion) — confirm before re-serve." }
+      ]
+    },
+    {
+      "sector": "Web-scale & News",
+      "sources": [
+        { "id": "commoncrawl", "name": "Common Crawl", "license": "restricted", "licenseUrl": "https://commoncrawl.org/terms-of-use", "access": "bulk", "endpoint": "https://data.commoncrawl.org", "rateLimit": "n/a (S3 bulk)", "freshness": "monthly", "piiRisk": "high", "verifyBeforeIngest": true, "notes": "Crawl of the open web: contains copyrighted pages AND personal data. Gate must block re-serve of third-party content; usable for analysis, not redistribution." },
+        { "id": "gdelt", "name": "GDELT Project", "license": "restricted", "licenseUrl": "https://www.gdeltproject.org/about.html#termsofuse", "access": "api", "endpoint": "https://api.gdeltproject.org/api/v2", "rateLimit": "moderate", "freshness": "15 min", "piiRisk": "med", "verifyBeforeIngest": true, "notes": "Global news event index; links to third-party articles you cannot redistribute wholesale." }
+      ]
+    },
+    {
+      "sector": "Company & Corporate",
+      "sources": [
+        { "id": "opencorporates", "name": "OpenCorporates", "license": "restricted", "licenseUrl": "https://opencorporates.com/legal/terms/", "access": "api", "endpoint": "https://api.opencorporates.com/v0.4", "rateLimit": "keyed tiers", "freshness": "daily", "piiRisk": "med", "verifyBeforeIngest": true, "notes": "Share-alike + commercial-use restrictions; officer names are personal data." },
+        { "id": "companies-house", "name": "UK Companies House", "license": "restricted", "licenseUrl": "https://developer.company-information.service.gov.uk/", "access": "api", "endpoint": "https://api.company-information.service.gov.uk", "rateLimit": "600/5min keyed", "freshness": "daily", "piiRisk": "med", "verifyBeforeIngest": true, "notes": "Open Government Licence w/ attribution; director data is personal — GDPR applies." }
+      ]
+    }
+  ]
+}

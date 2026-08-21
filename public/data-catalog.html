@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgentCache — Knowledge Source Catalog</title>
+<style>
+  :root{color-scheme:light;
+    --plane:#f9f9f7;--card:#ffffff;--surface:#fcfcfb;
+    --tp:#0b0b0b;--ts:#52514e;--muted:#898781;--grid:#e1e0d9;--border:rgba(11,11,11,.10);
+    --good:#0ca30c;--warn:#fab219;--serious:#ec835a;--crit:#d03b3b;--blue:#2a78d6;
+    --shadow:0 1px 2px rgba(11,11,11,.04),0 8px 22px rgba(11,11,11,.06);}
+  :root[data-theme="dark"]{color-scheme:dark;
+    --plane:#0d0d0d;--card:#1f1f1e;--surface:#1a1a19;
+    --tp:#fff;--ts:#c3c2b7;--muted:#898781;--grid:#2c2c2a;--border:rgba(255,255,255,.10);
+    --good:#0ca30c;--warn:#fab219;--serious:#ec835a;--crit:#e66767;--blue:#3987e5;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.5);}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--plane);color:var(--tp);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:34px 24px 72px}
+  .top{display:flex;justify-content:space-between;align-items:center}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .toggle{border:1px solid var(--border);background:var(--card);color:var(--ts);border-radius:999px;padding:6px 13px;font-size:13px;font-weight:600;cursor:pointer}
+  h1{font-size:clamp(23px,3.4vw,32px);margin:8px 0 6px;letter-spacing:-0.02em}
+  .sub{color:var(--ts);font-size:15px;margin:0;max-width:76ch}
+  .disc{margin-top:14px;border:1px solid var(--border);border-left:3px solid var(--warn);border-radius:10px;background:var(--surface);padding:12px 15px;font-size:13px;color:var(--ts)}
+  .stats{display:flex;gap:26px;flex-wrap:wrap;margin:22px 0 8px}
+  .stat .v{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+  .stat .k{font-size:12px;color:var(--muted)}
+  .stat .v.g{color:var(--good)} .stat .v.r{color:var(--crit)}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 6px}
+  .chip{font-size:13px;padding:6px 12px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--ts);cursor:pointer;font-weight:550}
+  .chip.active{background:var(--blue);border-color:var(--blue);color:#fff}
+  .sector{margin-top:26px}
+  .sector h2{font-size:15px;margin:0 0 12px;color:var(--ts);letter-spacing:.02em}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  .src{border:1px solid var(--border);border-radius:13px;background:var(--card);box-shadow:var(--shadow);padding:15px 16px}
+  .src h3{margin:0 0 3px;font-size:15.5px}
+  .src .ep{font-size:12px;color:var(--muted);font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-all}
+  .badges{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 8px}
+  .b{font-size:11px;font-weight:700;letter-spacing:.03em;padding:3px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:5px}
+  .b .d{width:7px;height:7px;border-radius:50%}
+  .b.lic-ok{background:rgba(12,163,12,.13);color:var(--good)}
+  .b.lic-attr{background:rgba(42,120,214,.13);color:var(--blue)}
+  .b.lic-block{background:rgba(208,59,59,.13);color:var(--crit)}
+  .b.pii-none{background:rgba(12,163,12,.10);color:var(--good)}
+  .b.pii-low{background:rgba(250,178,25,.14);color:#9a7b13}
+  .b.pii-med{background:rgba(236,131,90,.16);color:var(--serious)}
+  .b.pii-high{background:rgba(208,59,59,.14);color:var(--crit)}
+  :root[data-theme="dark"] .b.pii-low{color:var(--warn)}
+  .b.verify{background:rgba(137,135,129,.16);color:var(--muted)}
+  .b.acc{background:var(--surface);border:1px solid var(--border);color:var(--ts);font-weight:600}
+  .notes{font-size:12.5px;color:var(--ts);margin:0}
+  .flow{margin-top:34px;border:1px solid var(--border);border-radius:14px;background:var(--card);box-shadow:var(--shadow);padding:18px 20px}
+  .flow h2{font-size:15px;margin:0 0 12px}
+  .steps{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .fstep{border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;font-weight:600;background:var(--surface)}
+  .fstep small{display:block;font-weight:400;color:var(--muted);font-size:11.5px;margin-top:2px}
+  .farrow{color:var(--muted)}
+  footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--grid);color:var(--muted);font-size:12px}
+  a{color:var(--blue);text-decoration:none} a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><span class="eyebrow">AgentCache · Knowledge Layer</span><button class="toggle" id="themeBtn">◐ Theme</button></div>
+  <h1>Governed public-data source catalog</h1>
+  <p class="sub">Not "all public data" — the <b>governed subset</b>. Every source carries its license, freshness, and PII risk. Nothing is cached or re-served without passing the license + PII gate, and every record ships with provenance.</p>
+  <div class="disc" id="disc"></div>
+
+  <div class="stats">
+    <div class="stat"><div class="v" id="sCount">–</div><div class="k">Sources</div></div>
+    <div class="stat"><div class="v" id="secCount">–</div><div class="k">Sectors</div></div>
+    <div class="stat"><div class="v g" id="okCount">–</div><div class="k">Redistributable</div></div>
+    <div class="stat"><div class="v r" id="blockCount">–</div><div class="k">Gate-blocked (restricted)</div></div>
+    <div class="stat"><div class="v" id="verifyCount">–</div><div class="k">Verify before ingest</div></div>
+  </div>
+
+  <div class="filters" id="filters"></div>
+  <div id="catalog"></div>
+
+  <div class="flow">
+    <h2>Ingestion gate — every record passes through this</h2>
+    <div class="steps">
+      <div class="fstep">1 · License check<small>redistribute? fail closed</small></div>
+      <div class="farrow">→</div>
+      <div class="fstep">2 · PII gate<small>scan · redact or block</small></div>
+      <div class="farrow">→</div>
+      <div class="fstep">3 · Provenance<small>source · license · time · URL</small></div>
+      <div class="farrow">→</div>
+      <div class="fstep">4 · Cache<small>with attribution flag</small></div>
+    </div>
+  </div>
+
+  <footer>
+    Backed by <code>data/sources.json</code> + <code>lib/ingest-guard.js</code> (9 tests passing). Licenses are best-known as of 2026-08-17 and must be re-verified at ingest for <b>verify</b>-flagged sources — that re-check is part of the gate, not an afterthought.
+  </footer>
+</div>
+<script>window.CATALOG={"$schema":"agentcache/knowledge-catalog@0.1","generated":"2026-08-17","disclaimer":"Licenses and terms change. Every source is marked with its best-known license, but `verifyBeforeIngest` sources MUST have their current terms re-checked at ingest time. 'publicly accessible' never implies 'redistributable' — the ingestion gate (lib/ingest-guard.js) fails closed on restricted/unknown licenses. This catalog is the governed subset of public data, not 'all' of it.","licenseKeys":{"public-domain":"US Government works / public domain — free reuse, no attribution required","cc0":"Creative Commons Zero — public-domain dedication","cc-by":"Creative Commons Attribution — reuse with credit","cc-by-sa":"CC Attribution-ShareAlike — credit + same license on derivatives","odbl":"Open Database License — attribution + share-alike for databases","restricted":"Reuse limited by terms (commercial/redistribution/share-alike constraints) — gate blocks by default","unknown":"License not established — gate blocks until resolved"},"piiScale":["none","low","med","high"],"sectors":[{"sector":"Government & Public Records","sources":[{"id":"us-data-gov","name":"Data.gov (US)","license":"public-domain","licenseUrl":"https://www.usa.gov/government-works","access":"portal","endpoint":"https://catalog.data.gov/api/3","rateLimit":"generous","freshness":"varies","piiRisk":"low","verifyBeforeIngest":false,"notes":"Federal open-data catalog; individual datasets carry their own terms."},{"id":"sec-edgar","name":"SEC EDGAR","license":"public-domain","licenseUrl":"https://www.sec.gov/os/webmaster-faq#developers","access":"api","endpoint":"https://data.sec.gov","rateLimit":"10 req/s","freshness":"daily","piiRisk":"low","verifyBeforeIngest":false,"notes":"Corporate filings; fair-access rate limit + declared User-Agent required."},{"id":"us-census","name":"US Census Bureau API","license":"public-domain","licenseUrl":"https://www.census.gov/data/developers/about/terms-of-service.html","access":"api","endpoint":"https://api.census.gov/data","rateLimit":"500/day unkeyed","freshness":"annual","piiRisk":"none","verifyBeforeIngest":false,"notes":"Aggregated statistics; no individual records."},{"id":"federal-register","name":"Federal Register API","license":"public-domain","licenseUrl":"https://www.federalregister.gov/reader-aids/developer-resources","access":"api","endpoint":"https://www.federalregister.gov/api/v1","rateLimit":"generous","freshness":"daily","piiRisk":"none","verifyBeforeIngest":false,"notes":"Rules, notices, executive orders."},{"id":"uspto-patentsview","name":"USPTO PatentsView","license":"public-domain","licenseUrl":"https://patentsview.org/download/data-download-terms","access":"api","endpoint":"https://search.patentsview.org","rateLimit":"45/min keyed","freshness":"weekly","piiRisk":"low","verifyBeforeIngest":false,"notes":"Inventor names are public record but are personal data — treat as low PII."},{"id":"clinicaltrials","name":"ClinicalTrials.gov","license":"public-domain","licenseUrl":"https://clinicaltrials.gov/about-site/terms-conditions","access":"api","endpoint":"https://clinicaltrials.gov/api/v2","rateLimit":"generous","freshness":"daily","piiRisk":"low","verifyBeforeIngest":false,"notes":"Trial registrations; contact fields can carry investigator PII."},{"id":"openfda","name":"openFDA","license":"cc0","licenseUrl":"https://open.fda.gov/license/","access":"api","endpoint":"https://api.fda.gov","rateLimit":"240/min keyed","freshness":"weekly","piiRisk":"low","verifyBeforeIngest":false,"notes":"Adverse-event reports are de-identified but narrative fields need a PII scan."}]},{"sector":"Financial & Economic","sources":[{"id":"worldbank","name":"World Bank Open Data","license":"cc-by","licenseUrl":"https://datacatalog.worldbank.org/public-licenses","access":"api","endpoint":"https://api.worldbank.org/v2","rateLimit":"generous","freshness":"quarterly","piiRisk":"none","verifyBeforeIngest":false,"notes":"CC BY 4.0 — attribution required in served output."},{"id":"imf","name":"IMF Data","license":"restricted","licenseUrl":"https://www.imf.org/en/About/copyright-and-terms","access":"api","endpoint":"https://www.imf.org/external/datamapper/api/v1","rateLimit":"moderate","freshness":"monthly","piiRisk":"none","verifyBeforeIngest":true,"notes":"Terms limit redistribution — confirm before caching for re-serve."},{"id":"fred","name":"FRED (St. Louis Fed)","license":"restricted","licenseUrl":"https://fred.stlouisfed.org/legal/","access":"api","endpoint":"https://api.stlouisfed.org/fred","rateLimit":"120/min keyed","freshness":"daily","piiRisk":"none","verifyBeforeIngest":true,"notes":"Many series carry the originating provider's own terms — per-series check."}]},{"sector":"Scientific & Research","sources":[{"id":"arxiv","name":"arXiv","license":"cc0","licenseUrl":"https://info.arxiv.org/help/api/tou.html","access":"api","endpoint":"http://export.arxiv.org/api","rateLimit":"1 req/3s","freshness":"daily","piiRisk":"none","verifyBeforeIngest":true,"notes":"Metadata is CC0; full-text license is per-paper (author choice) — verify before caching bodies."},{"id":"pmc-oa","name":"PubMed Central Open Access Subset","license":"cc-by","licenseUrl":"https://www.ncbi.nlm.nih.gov/pmc/tools/openftlist/","access":"bulk","endpoint":"https://www.ncbi.nlm.nih.gov/pmc/utils/oa/oa.fcgi","rateLimit":"moderate","freshness":"daily","piiRisk":"low","verifyBeforeIngest":true,"notes":"OA subset only; individual articles carry CC-BY/BY-NC/BY-SA variants — read per-article license."},{"id":"wikidata","name":"Wikidata","license":"cc0","licenseUrl":"https://www.wikidata.org/wiki/Wikidata:Licensing","access":"api","endpoint":"https://query.wikidata.org/sparql","rateLimit":"moderate","freshness":"realtime","piiRisk":"low","verifyBeforeIngest":false,"notes":"CC0 structured facts; excellent entity backbone."},{"id":"nasa-open","name":"NASA Open APIs","license":"public-domain","licenseUrl":"https://api.nasa.gov/","access":"api","endpoint":"https://api.nasa.gov","rateLimit":"1000/hr keyed","freshness":"varies","piiRisk":"none","verifyBeforeIngest":false,"notes":"Imagery/space-weather; some imagery has third-party rights — check per-endpoint."},{"id":"noaa-nws","name":"NOAA / National Weather Service","license":"public-domain","licenseUrl":"https://www.weather.gov/disclaimer","access":"api","endpoint":"https://api.weather.gov","rateLimit":"generous","freshness":"realtime","piiRisk":"none","verifyBeforeIngest":false,"notes":"Forecasts, alerts, observations."},{"id":"gbif","name":"GBIF (Biodiversity)","license":"cc-by","licenseUrl":"https://www.gbif.org/terms","access":"api","endpoint":"https://api.gbif.org/v1","rateLimit":"generous","freshness":"daily","piiRisk":"low","verifyBeforeIngest":true,"notes":"Dataset-level licenses vary (CC0/BY/BY-NC) — resolve per occurrence dataset."}]},{"sector":"Geospatial","sources":[{"id":"osm","name":"OpenStreetMap","license":"odbl","licenseUrl":"https://www.openstreetmap.org/copyright","access":"bulk","endpoint":"https://planet.openstreetmap.org","rateLimit":"use extracts/tiles","freshness":"realtime","piiRisk":"low","verifyBeforeIngest":false,"notes":"ODbL — attribution + share-alike on derived databases. Don't hammer the main API; use extracts."},{"id":"census-tiger","name":"US Census TIGER/Line","license":"public-domain","licenseUrl":"https://www.census.gov/programs-surveys/geography.html","access":"bulk","endpoint":"https://www2.census.gov/geo/tiger","rateLimit":"n/a (bulk)","freshness":"annual","piiRisk":"none","verifyBeforeIngest":false,"notes":"Boundaries, roads, geographic reference."},{"id":"natural-earth","name":"Natural Earth","license":"public-domain","licenseUrl":"https://www.naturalearthdata.com/about/terms-of-use/","access":"bulk","endpoint":"https://www.naturalearthdata.com","rateLimit":"n/a (bulk)","freshness":"static","piiRisk":"none","verifyBeforeIngest":false,"notes":"Public-domain base-map vectors/rasters."}]},{"sector":"Legal & Regulatory","sources":[{"id":"courtlistener","name":"CourtListener / RECAP","license":"public-domain","licenseUrl":"https://www.courtlistener.com/terms/","access":"api","endpoint":"https://www.courtlistener.com/api/rest/v4","rateLimit":"5000/hr keyed","freshness":"daily","piiRisk":"med","verifyBeforeIngest":true,"notes":"Opinions are public domain; dockets/filings can contain personal data — PII scan mandatory."},{"id":"cap","name":"Caselaw Access Project (Harvard)","license":"cc0","licenseUrl":"https://case.law/","access":"bulk","endpoint":"https://static.case.law","rateLimit":"n/a (bulk)","freshness":"static","piiRisk":"med","verifyBeforeIngest":true,"notes":"US case law, now openly published; older cases may name private individuals."},{"id":"eurlex","name":"EUR-Lex (EU law)","license":"restricted","licenseUrl":"https://eur-lex.europa.eu/content/legal-notice/legal-notice.html","access":"api","endpoint":"https://eur-lex.europa.eu/EURLexWebService","rateLimit":"moderate","freshness":"daily","piiRisk":"low","verifyBeforeIngest":true,"notes":"Reuse allowed with conditions (attribution + non-distortion) — confirm before re-serve."}]},{"sector":"Web-scale & News","sources":[{"id":"commoncrawl","name":"Common Crawl","license":"restricted","licenseUrl":"https://commoncrawl.org/terms-of-use","access":"bulk","endpoint":"https://data.commoncrawl.org","rateLimit":"n/a (S3 bulk)","freshness":"monthly","piiRisk":"high","verifyBeforeIngest":true,"notes":"Crawl of the open web: contains copyrighted pages AND personal data. Gate must block re-serve of third-party content; usable for analysis, not redistribution."},{"id":"gdelt","name":"GDELT Project","license":"restricted","licenseUrl":"https://www.gdeltproject.org/about.html#termsofuse","access":"api","endpoint":"https://api.gdeltproject.org/api/v2","rateLimit":"moderate","freshness":"15 min","piiRisk":"med","verifyBeforeIngest":true,"notes":"Global news event index; links to third-party articles you cannot redistribute wholesale."}]},{"sector":"Company & Corporate","sources":[{"id":"opencorporates","name":"OpenCorporates","license":"restricted","licenseUrl":"https://opencorporates.com/legal/terms/","access":"api","endpoint":"https://api.opencorporates.com/v0.4","rateLimit":"keyed tiers","freshness":"daily","piiRisk":"med","verifyBeforeIngest":true,"notes":"Share-alike + commercial-use restrictions; officer names are personal data."},{"id":"companies-house","name":"UK Companies House","license":"restricted","licenseUrl":"https://developer.company-information.service.gov.uk/","access":"api","endpoint":"https://api.company-information.service.gov.uk","rateLimit":"600/5min keyed","freshness":"daily","piiRisk":"med","verifyBeforeIngest":true,"notes":"Open Government Licence w/ attribution; director data is personal — GDPR applies."}]}]};</script>
+<script>
+  var C = window.CATALOG;
+  var LIC_CLASS = { 'public-domain':'lic-ok','cc0':'lic-ok','cc-by':'lic-attr','cc-by-sa':'lic-attr','odbl':'lic-attr','restricted':'lic-block','unknown':'lic-block' };
+  var LIC_LABEL = { 'public-domain':'PUBLIC DOMAIN','cc0':'CC0','cc-by':'CC BY','cc-by-sa':'CC BY-SA','odbl':'ODbL','restricted':'RESTRICTED','unknown':'UNKNOWN' };
+  var all = [];
+  C.sectors.forEach(function(s){ s.sources.forEach(function(x){ x._sector=s.sector; all.push(x); }); });
+
+  document.getElementById('disc').textContent = C.disclaimer;
+  document.getElementById('sCount').textContent = all.length;
+  document.getElementById('secCount').textContent = C.sectors.length;
+  document.getElementById('okCount').textContent = all.filter(function(x){return LIC_CLASS[x.license]!=='lic-block';}).length;
+  document.getElementById('blockCount').textContent = all.filter(function(x){return LIC_CLASS[x.license]==='lic-block';}).length;
+  document.getElementById('verifyCount').textContent = all.filter(function(x){return x.verifyBeforeIngest;}).length;
+
+  var active = 'All';
+  var fWrap = document.getElementById('filters');
+  ['All'].concat(C.sectors.map(function(s){return s.sector;})).forEach(function(name){
+    var b=document.createElement('button'); b.className='chip'+(name==='All'?' active':''); b.textContent=name;
+    b.onclick=function(){active=name;[].forEach.call(fWrap.children,function(c){c.classList.toggle('active',c.textContent===name);});render();};
+    fWrap.appendChild(b);
+  });
+
+  function card(x){
+    var lc=LIC_CLASS[x.license], ll=LIC_LABEL[x.license];
+    var licB='<span class="b '+lc+'">'+(lc==='lic-block'?'⛔ ':lc==='lic-ok'?'✓ ':'© ')+ll+'</span>';
+    var piiB='<span class="b pii-'+x.piiRisk+'">PII: '+x.piiRisk.toUpperCase()+'</span>';
+    var accB='<span class="b acc">'+x.access+'</span>';
+    var vB=x.verifyBeforeIngest?'<span class="b verify">⚑ verify</span>':'';
+    return '<div class="src">'
+      +'<h3>'+x.name+'</h3>'
+      +'<div class="ep">'+x.endpoint+'</div>'
+      +'<div class="badges">'+licB+piiB+accB+vB+'</div>'
+      +'<p class="notes">'+x.notes+' · <a href="'+x.licenseUrl+'" target="_blank" rel="noopener">license</a> · '+x.freshness+'</p>'
+      +'</div>';
+  }
+  function render(){
+    var host=document.getElementById('catalog'); host.innerHTML='';
+    C.sectors.forEach(function(s){
+      if(active!=='All' && s.sector!==active) return;
+      var sec=document.createElement('div'); sec.className='sector';
+      sec.innerHTML='<h2>'+s.sector+' · '+s.sources.length+'</h2><div class="grid">'+s.sources.map(card).join('')+'</div>';
+      host.appendChild(sec);
+    });
+  }
+  render();
+  document.getElementById('themeBtn').onclick=function(){var r=document.documentElement;r.setAttribute('data-theme',r.getAttribute('data-theme')==='dark'?'light':'dark')};
+</script>
+</body>
+</html>

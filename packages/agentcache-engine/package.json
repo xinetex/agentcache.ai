@@ -1,0 +1,18 @@
+{
+  "name": "@agentcache/engine",
+  "version": "0.1.0",
+  "description": "Provider-neutral caching + savings engine for AI agents. Wraps any LLM call with exact-match and prompt-prefix caching and a live dollars-saved ledger.",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": ["src"],
+  "scripts": {
+    "test": "node test/engine.test.mjs && node test/prefix-cache.test.mjs && node test/savings.test.mjs",
+    "demo": "node examples/agent-loop-demo.mjs"
+  },
+  "keywords": ["llm", "cache", "prompt-cache", "prefix-cache", "agents", "cost-optimization", "openai", "anthropic", "gemini"],
+  "license": "MIT",
+  "engines": { "node": ">=18" }
+}

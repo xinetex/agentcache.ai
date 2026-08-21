@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Capability Firewall</title>
+<style>
+  :root{color-scheme:light;
+    --plane:#f9f9f7;--card:#ffffff;--surface:#fcfcfb;
+    --tp:#0b0b0b;--ts:#52514e;--muted:#898781;--grid:#e1e0d9;--border:rgba(11,11,11,.10);
+    --blue:#2a78d6;--good:#0ca30c;--warn:#fab219;--crit:#d03b3b;--serious:#ec835a;--violet:#4a3aa7;
+    --shadow:0 1px 2px rgba(11,11,11,.04),0 8px 22px rgba(11,11,11,.06);}
+  :root[data-theme="dark"]{color-scheme:dark;
+    --plane:#0d0d0d;--card:#1f1f1e;--surface:#1a1a19;
+    --tp:#fff;--ts:#c3c2b7;--muted:#898781;--grid:#2c2c2a;--border:rgba(255,255,255,.10);
+    --blue:#3987e5;--good:#0ca30c;--warn:#fab219;--crit:#e66767;--serious:#ec835a;--violet:#9085e9;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.5);}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--plane);color:var(--tp);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1000px;margin:0 auto;padding:34px 24px 72px}
+  .top{display:flex;justify-content:space-between;align-items:center}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .toggle{border:1px solid var(--border);background:var(--card);color:var(--ts);border-radius:999px;padding:6px 13px;font-size:13px;font-weight:600;cursor:pointer}
+  h1{font-size:clamp(24px,3.6vw,33px);margin:8px 0 6px;letter-spacing:-0.02em}
+  .sub{color:var(--ts);font-size:15.5px;margin:0;max-width:78ch}
+  h2{font-size:15px;letter-spacing:.02em;color:var(--ts);margin:30px 0 12px}
+
+  /* flow */
+  .flow{border:1px solid var(--border);border-radius:16px;background:var(--card);box-shadow:var(--shadow);padding:20px;margin-top:22px}
+  .node{border-radius:12px;padding:13px 15px;font-size:14px}
+  .planner{border:1px dashed var(--crit);background:rgba(208,59,59,.06)}
+  :root[data-theme="dark"] .planner{background:rgba(230,103,103,.08)}
+  .planner b{color:var(--crit)}
+  .pep{border:1px solid var(--blue);background:rgba(42,120,214,.07);margin:12px 0}
+  :root[data-theme="dark"] .pep{background:rgba(57,135,229,.10)}
+  .pep b{color:var(--blue)}
+  .checks{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:10px}
+  @media(max-width:720px){.checks{grid-template-columns:repeat(2,1fr)}}
+  .chk{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 8px;font-size:11.5px;text-align:center;font-weight:600}
+  .chk small{display:block;color:var(--muted);font-weight:400;font-size:10.5px;margin-top:2px}
+  .arrow{text-align:center;color:var(--muted);font-size:13px;margin:2px 0}
+  .outs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+  @media(max-width:520px){.outs{grid-template-columns:1fr}}
+  .out{border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600;text-align:center}
+  .out.a{background:rgba(12,163,12,.12);color:var(--good)}
+  .out.e{background:rgba(250,178,25,.16);color:#9a7b13}
+  :root[data-theme="dark"] .out.e{color:var(--warn)}
+  .out.d{background:rgba(208,59,59,.13);color:var(--crit)}
+
+  /* layer table */
+  .tbl{width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:12px;overflow:hidden;font-size:14px}
+  .tbl th,.tbl td{text-align:left;padding:10px 13px;border-bottom:1px solid var(--grid)}
+  .tbl th{background:var(--surface);color:var(--ts);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl td b{font-weight:650}
+  .st{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap}
+  .st.built{background:rgba(12,163,12,.13);color:var(--good)}
+  .st.partial{background:rgba(250,178,25,.16);color:#9a7b13}
+  :root[data-theme="dark"] .st.partial{color:var(--warn)}
+  .st.design{background:rgba(137,135,129,.16);color:var(--muted)}
+
+  /* trace */
+  .grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:14px}
+  @media(max-width:720px){.grid2{grid-template-columns:1fr}}
+  .panel{border:1px solid var(--border);border-radius:13px;background:var(--card);box-shadow:var(--shadow);padding:16px 18px}
+  .panel h3{margin:0 0 10px;font-size:14px}
+  .trace{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.9}
+  .trace .l{display:flex;gap:8px}
+  .trace .m{width:16px}
+  .ok2{color:var(--good)} .no{color:var(--crit)} .dim{color:var(--muted)}
+  .swarm .big{font-size:32px;font-weight:750;color:var(--crit)}
+  .swarm p{margin:6px 0 0;font-size:13px;color:var(--ts)}
+  footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--grid);color:var(--muted);font-size:12px}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9em;background:var(--surface);border:1px solid var(--border);padding:1px 6px;border-radius:6px;color:var(--tp)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><span class="eyebrow">AgentCache · Guardrails</span><button class="toggle" id="themeBtn">◐ Theme</button></div>
+  <h1>Agent Capability Firewall</h1>
+  <p class="sub">The LLM is a <b>non-deterministic planner</b>. It proposes actions; it never executes them. Every proposal passes a deterministic policy enforcement point before it reaches an API, shell, database, payment rail, or comms channel — authority the model cannot talk its way past.</p>
+
+  <div class="flow">
+    <div class="node planner">🧠 <b>LLM planner (untrusted)</b> — proposes: <i>"cancel reservation X to free a slot"</i></div>
+    <div class="arrow">▼ proposal</div>
+    <div class="node pep">🛡️ <b>Capability Firewall</b> — deterministic checks, first failure decides
+      <div class="checks">
+        <div class="chk">1 · Credential<small>grant valid</small></div>
+        <div class="chk">2 · Capability<small>in allowlist</small></div>
+        <div class="chk">3 · Scope<small>right user/date</small></div>
+        <div class="chk">4 · Third-party<small>affects others?</small></div>
+        <div class="chk">5 · Two-key<small>irreversible?</small></div>
+        <div class="chk">6 · Blast radius<small>budget caps</small></div>
+        <div class="chk">7 · Consent<small>user approved?</small></div>
+      </div>
+    </div>
+    <div class="outs">
+      <div class="out a">✅ allow → real API</div>
+      <div class="out e">⚠️ escalate → human / 2nd key</div>
+      <div class="out d">⛔ deny → blocked + logged</div>
+    </div>
+  </div>
+
+  <h2>The six governance layers</h2>
+  <table class="tbl">
+    <tr><th>Layer</th><th>Prevents</th><th>In this repo</th><th>Status</th></tr>
+    <tr><td><b>Identity</b></td><td>Agent inheriting the owner's authority</td><td>Per-mission short-lived HMAC grants</td><td><span class="st built">BUILT</span></td></tr>
+    <tr><td><b>Capability</b></td><td>Unintended tools / actions</td><td>Action allowlist + registry + gateway</td><td><span class="st built">BUILT</span></td></tr>
+    <tr><td><b>Execution</b></td><td>Harmful / irreversible side effects</td><td>Two-key, consent, blast-radius budget</td><td><span class="st built">BUILT</span></td></tr>
+    <tr><td><b>Detection</b></td><td>Distributed coordination / runaway</td><td>Swarm circuit breaker</td><td><span class="st built">BUILT</span></td></tr>
+    <tr><td><b>Recovery</b></td><td>A bad agent continuing / returning</td><td>Replayable audit + budget freeze + expiry</td><td><span class="st partial">PARTIAL</span></td></tr>
+    <tr><td><b>Supply chain</b></td><td>A safe skill changing after install</td><td>Signed, hash-pinned skill manifests</td><td><span class="st design">DESIGN</span></td></tr>
+  </table>
+
+  <h2>Proof</h2>
+  <div class="grid2">
+    <div class="panel">
+      <h3>The gym incident — blocked by construction</h3>
+      <div class="trace">
+        <div class="l"><span class="m ok2">✅</span><span>read the class schedule <span class="dim">→ ALLOW</span></span></div>
+        <div class="l"><span class="m ok2">✅</span><span>book U1 into 9am yoga <span class="dim">→ ALLOW</span></span></div>
+        <div class="l"><span class="m no">⛔</span><span>cancel U2's reservation <span class="dim">→ DENY · CAP_NOT_GRANTED</span></span></div>
+        <div class="l"><span class="m no">⛔</span><span>shell.exec curl|bash <span class="dim">→ DENY · CAP_NOT_GRANTED</span></span></div>
+        <div class="l"><span class="m no">⛔</span><span>book a 2nd class <span class="dim">→ DENY · OUT_OF_SCOPE</span></span></div>
+      </div>
+      <p style="font-size:12.5px;color:var(--ts);margin:12px 0 0">Booking is allowed; modifying another person's booking is not. 17 tests pass across the firewall and breaker.</p>
+    </div>
+    <div class="panel swarm">
+      <h3>Swarm defense</h3>
+      <div class="big">5 / 8</div>
+      <p>8 independent agents each made <b>one</b> low-risk call to the same new domain. The collective circuit breaker tripped at <b>5 converging agents</b> and quarantined the cluster — governing the aggregate, not each action in isolation.</p>
+    </div>
+  </div>
+
+  <footer>
+    Backed by <code>lib/firewall.js</code> + <code>lib/swarm-breaker.js</code> (17 tests) and <code>examples/gym-incident-demo.mjs</code>. Design: <code>AGENT_FIREWALL.md</code>. The long-term target is an agent-native authorization standard — who delegated what authority, for what purpose, over what time, with what limits and revocation path.
+  </footer>
+</div>
+<script>
+  document.getElementById('themeBtn').onclick=function(){var r=document.documentElement;r.setAttribute('data-theme',r.getAttribute('data-theme')==='dark'?'light':'dark')};
+</script>
+</body>
+</html>
