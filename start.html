@@ -1,0 +1,148 @@
+<title>Start AgentCache</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --ground:#0B1211;--surface:#111A18;--surface-2:#17211F;--ink:#E9F0ED;--ink-2:#B4C2BE;
+    --muted:#7F908C;--hair:#243230;--hair-2:#2E3D3A;--accent:#3FD3B0;--accent-ink:#8CE7CE;--accent-dim:#12312A;
+    --agent:#3FD3B0;--dev:#7FB0E8;--code-bg:#0C1615;
+  }
+  @media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+    --ground:#F3F6F5;--surface:#FFFFFF;--surface-2:#F0F3F2;--ink:#12201D;--ink-2:#41524E;
+    --muted:#6C7B77;--hair:#E1E6E4;--hair-2:#D2DAD7;--accent:#0B7D66;--accent-ink:#075A4A;--accent-dim:#E1F1EC;
+    --agent:#0B7D66;--dev:#2B6CB0;--code-bg:#0E1B19;}}
+  :root[data-theme="light"]{
+    --ground:#F3F6F5;--surface:#FFFFFF;--surface-2:#F0F3F2;--ink:#12201D;--ink-2:#41524E;
+    --muted:#6C7B77;--hair:#E1E6E4;--hair-2:#D2DAD7;--accent:#0B7D66;--accent-ink:#075A4A;--accent-dim:#E1F1EC;
+    --agent:#0B7D66;--dev:#2B6CB0;--code-bg:#0E1B19;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:"Archivo",system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5}
+  .mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+  .wrap{max-width:1040px;margin:0 auto;padding:clamp(24px,4vw,52px) clamp(16px,4vw,32px) 72px}
+
+  header.hero{border-bottom:1px solid var(--hair);padding-bottom:30px;margin-bottom:34px}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink)}
+  h1{font-size:clamp(30px,5.2vw,50px);font-weight:800;letter-spacing:-.025em;margin:14px 0 0;text-wrap:balance;max-width:16ch}
+  .dek{font-size:clamp(17px,2.3vw,20px);color:var(--ink-2);margin:16px 0 0;max-width:62ch}
+  .hooks{display:flex;gap:26px;flex-wrap:wrap;margin-top:22px}
+  .hook{display:flex;flex-direction:column}
+  .hook .n{font-size:24px;font-weight:800;color:var(--accent-ink);letter-spacing:-.01em}
+  .hook .l{font-family:"IBM Plex Mono",monospace;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-top:3px}
+
+  .lanes{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media (max-width:800px){.lanes{grid-template-columns:1fr}}
+  .lane{background:var(--surface);border:1px solid var(--hair);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+  .lane .cap{padding:18px 20px 0}
+  .lane .tag{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;display:inline-flex;align-items:center;gap:7px}
+  .lane.agent .tag{color:var(--agent)} .lane.dev .tag{color:var(--dev)}
+  .tag .dot{width:8px;height:8px;border-radius:50%}
+  .lane.agent .tag .dot{background:var(--agent)} .lane.dev .tag .dot{background:var(--dev)}
+  .lane h2{font-size:20px;font-weight:800;letter-spacing:-.01em;margin:9px 0 4px}
+  .lane p.small{font-size:13.5px;color:var(--ink-2);margin:0 0 14px}
+  pre{background:var(--code-bg);color:#D6E7E1;margin:0;padding:16px 18px;overflow-x:auto;
+    font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.65;border-top:1px solid var(--hair)}
+  pre .c{color:#5E7A74} pre .k{color:#8CE7CE} pre .s{color:#E8B57A}
+  .steps{list-style:none;counter-reset:s;margin:0;padding:16px 20px 6px}
+  .steps li{counter-increment:s;position:relative;padding:0 0 12px 30px;font-size:13.5px;color:var(--ink-2)}
+  .steps li::before{content:counter(s);position:absolute;left:0;top:-1px;width:20px;height:20px;border-radius:6px;
+    background:var(--accent-dim);color:var(--accent-ink);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:"IBM Plex Mono",monospace}
+  .lane .foot{margin-top:auto;padding:12px 20px 18px}
+  .toollist{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+  .tool{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--hair-2);border-radius:6px;padding:3px 8px}
+
+  .diff{background:var(--surface);border:1px solid var(--hair);border-left:3px solid var(--accent);border-radius:12px;padding:20px 22px;margin-top:18px}
+  .diff h3{margin:0 0 6px;font-size:17px;font-weight:800}
+  .diff p{margin:0;color:var(--ink-2);font-size:14.5px;max-width:74ch}
+  .cta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:26px;padding-top:22px;border-top:1px solid var(--hair)}
+  .btn{font-weight:700;text-decoration:none;border-radius:10px;padding:12px 20px;font-size:15px}
+  .btn.primary{background:var(--accent);color:#08110E}
+  :root[data-theme="light"] .btn.primary,:root:not([data-theme="dark"]) .btn.primary{color:#fff}
+  .btn.ghost{border:1px solid var(--hair-2);color:var(--ink);}
+  .note{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);margin-top:16px;line-height:1.6}
+  .note code{background:var(--surface-2);padding:1px 6px;border-radius:5px;color:var(--accent-ink)}
+  a{color:var(--accent-ink)}
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">AgentCache · Start</div>
+    <h1>Cache, govern, and remember — for agents and the people who run them.</h1>
+    <p class="dek">Drop AgentCache in front of any LLM workload. Cut token spend, put a hard budget and kill-switch around autonomous agents, and let them resume reasoning across runs — with every dollar saved measured, not estimated.</p>
+    <div class="hooks">
+      <div class="hook"><span class="n">1 call</span><span class="l">to your first cache hit</span></div>
+      <div class="hook"><span class="n">4 tools</span><span class="l">any MCP agent can use</span></div>
+      <div class="hook"><span class="n">net&nbsp;$&nbsp;saved</span><span class="l">verifiable, per model</span></div>
+    </div>
+  </header>
+
+  <div class="lanes">
+    <!-- AGENT LANE -->
+    <section class="lane agent">
+      <div class="cap">
+        <span class="tag"><span class="dot"></span>For agents · MCP</span>
+        <h2>Give your agent the control plane</h2>
+        <p class="small">Add one server to your MCP config. Your agent gains caching plus a pre-spend budget gate and cross-run memory — no code changes.</p>
+      </div>
+<pre><span class="c">// claude_desktop_config.json / cursor mcp.json</span>
+{
+  <span class="k">"mcpServers"</span>: {
+    <span class="k">"agentcache"</span>: {
+      <span class="k">"command"</span>: <span class="s">"npx"</span>,
+      <span class="k">"args"</span>: [<span class="s">"-y"</span>, <span class="s">"@agentcache/mcp"</span>],
+      <span class="k">"env"</span>: { <span class="k">"AGENTCACHE_API_KEY"</span>: <span class="s">"ac_live_…"</span> }
+    }
+  }
+}</pre>
+      <div class="foot">
+        <div class="mono" style="font-size:11px;color:var(--muted);margin-bottom:6px">TOOLS YOUR AGENT GETS</div>
+        <div class="toollist">
+          <span class="tool">agentcache_get</span><span class="tool">agentcache_gate</span>
+          <span class="tool">agentcache_savings</span><span class="tool">agentcache_reasoning_resume</span>
+          <span class="tool">agentcache_reasoning_commit</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- DEV LANE -->
+    <section class="lane dev">
+      <div class="cap">
+        <span class="tag"><span class="dot"></span>For developers · HTTP</span>
+        <h2>Two headers, one GET</h2>
+        <p class="small">Check the cache before you call a model; store the answer after. Namespaced per tenant, priced automatically.</p>
+      </div>
+<pre><span class="c"># 1 — is it cached? (a miss is 200 hit:false, never an error)</span>
+curl https://agentcache.ai/api/cache/get?key=<span class="s">$HASH</span> \
+  -H <span class="s">"Authorization: Bearer ac_live_…"</span> \
+  -H <span class="s">"X-Cache-Namespace: my-app"</span> \
+  -H <span class="s">"X-Model: claude-opus-5"</span>
+
+<span class="c"># 2 — store the model's answer for next time</span>
+curl -X POST https://agentcache.ai/api/cache/set \
+  -H <span class="s">"Authorization: Bearer ac_live_…"</span> \
+  -H <span class="s">"X-Cache-Namespace: my-app"</span> \
+  -d <span class="s">'{"key":"'$HASH'","value":{…}}'</span></pre>
+      <div class="foot">
+        <ol class="steps">
+          <li>Grab an <code class="mono" style="font-size:12px">ac_live_</code> key from your dashboard.</li>
+          <li>Send <span class="mono" style="font-size:12px">X-Model</span> + token counts on hits so savings get priced.</li>
+          <li>Watch net&nbsp;$&nbsp;saved at <span class="mono" style="font-size:12px">/api/analytics/savings</span>.</li>
+        </ol>
+      </div>
+    </section>
+  </div>
+
+  <div class="diff">
+    <h3>The part no gateway does</h3>
+    <p>OpenRouter and Stripe tell you what you spent. <strong>agentcache_gate</strong> tells your agent whether a call is allowed <em>before</em> the money leaves — against a budget, a request quota, a spend-anomaly guard, and a kill-switch. That is the difference between billing an autonomous agent and governing one.</p>
+  </div>
+
+  <div class="cta">
+    <a class="btn primary" href="https://agentcache.ai/onboarding.html">Get your API key</a>
+    <a class="btn ghost" href="https://agentcache.ai/governance-console.html">Open the control plane</a>
+  </div>
+  <div class="note">
+    Requires an <code>ac_live_</code> key and the control-plane endpoints deployed (<code>/api/cache/*</code>, <code>/api/governance/*</code>, <code>/api/analytics/savings</code>). The MCP package name <code>@agentcache/mcp</code> is the intended public name for <code>src/mcp/server.ts</code>; publish it to npm to make the one-line install real.
+  </div>
+</div>

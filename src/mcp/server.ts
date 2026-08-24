@@ -33,6 +33,7 @@ import { AdminTools } from './tools/admin.js';
 import { CognitiveTools } from './tools/cognitive.js';
 import { MemoryTools } from './tools/memory.js';
 import { LidarTools } from './tools/lidar.js';
+import { ControlPlaneTools } from './tools/controlplane.js';
 
 const SENSITIVE_ENV_KEYS = [
   'ADMIN_TOKEN',
@@ -93,6 +94,7 @@ registry.registerModule(AdminTools);
 registry.registerModule(CognitiveTools);
 registry.registerModule(MemoryTools);
 registry.registerModule(LidarTools);
+registry.registerModule(ControlPlaneTools);
 
 // Initialize security components
 const rateLimiter = new RateLimiter();
