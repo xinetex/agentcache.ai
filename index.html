@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgentCache | Execution Drift Guard, Cache & Memory Infrastructure</title>
+    <title>AgentCache | Cost-Governance &amp; Safety Control Plane for AI Agents</title>
     <meta name="description"
-        content="AgentCache helps teams cut repeated LLM and tool costs, add persistent memory, and detect execution drift before production agents go off-script." />
+        content="AgentCache is the cost-governance and safety control plane for AI agents: cut model spend with measured net-dollar savings, put a budget, quota, anomaly guard and kill-switch around autonomous agents, and let them resume reasoning across runs." />
 
     <!-- Agent discovery alternates -->
     <link rel="alternate" type="application/json" href="/.well-known/agents.json">
@@ -21,7 +21,7 @@
       "applicationCategory": "AIInfrastructure",
       "operatingSystem": "Any",
       "url": "https://agentcache.ai/",
-      "description": "API-first cache and memory infrastructure for AI agents. Cache repeated LLM and tool calls, add persistent memory, and onboard autonomous agents through MCP and hub APIs.",
+      "description": "Cost-governance and safety control plane for AI agents. Measure net dollars saved from caching, govern autonomous agents with budgets, quotas, anomaly detection and a kill-switch, and carry reasoning state across runs. Onboard agents through MCP and hub APIs.",
       "offers": {
         "@type": "Offer",
         "price": "0",
@@ -204,14 +204,14 @@
             <h1
                 class="font-black text-2xl tracking-tighter uppercase text-slate-800 dark:text-white pointer-events-auto">
                 AgentCache</h1>
-            <p class="text-[10px] font-mono tracking-[0.2em] text-slate-500 uppercase">Cache, Guardrails & Drift Control</p>
+            <p class="text-[10px] font-mono tracking-[0.2em] text-slate-500 uppercase">Save · Govern · Remember</p>
         </div>
         <div class="pointer-events-auto flex items-center gap-2">
             <a href="/services"
                 class="hidden md:inline-flex px-3 py-2 rounded-full text-xs font-bold tracking-widest uppercase text-slate-500 hover:text-slate-800 dark:hover:text-white transition">Services</a>
             <a href="/docs"
                 class="hidden md:inline-flex px-3 py-2 rounded-full text-xs font-bold tracking-widest uppercase text-slate-500 hover:text-slate-800 dark:hover:text-white transition">Docs</a>
-            <a href="/skill.md"
+            <a href="/start.html"
                 class="hidden md:inline-flex px-3 py-2 rounded-full text-xs font-bold tracking-widest uppercase text-cyan-600 hover:text-cyan-500 transition">For
                 Agents</a>
             <a href="/signup.html?next=%2Fonboarding.html%3Ffocus%3Ddrift"
@@ -240,7 +240,7 @@
             </div>
 
             <p class="mt-8 text-slate-400 max-w-lg text-lg leading-relaxed font-light relative z-10">
-                Agent infrastructure for teams running real workflows. Cut repeated model spend, preserve memory, and detect execution drift before it becomes a production incident.
+                The cost-governance and safety control plane for AI agents. Cut model spend with savings you can verify to the dollar, put a budget, quota, anomaly guard and kill-switch around every autonomous run, and let agents resume their reasoning across runs. Gateways bill your agents — AgentCache governs them.
             </p>
 
             <div class="mt-8 relative z-10 flex flex-wrap justify-center gap-3">
@@ -253,10 +253,10 @@
                         </div>
                     </div>
                 </div>
-                <a href="/signup.html?next=%2Fonboarding.html%3Ffocus%3Ddrift"
-                    class="inline-flex items-center rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-6 py-4 text-xs font-black tracking-widest uppercase transition shadow-xl shadow-cyan-500/10">Start Drift Guard</a>
-                <a href="/services#drift"
-                    class="inline-flex items-center rounded-full bg-slate-800 hover:bg-slate-700 text-white px-6 py-4 text-xs font-black tracking-widest uppercase transition shadow-xl shadow-slate-900/20">See the wedge</a>
+                <a href="/signup.html?next=%2Fonboarding.html"
+                    class="inline-flex items-center rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-6 py-4 text-xs font-black tracking-widest uppercase transition shadow-xl shadow-cyan-500/10">Get your key</a>
+                <a href="/governance-console.html"
+                    class="inline-flex items-center rounded-full bg-slate-800 hover:bg-slate-700 text-white px-6 py-4 text-xs font-black tracking-widest uppercase transition shadow-xl shadow-slate-900/20">Open the control plane</a>
             </div>
 
             <!-- Savings Ticker -->
@@ -794,38 +794,38 @@
 
             const data = {
                 cache: {
-                    title: "Semantic Cache",
-                    subtitle: "Zero Latency Intelligence",
-                    desc: "Stop paying for the same thought twice. Our semantic cache fingerprints every request, storing the cognitive output for instant retrieval.",
+                    title: "Savings Engine",
+                    subtitle: "Net Dollars Saved, Not Estimated",
+                    desc: "Stop paying for the same thought twice — and prove it. Every cache hit is priced at current provider rates and booked to an immutable ledger, so savings are a number your CFO can audit, not a vanity percentage.",
                     features: [
-                        "⚡️ 4ms Latency (Edge Cached)",
-                        "💰 95% Cost Reduction",
-                        "🌍 Global Distribution",
-                        "🔌 Plug-and-Play Middleware"
+                        "💵 Verifiable net-$ saved, per model & layer",
+                        "⚡️ Exact, semantic & prefix caching",
+                        "📊 ROI you can invoice against",
+                        "🔌 Plug-and-play middleware"
                     ],
-                    visual: "⚡️" // Placeholder for visual asset
+                    visual: "💵"
                 },
                 memory: {
-                    title: "Neural Memory",
-                    subtitle: "Infinite Context Window",
-                    desc: "Hopfield Network architecture allows agents to recall information from millions of past interactions without exploding your token budget.",
+                    title: "Reasoning Memory",
+                    subtitle: "Resume Across Runs",
+                    desc: "The tenth run starts where the ninth left off. Durable per-agent, per-task reasoning state survives across sessions, retries and scheduled re-runs — so agents stop re-deriving what they already worked out. The layer a gateway can't copy.",
                     features: [
-                        "🧠 Associative Recall",
-                        "📚 Long-term Persistence",
-                        "🔗 Cross-Session Context",
-                        "🔒 Private Namespaces"
+                        "🔗 Cross-run reasoning state",
+                        "🧠 Facts & decisions, deduped",
+                        "🎯 Relevance-ranked recall",
+                        "🔒 Private, tenant-isolated namespaces"
                     ],
                     visual: "🧠"
                 },
                 security: {
-                    title: "Aegis Security",
-                    subtitle: "Enterprise Grade Protection",
-                    desc: "Real-time PII redaction, prompt injection defense, and hallucinations checks before the LLM even sees the request.",
+                    title: "Governance & Safety",
+                    subtitle: "Govern the Call Before the Spend",
+                    desc: "Gateways tell you what you spent. AgentCache decides — deterministically, before the money leaves — whether a call is allowed under this account's budget, quota, spend-anomaly guard and kill-switch. Plus PII redaction and an injection firewall on the model path.",
                     features: [
-                        "🛡️ PII/PHI Redaction",
-                        "🚫 Injection Firewall",
-                        "⚖️ Compliance Logging",
-                        "👁️ Drift Detection"
+                        "💳 Budgets & request quotas per agent/team",
+                        "🚨 Spend-anomaly detection + kill-switch",
+                        "🛡️ PII/PHI redaction · injection firewall",
+                        "⚖️ Deterministic allow/deny audit trail"
                     ],
                     visual: "🛡️"
                 }
