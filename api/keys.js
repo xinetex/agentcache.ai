@@ -10,14 +10,44 @@ export const config = {
 };
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import { Redis } from '@upstash/redis';
 import { getUserFromRequest } from './auth.js';
 
 const sql = neon(process.env.DATABASE_URL);
 
+// Lazy Redis mirror so a key issued here also validates via the shared
+// validateApiKey Redis fallback (see lib/api-key-middleware.js). Without this,
+// a Postgres api_keys row (bcrypt, user-scoped) can't be resolved by the
+// sha256/org-scoped validator and the key 401s on the cache API.
+let _redis = null;
+function getRedisSafe() {
+  try {
+    if (_redis) return _redis;
+    const url = process.env.UPSTASH_REDIS_REST_URL;
+    const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+    if (!url || !token) return null;
+    _redis = new Redis({ url, token });
+    return _redis;
+  } catch { return null; }
+}
+
+// Best-effort: register the key in Redis as `key:<sha256>` → {email, plan} so
+// the shared validator's Redis fallback resolves it. Never throws.
+async function mirrorKeyToRedis(apiKey, { email, plan } = {}) {
+  try {
+    const redis = getRedisSafe();
+    if (!redis) return;
+    const hash = crypto.createHash('sha256').update(apiKey).digest('hex');
+    await redis.hset(`key:${hash}`, { email: email || 'user', plan: plan || 'starter' });
+  } catch (e) {
+    console.warn('mirrorKeyToRedis failed (non-fatal):', e?.message);
+  }
+}
+
 /**
  * Generate a secure API key
  */
-function generateAPIKey(prefix = 'sk_live') {
+function generateAPIKey(prefix = 'ac_live') {
   const random = crypto.randomBytes(32).toString('hex');
   return `${prefix}_${random}`;
 }
@@ -189,7 +219,7 @@ export default async function handler(req, res) {
       }
 
       // Generate key
-      const apiKey = generateAPIKey('sk_live');
+      const apiKey = generateAPIKey('ac_live');
       const prefix = apiKey.substring(0, 16);
       const keyHash = await bcrypt.hash(apiKey, 10);
 
@@ -227,6 +257,10 @@ export default async function handler(req, res) {
           ${JSON.stringify({ name, scopes, namespaces })}
         )
       `;
+
+      // Mirror to Redis so the shared validator's fallback can resolve this key
+      // on the cache/control-plane API (best-effort, never blocks issuance).
+      await mirrorKeyToRedis(apiKey, { email: user.email, plan: userPlan });
 
       // Return full key ONCE (user must save it)
       return res.status(201).json({
@@ -305,7 +339,7 @@ export default async function handler(req, res) {
       const oldKey = existing[0];
 
       // Generate new key
-      const newApiKey = generateAPIKey('sk_live');
+      const newApiKey = generateAPIKey('ac_live');
       const newPrefix = newApiKey.substring(0, 16);
       const newKeyHash = await bcrypt.hash(newApiKey, 10);
 
@@ -336,6 +370,9 @@ export default async function handler(req, res) {
         )
         RETURNING id, key_prefix, name, created_at
       `;
+
+      // Mirror rotated key to Redis for the shared validator's fallback.
+      await mirrorKeyToRedis(newApiKey, { email: user.email, plan: user.plan });
 
       // Log audit event
       await sql`

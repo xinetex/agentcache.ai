@@ -5,7 +5,7 @@
 
 CREATE TABLE IF NOT EXISTS savings_events (
   id              BIGSERIAL PRIMARY KEY,
-  organization_id UUID        NOT NULL,
+  organization_id TEXT        NOT NULL,   -- pg org UUID or "redis:<hash>" tenant
   namespace       TEXT        NOT NULL,
   ts              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   layer           TEXT        NOT NULL,   -- exact | semantic | prefix | reasoning

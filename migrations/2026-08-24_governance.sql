@@ -4,7 +4,7 @@
 -- fails SAFE (allows) on anything a customer never configured.
 
 CREATE TABLE IF NOT EXISTS governance_policies (
-  organization_id  UUID PRIMARY KEY,
+  organization_id  TEXT PRIMARY KEY,   -- pg org UUID or "redis:<hash>" tenant
   budget_usd       NUMERIC(14,2) NOT NULL DEFAULT 0,   -- monthly ceiling; 0 = unset
   quota_requests   BIGINT        NOT NULL DEFAULT 0,   -- monthly request cap; 0 = unset
   warn_ratio       NUMERIC(4,3)  NOT NULL DEFAULT 0.800,
