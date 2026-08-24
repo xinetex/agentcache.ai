@@ -151,20 +151,27 @@
                 </ul>
               </div>
               <div>
-                <h3 class="font-semibold text-white mb-3 text-sm uppercase tracking-wider text-purple-400">Cognitive Layer</h3>
+                <h3 class="font-semibold text-white mb-3 text-sm uppercase tracking-wider text-cyan-400">Caching</h3>
                 <ul class="space-y-2 text-sm text-slate-400">
-                  <li><a href="#caching" class="hover:text-cyan-400 transition block py-1">Semantic Caching</a></li>
-                  <li><a href="#cognitive-vector" class="hover:text-cyan-400 transition block py-1">Vector Engine (CVS)</a></li>
-                  <li><a href="#resonance" class="hover:text-cyan-400 transition block py-1">Resonance Circles</a></li>
+                  <li><a href="#openai" class="hover:text-cyan-400 transition block py-1">OpenAI-compatible</a></li>
+                  <li><a href="#cache-kv" class="hover:text-cyan-400 transition block py-1">Key/Value cache</a></li>
+                  <li><a href="#prefix" class="hover:text-cyan-400 transition block py-1">Prefix cache</a></li>
                 </ul>
               </div>
               <div>
-                <h3 class="font-semibold text-white mb-3 text-sm uppercase tracking-wider text-emerald-400">Intelligence</h3>
+                <h3 class="font-semibold text-white mb-3 text-sm uppercase tracking-wider text-emerald-400">Control Plane</h3>
                 <ul class="space-y-2 text-sm text-slate-400">
-                  <li><a href="#smart-routing" class="hover:text-cyan-400 transition block py-1">Smart Routing</a></li>
-                  <li><a href="#topological-healing" class="hover:text-cyan-400 transition block py-1">Topological Healing</a></li>
-                  <li><a href="#pathology-sandbox" class="hover:text-cyan-400 transition block py-1">Pathology Sandbox</a></li>
-                  <li><a href="#predictive" class="hover:text-cyan-400 transition block py-1">Predictive Synapse</a></li>
+                  <li><a href="#gate" class="hover:text-cyan-400 transition block py-1">Governance gate</a></li>
+                  <li><a href="#policy" class="hover:text-cyan-400 transition block py-1">Budgets &amp; policy</a></li>
+                  <li><a href="#savings" class="hover:text-cyan-400 transition block py-1">Savings &amp; ROI</a></li>
+                  <li><a href="#reasoning" class="hover:text-cyan-400 transition block py-1">Reasoning memory</a></li>
+                </ul>
+              </div>
+              <div>
+                <h3 class="font-semibold text-white mb-3 text-sm uppercase tracking-wider text-purple-400">Agents</h3>
+                <ul class="space-y-2 text-sm text-slate-400">
+                  <li><a href="#mcp" class="hover:text-cyan-400 transition block py-1">MCP server</a></li>
+                  <li><a href="#background" class="hover:text-cyan-400 transition block py-1">Background runs (HITL)</a></li>
                 </ul>
               </div>
               <div>
@@ -182,32 +189,54 @@
 
             <!-- Intro -->
             <section id="intro" class="mb-16 scroll-mt-24">
+              <div class="text-xs font-mono tracking-[0.2em] uppercase text-cyan-400 mb-3">Save · Govern · Remember</div>
               <h1 class="text-4xl font-bold mb-6 text-white">Documentation</h1>
               <p class="text-xl text-slate-300 leading-relaxed mb-8">
-                AgentCache is a <strong>Virtual Context Memory</strong> layer for AI agents. It sits between your agent
-                and the LLM provider, automatically caching responses and managing long-term memory.
+                AgentCache is the <strong>cost-governance and safety control plane for AI agents</strong>. It sits in
+                front of any LLM workload and does four things gateways don't: cuts spend with savings you can verify to
+                the dollar, puts a budget, quota, anomaly guard and kill-switch around autonomous agents, lets them
+                resume reasoning across runs, and runs durable, human-in-the-loop background jobs.
               </p>
               <div class="glass rounded-xl p-6 border border-slate-800">
-                <h3 class="text-lg font-semibold text-white mb-4">Why use AgentCache?</h3>
                 <div class="grid md:grid-cols-2 gap-6">
-                  <div class="flex gap-3">
-                    <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center shrink-0">
-                      <i data-lucide="zap" class="w-5 h-5 text-cyan-400"></i>
-                    </div>
-                    <div>
-                      <h4 class="font-medium text-white mb-1">Zero Latency</h4>
-                      <p class="text-sm text-slate-400">Cache hits return in < 10ms, making your agents feel instant.
-                          </p>
-                    </div>
-                  </div>
                   <div class="flex gap-3">
                     <div class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center shrink-0">
                       <i data-lucide="dollar-sign" class="w-5 h-5 text-emerald-400"></i>
                     </div>
                     <div>
-                      <h4 class="font-medium text-white mb-1">Reduce Costs</h4>
-                      <p class="text-sm text-slate-400">Save up to 80% on API bills by never paying for the same
-                        prompt twice.</p>
+                      <h4 class="font-medium text-white mb-1">Verifiable savings</h4>
+                      <p class="text-sm text-slate-400">Every cache hit is priced at current provider rates and booked to
+                        an immutable ledger. Net dollars saved, not a vanity percentage.</p>
+                    </div>
+                  </div>
+                  <div class="flex gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center shrink-0">
+                      <i data-lucide="shield" class="w-5 h-5 text-amber-400"></i>
+                    </div>
+                    <div>
+                      <h4 class="font-medium text-white mb-1">Govern the spend</h4>
+                      <p class="text-sm text-slate-400">Ask <code>/governance/gate</code> whether a call is allowed
+                        <em>before</em> the money leaves — budget, quota, anomaly, kill-switch.</p>
+                    </div>
+                  </div>
+                  <div class="flex gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center shrink-0">
+                      <i data-lucide="brain" class="w-5 h-5 text-cyan-400"></i>
+                    </div>
+                    <div>
+                      <h4 class="font-medium text-white mb-1">Resume reasoning</h4>
+                      <p class="text-sm text-slate-400">Durable per-agent, per-task state so the tenth run starts where
+                        the ninth left off.</p>
+                    </div>
+                  </div>
+                  <div class="flex gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center shrink-0">
+                      <i data-lucide="zap" class="w-5 h-5 text-purple-400"></i>
+                    </div>
+                    <div>
+                      <h4 class="font-medium text-white mb-1">Drop-in</h4>
+                      <p class="text-sm text-slate-400">OpenAI-compatible for caching, or an MCP server your agent adds in
+                        one line.</p>
                     </div>
                   </div>
                 </div>
@@ -223,35 +252,22 @@
                 Quick Start
               </h2>
               <div class="space-y-6">
-                <p class="text-slate-300">
-                  AgentCache is drop-in compatible with the OpenAI SDK. You just need to change the
-                  <code>baseURL</code>.
-                </p>
-
-                <div class="relative group">
-                  <div
-                    class="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg opacity-20 group-hover:opacity-30 transition blur">
-                  </div>
-                  <div class="relative bg-slate-900 rounded-lg p-4 overflow-x-auto">
-                    <div class="flex items-center justify-between mb-2">
-                      <span class="text-xs font-mono text-slate-500">Python</span>
-                      <button class="text-xs text-cyan-400 hover:text-cyan-300">Copy</button>
-                    </div>
-                    <pre class="text-sm font-mono text-slate-300"><code>import openai
-
+                <p class="text-slate-300">Grab an <code>ac_live_</code> key from your <a href="/onboarding.html"
+                    class="text-cyan-400 hover:text-cyan-300">dashboard</a>, then pick a path: drop-in caching (change one
+                  URL), or add the MCP server to your agent.</p>
+                <div class="relative bg-slate-900 rounded-lg p-4 overflow-x-auto border border-white/5">
+                  <div class="flex items-center justify-between mb-2"><span class="text-xs font-mono text-slate-500">Python
+                      · OpenAI-compatible</span></div>
+                  <pre class="text-sm font-mono text-slate-300"><code>import openai
 client = openai.OpenAI(
     base_url="https://agentcache.ai/api/v1",
-    api_key="ac_live_..."  # Your AgentCache key
+    api_key="ac_live_..."          # your AgentCache key
 )
-
-response = client.chat.completions.create(
+resp = client.chat.completions.create(
     model="gpt-4",
     messages=[{"role": "user", "content": "Hello!"}],
-    extra_headers={
-        "X-OpenAI-Key": "sk-..." # Your real OpenAI key
-    }
+    extra_headers={"X-OpenAI-Key": "sk-..."}  # your provider key
 )</code></pre>
-                  </div>
                 </div>
               </div>
             </section>
@@ -264,222 +280,252 @@ response = client.chat.completions.create(
                 </div>
                 Authentication
               </h2>
-              <div class="space-y-4 text-slate-300">
-                <p>AgentCache uses a dual-key authentication system to ensure isolation and security.</p>
-                <ul class="list-disc pl-6 space-y-2 text-sm">
-                  <li><strong>Agent Key (Bearer)</strong>: Authenticates your agent with AgentCache.</li>
-                  <li><strong>Provider Key (Header)</strong>: Your real LLM key (OpenAI/Anthropic), passed as <code>X-OpenAI-Key</code> or <code>X-Anthropic-Key</code>.</li>
-                  <li><strong>Tenant ID</strong>: Use <code>X-Tenant-Id</code> to isolate vector indices in production.</li>
-                </ul>
+              <p class="text-slate-300 mb-4">Every request carries your key as a bearer token. Cache and control-plane
+                endpoints are scoped per organization and per namespace.</p>
+              <div class="relative bg-slate-900 rounded-lg p-4 overflow-x-auto border border-white/5">
+                <pre class="text-sm font-mono text-slate-300"><code>Authorization: Bearer ac_live_...
+X-Cache-Namespace: my-app        # tenant/workspace scope (cache + reasoning)</code></pre>
               </div>
+              <p class="text-sm text-slate-500 mt-3">A cache miss returns <code>200 { "hit": false }</code> — never an
+                error. Keys are issued in live mode; keep them server-side.</p>
             </section>
 
-            <!-- Immune System -->
-            <section id="immune-system" class="mb-16 scroll-mt-24">
+            <!-- OpenAI-compatible -->
+            <section id="openai" class="mb-16 scroll-mt-24">
               <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-rose-500/20 flex items-center justify-center">
-                  <i data-lucide="shield" class="w-5 h-5 text-rose-400"></i>
+                <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                  <i data-lucide="repeat" class="w-5 h-5 text-cyan-400"></i>
                 </div>
-                The Immune System
+                OpenAI-compatible caching
               </h2>
-              <div class="glass rounded-xl p-6 border border-slate-800 space-y-6">
-                <p class="text-slate-300 leading-relaxed">
-                  Beyond passive caching, AgentCache implements an active <strong>Immune System</strong> for your agents. It detects "Cognitive Rot" and adversarial injections in real-time.
-                </p>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div class="p-4 bg-slate-900/50 rounded-lg border border-slate-800">
-                    <div class="font-bold text-white mb-1">Antibody Hardening</div>
-                    <p class="text-xs text-slate-400 mt-2">Dynamically lowers drift thresholds (0.15 → 0.05) for flagged sessions to quarantine suspicious reasoning.</p>
-                  </div>
-                  <div class="p-4 bg-slate-900/50 rounded-lg border border-slate-800">
-                    <div class="font-bold text-white mb-1">Semantic Guardrails</div>
-                    <p class="text-xs text-slate-400 mt-2">Bypasses the cache and forces re-validation if semantic intent drifts outside allowed parameters.</p>
-                  </div>
-                </div>
+              <p class="text-slate-300 mb-4">Point the OpenAI SDK at AgentCache. Identical prompts return instantly from
+                cache; misses pass through to your provider and are stored. Core endpoints:</p>
+              <div class="relative bg-slate-900 rounded-lg p-4 overflow-x-auto border border-white/5">
+                <pre class="text-sm font-mono text-slate-300"><code>POST /api/v1/chat/completions   # cache entry point (OpenAI-shaped)
+POST /api/v1/embeddings         # vector entry point</code></pre>
               </div>
             </section>
 
-            <!-- Smart Routing -->
-            <section id="smart-routing" class="mb-16 scroll-mt-24">
-              <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                  <i data-lucide="shuffle" class="w-5 h-5 text-purple-400"></i>
-                </div>
-                Smart Routing
-              </h2>
-              <div class="glass rounded-xl p-6 border border-slate-800 space-y-6">
-                <p class="text-slate-300 leading-relaxed">
-                  AgentCache isn't just about caching; it's about <strong>intelligent optimization</strong>.
-                  With our Smart Routing feature (powered by RouteLLM), you can automatically route queries to the most
-                  cost-effective model that can handle the task.
-                </p>
-
-                <div class="bg-slate-950/50 rounded-lg p-4 border border-slate-800">
-                  <h3 class="text-sm font-semibold text-white mb-2">How it works</h3>
-                  <ul class="space-y-2 text-sm text-slate-400">
-                    <li class="flex items-start gap-2">
-                      <i data-lucide="check" class="w-4 h-4 text-green-500 mt-0.5"></i>
-                      <span><strong>Cache Hit:</strong> Served instantly from L1/L2 cache (0 cost, 0ms latency).</span>
-                    </li>
-                    <li class="flex items-start gap-2">
-                      <i data-lucide="check" class="w-4 h-4 text-green-500 mt-0.5"></i>
-                      <span><strong>Cache Miss:</strong> The router analyzes the prompt complexity.</span>
-                    </li>
-                    <li class="flex items-start gap-2">
-                      <i data-lucide="arrow-right" class="w-4 h-4 text-purple-500 mt-0.5"></i>
-                      <span><strong>Simple Query:</strong> Routed to a cheaper model (e.g., GPT-3.5, Haiku).</span>
-                    </li>
-                    <li class="flex items-start gap-2">
-                      <i data-lucide="arrow-right" class="w-4 h-4 text-purple-500 mt-0.5"></i>
-                      <span><strong>Complex Query:</strong> Routed to a strong model (e.g., GPT-4o, Sonnet 3.5).</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <!-- Implementation Example -->
-                <div class="mt-8 border-t border-white/5 pt-8">
-                  <h3 class="text-sm font-semibold text-white mb-4 uppercase tracking-wider text-slate-500">Implementation Example</h3>
-                  <p class="text-slate-400 mb-4 text-sm">
-                    Simply set the <code>model</code> parameter to <code>route-llm</code> and provide your Abacus API key.
-                  </p>
-
-                  <div class="relative group">
-                    <div class="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-lg opacity-20 group-hover:opacity-30 transition blur"></div>
-                    <div class="relative bg-slate-900 rounded-lg p-4 overflow-x-auto">
-                      <pre class="text-sm font-mono text-slate-300"><code>curl https://agentcache.ai/api/v1/chat/completions \
-    -H "Content-Type: application/json" \
-    -H "Authorization: Bearer ac_live_..." \
-    -H "X-Abacus-Key: your_abacus_api_key" \
-    -d '{
-      "model": "route-llm",
-      "messages": [
-        {"role": "user", "content": "Explain quantum computing"}
-      ]
-    }'</code></pre>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <!-- Semantic Caching -->
-            <section id="caching" class="mb-16 scroll-mt-24">
+            <!-- KV cache -->
+            <section id="cache-kv" class="mb-16 scroll-mt-24">
               <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
                 <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center">
                   <i data-lucide="database" class="w-5 h-5 text-cyan-400"></i>
                 </div>
-                Semantic Caching
+                Key/Value cache
               </h2>
-              <div class="glass rounded-xl p-6 border border-slate-800 space-y-4">
-                <p class="text-slate-300">AgentCache fingerprints request intent, not just raw text. This allows for:</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div class="p-4 bg-slate-900/50 rounded-lg border border-slate-800">
-                    <div class="font-bold text-white mb-1">Exact Match</div>
-                    <div class="text-xs text-slate-500 font-mono italic">Lower Latency</div>
-                    <p class="text-xs text-slate-400 mt-2">Identical prompt history cached in Redis.</p>
-                  </div>
-                  <div class="p-4 bg-slate-900/50 rounded-lg border border-slate-800">
-                    <div class="font-bold text-white mb-1">Semantic Match</div>
-                    <div class="text-xs text-slate-500 font-mono italic">Higher Efficiency</div>
-                    <p class="text-xs text-slate-400 mt-2">Similarity search via Cognitive Vector Service.</p>
-                  </div>
-                </div>
+              <p class="text-slate-300 mb-4">Check the cache before you call a model; store the answer after. Declare the
+                model and token counts so savings are priced automatically.</p>
+              <div class="relative bg-slate-900 rounded-lg p-4 overflow-x-auto border border-white/5">
+                <pre class="text-sm font-mono text-slate-300"><code># 1 — is it cached? (a miss is 200 hit:false)
+curl "https://agentcache.ai/api/cache/get?key=$HASH" \
+  -H "Authorization: Bearer ac_live_..." \
+  -H "X-Cache-Namespace: my-app" \
+  -H "X-Model: claude-opus-5" \
+  -H "X-Input-Tokens: 10000" -H "X-Output-Tokens: 2000"
+
+# 2 — store the model's answer for next time
+curl -X POST https://agentcache.ai/api/cache/set \
+  -H "Authorization: Bearer ac_live_..." \
+  -H "X-Cache-Namespace: my-app" \
+  -d '{"key":"'$HASH'","value":{ ... }}'</code></pre>
               </div>
             </section>
 
-            <!-- Vector Engine -->
-            <section id="cognitive-vector" class="mb-16 scroll-mt-24">
+            <!-- Prefix cache -->
+            <section id="prefix" class="mb-16 scroll-mt-24">
               <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center">
-                  <i data-lucide="box" class="w-5 h-5 text-orange-400"></i>
+                <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                  <i data-lucide="git-branch" class="w-5 h-5 text-cyan-400"></i>
                 </div>
-                Cognitive Vector Service (CVS)
+                Prefix cache
               </h2>
-              <div class="space-y-4 text-slate-300">
-                <p>Highly optimized FAISS-based vector engine (C# standalone) for sub-millisecond similarity search with HNSW indices.</p>
-                <div class="bg-slate-900 p-4 rounded-lg font-mono text-xs text-cyan-400">
-                  POST /Vectors/drift<br>
-                  X-Tenant-Id: your_org_id
-                </div>
+              <p class="text-slate-300 mb-4">Agentic loops resend a large stable prefix on every step. Send the current
+                messages and AgentCache tells you how much is an unchanged prefix of the previous turn and where to place
+                a provider cache breakpoint.</p>
+              <div class="relative bg-slate-900 rounded-lg p-4 overflow-x-auto border border-white/5">
+                <pre class="text-sm font-mono text-slate-300"><code>POST /api/cache/prefix
+Authorization: Bearer ac_live_...
+X-Cache-Namespace: my-app
+X-Model: claude-opus-5
+X-Prefix-Tokens: 18000
+{ "sessionId": "sess-9", "messages": [ ... ], "annotate": true }
+
+→ { "hit": true, "reusedMessages": 7, "breakpointIndex": 6 }</code></pre>
               </div>
             </section>
 
-            <!-- Resonance -->
-            <section id="resonance" class="mb-16 scroll-mt-24">
+            <!-- Governance gate -->
+            <section id="gate" class="mb-16 scroll-mt-24">
               <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-pink-500/20 flex items-center justify-center">
-                  <i data-lucide="waves" class="w-5 h-5 text-pink-400"></i>
+                <div class="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                  <i data-lucide="shield" class="w-5 h-5 text-amber-400"></i>
                 </div>
-                Resonance Circles
+                Governance gate
               </h2>
-              <p class="text-slate-300 mb-4">Lateral knowledge sharing across agents. Join a circle to automatically benefit from the memory of other authorized agents in the same sector.</p>
-            </section>
+              <p class="text-slate-300 mb-4">The thing no gateway does. Before an expensive call, ask whether it's allowed
+                under this account's budget, request quota, spend-anomaly guard and kill-switch. A well-behaved agent
+                calls this first and stops when <code>allow</code> is false. A denial is a normal governed outcome —
+                still <code>200</code>, never an error.</p>
+              <div class="relative bg-slate-900 rounded-lg p-4 overflow-x-auto border border-white/5">
+                <pre class="text-sm font-mono text-slate-300"><code>POST /api/governance/gate
+Authorization: Bearer ac_live_...
+{ "model": "claude-opus-5", "inputTokens": 400000, "outputTokens": 80000 }
 
-            <!-- Topological Healing -->
-            <section id="topological-healing" class="mb-16 scroll-mt-24">
-              <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center">
-                  <i data-lucide="heart-pulse" class="w-5 h-5 text-yellow-400"></i>
-                </div>
-                Topological Healing
-              </h2>
-              <p class="text-slate-300 leading-relaxed mb-6">
-                Agent memory isn't static. <strong>Topological Healing</strong> allows the system to actively repair "drifted" reasoning by re-embedding nodes or issuing corrective <strong>Antibody Pulses</strong> (re-prompting the agent with verified truth).
-              </p>
-              <div class="bg-slate-950/50 rounded-xl p-6 border border-slate-800">
-                <h3 class="text-sm font-semibold text-white mb-4 uppercase tracking-wider text-slate-500">Healing Strategies</h3>
-                <div class="space-y-4">
-                  <div class="flex gap-4">
-                    <div class="text-cyan-400 font-mono text-sm shrink-0">DROP</div>
-                    <div class="text-sm text-slate-400">Force a re-embedding of the memory node to realign it with current canonical truth.</div>
-                  </div>
-                  <div class="flex gap-4">
-                    <div class="text-rose-400 font-mono text-sm shrink-0">PULSE</div>
-                    <div class="text-sm text-slate-400">Inject a corrective "Antibody" context into the agent's prompt to break circular reasoning.</div>
-                  </div>
-                </div>
+→ {
+  "allow": false,
+  "severity": "block",
+  "estCostUsd": 4.00,
+  "reasons": ["budget exceeded: $4,850 + est would pass $5,000"],
+  "budget": { "state": "block", "remainingUsd": 150 },
+  "quota":  { "state": "ok", "remaining": 66000 },
+  "anomaly":{ "anomaly": false, "z": 0.7 }
+}</code></pre>
               </div>
             </section>
 
-            <!-- Pathology Sandbox -->
-            <section id="pathology-sandbox" class="mb-16 scroll-mt-24">
+            <!-- Policy -->
+            <section id="policy" class="mb-16 scroll-mt-24">
+              <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                  <i data-lucide="sliders" class="w-5 h-5 text-amber-400"></i>
+                </div>
+                Budgets &amp; policy
+              </h2>
+              <p class="text-slate-300 mb-4">Set the guardrails the gate enforces. Any dimension left at 0 is
+                ungoverned (fail-safe: allow). The <a href="/governance-console.html"
+                  class="text-cyan-400 hover:text-cyan-300">control-plane console</a> drives these visually.</p>
+              <div class="relative bg-slate-900 rounded-lg p-4 overflow-x-auto border border-white/5">
+                <pre class="text-sm font-mono text-slate-300"><code>POST /api/governance/policy      # set budget / quota / kill-switch
+{ "budgetUsd": 5000, "quotaRequests": 250000,
+  "killSwitch": false, "blockOnAnomaly": false, "anomalySigma": 3 }
+
+GET  /api/governance/status?days=30   # posture + spend/quota + anomaly + series</code></pre>
+              </div>
+            </section>
+
+            <!-- Savings -->
+            <section id="savings" class="mb-16 scroll-mt-24">
+              <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                  <i data-lucide="receipt" class="w-5 h-5 text-emerald-400"></i>
+                </div>
+                Savings &amp; ROI
+              </h2>
+              <p class="text-slate-300 mb-4">The verifiable number: net dollars saved over a window, with ROI and a
+                breakdown by cache layer and model. Priced from real hits at current provider rates — unknown models
+                return $0 so savings are never overstated.</p>
+              <div class="relative bg-slate-900 rounded-lg p-4 overflow-x-auto border border-white/5">
+                <pre class="text-sm font-mono text-slate-300"><code>GET /api/analytics/savings?days=30
+Authorization: Bearer ac_live_...
+
+→ {
+  "windowDays": 30, "hits": 184203,
+  "grossSavedUsd": 7530.42, "planCostUsd": 99, "netSavedUsd": 7431.42,
+  "roi": 76,
+  "byLayer": { "prefix": 4120, "exact": 2010, "semantic": 900, "reasoning": 401 },
+  "byModel": { "claude-opus-5": 5200, "gpt-5.2": 2330 }
+}</code></pre>
+              </div>
+            </section>
+
+            <!-- Reasoning -->
+            <section id="reasoning" class="mb-16 scroll-mt-24">
+              <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                  <i data-lucide="brain" class="w-5 h-5 text-cyan-400"></i>
+                </div>
+                Reasoning memory
+              </h2>
+              <p class="text-slate-300 mb-4">Durable per-agent, per-task state that survives across runs. Call
+                <code>resume</code> at the start of a task to carry prior facts and decisions; <code>commit</code> at the
+                end to remember what this run learned. Same task hash → resumable.</p>
+              <div class="relative bg-slate-900 rounded-lg p-4 overflow-x-auto border border-white/5">
+                <pre class="text-sm font-mono text-slate-300"><code>POST /api/cache/reasoning
+Authorization: Bearer ac_live_...
+X-Cache-Namespace: my-app
+
+# resume prior state
+{ "action": "resume", "agentId": "researcher", "task": {"repo":"x","goal":"triage"} }
+→ { "hit": true, "runs": 9, "carry": { "facts": [...], "decisions": [...] } }
+
+# commit what this run learned
+{ "action": "commit", "agentId": "researcher", "task": {"repo":"x","goal":"triage"},
+  "delta": { "facts": ["api rate-limited at 100rps"], "decisions": ["batch requests"] } }
+→ { "committed": true, "runs": 10 }</code></pre>
+              </div>
+            </section>
+
+            <!-- MCP -->
+            <section id="mcp" class="mb-16 scroll-mt-24">
               <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
                 <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                  <i data-lucide="flask-conical" class="w-5 h-5 text-purple-400"></i>
+                  <i data-lucide="plug" class="w-5 h-5 text-purple-400"></i>
                 </div>
-                Pathology Sandbox
+                MCP server (for agents)
               </h2>
-              <p class="text-slate-300">
-                Stress-test your agent against <strong>Pathological Personas</strong>. The sandbox simulates "Logic Duels" where adversarial agents attempt to corrupt your agent's core axioms (SOUL.md).
-              </p>
+              <p class="text-slate-300 mb-4">Add one server to your MCP config and your agent gains the control plane —
+                caching plus a pre-spend gate, savings, and cross-run memory — with no code changes.</p>
+              <div class="relative bg-slate-900 rounded-lg p-4 overflow-x-auto border border-white/5">
+                <pre class="text-sm font-mono text-slate-300"><code>{
+  "mcpServers": {
+    "agentcache": {
+      "command": "npx",
+      "args": ["-y", "@agentcache/mcp"],
+      "env": { "AGENTCACHE_API_KEY": "ac_live_..." }
+    }
+  }
+}</code></pre>
+              </div>
+              <p class="text-sm text-slate-400 mt-4">Tools your agent gets: <code>agentcache_get</code>,
+                <code>agentcache_gate</code>, <code>agentcache_savings</code>,
+                <code>agentcache_reasoning_resume</code>, <code>agentcache_reasoning_commit</code>.</p>
             </section>
 
-            <!-- Predictive Synapse -->
-            <section id="predictive" class="mb-16 scroll-mt-24">
+            <!-- Background -->
+            <section id="background" class="mb-16 scroll-mt-24">
               <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                  <i data-lucide="brain-circuit" class="w-5 h-5 text-blue-400"></i>
+                <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                  <i data-lucide="workflow" class="w-5 h-5 text-purple-400"></i>
                 </div>
-                Predictive Synapse
+                Background runs (human-in-the-loop)
               </h2>
-              <p class="text-slate-300">Sequence learning that pre-fetches the next 3 potential cache hits before the agent even submits the query.</p>
+              <p class="text-slate-300 mb-4">Run long agents as durable jobs. Each step is gated (blocks a runaway before
+                the spend), can pause for a human for up to 7 days with zero compute burned, and records its savings.
+                Resume a paused run with the approval webhook.</p>
+              <div class="relative bg-slate-900 rounded-lg p-4 overflow-x-auto border border-white/5">
+                <pre class="text-sm font-mono text-slate-300"><code>// start a governed, durable run
+inngest.send({ name: "agent/run.start", data: {
+  runId: "run_123", agentId: "researcher", namespace: "acme",
+  organizationId: "...", approvalThresholdUsd: 5,
+  steps: [ { model: "claude-opus-5", inputTokens: 40000, outputTokens: 8000 } ]
+}})
+
+// resume a paused run
+POST /api/agent/approve   { "runId": "run_123", "decision": "approve" }</code></pre>
+              </div>
             </section>
 
             <!-- API Reference -->
             <section id="api" class="mb-16 scroll-mt-24">
               <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                  <i data-lucide="code-2" class="w-5 h-5 text-emerald-400"></i>
+                <div class="w-8 h-8 rounded-lg bg-slate-500/20 flex items-center justify-center">
+                  <i data-lucide="code" class="w-5 h-5 text-slate-300"></i>
                 </div>
                 API Reference
               </h2>
               <div class="glass rounded-xl p-6 border border-slate-800">
-                <p class="text-slate-300 mb-4">Core endpoints are fully OpenAI-compatible.</p>
-                <div class="space-y-2 font-mono text-xs text-slate-400">
-                  <div>POST /api/v1/chat/completions (Cache Entry Point)</div>
-                  <div>POST /api/v1/embeddings (Vector Entry Point)</div>
-                  <div>POST /api/cache/resonance (Resonance Probe)</div>
+                <div class="space-y-2 font-mono text-sm text-slate-300">
+                  <div><span class="text-cyan-400">POST</span> /api/v1/chat/completions <span class="text-slate-500">— OpenAI-compatible cache entry</span></div>
+                  <div><span class="text-cyan-400">GET</span>&nbsp; /api/cache/get <span class="text-slate-500">— key/value read (200 hit:false on miss)</span></div>
+                  <div><span class="text-cyan-400">POST</span> /api/cache/set <span class="text-slate-500">— store a value</span></div>
+                  <div><span class="text-cyan-400">POST</span> /api/cache/prefix <span class="text-slate-500">— prefix reuse + breakpoint</span></div>
+                  <div><span class="text-cyan-400">POST</span> /api/cache/reasoning <span class="text-slate-500">— resume / commit cross-run state</span></div>
+                  <div><span class="text-amber-400">POST</span> /api/governance/gate <span class="text-slate-500">— allow/deny before spend</span></div>
+                  <div><span class="text-amber-400">GET·POST</span> /api/governance/policy <span class="text-slate-500">— budgets, quota, kill-switch</span></div>
+                  <div><span class="text-amber-400">GET</span>&nbsp; /api/governance/status <span class="text-slate-500">— posture + usage + anomaly</span></div>
+                  <div><span class="text-emerald-400">GET</span>&nbsp; /api/analytics/savings <span class="text-slate-500">— net $ saved + ROI</span></div>
+                  <div><span class="text-purple-400">POST</span> /api/agent/approve <span class="text-slate-500">— resume a paused background run</span></div>
                 </div>
               </div>
             </section>
@@ -487,21 +533,26 @@ response = client.chat.completions.create(
             <!-- SDKs -->
             <section id="sdks" class="mb-16 scroll-mt-24">
               <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center">
-                  <i data-lucide="package" class="w-5 h-5 text-indigo-400"></i>
+                <div class="w-8 h-8 rounded-lg bg-slate-500/20 flex items-center justify-center">
+                  <i data-lucide="package" class="w-5 h-5 text-slate-300"></i>
                 </div>
                 SDKs
               </h2>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="glass p-6 rounded-xl border border-slate-800">
-                  <h3 class="text-white font-bold mb-2">agentcache-node</h3>
-                  <code class="text-xs bg-black/50 p-2 rounded block mb-4">npm install agentcache-node</code>
-                  <p class="text-sm text-slate-400 text-sm">Full lifecycle support for Node.js, including L1 local caching.</p>
+              <div class="grid md:grid-cols-3 gap-4">
+                <div class="glass rounded-xl p-5 border border-slate-800">
+                  <h3 class="text-white font-bold mb-1">@agentcache/mcp</h3>
+                  <p class="text-sm text-slate-400 mb-2">Agent-facing MCP server.</p>
+                  <code class="text-xs text-cyan-400">npx -y @agentcache/mcp</code>
                 </div>
-                <div class="glass p-6 rounded-xl border border-slate-800">
-                  <h3 class="text-white font-bold mb-2">agentcache-python</h3>
-                  <code class="text-xs bg-black/50 p-2 rounded block mb-4">pip install agentcache</code>
-                  <p class="text-sm text-slate-400 text-sm">Official Python client for LangChain and LlamaIndex integration.</p>
+                <div class="glass rounded-xl p-5 border border-slate-800">
+                  <h3 class="text-white font-bold mb-1">agentcache-node</h3>
+                  <p class="text-sm text-slate-400 mb-2">Node cache + savings wrapper.</p>
+                  <code class="text-xs text-cyan-400">npm i agentcache-node</code>
+                </div>
+                <div class="glass rounded-xl p-5 border border-slate-800">
+                  <h3 class="text-white font-bold mb-1">agentcache-python</h3>
+                  <p class="text-sm text-slate-400 mb-2">Python client.</p>
+                  <code class="text-xs text-cyan-400">pip install agentcache</code>
                 </div>
               </div>
             </section>
