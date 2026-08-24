@@ -1,0 +1,39 @@
+{
+  "name": "@agentcache/mcp",
+  "version": "0.1.0",
+  "description": "Agent-facing MCP for the AgentCache control plane \u2014 cache, pre-spend governance gate, verifiable savings, and cross-run reasoning memory.",
+  "type": "module",
+  "bin": {
+    "agentcache-mcp": "bin/cli.js"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "agent",
+    "llm",
+    "cache",
+    "governance",
+    "agentcache",
+    "model-context-protocol"
+  ],
+  "license": "SEE LICENSE IN LICENSE",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "@types/node": "^20"
+  }
+}
