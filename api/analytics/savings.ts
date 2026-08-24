@@ -23,7 +23,10 @@ const sql = neon(process.env.DATABASE_URL!);
 // param overrides for what-if analysis. Prorated to the requested window so ROI
 // is meaningful for any range.
 const PLAN_COST_USD: Record<string, number> = {
-  free: 0, starter: 29, pro: 99, scale: 499, business: 499, enterprise: 0,
+  // Canonical monthly USD, aligned to src/config/tiers.ts + api/pricing.js +
+  // the Stripe webhook amounts (pro 9900, business 29900). "starter" is the
+  // free-tier default label used by api/account.js (quota 10k), so it is $0.
+  free: 0, starter: 0, pro: 99, business: 299, enterprise: 299,
 };
 
 function json(obj: unknown, status = 200, extra: Record<string, string> = {}) {
