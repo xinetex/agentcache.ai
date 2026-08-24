@@ -17,7 +17,9 @@ import { round2 } from '../../lib/savings.js';
 
 export const config = { runtime: 'nodejs' };
 
+import { ensureSavingsSchema } from '../../lib/ensure-schema.js';
 const sql = neon(process.env.DATABASE_URL!);
+ensureSavingsSchema(sql).catch(() => {}); // self-provision on cold start
 
 // Monthly list price by plan tier. Operator-configurable; a ?planCostUsd query
 // param overrides for what-if analysis. Prorated to the requested window so ROI

@@ -43,7 +43,9 @@ function getRedis(): Redis {
   return _redis;
 }
 
+import { ensureSavingsSchema } from '../../lib/ensure-schema.js';
 const sql = neon(process.env.DATABASE_URL!);
+ensureSavingsSchema(sql).catch(() => {}); // self-provision on cold start
 
 function json(obj: unknown, status = 200, extra: Record<string, string> = {}) {
   return new Response(JSON.stringify(obj), {

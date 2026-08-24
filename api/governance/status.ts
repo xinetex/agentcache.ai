@@ -14,7 +14,9 @@ import { decide } from '../../lib/governance.js';
 import { loadPolicy, loadUsage } from '../../lib/governance-data.js';
 
 export const config = { runtime: 'nodejs' };
+import { ensureGovernanceSchema } from '../../lib/ensure-schema.js';
 const sql = neon(process.env.DATABASE_URL!);
+ensureGovernanceSchema(sql).catch(() => {}); // self-provision on cold start
 
 function json(obj: unknown, status = 200) {
   return new Response(JSON.stringify(obj), {

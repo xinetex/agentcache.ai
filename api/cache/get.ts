@@ -14,7 +14,9 @@ const redis = new Redis({
 
 // Ledger writer for the Savings Engine (Move 1). Separate from the Redis cache
 // store; used only to append priced hit rows for auditable net-dollars-saved.
+import { ensureSavingsSchema } from '../../lib/ensure-schema.js';
 const sql = neon(process.env.DATABASE_URL!);
+ensureSavingsSchema(sql).catch(() => {}); // self-provision on cold start
 
 export default async function handler(req: Request) {
     if (req.method !== 'GET') {

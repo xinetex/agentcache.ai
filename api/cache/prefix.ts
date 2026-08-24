@@ -42,7 +42,9 @@ function getRedis(): Redis {
 
 // Ledger writer for the Savings Engine (Move 1). neon() does not open a
 // connection at construction, so this is safe at module scope.
+import { ensureSavingsSchema } from '../../lib/ensure-schema.js';
 const sql = neon(process.env.DATABASE_URL!);
+ensureSavingsSchema(sql).catch(() => {}); // self-provision on cold start
 
 // Session prefix fingerprints are short-lived working state, not durable data.
 const PREFIX_TTL_SECONDS = 60 * 60 * 24; // 24h

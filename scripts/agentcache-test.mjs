@@ -16,6 +16,7 @@ const SUITES = [
   ['Moat · reasoning cache', 'tests/reasoning-cache.test.mjs'],
   ['Platform · agent runtime', 'tests/agent-runtime.test.mjs'],
   ['Adoption · key fallback', 'tests/api-key-fallback.test.mjs'],
+  ['Platform · self-provision schema', 'tests/ensure-schema.test.mjs'],
   ['Core · engine (pkg)', 'packages/agentcache-engine/test/engine.test.mjs'],
   ['Knowledge · ingest gate', 'tests/ingest-guard.test.mjs'],
   ['Guardrails · firewall', 'tests/firewall.test.mjs'],
