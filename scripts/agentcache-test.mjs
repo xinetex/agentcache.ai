@@ -11,6 +11,9 @@ import { spawnSync } from 'node:child_process';
 const SUITES = [
   ['Core · prefix cache', 'tests/prefix-cache.test.mjs'],
   ['Core · savings math', 'tests/savings.test.mjs'],
+  ['Core · savings recorder', 'tests/savings-recorder.test.mjs'],
+  ['Control · governance', 'tests/governance.test.mjs'],
+  ['Moat · reasoning cache', 'tests/reasoning-cache.test.mjs'],
   ['Core · engine (pkg)', 'packages/agentcache-engine/test/engine.test.mjs'],
   ['Knowledge · ingest gate', 'tests/ingest-guard.test.mjs'],
   ['Guardrails · firewall', 'tests/firewall.test.mjs'],

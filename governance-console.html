@@ -1,0 +1,379 @@
+<title>AgentCache Control Plane</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --ground:#0B1211; --surface:#111A18; --surface-2:#17211F; --raise:#1B2624;
+    --ink:#E9F0ED; --ink-2:#B4C2BE; --muted:#7F908C; --hair:#243230; --hair-2:#2E3D3A;
+    --accent:#3FD3B0; --accent-ink:#8CE7CE; --accent-dim:#12312A;
+    --ok:#3FD3B0; --warn:#E8B54A; --block:#E8896A;
+    --ok-wash:#12312A; --warn-wash:#2C2513; --block-wash:#2A1913;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --ground:#F3F6F5; --surface:#FFFFFF; --surface-2:#F0F3F2; --raise:#FAFBFB;
+      --ink:#12201D; --ink-2:#41524E; --muted:#6C7B77; --hair:#E1E6E4; --hair-2:#D2DAD7;
+      --accent:#0B7D66; --accent-ink:#075A4A; --accent-dim:#E1F1EC;
+      --ok:#0B7D66; --warn:#B07A12; --block:#B23A1E;
+      --ok-wash:#E1F1EC; --warn-wash:#F6EFDD; --block-wash:#F6E7E1;
+    }
+  }
+  :root[data-theme="light"]{
+    --ground:#F3F6F5; --surface:#FFFFFF; --surface-2:#F0F3F2; --raise:#FAFBFB;
+    --ink:#12201D; --ink-2:#41524E; --muted:#6C7B77; --hair:#E1E6E4; --hair-2:#D2DAD7;
+    --accent:#0B7D66; --accent-ink:#075A4A; --accent-dim:#E1F1EC;
+    --ok:#0B7D66; --warn:#B07A12; --block:#B23A1E;
+    --ok-wash:#E1F1EC; --warn-wash:#F6EFDD; --block-wash:#F6E7E1;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);
+    font-family:"Archivo",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+  .wrap{max-width:1120px;margin:0 auto;padding:clamp(18px,3vw,34px) clamp(14px,3vw,28px) 60px}
+
+  header.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;
+    border-bottom:1px solid var(--hair);padding-bottom:18px;margin-bottom:22px}
+  .brand .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent-ink)}
+  .brand h1{font-size:clamp(21px,3vw,28px);font-weight:800;letter-spacing:-.02em;margin:5px 0 0}
+  .brand .sub{color:var(--muted);font-size:13px;margin-top:4px}
+  .posture{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .pill{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;letter-spacing:.04em;
+    padding:7px 12px;border-radius:999px;display:inline-flex;align-items:center;gap:7px;text-transform:uppercase}
+  .pill .dot{width:8px;height:8px;border-radius:50%}
+  .pill.ok{background:var(--ok-wash);color:var(--ok)} .pill.ok .dot{background:var(--ok)}
+  .pill.warn{background:var(--warn-wash);color:var(--warn)} .pill.warn .dot{background:var(--warn)}
+  .pill.block{background:var(--block-wash);color:var(--block)} .pill.block .dot{background:var(--block)}
+
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media (max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:520px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--surface);border:1px solid var(--hair);border-radius:12px;padding:18px}
+  .kpi .label{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+  .kpi .val{font-size:29px;font-weight:800;letter-spacing:-.02em;margin-top:9px;font-variant-numeric:tabular-nums}
+  .kpi .val.pos{color:var(--accent-ink)}
+  .kpi .foot{font-size:12px;color:var(--muted);margin-top:5px}
+  .meter{height:7px;border-radius:999px;background:var(--surface-2);overflow:hidden;margin-top:11px}
+  .meter > span{display:block;height:100%;border-radius:999px;background:var(--accent)}
+  .meter.warn > span{background:var(--warn)} .meter.block > span{background:var(--block)}
+
+  section.panel{background:var(--surface);border:1px solid var(--hair);border-radius:14px;padding:20px;margin-top:16px}
+  .panel h2{font-size:14px;font-family:"IBM Plex Mono",monospace;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 16px;display:flex;align-items:center;gap:10px}
+  .panel h2::after{content:"";flex:1;height:1px;background:var(--hair)}
+  .cols{display:grid;grid-template-columns:1.3fr 1fr;gap:20px}
+  @media (max-width:820px){.cols{grid-template-columns:1fr}}
+
+  /* sparkline */
+  .spark-wrap{position:relative}
+  svg.spark{width:100%;height:120px;display:block}
+  .spark-cap{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px}
+
+  /* bars */
+  .bars{display:flex;flex-direction:column;gap:10px}
+  .bar-row{display:grid;grid-template-columns:96px 1fr auto;gap:10px;align-items:center;font-size:13px}
+  .bar-row .name{color:var(--ink-2);text-transform:capitalize}
+  .bar-track{height:9px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+  .bar-track > span{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-ink))}
+  .bar-row .amt{font-family:"IBM Plex Mono",monospace;color:var(--ink);font-variant-numeric:tabular-nums}
+
+  /* gate simulator */
+  .sim-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:520px){.sim-grid{grid-template-columns:1fr}}
+  label.fld{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted);font-family:"IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.06em}
+  input,select{background:var(--surface-2);border:1px solid var(--hair-2);color:var(--ink);border-radius:9px;
+    padding:10px 12px;font-family:"IBM Plex Mono",monospace;font-size:14px;width:100%}
+  input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+  button{cursor:pointer;font-family:"Archivo",sans-serif;font-weight:700;border:none;border-radius:9px;
+    padding:11px 16px;background:var(--accent);color:#08110E;font-size:14px}
+  :root[data-theme="light"] button, :root:not([data-theme="dark"]) button{color:#fff}
+  button.ghost{background:transparent;border:1px solid var(--hair-2);color:var(--ink-2)}
+  .verdict{margin-top:14px;border-radius:11px;padding:15px 16px;border:1px solid var(--hair)}
+  .verdict.ok{background:var(--ok-wash);border-color:color-mix(in srgb,var(--ok) 40%,transparent)}
+  .verdict.warn{background:var(--warn-wash);border-color:color-mix(in srgb,var(--warn) 40%,transparent)}
+  .verdict.block{background:var(--block-wash);border-color:color-mix(in srgb,var(--block) 40%,transparent)}
+  .verdict .head{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px}
+  .verdict ul{margin:9px 0 0;padding-left:18px;font-size:13px;color:var(--ink-2)}
+  .verdict .est{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--muted);margin-top:8px}
+
+  /* policy controls */
+  .policy-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:520px){.policy-grid{grid-template-columns:1fr}}
+  .toggle{display:flex;align-items:center;justify-content:space-between;background:var(--surface-2);border:1px solid var(--hair-2);border-radius:10px;padding:12px 14px}
+  .toggle .t-label{font-size:13px}.toggle .t-sub{font-size:11px;color:var(--muted);margin-top:2px}
+  .sw{width:44px;height:25px;border-radius:999px;background:var(--hair-2);position:relative;transition:.15s;flex:none}
+  .sw.on{background:var(--block)} .sw .knob{position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;transition:.15s}
+  .sw.on .knob{left:22px}
+  .sw.on.safe{background:var(--accent)}
+
+  .note{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);line-height:1.6;margin-top:18px;
+    border-top:1px solid var(--hair);padding-top:14px}
+  .note code{background:var(--surface-2);padding:1px 6px;border-radius:5px;color:var(--accent-ink)}
+  .modebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;font-size:12px;color:var(--muted)}
+  .modebar input{width:auto;flex:1;min-width:200px}
+  .badge-demo{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--warn);background:var(--warn-wash);padding:4px 8px;border-radius:6px}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="eyebrow">AgentCache · Control Plane</div>
+      <h1>Cost Governance &amp; Safety</h1>
+      <div class="sub" id="orgline">Governing agent spend before it happens — not billing it after.</div>
+    </div>
+    <div class="posture">
+      <span class="badge-demo" id="demobadge">demo data</span>
+      <span class="pill ok" id="posturePill"><span class="dot"></span><span id="postureText">OK</span></span>
+    </div>
+  </header>
+
+  <div class="modebar">
+    <span class="mono">LIVE:</span>
+    <input id="apikey" placeholder="paste ac_live_… key to bind to your org (optional)" autocomplete="off" spellcheck="false">
+    <button class="ghost" id="connectBtn">Connect</button>
+  </div>
+
+  <!-- KPI row -->
+  <div class="grid">
+    <div class="card kpi">
+      <div class="label">Net saved · 30d</div>
+      <div class="val pos" id="kpiSaved">$7,431</div>
+      <div class="foot" id="kpiRoi">76× ROI vs plan</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Spend vs budget</div>
+      <div class="val" id="kpiSpend">$3,120</div>
+      <div class="foot" id="kpiBudget">of $5,000 · $1,880 left</div>
+      <div class="meter" id="spendMeter"><span style="width:62%"></span></div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Requests vs quota</div>
+      <div class="val" id="kpiReq">184k</div>
+      <div class="foot" id="kpiQuota">of 250k · 66k left</div>
+      <div class="meter" id="quotaMeter"><span style="width:74%"></span></div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Spend anomaly</div>
+      <div class="val" id="kpiAnom">Clear</div>
+      <div class="foot" id="kpiAnomFoot">z = 0.7 · 3σ threshold</div>
+    </div>
+  </div>
+
+  <!-- Spend series + savings breakdown -->
+  <section class="panel">
+    <h2>Spend · last 30 days</h2>
+    <div class="cols">
+      <div class="spark-wrap">
+        <svg class="spark" id="spark" viewBox="0 0 600 120" preserveAspectRatio="none"></svg>
+        <div class="spark-cap"><span id="sparkStart">30d ago</span><span id="sparkPeak"></span><span>today</span></div>
+      </div>
+      <div>
+        <div class="mono" style="font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Net dollars saved · by layer</div>
+        <div class="bars" id="layerBars"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gate simulator + Policy -->
+  <div class="cols" style="margin-top:16px">
+    <section class="panel" style="margin-top:0">
+      <h2>Gate simulator</h2>
+      <p style="font-size:13px;color:var(--ink-2);margin:0 0 15px">Price a proposed call and get the deterministic verdict the agent would receive from <code class="mono">POST /api/governance/gate</code>.</p>
+      <div class="sim-grid">
+        <label class="fld">Model
+          <select id="simModel">
+            <option value="claude-opus-5">claude-opus-5</option>
+            <option value="claude-sonnet-5">claude-sonnet-5</option>
+            <option value="gpt-5.2">gpt-5.2</option>
+            <option value="gemini-3.1-pro">gemini-3.1-pro</option>
+            <option value="mystery-9">mystery-9 (unpriced)</option>
+          </select>
+        </label>
+        <label class="fld">Est. input tokens<input id="simIn" type="number" value="40000"></label>
+        <label class="fld">Est. output tokens<input id="simOut" type="number" value="8000"></label>
+        <label class="fld">&nbsp;<button id="simBtn">Evaluate call</button></label>
+      </div>
+      <div class="verdict ok" id="verdict">
+        <div class="head"><span class="pill ok"><span class="dot"></span>ALLOW</span><span id="vTitle">Within policy</span></div>
+        <div class="est" id="vEst">est. cost —</div>
+        <ul id="vReasons"></ul>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top:0">
+      <h2>Policy</h2>
+      <div class="policy-grid">
+        <label class="fld">Monthly budget (USD)<input id="polBudget" type="number" value="5000"></label>
+        <label class="fld">Monthly request quota<input id="polQuota" type="number" value="250000"></label>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
+        <div class="toggle" id="killToggle">
+          <div><div class="t-label">Kill-switch</div><div class="t-sub">Deny every call immediately</div></div>
+          <div class="sw" id="killSw"><div class="knob"></div></div>
+        </div>
+        <div class="toggle" id="anomToggle">
+          <div><div class="t-label">Block on anomaly</div><div class="t-sub">Deny when spend spikes past 3σ (else advisory)</div></div>
+          <div class="sw safe" id="anomSw"><div class="knob"></div></div>
+        </div>
+      </div>
+      <button class="ghost" id="applyPolicy" style="margin-top:14px;width:100%">Apply to simulator</button>
+      <div class="mono" style="font-size:11px;color:var(--muted);margin-top:10px">Live mode saves via <code>POST /api/governance/policy</code>.</div>
+    </section>
+  </div>
+
+  <div class="note">
+    Binds to <code>/api/analytics/savings</code>, <code>/api/governance/status</code>, <code>/api/governance/policy</code>, <code>/api/governance/gate</code> with header <code>Authorization: Bearer ac_…</code>. Showing representative demo data until a key is connected. The gate verdict is computed by the same deterministic policy engine (<code>lib/governance.js</code>) that runs server-side, so what you see here is what an agent would receive.
+  </div>
+</div>
+
+<script>
+(function(){
+  // ---- price table mirror (lib/savings.js DEFAULT_PRICES) ----
+  var PRICES={'claude-opus-5':{in:5,out:25,cacheRead:.1},'claude-sonnet-5':{in:2,out:10,cacheRead:.1},
+    'claude-haiku-4.5':{in:1,out:5,cacheRead:.1},'gpt-5.2':{in:1.75,out:14,cacheRead:.1},
+    'gemini-3.1-pro':{in:2,out:12,cacheRead:.25}};
+  var $=function(id){return document.getElementById(id)};
+  var fmt=function(n){return '$'+Math.round(n).toLocaleString()};
+  var fmtk=function(n){return n>=1000?(n/1000).toFixed(n>=100000?0:1)+'k':String(n)};
+
+  // ---- demo state (representative; replaced on Connect) ----
+  var state={
+    savedUsd:7431, roi:76, spentUsd:3120, series:demoSeries(),
+    usedRequests:184000,
+    policy:{budgetUsd:5000,quotaRequests:250000,warnRatio:.8,killSwitch:false,blockOnAnomaly:false,anomalySigma:3},
+    byLayer:{prefix:4120,exact:2010,semantic:900,reasoning:401}
+  };
+  function demoSeries(){var a=[],base=95;for(var i=0;i<30;i++){var v=base+Math.round(18*Math.sin(i/3))+(i%7===0?12:0);if(i===27)v=118;a.push(Math.max(20,v));}return a;}
+
+  // ---- deterministic policy engine (mirror of lib/governance.js decide) ----
+  function detectAnomaly(series,sigma){sigma=sigma||3;var xs=series.filter(function(n){return isFinite(n)});
+    if(xs.length<7)return{anomaly:false,z:0};var latest=xs[xs.length-1],hist=xs.slice(0,-1);
+    var mean=hist.reduce(function(a,b){return a+b},0)/hist.length;
+    var v=hist.reduce(function(a,b){return a+(b-mean)*(b-mean)},0)/hist.length,std=Math.sqrt(v);
+    if(std===0)return{anomaly:latest>mean,z:latest>mean?Infinity:0,mean:mean,std:0,latest:latest};
+    var z=(latest-mean)/std;return{anomaly:z>=sigma,z:Math.round(z*100)/100,mean:mean,std:std,latest:latest};}
+  function decide(p,c){
+    if(p.killSwitch)return{allow:false,severity:'block',reasons:['kill-switch engaged'],anomaly:null,budget:null,quota:null};
+    var reasons=[],warns=[];
+    var projected=(c.spentUsd||0)+(c.estCostUsd||0);
+    var bstate='ok',remaining=Infinity;
+    if(p.budgetUsd>0){remaining=p.budgetUsd-(c.spentUsd||0);
+      if(projected>p.budgetUsd){bstate='block';reasons.push('budget exceeded: '+fmt(c.spentUsd||0)+' + est would pass '+fmt(p.budgetUsd));}
+      else if(projected/p.budgetUsd>=(p.warnRatio||.8)){bstate='warn';warns.push('budget '+Math.round(projected/p.budgetUsd*100)+'% used');}}
+    var qstate='ok',qrem=Infinity;
+    if(p.quotaRequests>0){qrem=Math.max(0,p.quotaRequests-(c.usedRequests||0));
+      if((c.usedRequests||0)>=p.quotaRequests){qstate='block';reasons.push('request quota exhausted: '+(c.usedRequests||0)+'/'+p.quotaRequests);}
+      else if((c.usedRequests||0)/p.quotaRequests>=(p.warnRatio||.8)){qstate='warn';warns.push('quota '+Math.round((c.usedRequests||0)/p.quotaRequests*100)+'% used');}}
+    var an=detectAnomaly(c.series||[],p.anomalySigma);
+    if(an.anomaly&&p.blockOnAnomaly)reasons.push('spend anomaly: z='+an.z);
+    else if(an.anomaly)warns.push('spend anomaly (advisory) z='+an.z);
+    var severity='ok';if(reasons.length)severity='block';else if(warns.length){severity='warn';reasons=warns;}
+    return{allow:severity!=='block',severity:severity,reasons:reasons,anomaly:an,
+      budget:{remainingUsd:remaining,state:bstate},quota:{remaining:qrem,state:qstate}};
+  }
+
+  // ---- render ----
+  function setPill(el,txt,sev){el.className='pill '+sev;el.innerHTML='<span class="dot"></span>'+txt;}
+  function meterClass(ratio){return ratio>=1?'block':ratio>=.8?'warn':'';}
+  function render(){
+    var v=decide(state.policy,{spentUsd:state.spentUsd,usedRequests:state.usedRequests,estCostUsd:0,series:state.series});
+    setPill($('posturePill'),v.severity.toUpperCase(),v.severity);$('postureText')&&($('postureText').textContent=v.severity.toUpperCase());
+    $('kpiSaved').textContent=fmt(state.savedUsd);
+    $('kpiRoi').textContent=state.roi?state.roi+'× ROI vs plan':'—';
+    $('kpiSpend').textContent=fmt(state.spentUsd);
+    if(state.policy.budgetUsd>0){var r=state.spentUsd/state.policy.budgetUsd;
+      $('kpiBudget').textContent='of '+fmt(state.policy.budgetUsd)+' · '+fmt(Math.max(0,state.policy.budgetUsd-state.spentUsd))+' left';
+      var m=$('spendMeter');m.className='meter '+meterClass(r);m.firstElementChild.style.width=Math.min(100,r*100)+'%';}
+    else{$('kpiBudget').textContent='no budget set';$('spendMeter').firstElementChild.style.width='0%';}
+    $('kpiReq').textContent=fmtk(state.usedRequests);
+    if(state.policy.quotaRequests>0){var qr=state.usedRequests/state.policy.quotaRequests;
+      $('kpiQuota').textContent='of '+fmtk(state.policy.quotaRequests)+' · '+fmtk(Math.max(0,state.policy.quotaRequests-state.usedRequests))+' left';
+      var qm=$('quotaMeter');qm.className='meter '+meterClass(qr);qm.firstElementChild.style.width=Math.min(100,qr*100)+'%';}
+    else{$('kpiQuota').textContent='no quota set';$('quotaMeter').firstElementChild.style.width='0%';}
+    var an=v.anomaly||{anomaly:false,z:0};
+    $('kpiAnom').textContent=an.anomaly?'Spike':'Clear';
+    $('kpiAnom').style.color=an.anomaly?'var(--block)':'var(--accent-ink)';
+    $('kpiAnomFoot').textContent='z = '+(an.z===Infinity?'∞':an.z)+' · '+(state.policy.anomalySigma||3)+'σ threshold';
+    drawSpark();drawBars();
+  }
+  function drawSpark(){
+    var s=state.series,W=600,H=120,pad=8;var max=Math.max.apply(null,s),min=Math.min.apply(null,s);
+    var rng=(max-min)||1;var pts=s.map(function(y,i){var x=pad+i*((W-2*pad)/(s.length-1));
+      var yy=H-pad-((y-min)/rng)*(H-2*pad);return[x,yy];});
+    var d=pts.map(function(p,i){return (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)}).join(' ');
+    var area=d+' L'+pts[pts.length-1][0].toFixed(1)+' '+H+' L'+pts[0][0].toFixed(1)+' '+H+' Z';
+    var an=detectAnomaly(s,state.policy.anomalySigma);var peakI=s.indexOf(Math.max.apply(null,s));
+    var accent=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+    var block=getComputedStyle(document.documentElement).getPropertyValue('--block').trim();
+    var last=pts[pts.length-1];
+    var html='<defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1">'
+      +'<stop offset="0" stop-color="'+accent+'" stop-opacity=".28"/><stop offset="1" stop-color="'+accent+'" stop-opacity="0"/></linearGradient></defs>'
+      +'<path d="'+area+'" fill="url(#g)"/>'
+      +'<path d="'+d+'" fill="none" stroke="'+accent+'" stroke-width="2" stroke-linejoin="round"/>'
+      +'<circle cx="'+last[0].toFixed(1)+'" cy="'+last[1].toFixed(1)+'" r="4" fill="'+(an.anomaly?block:accent)+'"/>';
+    if(an.anomaly){html+='<circle cx="'+pts[s.length-1][0].toFixed(1)+'" cy="'+pts[s.length-1][1].toFixed(1)+'" r="8" fill="none" stroke="'+block+'" stroke-width="1.5" opacity=".7"/>';}
+    $('spark').innerHTML=html;
+    $('sparkPeak').textContent='peak '+fmt(Math.max.apply(null,s))+'/day';
+  }
+  function drawBars(){
+    var e=Object.entries(state.byLayer).sort(function(a,b){return b[1]-a[1]});
+    var max=Math.max.apply(null,e.map(function(x){return x[1]}))||1;
+    $('layerBars').innerHTML=e.map(function(x){return '<div class="bar-row"><span class="name">'+x[0]
+      +'</span><span class="bar-track"><span style="width:'+(x[1]/max*100).toFixed(0)+'%"></span></span><span class="amt">'+fmt(x[1])+'</span></div>';}).join('');
+  }
+
+  // ---- gate simulator ----
+  function evalCall(){
+    var m=$('simModel').value,inp=+$('simIn').value||0,out=+$('simOut').value||0;
+    var pr=PRICES[m],priced=!!pr;var est=priced?(inp*pr.in/1e6+out*pr.out/1e6):0;
+    var v=decide(state.policy,{spentUsd:state.spentUsd,usedRequests:state.usedRequests,estCostUsd:est,series:state.series});
+    var box=$('verdict');box.className='verdict '+v.severity;
+    var label=v.allow?(v.severity==='warn'?'ALLOW · WARN':'ALLOW'):'BLOCK';
+    box.querySelector('.head').innerHTML='<span class="pill '+v.severity+'"><span class="dot"></span>'+(v.allow?'ALLOW':'BLOCK')+'</span><span id="vTitle">'+(v.allow?(v.severity==='warn'?'Allowed — surfaced warning':'Within policy'):'Denied before spend')+'</span>';
+    $('vEst')&&($('vEst').textContent='est. cost '+(priced?'$'+est.toFixed(2):'— (unpriced model; budget advisory)')+' · projected spend '+fmt(state.spentUsd+est));
+    var rs=v.reasons&&v.reasons.length?v.reasons:(v.allow?['no budget/quota/anomaly triggers']:[]);
+    $('vReasons').innerHTML=rs.map(function(r){return '<li>'+r+'</li>'}).join('');
+  }
+
+  // ---- policy controls ----
+  function syncPolicyUI(){
+    $('killSw').className='sw'+(state.policy.killSwitch?' on':'');
+    $('anomSw').className='sw safe'+(state.policy.blockOnAnomaly?' on':'');
+  }
+  $('killToggle').onclick=function(){state.policy.killSwitch=!state.policy.killSwitch;syncPolicyUI();render();evalCall();};
+  $('anomToggle').onclick=function(){state.policy.blockOnAnomaly=!state.policy.blockOnAnomaly;syncPolicyUI();render();evalCall();};
+  $('applyPolicy').onclick=function(){
+    state.policy.budgetUsd=+$('polBudget').value||0;state.policy.quotaRequests=+$('polQuota').value||0;
+    render();evalCall();
+    if(liveKey)savePolicy();
+  };
+  $('simBtn').onclick=evalCall;
+
+  // ---- live binding ----
+  var liveKey=null;
+  async function api(path,opts){opts=opts||{};opts.headers=Object.assign({'Authorization':'Bearer '+liveKey,'Content-Type':'application/json'},opts.headers||{});
+    var r=await fetch(path,opts);if(!r.ok)throw new Error(path+' → '+r.status);return r.json();}
+  async function connect(){
+    var k=$('apikey').value.trim();if(!k){return;}liveKey=k;
+    try{
+      var st=await api('/api/governance/status?days=30');
+      var sv=await api('/api/analytics/savings?days=30').catch(function(){return null;});
+      state.spentUsd=st.usage.spentUsd;state.usedRequests=st.usage.usedRequests;
+      state.series=st.series&&st.series.length?st.series:state.series;
+      state.policy=Object.assign(state.policy,st.policy);
+      if(sv){state.savedUsd=sv.netSavedUsd;state.roi=sv.roi;state.byLayer=sv.byLayer||state.byLayer;}
+      $('orgline').textContent='Org: '+(st.organizationSlug||'—')+' · live';
+      $('demobadge').style.display='none';
+      $('polBudget').value=state.policy.budgetUsd||0;$('polQuota').value=state.policy.quotaRequests||0;
+      syncPolicyUI();render();evalCall();
+    }catch(e){$('orgline').textContent='Live bind failed: '+e.message+' — showing demo data';}
+  }
+  async function savePolicy(){try{await api('/api/governance/policy',{method:'POST',body:JSON.stringify(state.policy)});}catch(e){}}
+  $('connectBtn').onclick=connect;
+
+  // ---- init ----
+  syncPolicyUI();render();evalCall();
+})();
+</script>

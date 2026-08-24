@@ -18,8 +18,10 @@
 // normal miss), and X-Cache-* response headers.
 
 import { Redis } from '@upstash/redis';
+import { neon } from '@neondatabase/serverless';
 import { validateApiKey, validateNamespaceAccess, recordUsage } from '../../lib/api-key-middleware.js';
 import { computePrefixReuse, planBreakpoints } from '../../lib/prefix-cache.js';
+import { recordHit, hitEventFromHeaders } from '../../lib/savings-recorder.js';
 
 export const config = {
   runtime: 'nodejs',
@@ -37,6 +39,10 @@ function getRedis(): Redis {
   _redis = new Redis({ url, token });
   return _redis;
 }
+
+// Ledger writer for the Savings Engine (Move 1). neon() does not open a
+// connection at construction, so this is safe at module scope.
+const sql = neon(process.env.DATABASE_URL!);
 
 // Session prefix fingerprints are short-lived working state, not durable data.
 const PREFIX_TTL_SECONDS = 60 * 60 * 24; // 24h
@@ -107,6 +113,19 @@ export default async function handler(req: Request) {
       hits: result.hit ? 1 : 0,
       misses: result.hit ? 0 : 1,
     }).catch((err: any) => console.error('Failed to record usage:', err));
+
+    // Move 1: a prefix hit is a real saved-work event. Append a priced row to
+    // the savings ledger (layer:'prefix'). prefixTokens come from X-Prefix-Tokens
+    // (the shared front billed at the cache-read rate); model from X-Model.
+    // Ledger-only — recordUsage above already handled the daily aggregate.
+    if (result.hit) {
+      recordHit({ sql }, {
+        organizationId: keyContext.organizationId,
+        namespace,
+        sessionId,
+        event: hitEventFromHeaders(req.headers, 'prefix'),
+      }).catch((err: any) => console.error('Failed to record savings hit:', err));
+    }
 
     const annotated = body.annotate ? planBreakpoints(body.messages, result.breakpointIndex) : undefined;
 

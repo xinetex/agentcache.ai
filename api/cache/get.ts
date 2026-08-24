@@ -1,5 +1,7 @@
 import { Redis } from '@upstash/redis';
+import { neon } from '@neondatabase/serverless';
 import { validateApiKey, validateNamespaceAccess, recordUsage } from '../../lib/api-key-middleware.js';
+import { recordHit, hitEventFromHeaders } from '../../lib/savings-recorder.js';
 
 export const config = {
     runtime: 'nodejs',
@@ -9,6 +11,10 @@ const redis = new Redis({
     url: process.env.UPSTASH_REDIS_REST_URL!,
     token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 });
+
+// Ledger writer for the Savings Engine (Move 1). Separate from the Redis cache
+// store; used only to append priced hit rows for auditable net-dollars-saved.
+const sql = neon(process.env.DATABASE_URL!);
 
 export default async function handler(req: Request) {
     if (req.method !== 'GET') {
@@ -84,6 +90,19 @@ export default async function handler(req: Request) {
             hits: isHit ? 1 : 0,
             misses: isHit ? 0 : 1
         }).catch(err => console.error('Failed to record usage:', err));
+
+        // Move 1: on a hit, append a priced row to the savings ledger
+        // (layer/model/tokens/$). Ledger-only — the daily aggregate is already
+        // handled by recordUsage above, so there is no double counting. The
+        // caller declares model + token counts via X-Model / X-Input-Tokens /
+        // X-Output-Tokens; absent them the hit is still logged, valued at $0.
+        if (isHit) {
+            recordHit({ sql }, {
+                organizationId: keyContext.organizationId,
+                namespace,
+                event: hitEventFromHeaders(req.headers, 'exact'),
+            }).catch((err: any) => console.error('Failed to record savings hit:', err));
+        }
 
         if (value === null) {
             // A cache miss is a normal, expected outcome — NOT an HTTP error.
