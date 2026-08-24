@@ -14,6 +14,7 @@ const SUITES = [
   ['Core · savings recorder', 'tests/savings-recorder.test.mjs'],
   ['Control · governance', 'tests/governance.test.mjs'],
   ['Moat · reasoning cache', 'tests/reasoning-cache.test.mjs'],
+  ['Platform · agent runtime', 'tests/agent-runtime.test.mjs'],
   ['Adoption · key fallback', 'tests/api-key-fallback.test.mjs'],
   ['Core · engine (pkg)', 'packages/agentcache-engine/test/engine.test.mjs'],
   ['Knowledge · ingest gate', 'tests/ingest-guard.test.mjs'],

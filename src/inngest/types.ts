@@ -47,5 +47,11 @@ export const schemas = (new EventSchemas() as any).fromRecord({
     },
     "agent/swarm.start": {
         data: {} as { swarmId: string; agents: string[] }
+    },
+    "agent/run.start": {
+        data: {} as { runId: string; agentId?: string; namespace?: string; organizationId?: string; steps?: any[]; approvalThresholdUsd?: number }
+    },
+    "agent/run.approve": {
+        data: {} as { runId: string; decision: "approve" | "reject"; note?: string }
     }
 }) as any;
