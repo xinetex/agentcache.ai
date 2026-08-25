@@ -15,7 +15,6 @@
 // Returns 200 even on deny — a denied call is a normal governed outcome, not an
 // HTTP error (same contract discipline as the cache miss path).
 
-import { neon } from '@neondatabase/serverless';
 import { validateApiKey } from '../../lib/api-key-middleware.js';
 import { decide } from '../../lib/governance.js';
 import { loadPolicy, loadUsage } from '../../lib/governance-data.js';
@@ -23,8 +22,7 @@ import { getPrice, round2 } from '../../lib/savings.js';
 
 export const config = { runtime: 'nodejs' };
 import { ensureGovernanceSchema } from '../../lib/ensure-schema.js';
-const sql = neon(process.env.DATABASE_URL!);
-ensureGovernanceSchema(sql).catch(() => {}); // self-provision on cold start
+import { sql } from '../../lib/neon.js';
 
 function json(obj: unknown, status = 200) {
   return new Response(JSON.stringify(obj), {
@@ -56,6 +54,7 @@ export default async function handler(req: Request) {
     const outputTokens = Math.max(0, Number(body.outputTokens) || 0);
     const orgId = keyContext.organizationId;
 
+    await ensureGovernanceSchema(sql).catch(() => {});
     const [policy, usage] = await Promise.all([loadPolicy(sql, orgId), loadUsage(sql, orgId, 30)]);
     const { estCostUsd, priced } = estimateCostUsd(model, inputTokens, outputTokens);
 

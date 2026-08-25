@@ -10,13 +10,11 @@
 // guardrails the gate then enforces. Auth + tenant scoping mirror
 // api/cache/get.ts (ac_ key -> neon organization).
 
-import { neon } from '@neondatabase/serverless';
 import { validateApiKey } from '../../lib/api-key-middleware.js';
 
 export const config = { runtime: 'nodejs' };
 import { ensureGovernanceSchema } from '../../lib/ensure-schema.js';
-const sql = neon(process.env.DATABASE_URL!);
-ensureGovernanceSchema(sql).catch(() => {}); // self-provision on cold start
+import { sql } from '../../lib/neon.js';
 
 function json(obj: unknown, status = 200) {
   return new Response(JSON.stringify(obj), {
@@ -60,6 +58,7 @@ export default async function handler(req: Request) {
       return json({ error: 'Unauthorized', message: e?.message || 'auth failed' }, 401);
     }
     const orgId = keyContext.organizationId;
+    await ensureGovernanceSchema(sql).catch(() => {});
 
     if (req.method === 'GET') {
       const rows: any[] = await sql`SELECT * FROM governance_policies WHERE organization_id = ${orgId} LIMIT 1`;

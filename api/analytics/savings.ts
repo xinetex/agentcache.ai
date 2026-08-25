@@ -11,15 +11,13 @@
 //
 // Auth + tenant scoping mirror api/cache/get.ts (ac_ key, org-scoped rows).
 
-import { neon } from '@neondatabase/serverless';
 import { validateApiKey } from '../../lib/api-key-middleware.js';
 import { round2 } from '../../lib/savings.js';
 
 export const config = { runtime: 'nodejs' };
 
 import { ensureSavingsSchema } from '../../lib/ensure-schema.js';
-const sql = neon(process.env.DATABASE_URL!);
-ensureSavingsSchema(sql).catch(() => {}); // self-provision on cold start
+import { sql } from '../../lib/neon.js';
 
 // Monthly list price by plan tier. Operator-configurable; a ?planCostUsd query
 // param overrides for what-if analysis. Prorated to the requested window so ROI
@@ -58,7 +56,9 @@ export default async function handler(req: Request) {
     const url = new URL(req.url);
     const days = Math.min(Math.max(parseInt(url.searchParams.get('days') || '30', 10) || 30, 1), 365);
 
-    // Pull the ledger rows for this org over the window (tenant-scoped).
+    // Ensure the ledger table exists (memoized, bounded, fail-open), then
+    // pull this org's rows for the window (tenant-scoped).
+    await ensureSavingsSchema(sql).catch(() => {});
     const rows: any[] = await sql`
       SELECT layer, model, saved_tokens, saved_usd, ts
       FROM savings_events

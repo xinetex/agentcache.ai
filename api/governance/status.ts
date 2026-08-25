@@ -8,15 +8,13 @@
 // this window — plus the live gate verdict for a $0 probe call. One request the
 // UI can render the whole control plane from.
 
-import { neon } from '@neondatabase/serverless';
 import { validateApiKey } from '../../lib/api-key-middleware.js';
 import { decide } from '../../lib/governance.js';
 import { loadPolicy, loadUsage } from '../../lib/governance-data.js';
 
 export const config = { runtime: 'nodejs' };
 import { ensureGovernanceSchema } from '../../lib/ensure-schema.js';
-const sql = neon(process.env.DATABASE_URL!);
-ensureGovernanceSchema(sql).catch(() => {}); // self-provision on cold start
+import { sql } from '../../lib/neon.js';
 
 function json(obj: unknown, status = 200) {
   return new Response(JSON.stringify(obj), {
@@ -39,6 +37,7 @@ export default async function handler(req: Request) {
     const days = Math.min(Math.max(parseInt(url.searchParams.get('days') || '30', 10) || 30, 1), 365);
     const orgId = keyContext.organizationId;
 
+    await ensureGovernanceSchema(sql).catch(() => {});
     const [policy, usage] = await Promise.all([loadPolicy(sql, orgId), loadUsage(sql, orgId, days)]);
 
     // Verdict for a zero-cost probe — shows the standing posture (ok/warn/block)
