@@ -1,4 +1,4 @@
-# @agentcache/mcp
+# agentcache-mcp
 
 The agent-facing **MCP server** for the [AgentCache](https://agentcache.ai) control plane.
 Give any MCP-capable agent (Claude Desktop, Cursor, …) the AgentCache control plane in one line:
@@ -13,7 +13,7 @@ Add to your MCP config (e.g. `claude_desktop_config.json` or Cursor `mcp.json`):
   "mcpServers": {
     "agentcache": {
       "command": "npx",
-      "args": ["-y", "@agentcache/mcp"],
+      "args": ["-y", "agentcache-mcp"],
       "env": { "AGENTCACHE_API_KEY": "ac_live_..." }
     }
   }
@@ -43,7 +43,7 @@ Get an `ac_live_` key at https://agentcache.ai/onboarding.html.
 ```bash
 npm install      # gets the toolchain
 npm run build    # tsc -> dist/
-npm publish --access public   # scoped package; set your npm auth first
+npm publish   # you are already logged in as verdoni
 ```
 
 Docs: https://agentcache.ai/docs

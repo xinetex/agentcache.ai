@@ -471,7 +471,7 @@ X-Cache-Namespace: my-app
   "mcpServers": {
     "agentcache": {
       "command": "npx",
-      "args": ["-y", "@agentcache/mcp"],
+      "args": ["-y", "agentcache-mcp"],
       "env": { "AGENTCACHE_API_KEY": "ac_live_..." }
     }
   }
@@ -540,9 +540,9 @@ POST /api/agent/approve   { "runId": "run_123", "decision": "approve" }</code></
               </h2>
               <div class="grid md:grid-cols-3 gap-4">
                 <div class="glass rounded-xl p-5 border border-slate-800">
-                  <h3 class="text-white font-bold mb-1">@agentcache/mcp</h3>
+                  <h3 class="text-white font-bold mb-1">agentcache-mcp</h3>
                   <p class="text-sm text-slate-400 mb-2">Agent-facing MCP server.</p>
-                  <code class="text-xs text-cyan-400">npx -y @agentcache/mcp</code>
+                  <code class="text-xs text-cyan-400">npx -y agentcache-mcp</code>
                 </div>
                 <div class="glass rounded-xl p-5 border border-slate-800">
                   <h3 class="text-white font-bold mb-1">agentcache-node</h3>

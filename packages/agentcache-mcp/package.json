@@ -1,5 +1,5 @@
 {
-  "name": "@agentcache/mcp",
+  "name": "agentcache-mcp",
   "version": "0.1.0",
   "description": "Agent-facing MCP for the AgentCache control plane \u2014 cache, pre-spend governance gate, verifiable savings, and cross-run reasoning memory.",
   "type": "module",

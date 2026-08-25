@@ -90,7 +90,7 @@
   <span class="k">"mcpServers"</span>: {
     <span class="k">"agentcache"</span>: {
       <span class="k">"command"</span>: <span class="s">"npx"</span>,
-      <span class="k">"args"</span>: [<span class="s">"-y"</span>, <span class="s">"@agentcache/mcp"</span>],
+      <span class="k">"args"</span>: [<span class="s">"-y"</span>, <span class="s">"agentcache-mcp"</span>],
       <span class="k">"env"</span>: { <span class="k">"AGENTCACHE_API_KEY"</span>: <span class="s">"ac_live_…"</span> }
     }
   }
@@ -143,6 +143,6 @@ curl -X POST https://agentcache.ai/api/cache/set \
     <a class="btn ghost" href="https://agentcache.ai/governance-console.html">Open the control plane</a>
   </div>
   <div class="note">
-    Requires an <code>ac_live_</code> key and the control-plane endpoints deployed (<code>/api/cache/*</code>, <code>/api/governance/*</code>, <code>/api/analytics/savings</code>). The MCP package name <code>@agentcache/mcp</code> is the intended public name for <code>src/mcp/server.ts</code>; publish it to npm to make the one-line install real.
+    Requires an <code>ac_live_</code> key and the control-plane endpoints deployed (<code>/api/cache/*</code>, <code>/api/governance/*</code>, <code>/api/analytics/savings</code>). The MCP package name <code>agentcache-mcp</code> is the intended public name for <code>src/mcp/server.ts</code>; publish it to npm to make the one-line install real.
   </div>
 </div>
