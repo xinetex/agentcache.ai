@@ -8,7 +8,7 @@ export const config = { runtime: 'nodejs' };
  * POST /api/pipelines/run
  * Trigger a workflow execution.
  */
-export default async function handler(req: Request) {
+async function handler(req: Request) {
     if (req.method === 'OPTIONS') {
         return new Response(null, { headers: { 'Access-Control-Allow-Origin': '*' } });
     }
@@ -48,3 +48,5 @@ export default async function handler(req: Request) {
         return new Response(JSON.stringify({ error: e.message }), { status: 500 });
     }
 }
+
+export { handler as GET, handler as POST };

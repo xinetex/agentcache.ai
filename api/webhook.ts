@@ -50,7 +50,7 @@ async function sendEmail(to: string, subject: string, body: string): Promise<voi
 /**
  * Stripe Webhook Handler
  */
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
     const stripe = new Stripe(STRIPE_SECRET_KEY);
 
     const sig = req.headers.get('stripe-signature');
@@ -324,3 +324,5 @@ async function sendPaymentFailedEmail(email: string, amount: number) {
     };
     await redis('LPUSH', 'logs:emails', JSON.stringify(emailLog));
 }
+
+export { handler as GET, handler as POST };

@@ -31,3 +31,7 @@ studio-dist/
 CLAUDE.md
 .claude/
 _attic/
+
+# FUSE mount artifacts (deleted-but-open handles)
+*.fuse_hidden*
+.fuse_hidden*

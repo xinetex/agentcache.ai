@@ -382,7 +382,7 @@ async function executeSwarmStrategy(strategy, models, messages, traceId, authn) 
   return { trace, results };
 }
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') {
     return json({ ok: true });
   }
@@ -461,3 +461,5 @@ export default async function handler(req: Request): Promise<Response> {
     }, 500);
   }
 }
+
+export { handler as POST };

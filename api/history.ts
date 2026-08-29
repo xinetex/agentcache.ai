@@ -30,7 +30,7 @@ async function redis(command: string, ...args: string[]): Promise<any> {
     return data.result;
 }
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
     if (req.method === 'OPTIONS') return json({ ok: true });
 
     try {
@@ -67,3 +67,5 @@ export default async function handler(req: Request): Promise<Response> {
         return json({ error: 'Unexpected error', details: err?.message }, 500);
     }
 }
+
+export { handler as GET, handler as POST };

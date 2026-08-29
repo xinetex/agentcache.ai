@@ -50,7 +50,7 @@ async function auth(req: Request): Promise<any> {
   return { ok: true, kind: 'live', hash, email };
 }
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return json({ ok: true }, 200);
@@ -296,3 +296,5 @@ export default async function handler(req: Request): Promise<Response> {
     }, 500);
   }
 }
+
+export { handler as POST };

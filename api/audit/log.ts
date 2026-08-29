@@ -30,7 +30,7 @@ function json(data: AuditLogResponse, status = 200) {
     });
 }
 
-export default async function handler(req: Request) {
+async function handler(req: Request) {
     if (req.method === 'OPTIONS') {
         return json({ success: true }, 204);
     }
@@ -103,3 +103,5 @@ export default async function handler(req: Request) {
         return json({ success: false, error: err.message }, 500);
     }
 }
+
+export { handler as POST };

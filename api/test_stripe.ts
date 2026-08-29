@@ -4,7 +4,7 @@ export const config = {
     runtime: 'nodejs',
 };
 
-export default async function handler(req: Request) {
+async function handler(req: Request) {
     const key = process.env.STRIPE_SECRET_KEY;
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -24,3 +24,5 @@ export default async function handler(req: Request) {
         return new Response(JSON.stringify({ error: err.message }), { status: 500 });
     }
 }
+
+export { handler as GET, handler as POST };

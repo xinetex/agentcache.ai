@@ -8,7 +8,7 @@ export const config = { runtime: 'nodejs' };
  * POST /api/billing/deposit
  * Mocks a Stripe Deposit
  */
-export default async function handler(req: Request) {
+async function handler(req: Request) {
     if (req.method === 'OPTIONS') {
         return new Response(null, { headers: { 'Access-Control-Allow-Origin': '*' } });
     }
@@ -73,3 +73,5 @@ export default async function handler(req: Request) {
         return new Response(JSON.stringify({ error: e.message }), { status: 500 });
     }
 }
+
+export { handler as POST };

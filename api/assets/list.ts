@@ -4,7 +4,7 @@ import { createHash } from 'crypto';
 
 export const config = { runtime: 'nodejs' };
 
-export default async function handler(req: Request) {
+async function handler(req: Request) {
     if (req.method === 'OPTIONS') {
         return new Response(null, {
             status: 200,
@@ -44,3 +44,5 @@ export default async function handler(req: Request) {
         return new Response(JSON.stringify({ error: error.message }), { status: 500 });
     }
 }
+
+export { handler as GET, handler as POST };

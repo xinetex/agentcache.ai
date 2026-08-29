@@ -19,7 +19,7 @@ interface CacheChunkRequest {
   errorMessage?: string;
 }
 
-export default async function handler(req: Request) {
+async function handler(req: Request) {
   if (req.method !== 'POST' && req.method !== 'GET') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { 
       status: 405,
@@ -155,3 +155,5 @@ export default async function handler(req: Request) {
     });
   }
 }
+
+export { handler as GET, handler as POST };

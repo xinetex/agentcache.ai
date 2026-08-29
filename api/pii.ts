@@ -58,7 +58,7 @@ async function logToHistory(apiKey: string | undefined, entry: any) {
     }
 }
 
-export default async function handler(req: Request) {
+async function handler(req: Request) {
     if (req.method === 'OPTIONS') {
         return json({}, 204);
     }
@@ -110,3 +110,5 @@ export default async function handler(req: Request) {
         return json({ error: 'Unexpected error', details: err.message }, 500);
     }
 }
+
+export { handler as POST };
