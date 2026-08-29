@@ -36,7 +36,7 @@ function json(obj: unknown, status = 200, extra: Record<string, string> = {}) {
   });
 }
 
-export default async function handler(req: Request) {
+async function handler(req: Request) {
   if (req.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
 
   try {
@@ -115,3 +115,5 @@ export default async function handler(req: Request) {
     return json({ error: err.message }, 500);
   }
 }
+
+export { handler as GET };

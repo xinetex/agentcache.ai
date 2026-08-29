@@ -49,7 +49,7 @@ async function authOrThrow(req: Request) {
   return validateApiKey(apiKey);
 }
 
-export default async function handler(req: Request) {
+async function handler(req: Request) {
   try {
     let keyContext: any;
     try {
@@ -104,3 +104,5 @@ export default async function handler(req: Request) {
     return json({ error: err.message }, 500);
   }
 }
+
+export { handler as GET, handler as POST };

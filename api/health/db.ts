@@ -20,7 +20,7 @@ function json(obj: unknown, status = 200) {
   });
 }
 
-export default async function handler(_req: Request) {
+async function handler(_req: Request) {
   const t0 = Date.now();
   try {
     const ping: any[] = await withTimeout(sql`SELECT 1 AS ok`, 7000);
@@ -48,3 +48,5 @@ export default async function handler(_req: Request) {
     return json({ db: 'unreachable', error: e?.message || String(e), ms: Date.now() - t0 }, 200);
   }
 }
+
+export { handler as GET };
