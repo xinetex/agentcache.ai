@@ -10,7 +10,7 @@ interface RouteRequest {
     prompt: string;
 }
 
-export default async function handler(req: Request) {
+async function handler(req: Request) {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204 });
     if (req.method !== 'POST') return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
 
@@ -38,3 +38,5 @@ export default async function handler(req: Request) {
         return new Response(JSON.stringify({ error: err.message }), { status: 500 });
     }
 }
+
+export { handler as POST };

@@ -18,7 +18,7 @@ function json(obj: unknown, status = 200) {
   return new Response(JSON.stringify(obj), { status, headers: { 'Content-Type': 'application/json', 'cache-control': 'no-store' } });
 }
 
-export default async function handler(req: Request) {
+async function handler(req: Request) {
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
   try {
     const authHeader = req.headers.get('Authorization') || req.headers.get('X-API-Key');
@@ -36,3 +36,5 @@ export default async function handler(req: Request) {
     return json({ error: err.message }, 500);
   }
 }
+
+export { handler as POST };

@@ -4,7 +4,7 @@ export const config = {
     runtime: 'nodejs', // Run on Edge for speed
 };
 
-export default async function handler(req: Request) {
+async function handler(req: Request) {
     // Verify Cron Secret to prevent unauthorized triggers
     const authHeader = req.headers.get('authorization');
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -34,3 +34,5 @@ export default async function handler(req: Request) {
         });
     }
 }
+
+export { handler as GET };

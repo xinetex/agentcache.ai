@@ -18,7 +18,7 @@ import { ensureSavingsSchema } from '../../lib/ensure-schema.js';
 const sql = neon(process.env.DATABASE_URL!);
 ensureSavingsSchema(sql).catch(() => {}); // self-provision on cold start
 
-export default async function handler(req: Request) {
+async function handler(req: Request) {
     if (req.method !== 'GET') {
         return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
     }
@@ -143,3 +143,5 @@ export default async function handler(req: Request) {
         return new Response(JSON.stringify({ error: err.message }), { status: 500 });
     }
 }
+
+export { handler as GET };

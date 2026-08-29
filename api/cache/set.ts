@@ -10,7 +10,7 @@ const redis = new Redis({
     token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 });
 
-export default async function handler(req: Request) {
+async function handler(req: Request) {
     if (req.method !== 'POST') {
         return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
     }
@@ -102,3 +102,5 @@ export default async function handler(req: Request) {
         return new Response(JSON.stringify({ error: err.message }), { status: 500 });
     }
 }
+
+export { handler as POST };
