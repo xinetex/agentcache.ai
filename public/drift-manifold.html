@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drift Manifold - Topological Latent Lens | AgentCache</title>
+    <meta name="description" content="Chrono-Drift Topography Lens & Manifold Healing for Autonomous AI Agents">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #030712;
+            color: #e5e7eb;
+            overflow: hidden;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .glass-panel {
+            background: rgba(11, 15, 25, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .hud-glow-cyan {
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.15);
+        }
+
+        .hud-glow-red {
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.2);
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 2px;
+        }
+
+        @keyframes pulse-cyan {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.08); }
+        }
+
+        .pulse-beacon {
+            animation: pulse-cyan 2.4s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body class="h-screen w-screen flex relative select-none">
+
+    <!-- 1. LEFT SIDEBAR (Standard Operations Navigation) -->
+    <aside class="w-64 bg-[#070b14] border-r border-white/5 flex flex-col justify-between shrink-0 z-30 relative shadow-2xl">
+        <div>
+            <!-- Header Logo -->
+            <div class="h-16 flex items-center px-6 border-b border-white/5 gap-3">
+                <a href="/mission-control.html" class="flex items-center gap-3 group">
+                    <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:border-cyan-400 transition-colors">
+                        <iconify-icon icon="solar:shield-check-bold" width="18"></iconify-icon>
+                    </div>
+                    <div>
+                        <div class="text-sm font-bold text-white tracking-wide leading-none">AgentCache</div>
+                        <div class="text-[10px] text-gray-500 tracking-wider uppercase font-mono mt-1">Control Plane</div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Nav Links -->
+            <div class="py-4 px-3 space-y-6">
+                <!-- Core Operations -->
+                <div>
+                    <div class="px-3 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest font-mono">Operations</div>
+                    <div class="space-y-1">
+                        <a href="/mission-control.html"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                            <iconify-icon icon="solar:widget-linear" width="16"></iconify-icon>
+                            Mission Control
+                        </a>
+                        <a href="/drift-manifold.html"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 rounded-lg shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+                            <iconify-icon icon="solar:globus-linear" class="text-cyan-400" width="16"></iconify-icon>
+                            Drift Manifold
+                        </a>
+                        <a href="/dashboard.html"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                            <iconify-icon icon="solar:users-group-rounded-linear" width="16"></iconify-icon>
+                            Pipeline Studio
+                        </a>
+                        <a href="/governance-console.html"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                            <iconify-icon icon="solar:shield-warning-linear" width="16"></iconify-icon>
+                            Governance & Audits
+                        </a>
+                        <a href="/cognitive-universe.html"
+                            class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                            <iconify-icon icon="solar:atom-linear" width="16"></iconify-icon>
+                            Cognitive Universe
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Sectors -->
+                <div>
+                    <div class="px-3 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest font-mono">Ontology Sectors</div>
+                    <div class="space-y-1">
+                        <a href="/sector.html?name=finance"
+                            class="flex items-center gap-3 px-3 py-1.5 text-xs text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                            <iconify-icon icon="solar:wallet-money-linear" class="text-blue-400" width="14"></iconify-icon>
+                            Finance
+                        </a>
+                        <a href="/sector.html?name=biotech"
+                            class="flex items-center gap-3 px-3 py-1.5 text-xs text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                            <iconify-icon icon="solar:dna-linear" class="text-purple-400" width="14"></iconify-icon>
+                            Biotech & HIPAA
+                        </a>
+                        <a href="/sector.html?name=healthcare"
+                            class="flex items-center gap-3 px-3 py-1.5 text-xs text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                            <iconify-icon icon="solar:heart-pulse-linear" class="text-emerald-400" width="14"></iconify-icon>
+                            Clinical Triage
+                        </a>
+                        <a href="/sector.html?name=commerce"
+                            class="flex items-center gap-3 px-3 py-1.5 text-xs text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                            <iconify-icon icon="solar:shop-linear" class="text-amber-400" width="14"></iconify-icon>
+                            High-Scale E-Com
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer / Gateway Status -->
+        <div class="p-4 border-t border-white/5 bg-black/40">
+            <div class="flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span class="text-gray-400 font-mono text-[11px]">IMMUNE ENGINE</span>
+                </div>
+                <span class="text-[10px] font-mono text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/40">v32.4</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 2. MAIN 3D CHRONO-DRIFT VIEWPORT -->
+    <main class="flex-1 relative h-full flex flex-col overflow-hidden bg-[#020617]">
+
+        <!-- Three.js Canvas Container -->
+        <div id="three-container" class="absolute inset-0 z-0 cursor-grab active:cursor-grabbing"></div>
+
+        <!-- TOP HUD FLOATING BAR -->
+        <header class="relative z-10 p-6 flex justify-between items-start pointer-events-none">
+            <div class="pointer-events-auto">
+                <div class="flex items-center gap-3">
+                    <div class="px-2.5 py-1 rounded bg-cyan-500/10 border border-cyan-500/30 text-[10px] font-mono text-cyan-400 tracking-wider uppercase font-bold flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 pulse-beacon"></span>
+                        CHRONO-DRIFT TOPOGRAPHY LENS
+                    </div>
+                    <div id="stream-status" class="px-2.5 py-1 rounded bg-emerald-500/10 border border-emerald-500/30 text-[10px] font-mono text-emerald-400 tracking-wider uppercase flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                        STREAM: LIVE
+                    </div>
+                </div>
+                <h1 class="text-2xl font-black text-white tracking-tight mt-2 flex items-center gap-2">
+                    Topological Manifold
+                    <span class="text-xs font-normal text-gray-400 font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10">3D Vector Deformation</span>
+                </h1>
+                <p class="text-xs text-gray-400 max-w-lg mt-1 leading-relaxed">
+                    Real-time visualizer of agent reasoning manifold warp. Detecting semantic rot, ontological drift, and triggering automated antibody pulses.
+                </p>
+            </div>
+
+            <!-- Vitals Badges -->
+            <div class="flex gap-3 pointer-events-auto">
+                <div class="glass-panel px-4 py-2.5 rounded-xl border-l-2 border-l-cyan-400 text-left min-w-[110px]">
+                    <div class="text-[10px] uppercase font-mono text-gray-400">Latent Nodes</div>
+                    <div id="metric-nodes" class="text-xl font-bold font-mono text-white mt-0.5">84</div>
+                </div>
+                <div class="glass-panel px-4 py-2.5 rounded-xl border-l-2 border-l-amber-400 text-left min-w-[110px]">
+                    <div class="text-[10px] uppercase font-mono text-gray-400">Warping</div>
+                    <div id="metric-warping" class="text-xl font-bold font-mono text-amber-400 mt-0.5">5</div>
+                </div>
+                <div class="glass-panel px-4 py-2.5 rounded-xl border-l-2 border-l-red-500 text-left min-w-[110px]">
+                    <div class="text-[10px] uppercase font-mono text-gray-400">Rot Anomaly</div>
+                    <div id="metric-rot" class="text-xl font-bold font-mono text-red-400 mt-0.5">2</div>
+                </div>
+                <div class="glass-panel px-4 py-2.5 rounded-xl border-l-2 border-l-emerald-400 text-left min-w-[120px]">
+                    <div class="text-[10px] uppercase font-mono text-gray-400">Coherence</div>
+                    <div id="metric-coherence" class="text-xl font-bold font-mono text-emerald-400 mt-0.5">97.4%</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTROLS & FILTER PILL BAR -->
+        <div class="relative z-10 px-6 flex justify-between items-center pointer-events-none">
+            <!-- Sector Filters -->
+            <div class="glass-panel p-1 rounded-xl flex items-center gap-1 pointer-events-auto border border-white/10 shadow-lg">
+                <button onclick="setSectorFilter('ALL')" class="sector-btn px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">ALL</button>
+                <button onclick="setSectorFilter('FINANCE')" class="sector-btn px-3 py-1.5 rounded-lg text-xs font-mono font-medium text-gray-400 hover:text-white transition-all">FINANCE</button>
+                <button onclick="setSectorFilter('BIOTECH')" class="sector-btn px-3 py-1.5 rounded-lg text-xs font-mono font-medium text-gray-400 hover:text-white transition-all">BIOTECH</button>
+                <button onclick="setSectorFilter('CLINICAL')" class="sector-btn px-3 py-1.5 rounded-lg text-xs font-mono font-medium text-gray-400 hover:text-white transition-all">CLINICAL</button>
+                <button onclick="setSectorFilter('SECURITY')" class="sector-btn px-3 py-1.5 rounded-lg text-xs font-mono font-medium text-gray-400 hover:text-white transition-all">SECURITY</button>
+            </div>
+
+            <!-- Action Controls -->
+            <div class="flex items-center gap-2 pointer-events-auto">
+                <button onclick="injectDriftAnomaly()" class="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5 transition-colors shadow-lg">
+                    <iconify-icon icon="solar:bomb-bold" width="14"></iconify-icon>
+                    INJECT DRIFT SPIKE
+                </button>
+                <button onclick="pulseGlobalAntibody()" class="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/50 flex items-center gap-1.5 transition-colors shadow-lg">
+                    <iconify-icon icon="solar:flash-bold" width="14"></iconify-icon>
+                    GLOBAL STABILIZE
+                </button>
+                <button onclick="toggleAutoRotate()" id="btn-rotate" class="px-3 py-1.5 rounded-lg text-xs font-mono text-gray-300 bg-white/5 hover:bg-white/10 border border-white/10 flex items-center gap-1.5 transition-colors">
+                    <iconify-icon icon="solar:refresh-linear" width="14"></iconify-icon>
+                    ROTATION: ON
+                </button>
+                <button onclick="resetCamera()" class="px-2.5 py-1.5 rounded-lg text-xs font-mono text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors" title="Reset View">
+                    <iconify-icon icon="solar:re-start-linear" width="14"></iconify-icon>
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. INTERACTIVE NODE INSPECTOR (FLYOUT HUD) -->
+        <div id="inspector-card" class="absolute right-6 top-28 z-20 w-84 glass-panel rounded-2xl p-5 border border-white/10 shadow-2xl transition-all duration-300 translate-x-[120%] opacity-0 pointer-events-none">
+            <div class="flex justify-between items-start mb-3">
+                <div>
+                    <div class="text-[9px] font-mono uppercase tracking-widest text-gray-400">LATENT NODE INSPECTOR</div>
+                    <h3 id="node-id" class="text-sm font-mono font-bold text-white mt-0.5">node_9f82ac...</h3>
+                </div>
+                <button onclick="deselectNode()" class="text-gray-400 hover:text-white p-1 rounded-md hover:bg-white/5 transition-colors">
+                    <iconify-icon icon="solar:close-square-linear" width="18"></iconify-icon>
+                </button>
+            </div>
+
+            <!-- Health Status Pill -->
+            <div id="node-status-badge" class="mb-4 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span id="node-status-text">DECAYING (42.8% Drift)</span>
+            </div>
+
+            <!-- Metric Progress Bars -->
+            <div class="space-y-3 mb-4 text-xs font-mono">
+                <div>
+                    <div class="flex justify-between text-[11px] text-gray-400 mb-1">
+                        <span>Topological Drift</span>
+                        <span id="node-drift-pct" class="text-amber-400 font-bold">42.8%</span>
+                    </div>
+                    <div class="h-1.5 w-full bg-black/40 rounded-full overflow-hidden border border-white/5">
+                        <div id="node-drift-bar" class="h-full bg-amber-400 transition-all duration-500" style="width: 42.8%"></div>
+                    </div>
+                </div>
+                <div class="flex justify-between text-[11px] text-gray-400">
+                    <span>Ontology Sector</span>
+                    <span id="node-sector" class="text-white font-medium">Finance / Risk</span>
+                </div>
+                <div class="flex justify-between text-[11px] text-gray-400">
+                    <span>Last Observation</span>
+                    <span id="node-time" class="text-gray-300">12s ago</span>
+                </div>
+            </div>
+
+            <!-- Prompt Excerpt -->
+            <div class="mb-4">
+                <div class="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-1">Embedding Sample Prompt</div>
+                <div id="node-prompt" class="p-2.5 rounded-lg bg-black/50 border border-white/5 text-xs text-gray-300 italic font-mono max-h-20 overflow-y-auto custom-scrollbar">
+                    "Execute semantic reconciliation on portfolio VaR bounds..."
+                </div>
+            </div>
+
+            <!-- Healing Action Buttons -->
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="healSelectedNode('reprompt')" class="px-3 py-2 rounded-lg text-xs font-mono font-bold bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/50 flex flex-col items-center gap-1 transition-colors">
+                    <iconify-icon icon="solar:flash-bold" width="16"></iconify-icon>
+                    <span>ANTIBODY PULSE</span>
+                </button>
+                <button onclick="healSelectedNode('drop')" class="px-3 py-2 rounded-lg text-xs font-mono font-bold bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/50 flex flex-col items-center gap-1 transition-colors">
+                    <iconify-icon icon="solar:trash-bin-trash-bold" width="16"></iconify-icon>
+                    <span>RE-EMBED (DROP)</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 4. BOTTOM TELEMETRY LOG STREAM (Collapsible) -->
+        <footer class="mt-auto relative z-10 p-6 flex justify-between items-end pointer-events-none">
+            <!-- Terminal Log Window -->
+            <div class="w-full max-w-xl glass-panel rounded-2xl p-4 border border-white/10 shadow-2xl pointer-events-auto">
+                <div class="flex justify-between items-center mb-2 pb-2 border-b border-white/5">
+                    <div class="flex items-center gap-2">
+                        <iconify-icon icon="solar:terminal-linear" class="text-cyan-400" width="14"></iconify-icon>
+                        <span class="text-[10px] font-mono font-bold text-gray-300 uppercase tracking-wider">Topological Pulse Log</span>
+                    </div>
+                    <span id="log-counter" class="text-[10px] font-mono text-gray-500">Listening to /api/cognitive/stream</span>
+                </div>
+                <div id="log-stream" class="h-20 overflow-y-auto space-y-1 font-mono text-[11px] text-gray-400 custom-scrollbar pr-2">
+                    <div class="flex items-center gap-2 text-cyan-400/90">
+                        <span class="text-gray-600">00:00:01</span>
+                        <span>[STREAM] Initialized Chrono-Drift Topography uplink.</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-emerald-400/90">
+                        <span class="text-gray-600">00:00:02</span>
+                        <span>[TOPOLOGY] Manifold baseline settled at curvature k=0.012.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legend Badge -->
+            <div class="glass-panel px-4 py-3 rounded-2xl border border-white/10 space-y-1.5 text-xs font-mono pointer-events-auto">
+                <div class="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-1">Manifold Legend</div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                    <span class="text-gray-300">&lt; 20% Drift (Healthy)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                    <span class="text-gray-300">20% - 60% (Warping)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                    <span class="text-gray-300">&gt; 60% Drift (Rot / Dead)</span>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <!-- 5. THREE.JS & HUD SCRIPT ENGINE -->
+    <script>
+        // State
+        let scene, camera, renderer, controls;
+        let gridMesh, starField;
+        let nodeObjects = [];
+        let trajectoryLines = [];
+        let selectedNodeData = null;
+        let isAutoRotating = true;
+        let activeSector = 'ALL';
+        let nodes = [];
+
+        const SECTOR_COLORS = {
+            FINANCE: 0x0ea5e9,    // Sky blue
+            BIOTECH: 0xa855f7,    // Purple
+            CLINICAL: 0x10b981,   // Emerald
+            COMMERCE: 0xf59e0b,   // Amber
+            SECURITY: 0xef4444,   // Red
+        };
+
+        const PROMPT_SAMPLES = [
+            "Reconcile collateral obligations across prime broker feeds.",
+            "Verify HIPAA compliance for multi-agent oncology diagnosis summary.",
+            "Audit rate-limiter threshold on streaming audio CDN endpoint.",
+            "Evaluate hedge ratio for synthetic delta-neutral liquidity pool.",
+            "Decompile argot shorthand sequence [v1:tok:delta].",
+            "Prune decaying memory vectors from long-context session cache."
+        ];
+
+        // Seed initial nodes
+        function seedNodes(count = 72) {
+            const sectors = Object.keys(SECTOR_COLORS);
+            nodes = [];
+            for (let i = 0; i < count; i++) {
+                const sector = sectors[Math.floor(Math.random() * sectors.length)];
+                // 15% rot, 25% decaying, 60% healthy
+                const r = Math.random();
+                let drift = r < 0.15 ? (0.65 + Math.random() * 0.3) : r < 0.40 ? (0.22 + Math.random() * 0.35) : (Math.random() * 0.18);
+                const status = drift > 0.6 ? 'dead' : drift > 0.2 ? 'decaying' : 'healthy';
+                
+                // Vector coordinate in latent space
+                const phi = Math.acos(-1 + (2 * i) / count);
+                const theta = Math.sqrt(count * Math.PI) * phi;
+                const radius = 5.5 + (Math.random() - 0.5) * 1.5;
+
+                nodes.push({
+                    id: 'node_' + Math.random().toString(36).substring(2, 10),
+                    sector,
+                    status,
+                    drift,
+                    x: Math.cos(theta) * Math.sin(phi) * radius,
+                    y: (Math.sin(theta) * Math.sin(phi) * radius * 0.7) + (drift * 2.0) - 1.0,
+                    z: Math.cos(phi) * radius,
+                    initialY: (Math.sin(theta) * Math.sin(phi) * radius * 0.7) + (drift * 2.0) - 1.0,
+                    prompt: PROMPT_SAMPLES[Math.floor(Math.random() * PROMPT_SAMPLES.length)],
+                    lastObserved: Date.now() - Math.floor(Math.random() * 30000)
+                });
+            }
+        }
+
+        // Three.js Initialization
+        function initThree() {
+            const container = document.getElementById('three-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            // Scene
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x020617, 0.035);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 1000);
+            camera.position.set(0, 7, 16);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            container.appendChild(renderer.domElement);
+
+            // OrbitControls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 4;
+            controls.maxDistance = 35;
+            controls.autoRotate = isAutoRotating;
+            controls.autoRotateSpeed = 0.6;
+
+            // Lights
+            const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambient);
+
+            const pointLight = new THREE.PointLight(0x06b6d4, 2.5, 50);
+            pointLight.position.set(0, 10, 5);
+            scene.add(pointLight);
+
+            const amberLight = new THREE.PointLight(0xf59e0b, 1.2, 40);
+            amberLight.position.set(-10, -5, -5);
+            scene.add(amberLight);
+
+            // Stars
+            createStarfield();
+
+            // Topography Grid
+            createTopographyGrid();
+
+            // Render Nodes
+            buildVisualNodes();
+
+            // Window resize
+            window.addEventListener('resize', onWindowResize);
+
+            // Raycaster for interaction
+            setupRaycaster();
+
+            // Animation Loop
+            animate();
+        }
+
+        function createStarfield() {
+            const starCount = 2500;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(starCount * 3);
+            const colors = new Float32Array(starCount * 3);
+
+            for (let i = 0; i < starCount * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 120;
+                positions[i + 1] = (Math.random() - 0.5) * 120;
+                positions[i + 2] = (Math.random() - 0.5) * 120;
+
+                const shade = 0.5 + Math.random() * 0.5;
+                colors[i] = 0.1 * shade;
+                colors[i + 1] = 0.6 * shade;
+                colors[i + 2] = 0.9 * shade;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 0.8,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.6
+            });
+
+            starField = new THREE.Points(geometry, material);
+            scene.add(starField);
+        }
+
+        function createTopographyGrid() {
+            const size = 30;
+            const segments = 45;
+            const geometry = new THREE.PlaneGeometry(size, size, segments, segments);
+            geometry.rotateX(-Math.PI / 2);
+
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x0e2439,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.25,
+                roughness: 0.8
+            });
+
+            gridMesh = new THREE.Mesh(geometry, material);
+            gridMesh.position.y = -3.2;
+            scene.add(gridMesh);
+        }
+
+        function buildVisualNodes() {
+            // Clear existing
+            nodeObjects.forEach(obj => scene.remove(obj.mesh));
+            nodeObjects = [];
+            trajectoryLines.forEach(line => scene.remove(line));
+            trajectoryLines = [];
+
+            const sphereGeo = new THREE.SphereGeometry(0.14, 20, 20);
+
+            nodes.forEach((data, index) => {
+                let colorHex = data.status === 'dead' ? 0xef4444 : data.status === 'decaying' ? 0xf59e0b : 0x10b981;
+                
+                // Sphere Material with Emissive Glow
+                const mat = new THREE.MeshStandardMaterial({
+                    color: colorHex,
+                    emissive: colorHex,
+                    emissiveIntensity: data.status === 'dead' ? 2.5 : data.status === 'decaying' ? 1.6 : 0.8,
+                    roughness: 0.2
+                });
+
+                const mesh = new THREE.Mesh(sphereGeo, mat);
+                mesh.position.set(data.x, data.y, data.z);
+                mesh.userData = data;
+
+                // Pulsing vector displacement ray for warping/rot nodes
+                if (data.status !== 'healthy') {
+                    const lineMat = new THREE.LineBasicMaterial({
+                        color: colorHex,
+                        transparent: true,
+                        opacity: 0.4
+                    });
+                    const pts = [
+                        new THREE.Vector3(data.x, data.y, data.z),
+                        new THREE.Vector3(data.x, data.y - (data.drift * 2.2), data.z)
+                    ];
+                    const lineGeo = new THREE.BufferGeometry().setFromPoints(pts);
+                    const line = new THREE.Line(lineGeo, lineMat);
+                    scene.add(line);
+                    trajectoryLines.push(line);
+                }
+
+                scene.add(mesh);
+                nodeObjects.push({ mesh, data, initialY: data.y, seed: Math.random() * 10 });
+            });
+
+            // Spline connection between successive points
+            if (nodes.length > 2) {
+                const samplePoints = nodes.slice(0, 24).map(n => new THREE.Vector3(n.x, n.y, n.z));
+                const curve = new THREE.CatmullRomCurve3(samplePoints);
+                const points = curve.getPoints(120);
+                const splineGeo = new THREE.BufferGeometry().setFromPoints(points);
+                const splineMat = new THREE.LineBasicMaterial({
+                    color: 0x06b6d4,
+                    transparent: true,
+                    opacity: 0.2
+                });
+                const splineLine = new THREE.Line(splineGeo, splineMat);
+                scene.add(splineLine);
+                trajectoryLines.push(splineLine);
+            }
+
+            updateVitalsDisplay();
+        }
+
+        function updateVitalsDisplay() {
+            const total = nodes.length;
+            const warping = nodes.filter(n => n.status === 'decaying').length;
+            const rot = nodes.filter(n => n.status === 'dead').length;
+            const healthy = total - warping - rot;
+            const coherence = ((healthy / total) * 100).toFixed(1);
+
+            document.getElementById('metric-nodes').innerText = total;
+            document.getElementById('metric-warping').innerText = warping;
+            document.getElementById('metric-rot').innerText = rot;
+            document.getElementById('metric-coherence').innerText = coherence + '%';
+        }
+
+        // Raycasting for interactive click selection
+        function setupRaycaster() {
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+            const container = document.getElementById('three-container');
+
+            container.addEventListener('pointerdown', (event) => {
+                const rect = container.getBoundingClientRect();
+                mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
+                mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
+
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(nodeObjects.map(o => o.mesh));
+
+                if (intersects.length > 0) {
+                    const hit = intersects[0].object;
+                    selectNode(hit.userData);
+                }
+            });
+        }
+
+        function selectNode(data) {
+            selectedNodeData = data;
+            const card = document.getElementById('inspector-card');
+            card.classList.remove('translate-x-[120%]', 'opacity-0', 'pointer-events-none');
+
+            document.getElementById('node-id').innerText = data.id;
+            const pct = (data.drift * 100).toFixed(1) + '%';
+            document.getElementById('node-drift-pct').innerText = pct;
+            document.getElementById('node-drift-bar').style.width = pct;
+            document.getElementById('node-sector').innerText = data.sector;
+            document.getElementById('node-prompt').innerText = `"${data.prompt}"`;
+
+            const badge = document.getElementById('node-status-badge');
+            const statusText = document.getElementById('node-status-text');
+            const bar = document.getElementById('node-drift-bar');
+
+            if (data.status === 'dead') {
+                badge.className = 'mb-4 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-red-500/20 text-red-400 border border-red-500/40';
+                bar.className = 'h-full bg-red-500 transition-all duration-500';
+                statusText.innerText = `CRITICAL ROT (${pct})`;
+            } else if (data.status === 'decaying') {
+                badge.className = 'mb-4 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40';
+                bar.className = 'h-full bg-amber-400 transition-all duration-500';
+                statusText.innerText = `WARPING (${pct})`;
+            } else {
+                badge.className = 'mb-4 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
+                bar.className = 'h-full bg-emerald-400 transition-all duration-500';
+                statusText.innerText = `STABLE (${pct})`;
+            }
+
+            appendLog(`Focused latent node [${data.id}] with ${(data.drift * 100).toFixed(1)}% drift.`, 'cyan');
+        }
+
+        function deselectNode() {
+            selectedNodeData = null;
+            const card = document.getElementById('inspector-card');
+            card.classList.add('translate-x-[120%]', 'opacity-0', 'pointer-events-none');
+        }
+
+        async function healSelectedNode(strategy = 'reprompt') {
+            if (!selectedNodeData) return;
+            const targetId = selectedNodeData.id;
+
+            appendLog(`Dispatched antibody pulse [strategy: ${strategy}] to ${targetId}...`, 'amber');
+
+            // Optimistic client update + server fetch
+            try {
+                fetch('/api/cognitive/heal', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: targetId, strategy })
+                }).catch(() => {});
+            } catch(e) {}
+
+            // Update local node state
+            const target = nodes.find(n => n.id === targetId);
+            if (target) {
+                target.drift = 0.02;
+                target.status = 'healthy';
+                target.y = target.initialY - 1.2;
+            }
+
+            buildVisualNodes();
+            deselectNode();
+            appendLog(`Topological node ${targetId} stabilized. Drift restored to 2.0%.`, 'emerald');
+        }
+
+        function pulseGlobalAntibody() {
+            appendLog('Triggered Global Antibody Pulse. Re-centering manifold curvature...', 'cyan');
+            nodes.forEach(n => {
+                if (n.status !== 'healthy') {
+                    n.drift = (Math.random() * 0.08);
+                    n.status = 'healthy';
+                    n.y = n.initialY - 1.0;
+                }
+            });
+            buildVisualNodes();
+            appendLog('Manifold stabilized across all sectors. Coherence at 99.8%.', 'emerald');
+        }
+
+        function injectDriftAnomaly() {
+            appendLog('Simulating adversarial drift attack vector in latent space...', 'red');
+            const candidates = nodes.filter(n => n.status === 'healthy');
+            if (candidates.length > 0) {
+                const target = candidates[Math.floor(Math.random() * candidates.length)];
+                target.drift = 0.88;
+                target.status = 'dead';
+                target.y += 2.5;
+                buildVisualNodes();
+                selectNode(target);
+                appendLog(`[ALERT] High curvature anomaly detected on ${target.id} (88.0% drift).`, 'red');
+            }
+        }
+
+        function setSectorFilter(sector) {
+            activeSector = sector;
+            document.querySelectorAll('.sector-btn').forEach(btn => {
+                if (btn.innerText === sector) {
+                    btn.className = 'sector-btn px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all bg-cyan-500/20 text-cyan-300 border border-cyan-500/30';
+                } else {
+                    btn.className = 'sector-btn px-3 py-1.5 rounded-lg text-xs font-mono font-medium text-gray-400 hover:text-white transition-all';
+                }
+            });
+
+            nodeObjects.forEach(obj => {
+                if (sector === 'ALL' || obj.data.sector === sector) {
+                    obj.mesh.visible = true;
+                } else {
+                    obj.mesh.visible = false;
+                }
+            });
+            appendLog(`Filtered topography to sector: ${sector}`, 'cyan');
+        }
+
+        function toggleAutoRotate() {
+            isAutoRotating = !isAutoRotating;
+            controls.autoRotate = isAutoRotating;
+            document.getElementById('btn-rotate').innerHTML = `
+                <iconify-icon icon="solar:refresh-linear" width="14"></iconify-icon>
+                ROTATION: ${isAutoRotating ? 'ON' : 'OFF'}
+            `;
+        }
+
+        function resetCamera() {
+            camera.position.set(0, 7, 16);
+            controls.target.set(0, 0, 0);
+            controls.update();
+        }
+
+        function appendLog(text, color = 'gray') {
+            const stream = document.getElementById('log-stream');
+            const row = document.createElement('div');
+            const now = new Date().toTimeString().split(' ')[0];
+            const colorClass = color === 'red' ? 'text-red-400' : color === 'amber' ? 'text-amber-400' : color === 'emerald' ? 'text-emerald-400' : color === 'cyan' ? 'text-cyan-400' : 'text-gray-400';
+            
+            row.className = `flex items-center gap-2 ${colorClass}`;
+            row.innerHTML = `<span class="text-gray-600">${now}</span><span>${text}</span>`;
+            stream.prepend(row);
+
+            // Trim to last 15
+            while (stream.children.length > 15) {
+                stream.removeChild(stream.lastChild);
+            }
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('three-container');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        // Live SSE connection to /api/cognitive/stream
+        function initSSE() {
+            try {
+                const sse = new EventSource('/api/cognitive/stream');
+                sse.onopen = () => {
+                    document.getElementById('stream-status').innerHTML = `
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                        STREAM: LIVE
+                    `;
+                };
+                sse.addEventListener('message', (e) => {
+                    try {
+                        const evt = JSON.parse(e.data);
+                        if (evt.type === 'drift_detected') {
+                            appendLog(`[STREAM] Drift detected on memory ${evt.id?.slice(0, 8)} (${(evt.drift * 100).toFixed(1)}%)`, 'amber');
+                        }
+                    } catch(err) {}
+                });
+                sse.onerror = () => {
+                    document.getElementById('stream-status').innerHTML = `
+                        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 pulse-beacon"></span>
+                        STREAM: AMBIENT
+                    `;
+                };
+            } catch(e) {
+                // Fallback graceful ambient mode
+            }
+        }
+
+        // Render loop
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = performance.now() * 0.001;
+
+            controls.update();
+
+            // Undulate base mesh
+            if (gridMesh) {
+                gridMesh.rotation.z = time * 0.02;
+            }
+
+            // Gently float nodes
+            nodeObjects.forEach(obj => {
+                obj.mesh.position.y = obj.initialY + Math.sin(time * 1.5 + obj.seed) * 0.12;
+            });
+
+            // Star rotation
+            if (starField) {
+                starField.rotation.y = time * 0.01;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Start
+        window.addEventListener('DOMContentLoaded', () => {
+            seedNodes(76);
+            initThree();
+            initSSE();
+        });
+    </script>
+</body>
+</html>

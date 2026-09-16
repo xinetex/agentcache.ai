@@ -771,8 +771,8 @@ app.get('/login', (c) => c.redirect('/login.html'));
 app.get('/dashboard', (c) => c.redirect('/user-dashboard.html'));
 app.get('/workspace', (c) => c.redirect('/user-dashboard.html'));
 app.get('/reset-password', (c) => c.redirect('/reset-password.html'));
-app.get('/drift-manifold', (c) => c.redirect('/index.html?view=topo'));
-app.get('/manifold', (c) => c.redirect('/index.html?view=topo'));
+app.get('/drift-manifold', (c) => c.redirect('/drift-manifold.html'));
+app.get('/manifold', (c) => c.redirect('/drift-manifold.html'));
 app.get('/galaxy', (c) => c.redirect('/index.html?view=galaxy'));
 
 // Agent Hub Routes

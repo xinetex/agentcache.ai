@@ -121,6 +121,14 @@
       "destination": "/mission-control.html"
     },
     {
+      "source": "/drift-manifold",
+      "destination": "/drift-manifold.html"
+    },
+    {
+      "source": "/manifold",
+      "destination": "/drift-manifold.html"
+    },
+    {
       "source": "/api/debug-node",
       "destination": "/api/debug-node"
     },
