@@ -53,5 +53,8 @@ export const schemas = (new EventSchemas() as any).fromRecord({
     },
     "agent/run.approve": {
         data: {} as { runId: string; decision: "approve" | "reject"; note?: string }
+    },
+    "agent/run.cancel": {
+        data: {} as { runId: string; reason?: string }
     }
 }) as any;

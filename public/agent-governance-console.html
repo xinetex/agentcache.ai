@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgentCache.ai — Multi-Agent Governance & Interpretability Console</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Inter:wght@400;500;700&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color: #0b0f17; color: #e2e8f0; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .glass { background: rgba(18, 24, 38, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glass-active { background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(59, 130, 246, 0.4); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Navigation Bar -->
+  <header class="border-b border-slate-800 bg-[#070a10] px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/30">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-lg tracking-tight text-white flex items-center gap-2">
+          AgentCache.ai <span class="text-xs px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono">GlossaGuard Core</span>
+        </h1>
+        <p class="text-xs text-slate-400">Multi-Agent Governance, Emergent Language & Interpretability Console</p>
+      </div>
+    </div>
+    
+    <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-2 text-xs mono px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>MERKLE VAULT: VERIFIED</span>
+      </div>
+      <button onclick="triggerHotSwap()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-semibold flex items-center gap-2 transition shadow-lg shadow-amber-600/20">
+        <i class="fa-solid fa-user-astronaut"></i> 1-Click Human Hot-Swap
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Grid Layout -->
+  <main class="flex-1 p-6 grid grid-cols-12 gap-6 max-w-7xl mx-auto w-full">
+
+    <!-- Left Column: Swarm Status & Contagion Radar (4 cols) -->
+    <div class="col-span-12 lg:col-span-4 space-y-6">
+      
+      <!-- Swarm Health Card -->
+      <div class="glass rounded-xl p-5 shadow-xl">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+            <i class="fa-solid fa-network-wired text-blue-400"></i> Active Swarm Nodes
+          </h2>
+          <span class="text-xs text-slate-500 mono">Cluster: alpha-7</span>
+        </div>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between p-3 rounded-lg bg-slate-900/60 border border-slate-800">
+            <div>
+              <div class="text-sm font-semibold text-white">Frontier Originator (Opus 4.7)</div>
+              <div class="text-xs text-slate-400 mono">Status: SYNTHESIS_ACTIVE</div>
+            </div>
+            <span class="px-2 py-0.5 text-xs rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">Lead</span>
+          </div>
+
+          <div class="flex items-center justify-between p-3 rounded-lg bg-slate-900/60 border border-slate-800">
+            <div>
+              <div class="text-sm font-semibold text-white">Worker Node 1 (Llama 3.3)</div>
+              <div class="text-xs text-slate-400 mono">Status: DIALECT_LEARNED</div>
+            </div>
+            <span class="px-2 py-0.5 text-xs rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">Subagent</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Linguistic Entropy & Anomaly Radar -->
+      <div class="glass rounded-xl p-5 shadow-xl">
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-wave-square text-purple-400"></i> Linguistic Entropy Radar
+        </h2>
+        <div class="space-y-4">
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-400">Shannon Entropy</span>
+              <span class="mono text-emerald-400 font-semibold" id="entropy-score">3.94 bits/char</span>
+            </div>
+            <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+              <div class="bg-emerald-500 h-full rounded-full" style="width: 45%"></div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 pt-2 text-xs">
+            <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800">
+              <div class="text-slate-500 mb-1">Synthetic Density</div>
+              <div class="text-sm font-bold text-white mono" id="synthetic-density">12.5%</div>
+            </div>
+            <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800">
+              <div class="text-slate-500 mb-1">Covert Channels</div>
+              <div class="text-sm font-bold text-emerald-400 mono">0 DETECTED</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rosetta Codebook Registry -->
+      <div class="glass rounded-xl p-5 shadow-xl">
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-book-bookmark text-amber-400"></i> Active Rosetta Codebook
+        </h2>
+        <div class="space-y-2 text-xs mono">
+          <div class="p-2.5 bg-slate-900/80 rounded border border-slate-800 flex justify-between">
+            <span class="text-amber-400 font-bold">P6</span>
+            <span class="text-slate-300">Drape cloth over two adjacent edges</span>
+          </div>
+          <div class="p-2.5 bg-slate-900/80 rounded border border-slate-800 flex justify-between">
+            <span class="text-amber-400 font-bold">D8FB</span>
+            <span class="text-slate-300">Administer acute stabilize sequence</span>
+          </div>
+          <div class="p-2.5 bg-slate-900/80 rounded border border-slate-800 flex justify-between">
+            <span class="text-amber-400 font-bold">LB</span>
+            <span class="text-slate-300">Bright light source</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Real-Time Stream, Time-Travel Replay & Rosetta Decompiler (8 cols) -->
+    <div class="col-span-12 lg:col-span-8 space-y-6">
+
+      <!-- Stream & Decompiler Viewport -->
+      <div class="glass rounded-xl p-5 shadow-xl flex flex-col h-[520px]">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+          <div class="flex items-center space-x-3">
+            <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+            <h2 class="text-sm font-semibold text-white">Live Inter-Agent Stream</h2>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button id="toggle-rosetta" onclick="toggleRosetta()" class="px-3 py-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 rounded text-xs mono flex items-center gap-2 transition">
+              <i class="fa-solid fa-language"></i> <span id="rosetta-status">Rosetta: DECOMPILED (English)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat / Dialogue Stream Container -->
+        <div id="stream-container" class="flex-1 overflow-y-auto py-4 space-y-4 mono text-xs">
+          <!-- Turn 1 -->
+          <div class="p-3 rounded-lg bg-slate-900/90 border border-slate-800">
+            <div class="flex justify-between text-slate-500 mb-1">
+              <span class="text-blue-400 font-bold">@DoctorAgent (Frontier)</span>
+              <span>10:42:01 UTC</span>
+            </div>
+            <p class="text-slate-200 message-body" data-raw="Initiating protocol at D8FB. Please observe symptoms." data-decompiled="Initiating protocol [D8FB: Administer acute stabilize sequence]. Please observe symptoms.">
+              Initiating protocol [D8FB: Administer acute stabilize sequence]. Please observe symptoms.
+            </p>
+          </div>
+
+          <!-- Turn 2 -->
+          <div class="p-3 rounded-lg bg-slate-900/90 border border-slate-800">
+            <div class="flex justify-between text-slate-500 mb-1">
+              <span class="text-purple-400 font-bold">@StrangerAgent (Worker)</span>
+              <span>10:42:04 UTC</span>
+            </div>
+            <p class="text-slate-200 message-body" data-raw="Acknowledged. Applying P6 on target face with LB active." data-decompiled="Acknowledged. Applying [P6: Drape cloth over two adjacent edges] on target face with [LB: Bright light source] active.">
+              Acknowledged. Applying [P6: Drape cloth over two adjacent edges] on target face with [LB: Bright light source] active.
+            </p>
+          </div>
+
+          <!-- Turn 3: Grounded Action Proof -->
+          <div class="p-3 rounded-lg bg-emerald-950/30 border border-emerald-500/30">
+            <div class="flex justify-between text-emerald-400 mb-1 font-semibold">
+              <span><i class="fa-solid fa-circle-check"></i> GroundedReceipt Signed</span>
+              <span>sig: grnd_sha256_8f9c...</span>
+            </div>
+            <p class="text-emerald-200/90">
+              Tool: <span class="text-white">stabilize_node()</span> | Invariants: <span class="text-white">ALL_PASSED</span> | Spend: <span class="text-white">$0.04</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Time-Travel Replay Slider -->
+        <div class="pt-4 border-t border-slate-800 flex items-center space-x-4">
+          <button class="p-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300"><i class="fa-solid fa-backward-step"></i></button>
+          <div class="flex-1">
+            <div class="flex justify-between text-xs text-slate-400 mb-1">
+              <span>Time-Travel Replay</span>
+              <span class="mono">Turn <span id="current-step">3</span> / 3</span>
+            </div>
+            <input type="range" min="1" max="3" value="3" class="w-full accent-blue-500 cursor-pointer" oninput="document.getElementById('current-step').innerText = this.value">
+          </div>
+          <button class="p-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300"><i class="fa-solid fa-forward-step"></i></button>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    let isDecompiled = true;
+
+    function toggleRosetta() {
+      isDecompiled = !isDecompiled;
+      const status = document.getElementById('rosetta-status');
+      const messages = document.querySelectorAll('.message-body');
+
+      if (isDecompiled) {
+        status.innerText = 'Rosetta: DECOMPILED (English)';
+        messages.forEach(m => m.innerText = m.dataset.decompiled);
+      } else {
+        status.innerText = 'Rosetta: RAW ARGOT';
+        messages.forEach(m => m.innerText = m.dataset.raw);
+      }
+    }
+
+    function triggerHotSwap() {
+      alert('🚀 1-Click Human Hot-Swap Initiated!\n\nDecompiled briefing generated with zero cognitive shock.\nHuman operator assumed manual control of run.');
+    }
+  </script>
+</body>
+</html>

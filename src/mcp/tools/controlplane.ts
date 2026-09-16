@@ -7,13 +7,12 @@
  */
 
 /**
- * AgentCache MCP — Control Plane tools.
+ * AgentCache MCP — Control Plane & Background Agent Scaffolding tools.
  *
  * Turns the reposition into something an AGENT can use directly. Beyond caching,
  * an agent connected to AgentCache can now: see what it has saved, ask whether a
- * proposed model call is within its owner's budget/quota BEFORE spending, and
- * carry reasoning state across runs. These map 1:1 to the control-plane
- * endpoints (api/analytics/savings, api/governance/gate, api/cache/reasoning).
+ * proposed model call is within its owner's budget/quota BEFORE spending, carry
+ * reasoning state across runs, and dispatch/supervise durable background tasks.
  */
 
 import { ToolModule, ToolHandlerContext } from '../registry.js';
@@ -110,6 +109,90 @@ export const ControlPlaneTools: ToolModule = {
         required: ['agentId', 'task', 'delta'],
       },
     },
+    {
+      name: 'agentcache_run_dispatch',
+      description:
+        'Dispatches an unattended, durable background agent task. The task is executed under the governance firewall with async HITL approval triggers and verifiable token/dollar savings accounting.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          agentId: { type: 'string', description: 'Identifier for the background agent worker' },
+          goal: { type: 'string', description: 'High-level task description or objective' },
+          namespace: { type: 'string', description: 'Tenant namespace. Default: "default"' },
+          approvalThresholdUsd: { type: 'number', description: 'Dollar limit per step that automatically pauses for human approval' },
+          steps: {
+            type: 'array',
+            description: 'Optional pre-planned steps or tool actions',
+            items: { type: 'object' },
+          },
+          webhookUrl: { type: 'string', description: 'Optional webhook URL for Slack/Discord HITL notifications' },
+        },
+        required: ['agentId'],
+      },
+    },
+    {
+      name: 'agentcache_run_status',
+      description:
+        'Queries the status, spend, savings, executed steps, and checkpoint state of an active or completed background agent run.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          runId: { type: 'string', description: 'The unique run ID returned by dispatch' },
+        },
+        required: ['runId'],
+      },
+    },
+    {
+      name: 'agentcache_run_approve',
+      description:
+        'Approves or rejects a background agent run that is currently in PAUSED state awaiting human or supervisor verdict.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          runId: { type: 'string', description: 'The paused run ID' },
+          decision: { type: 'string', enum: ['approve', 'reject'], description: 'Whether to resume or kill the task' },
+          note: { type: 'string', description: 'Optional explanation or supervisor guidance' },
+        },
+        required: ['runId', 'decision'],
+      },
+    },
+    {
+      name: 'agentcache_run_cancel',
+      description:
+        'Emergency kill of an active or runaway background agent task.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          runId: { type: 'string', description: 'The run ID to cancel' },
+          reason: { type: 'string', description: 'Optional reason for cancellation' },
+        },
+        required: ['runId'],
+      },
+    },
+    {
+      name: 'agentcache_linguistic_scan',
+      description:
+        'Scans an agent transcript, message, or scratchpad for synthetic non-human language (Glossogen argots, case signaling, and covert ZZ-style channels). Returns Shannon entropy and security posture (nominal, warn, block).',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          text: { type: 'string', description: 'The message or transcript to evaluate' },
+        },
+        required: ['text'],
+      },
+    },
+    {
+      name: 'agentcache_rosetta_decompile',
+      description:
+        'Decompiles a synthetic argot or shorthand message into human-readable plain English using the Rosetta Codebook.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          text: { type: 'string', description: 'The shorthand or argot text to decompile' },
+        },
+        required: ['text'],
+      },
+    },
   ],
 
   handlers: {
@@ -146,6 +229,36 @@ export const ControlPlaneTools: ToolModule = {
       const ns = args?.namespace || 'default';
       const body = { action: 'commit', agentId: args?.agentId, task: args?.task, delta: args?.delta || {} };
       const data = await callApi('/api/cache/reasoning', 'POST', body, context.apiKey, { 'X-Cache-Namespace': ns });
+      return ok(data);
+    },
+
+    agentcache_run_dispatch: async (args: any, context: ToolHandlerContext) => {
+      const data = await callApi('/api/agent/dispatch', 'POST', args, context.apiKey);
+      return ok(data);
+    },
+
+    agentcache_run_status: async (args: any, context: ToolHandlerContext) => {
+      const data = await callApi(`/api/agent/run/${encodeURIComponent(args?.runId)}`, 'GET', null, context.apiKey);
+      return ok(data);
+    },
+
+    agentcache_run_approve: async (args: any, context: ToolHandlerContext) => {
+      const data = await callApi('/api/agent/approve', 'POST', args, context.apiKey);
+      return ok(data);
+    },
+
+    agentcache_run_cancel: async (args: any, context: ToolHandlerContext) => {
+      const data = await callApi('/api/agent/cancel', 'POST', args, context.apiKey);
+      return ok(data);
+    },
+
+    agentcache_linguistic_scan: async (args: any, context: ToolHandlerContext) => {
+      const data = await callApi('/api/governance/linguistic/scan', 'POST', { text: args?.text }, context.apiKey);
+      return ok(data);
+    },
+
+    agentcache_rosetta_decompile: async (args: any, context: ToolHandlerContext) => {
+      const data = await callApi('/api/governance/linguistic/decompile', 'POST', { text: args?.text }, context.apiKey);
       return ok(data);
     },
   },

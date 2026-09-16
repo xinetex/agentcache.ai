@@ -1,56 +1,84 @@
-# Background Agent Runtime — the control plane, made durable
+# Background Agent Scaffolding Platform — 360° Architecture
 
-Turns AgentCache's three moat pieces into a **governed, durable, human-in-the-
-loop runtime** for long-running background agents. This is the "platform" layer:
-the thing gateways and orchestration libraries don't provide.
+Turns AgentCache into an autonomous **Background Agent Scaffolding Platform** for long-horizon, headless, and asynchronous agent workloads.
 
-Discipline: **own the moat, rent the engine.** All correctness lives in a pure,
-replay-safe reducer (`lib/agent-runtime.js`, 13 tests). Durability and the async
-wait primitive are rented from **Inngest** (already a dependency).
+Discipline: **own the moat, rent the engine.** All business logic, state reducers, observation distillation, sandbox boundaries, and governance tripwires live in pure, replay-safe, unit-tested modules. Durability, async sleeps, and event triggers are rented from **Inngest**.
 
-## The loop (per step of a run)
+---
+
+## The 6 Pillars of the Scaffolding Harness
+
 ```
-gate     planStep(policy, run, call)      → governance firewall (allow/pause/block)
-block?   budget/quota/kill-switch          → stop the runaway BEFORE the spend
-pause?   step.waitForEvent('agent/run.approve', timeout 7d)   → async human-in-the-loop
-execute  (your model/tool call)            → prototype charges est. cost
-record   recordHit(savings ledger)         → verifiable ROI, per step
+                                    ┌─────────────────────────────┐
+                                    │  Trigger Surface (Dispatch) │
+                                    │ - REST: POST /api/agent/run │
+                                    │ - Webhook / GitHub / Cron   │
+                                    │ - MCP: agentcache_run_*     │
+                                    └──────────────┬──────────────┘
+                                                   │
+                                                   ▼
+┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                 BACKGROUND AGENT SCAFFOLDING HARNESS                                   │
+│                                                                                                        │
+│  ┌─────────────────────────┐  ┌──────────────────────────┐  ┌───────────────────────────────────────┐  │
+│  │ 1. Durable State Loop   │  │ 2. Context Compactor     │  │ 3. Tool Sandbox & Tracing             │  │
+│  │ - Step checkpointing    │  │ - Observation condenser  │  │ - Safe tool executor                  │  │
+│  │ - Event wait/resume     │  │ - Semantic fact pruning  │  │ - Output budget truncation            │  │
+│  │ - Replay-safe state     │  │ - Cross-session recall   │  │ - Tamper-evident execution trace      │  │
+│  └────────────┬────────────┘  └────────────┬─────────────┘  └───────────────────┬───────────────────┘  │
+│               │                            │                                    │                      │
+│  ┌────────────▼────────────────────────────▼────────────────────────────────────▼───────────────────┐  │
+│  │ 4. Pre-Execution Governance Gate & Circuit Breaker                                               │  │
+│  │ - Real-time token & dollar budget enforcement                                                    │  │
+│  │ - Z-score repetition & cyclic loop-anomaly detector                                              │  │
+│  │ - Risk-tiered permission check (Safe -> Auto, High-Risk/Cost -> Pause for Human)                 │  │
+│  └─────────────────────────────────────────┬────────────────────────────────────────────────────────┘  │
+│                                            │                                                           │
+│  ┌─────────────────────────────────────────▼────────────────────────────────────────────────────────┐  │
+│  │ 5. Asynchronous HITL Bridge (Human-in-the-Loop)                                                  │  │
+│  │ - Dispatch interactive approval signals (Slack / Discord / Webhook)                              │  │
+│  │ - Zero-compute suspension while awaiting human verdict                                           │  │
+│  │ - Resume on POST /api/agent/approve                                                              │  │
+│  └─────────────────────────────────────────┬────────────────────────────────────────────────────────┘  │
+│                                            │                                                           │
+│  ┌─────────────────────────────────────────▼────────────────────────────────────────────────────────┐  │
+│  │ 6. Verifiable Savings Ledger & Agent Run Store                                                   │  │
+│  │ - Per-step token & dollar accounting (hits + misses)                                             │  │
+│  │ - Immutable run receipts & status queried via GET /api/agent/run/:runId                          │  │
+│  └──────────────────────────────────────────────────────────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
-Reasoning state (facts/decisions/scratch) accumulates across steps via the
-reasoning cache and is returned on completion — so the next run resumes it.
 
-## Files
-- `lib/agent-runtime.js` — pure: `planStep`, `reduceRun` (total, deterministic,
-  replay-safe), `checkpoint`/`restore`, `estimateCostUsd`. The moat.
-- `src/inngest/functions/agent-run.ts` — durable Inngest function
-  (`agent/run.start`). Each `step.run` is checkpointed + retried; `waitForEvent`
-  pauses for a human with zero compute burned while waiting.
-- `api/agent/approve.ts` — `POST /api/agent/approve {runId, decision}` emits the
-  resume event (async HITL webhook; ac_ auth).
-- Registered in `api/inngest.ts` + `src/inngest/types.ts`.
+---
 
-## Trigger a run
-```js
-await inngest.send({ name: 'agent/run.start', data: {
-  runId: 'run_123', agentId: 'researcher', namespace: 'acme',
-  organizationId: '<org uuid or redis:<hash>>',
-  approvalThresholdUsd: 5,               // any single call ≥ $5 pauses for a human
-  steps: [
-    { model: 'claude-opus-5', inputTokens: 40000, outputTokens: 8000 },
-    { model: 'claude-opus-5', inputTokens: 400000, outputTokens: 80000 }, // ~$4 → gate decides
-  ],
-}});
+## Core Modules & API Surfaces
+
+1. **State Machine & Loop Anomaly Detector** (`lib/agent-runtime.js`):
+   * Pure, deterministic reducer with `detectCyclicAnomaly` (stops repeating loops), `planStep`, and `reduceRun`.
+2. **Context Compactor & Observation Distiller** (`lib/context-compactor.js`):
+   * `truncateObservation` bounds large outputs; `compactHistory` consolidates multi-turn histories to prevent token limit crashes.
+3. **Tool Sandbox Harness** (`lib/agent-sandbox.js`):
+   * Timeouts, memory boundaries, and error isolation for built-in and custom tools.
+4. **HITL Notification Bridge** (`lib/hitl-notifier.js`):
+   * Formats Slack blocks and JSON payloads for asynchronous human approval cards.
+5. **Durable Inngest Function** (`src/inngest/functions/agent-run.ts`):
+   * Durable step checkpointing, zero-compute pauses, sandbox tool execution, and savings ledger recording.
+6. **HTTP Control Plane** (`src/api/agent.ts`):
+   * `POST /api/agent/dispatch` (or `/api/agent/run`): Launches a background task.
+   * `GET /api/agent/run/:runId`: Live status and checkpoint inspection.
+   * `POST /api/agent/approve`: Emits resume/rejection approval webhook.
+   * `POST /api/agent/cancel`: Emergency kill-switch for runaway agents.
+7. **Agent MCP Tools** (`src/mcp/tools/controlplane.ts`):
+   * `agentcache_run_dispatch`, `agentcache_run_status`, `agentcache_run_approve`, `agentcache_run_cancel`.
+
+---
+
+## Running Unified Tests
+
+```bash
+# Run the complete AgentCache core & background agent test suite (15 suites / 129 tests)
+node scripts/agentcache-test.mjs
+
+# Run contract and cognitive verification
+npm run test:verification
 ```
-Resume a paused run: `POST /api/agent/approve` with `{ "runId": "run_123", "decision": "approve" }`.
-
-## To run in production
-1. Deploy (done via git push → Vercel; the serve endpoint is `api/inngest.ts`).
-2. Set Inngest env (`INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY`) in Vercel so the
-   functions register with Inngest Cloud. Without them, sends are no-ops locally.
-3. Replace the `execute-${i}` step body with your real provider call + usage.
-4. Apply the savings/governance migrations (see IDENTITY_AND_ACTIVATION.md) so
-   `record` and `load-policy` have their tables.
-
-Roadmap (the "background agent scaffolding" thesis): ephemeral sandboxes
-(integrate e2b/Modal — do not build), scheduled/cron runs, and per-run spend
-dashboards on the savings ledger.

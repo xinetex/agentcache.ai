@@ -7,16 +7,37 @@ export const config = {
     runtime: 'nodejs',
 };
 
-const redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL!,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
-
-// Ledger writer for the Savings Engine (Move 1). Separate from the Redis cache
-// store; used only to append priced hit rows for auditable net-dollars-saved.
+// Lazy, guarded initialization. These were module-level constructions with
+// non-null assertions: `neon(undefined)` THROWS AT IMPORT, so a missing or
+// rotated DATABASE_URL took down the exact-cache read path entirely — even
+// though the ledger below is strictly optional telemetry for this endpoint.
+// The cache must serve from Redis alone. Fail cold here, fail the product.
 import { ensureSavingsSchema } from '../../lib/ensure-schema.js';
-const sql = neon(process.env.DATABASE_URL!);
-ensureSavingsSchema(sql).catch(() => {}); // self-provision on cold start
+
+let _redis: Redis | null = null;
+function getRedis(): Redis {
+    if (_redis) return _redis;
+    const url = process.env.UPSTASH_REDIS_REST_URL;
+    const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+    if (!url || !token) throw new Error('Cache store not configured');
+    _redis = new Redis({ url, token });
+    return _redis;
+}
+
+let _sql: any = null;
+let _sqlTried = false;
+function getSql(): any {
+    if (_sqlTried) return _sql;
+    _sqlTried = true;
+    try {
+        if (!process.env.DATABASE_URL) return (_sql = null);
+        _sql = neon(process.env.DATABASE_URL);
+        ensureSavingsSchema(_sql).catch(() => {}); // self-provision on cold start
+    } catch {
+        _sql = null; // ledger unavailable; the cache still serves
+    }
+    return _sql;
+}
 
 async function handler(req: Request) {
     if (req.method !== 'GET') {
@@ -82,7 +103,7 @@ async function handler(req: Request) {
         const prefixedKey = `${keyContext.organizationSlug}:${namespace}:${userKey}`;
 
         // Get from Redis
-        const value = await redis.get(prefixedKey);
+        const value = await getRedis().get(prefixedKey);
 
         const isHit = value !== null;
 
@@ -98,7 +119,8 @@ async function handler(req: Request) {
         // handled by recordUsage above, so there is no double counting. The
         // caller declares model + token counts via X-Model / X-Input-Tokens /
         // X-Output-Tokens; absent them the hit is still logged, valued at $0.
-        if (isHit) {
+        const sql = getSql();
+        if (isHit && sql) {
             recordHit({ sql }, {
                 organizationId: keyContext.organizationId,
                 namespace,

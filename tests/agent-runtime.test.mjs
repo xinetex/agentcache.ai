@@ -7,7 +7,7 @@
 
 import assert from 'node:assert/strict';
 import {
-  RUN, estimateCostUsd, planStep, initRun, reduceRun, checkpoint, restore, isTerminal,
+  RUN, estimateCostUsd, detectCyclicAnomaly, planStep, initRun, reduceRun, checkpoint, restore, isTerminal,
 } from '../lib/agent-runtime.js';
 
 let passed = 0;
@@ -112,6 +112,61 @@ test('checkpoint/restore round-trips durable state (drops replayable history)', 
   const restored = restore(chk);
   assert.equal(restored.runId, 'r4');
   assert.deepEqual(restored.history, []);
+});
+
+test('detectCyclicAnomaly flags repeated identical tool calls', () => {
+  const normal = [
+    { tool: 'search', args: { q: 'a' } },
+    { tool: 'fetch', args: { url: 'b' } },
+  ];
+  assert.equal(detectCyclicAnomaly(normal).detected, false);
+
+  const loop = [
+    { tool: 'search', args: { q: 'stuck' } },
+    { tool: 'search', args: { q: 'stuck' } },
+    { tool: 'search', args: { q: 'stuck' } },
+  ];
+  const detected = detectCyclicAnomaly(loop, 5, 3);
+  assert.equal(detected.detected, true);
+  assert.equal(detected.repeats, 3);
+});
+
+test('planStep blocks immediately if cyclic loop is detected', () => {
+  const loopRun = {
+    spentUsd: 0,
+    toolCalls: [
+      { tool: 'query', args: { x: 1 } },
+      { tool: 'query', args: { x: 1 } },
+      { tool: 'query', args: { x: 1 } },
+    ],
+  };
+  const plan = planStep({ policy: {}, run: loopRun, proposedCall: { model: 'claude-opus-5' } });
+  assert.equal(plan.action, 'block');
+  assert.ok(plan.reasons[0].includes('Cyclic loop'));
+});
+
+test('reduceRun: TOOL_EXECUTE and COMPACT record sandbox trace & facts', () => {
+  let s = initRun({ runId: 'r6' });
+  s = reduceRun(s, {
+    type: 'TOOL_EXECUTE',
+    toolCall: { tool: 'calculator', args: { expr: '2+2' } },
+    toolResult: { success: true, output: { result: 4 } },
+  });
+  assert.equal(s.toolCalls.length, 1);
+  assert.equal(s.toolResults.length, 1);
+
+  s = reduceRun(s, {
+    type: 'COMPACT',
+    facts: ['Result calculated: 4'],
+  }, '2026-08-25');
+  assert.deepEqual(s.reasoning.facts, ['Result calculated: 4']);
+});
+
+test('reduceRun: CANCEL transitions status to KILLED', () => {
+  let s = initRun({ runId: 'r7' });
+  s = reduceRun(s, { type: 'CANCEL', reason: 'User requested cancellation' });
+  assert.equal(s.status, RUN.KILLED);
+  assert.ok(isTerminal(s));
 });
 
 test('terminal states are terminal and ignore further events', () => {

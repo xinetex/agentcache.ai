@@ -595,6 +595,7 @@ app.all('/api/decisions/:path{.+}?', lazy(() => import('./api/decisions.js')));
 app.all('/api/galaxy/:path{.+}?', lazy(() => import('./api/galaxy.js')));
 app.all('/api/explorer/:path{.+}?', lazy(() => import('./api/explorer.js')));
 app.all('/api/governance/:path{.+}?', lazy(() => import('./api/governance.js')));
+app.all('/api/agent/:path{.+}?', lazy(() => import('./api/agent.js')));
 // --- SECURE INDUSTRIAL ADMIN SURFACE ---
 app.use('/api/admin/*', async (c, next) => {
   const authError = await authenticateAdmin(c);

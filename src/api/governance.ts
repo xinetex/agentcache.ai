@@ -77,4 +77,61 @@ app.get('/presets', requireRole('viewer'), async (c) => {
     return c.json({ mode: 'Darwin' });
 });
 
+// --- LINGUISTIC GOVERNANCE & ROSETTA BRIDGE (GlossaGuard) ---
+
+// POST /api/governance/linguistic/scan - Scans text/transcript for synthetic argot & covert channels
+app.post('/linguistic/scan', async (c) => {
+    const body = await c.req.json().catch(() => ({}));
+    const text = body.text || body.message || body.transcript || '';
+    
+    // Lazy-load linguistic guard
+    const { evaluateLinguisticPosture } = await import('../../lib/linguistic-guard.js');
+    const result = evaluateLinguisticPosture(text, body.options || {});
+    return c.json(result);
+});
+
+// GET /api/governance/linguistic/codebook - Returns registered shorthand definitions
+app.get('/linguistic/codebook', async (c) => {
+    const { globalRosettaBridge } = await import('../../lib/rosetta-bridge.js');
+    return c.json({ codebook: globalRosettaBridge.toObject() });
+});
+
+// POST /api/governance/linguistic/decompile - Decompiles synthetic argot into plain English
+app.post('/linguistic/decompile', async (c) => {
+    const body = await c.req.json().catch(() => ({}));
+    const text = body.text || body.message || '';
+    const { globalRosettaBridge } = await import('../../lib/rosetta-bridge.js');
+    const result = globalRosettaBridge.decompile(text);
+    return c.json(result);
+});
+
+// POST /api/governance/grounded/verify - Verifies action contracts, invariants and emits GroundedReceipt
+app.post('/grounded/verify', async (c) => {
+    const body = await c.req.json().catch(() => ({}));
+    const { sanitizeToolArguments, validateNamespaceBoundary, createGroundedReceipt } = await import('../../lib/grounded-verifier.js');
+    
+    const nsCheck = validateNamespaceBoundary(body.key || 'action', body.namespace || 'default');
+    if (!nsCheck.valid) {
+        return c.json({ valid: false, error: nsCheck.error }, 400);
+    }
+
+    const argCheck = sanitizeToolArguments(body.args || {});
+    if (!argCheck.safe) {
+        return c.json({ valid: false, error: argCheck.violations.join('; '), violations: argCheck.violations }, 400);
+    }
+
+    const receipt = createGroundedReceipt({
+        runId: body.runId,
+        agentId: body.agentId,
+        namespace: nsCheck.namespace,
+        step: body.step || 1,
+        intent: body.intent || 'Action invocation',
+        tool: body.tool,
+        spentUsd: body.spentUsd || 0,
+        savedUsd: body.savedUsd || 0,
+    });
+
+    return c.json({ valid: true, receipt });
+});
+
 export default app;
