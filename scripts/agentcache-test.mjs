@@ -35,6 +35,7 @@ const SUITES = [
   ['Governance · contagion tracker', 'tests/contagion-tracker.test.mjs'],
   ['Platform · human hotswap', 'tests/human-hotswap.test.mjs'],
   ['Security · identity verifier', 'tests/identity-verifier.test.mjs'],
+  ['Platform · pipeline builder', 'tests/pipeline-builder.test.mjs'],
   ['Simulation · Glossogen swarm scenario', 'scripts/simulate-glossogen-swarm.mjs'],
 ];
 
@@ -42,7 +43,8 @@ let failed = 0;
 let total = 0;
 console.log('\n  AgentCache core — unified suite\n  ' + '='.repeat(50));
 for (const [label, file] of SUITES) {
-  const r = spawnSync('node', [file], { encoding: 'utf8' });
+  const args = ['--import', 'tsx', file];
+  const r = spawnSync('node', args, { encoding: 'utf8' });
   const lastLine = (r.stdout || '').trim().split('\n').pop() || '';
   const m = lastLine.match(/(\d+)\s+passed/);
   const count = m ? Number(m[1]) : 0;

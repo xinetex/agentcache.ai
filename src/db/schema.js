@@ -1130,3 +1130,63 @@ export const actionTemplates = pgTable('action_templates', {
     requiredInputs: jsonb('required_inputs').default([]),
     createdAt: timestamp('created_at').defaultNow(),
 });
+
+// --- Workspaces & Pipelines Infrastructure ---
+export const workspaces = pgTable('workspaces', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id').references(() => users.id),
+    name: text('name').notNull(),
+    sector: text('sector').notNull().default('general'),
+    description: text('description'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+    workspaceUserIdx: index('workspaces_user_idx').on(table.userId),
+    workspaceSectorIdx: index('workspaces_sector_idx').on(table.sector),
+}));
+
+export const pipelines = pgTable('pipelines', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id').references(() => users.id),
+    workspaceId: uuid('workspace_id').references(() => workspaces.id),
+    organizationId: uuid('organization_id').references(() => organizations.id),
+    name: text('name').notNull(),
+    description: text('description'),
+    sector: text('sector').default('general'),
+    nodes: jsonb('nodes').default([]),
+    connections: jsonb('connections').default([]),
+    features: jsonb('features').default([]),
+    complexityTier: text('complexity_tier').default('simple'),
+    complexityScore: integer('complexity_score').default(10),
+    monthlyCost: real('monthly_cost').default(0),
+    status: text('status').default('draft'), // 'draft', 'active', 'paused', 'archived'
+    nodeCount: integer('node_count').default(0),
+    isDeployed: boolean('is_deployed').default(false),
+    deployedAt: timestamp('deployed_at'),
+    deploymentEndpoint: text('deployment_endpoint'),
+    apiKey: text('api_key'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+    pipelineUserIdx: index('pipelines_user_idx').on(table.userId),
+    pipelineStatusIdx: index('pipelines_status_idx').on(table.status),
+    pipelineSectorIdx: index('pipelines_sector_idx').on(table.sector),
+}));
+
+export const pipelineMetrics = pgTable('pipeline_metrics', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    pipelineId: uuid('pipeline_id').references(() => pipelines.id).notNull(),
+    requests: integer('requests').default(0),
+    cacheHits: integer('cache_hits').default(0),
+    cacheMisses: integer('cache_misses').default(0),
+    hitRate: real('hit_rate').default(0),
+    latencyP50: integer('latency_p50').default(0),
+    latencyP95: integer('latency_p95').default(0),
+    costSaved: real('cost_saved').default(0),
+    tokensSaved: integer('tokens_saved').default(0),
+    timestamp: timestamp('timestamp').defaultNow(),
+}, (table) => ({
+    pipelineMetricsPipelineIdx: index('pipeline_metrics_pipeline_idx').on(table.pipelineId),
+    pipelineMetricsTimestampIdx: index('pipeline_metrics_timestamp_idx').on(table.timestamp),
+}));
+

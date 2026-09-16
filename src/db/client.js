@@ -110,7 +110,10 @@ function createMockDb() {
         periscope_path_stats: [],
         patterns: [],
         agent_alerts: [],
-        maturity_ledger: []
+        maturity_ledger: [],
+        workspaces: [],
+        pipelines: [],
+        pipeline_metrics: []
     };
 
     const toCamelCase = (value) => value.replace(/_([a-z])/g, (_, char) => char.toUpperCase());

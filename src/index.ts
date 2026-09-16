@@ -646,6 +646,7 @@ app.all('/api/transcode/:path{.+}?', lazy(() => import('./api/transcode.js')));
 app.all('/api/transcribe/:path{.+}?', lazy(() => import('./api/transcribe.js')));
 
 app.all('/api/pipeline/:path{.+}?', lazy(() => import('./api/pipeline.js')));
+app.all('/api/pipelines/:path{.+}?', lazy(() => import('./api/pipeline.js')));
 
 app.all('/api/motion/:path{.+}?', lazy(() => import('./api/motion.js')));
 

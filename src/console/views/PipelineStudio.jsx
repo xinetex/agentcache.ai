@@ -125,6 +125,44 @@ export default function PipelineStudio() {
         }
     };
 
+    // Deploy Logic
+    const handleDeploy = async () => {
+        if (nodes.length === 0) {
+            alert('Add at least one node to deploy the pipeline.');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('agentcache_token');
+            const payload = {
+                name: `Pipeline ${new Date().toLocaleTimeString()}`,
+                sector: config.useCase || 'custom',
+                nodes: nodes,
+                connections: edges,
+                isDeployed: true
+            };
+
+            const res = await fetch('/api/pipeline/deploy', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                alert(`🚀 Deployed to AgentCache Edge Network!\n\nPipeline ID: ${data.deployment.id}\nEndpoint: ${data.deployment.deploymentEndpoint}\nAPI Key: ${data.deployment.apiKey}\nSLA: ${data.deployment.sla}`);
+            } else {
+                throw new Error(data.error || 'Deployment failed');
+            }
+        } catch (e) {
+            console.error('Deploy failed', e);
+            alert(`Failed to deploy: ${e.message}`);
+        }
+    };
+
     return (
         <div className="h-[calc(100vh-8rem)] flex gap-6 relative">
 
@@ -201,7 +239,7 @@ export default function PipelineStudio() {
                     <button onClick={() => setShowPublish(true)} className="btn-cyber px-4 py-2 flex items-center gap-2 text-xs hover:border-[var(--hud-accent-secondary)] hover:text-[var(--hud-accent-secondary)]">
                         <Share2 size={14} /> Publish
                     </button>
-                    <button className="btn-cyber btn-cyber-primary px-4 py-2 flex items-center gap-2 text-xs">
+                    <button onClick={handleDeploy} className="btn-cyber btn-cyber-primary px-4 py-2 flex items-center gap-2 text-xs">
                         <Play size={14} /> Deploy
                     </button>
                 </div>
