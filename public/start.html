@@ -72,7 +72,7 @@
     <p class="dek">Drop AgentCache in front of any LLM workload. Cut token spend, put a hard budget and kill-switch around autonomous agents, and let them resume reasoning across runs — with every dollar saved measured, not estimated.</p>
     <div class="hooks">
       <div class="hook"><span class="n">1 call</span><span class="l">to your first cache hit</span></div>
-      <div class="hook"><span class="n">4 tools</span><span class="l">any MCP agent can use</span></div>
+      <div class="hook"><span class="n">8 tools</span><span class="l">any MCP agent can use</span></div>
       <div class="hook"><span class="n">net&nbsp;$&nbsp;saved</span><span class="l">verifiable, per model</span></div>
     </div>
   </header>
@@ -81,9 +81,9 @@
     <!-- AGENT LANE -->
     <section class="lane agent">
       <div class="cap">
-        <span class="tag"><span class="dot"></span>For agents · MCP</span>
+        <span class="tag"><span class="dot"></span>For agents · MCP & SDK</span>
         <h2>Give your agent the control plane</h2>
-        <p class="small">Add one server to your MCP config. Your agent gains caching plus a pre-spend budget gate and cross-run memory — no code changes.</p>
+        <p class="small">Add one server to your MCP config or drop in the SDK harness. Your agent gains semantic caching, pre-spend budget gates, linguistic guardrails, and cross-run memory — with zero code friction.</p>
       </div>
 <pre><span class="c">// claude_desktop_config.json / cursor mcp.json</span>
 {
@@ -100,7 +100,8 @@
         <div class="toollist">
           <span class="tool">agentcache_get</span><span class="tool">agentcache_gate</span>
           <span class="tool">agentcache_savings</span><span class="tool">agentcache_reasoning_resume</span>
-          <span class="tool">agentcache_reasoning_commit</span>
+          <span class="tool">agentcache_reasoning_commit</span><span class="tool">agentcache_run_dispatch</span>
+          <span class="tool">agentcache_linguistic_scan</span><span class="tool">agentcache_rosetta_decompile</span>
         </div>
       </div>
     </section>
