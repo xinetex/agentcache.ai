@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentCache — Machine-Native Calibrated Decisions at Zero Cost</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        body {
+            overflow-y: auto;
+            height: auto;
+            min-height: 100vh;
+            background: radial-gradient(circle at 50% 0%, #172230 0%, #0c1015 45%, #07090c 100%);
+            color: #f1f5f9;
+        }
+
+        .hero-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 70px 24px 40px;
+            text-align: center;
+        }
+
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: rgba(56, 189, 248, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #38bdf8;
+            margin-bottom: 24px;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .main-headline {
+            font-size: 3.4rem;
+            line-height: 1.15;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .main-headline span {
+            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .main-subhead {
+            font-size: 1.25rem;
+            color: #94a3b8;
+            max-width: 820px;
+            margin: 0 auto 36px;
+            line-height: 1.6;
+        }
+
+        .video-container {
+            position: relative;
+            max-width: 1060px;
+            margin: 0 auto 60px;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.7), 0 0 40px rgba(56, 189, 248, 0.15);
+            background: #000;
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .interactive-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            max-width: 1100px;
+            margin: 0 auto 60px;
+            text-align: left;
+        }
+
+        @media (max-width: 768px) {
+            .interactive-grid { grid-template-columns: 1fr; }
+            .main-headline { font-size: 2.3rem; }
+        }
+
+        .comparison-card {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 28px;
+            backdrop-filter: blur(16px);
+        }
+
+        .card-red { border-top: 3px solid #ef4444; }
+        .card-cyan { border-top: 3px solid #38bdf8; }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+        }
+
+        .metric-val-bad { color: #f87171; font-weight: 600; }
+        .metric-val-good { color: #34d399; font-weight: 700; text-shadow: 0 0 10px rgba(52, 211, 153, 0.3); }
+
+        .cta-box {
+            background: linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 20px;
+            max-width: 900px;
+            margin: 0 auto 80px;
+            padding: 44px;
+            text-align: center;
+        }
+
+        .code-block {
+            background: #030712;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 18px;
+            text-align: left;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: #38bdf8;
+            margin: 24px 0;
+            overflow-x: auto;
+        }
+
+        .btn-launch {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 36px;
+            background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+            color: #04121e;
+            font-weight: 700;
+            font-size: 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .btn-launch:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 35px rgba(56, 189, 248, 0.6);
+        }
+    </style>
+</head>
+<body>
+    <div class="hero-section">
+        <div class="badge-pill">
+            <i data-feather="zap" style="width:14px; height:14px;"></i>
+            TypeSafe AI + AgentCache.ai
+        </div>
+        
+        <h1 class="main-headline">
+            Stop Paying Frontier LLMs<br>for <span>One-Millisecond Decisions</span>.
+        </h1>
+        
+        <p class="main-subhead">
+            99% of future AI volume is machine-to-machine. Traditional chat models give you slow, uncalibrated paragraphs. 
+            AgentCache and TypeSafe evaluate typed, mathematically calibrated decisions and cache them at the global edge.
+        </p>
+
+        <!-- HIGH-FIDELITY EXPLAINER VIDEO -->
+        <div class="video-container">
+            <video controls autoplay muted playsinline poster="/videos/scene4_control_plane_1789701958968.jpg">
+                <source src="/videos/agentcache-explainer.mp4" type="video/mp4">
+                <track label="English" kind="subtitles" srclang="en" src="/videos/subtitles.srt" default>
+                Your browser does not support the video tag.
+            </video>
+        </div>
+
+        <!-- SIDE-BY-SIDE INTERACTIVE PROOF -->
+        <div class="interactive-grid">
+            <!-- Without AgentCache -->
+            <div class="comparison-card card-red">
+                <div class="card-header">
+                    <span class="card-title">Traditional Generative Chat</span>
+                    <span style="color:#ef4444; font-size: 22px;">❌</span>
+                </div>
+                <p style="color:#94a3b8; font-size:14px; margin-bottom:18px;">
+                    Calling GPT-4o or Claude 3.5 Sonnet to decide if an agent should execute a storage transaction or call an API.
+                </p>
+                <div class="metric-row">
+                    <span>Average Latency</span>
+                    <span class="metric-val-bad">2,450 ms</span>
+                </div>
+                <div class="metric-row">
+                    <span>Cost per 100K Calls</span>
+                    <span class="metric-val-bad">$3,200.00</span>
+                </div>
+                <div class="metric-row">
+                    <span>Calibration</span>
+                    <span class="metric-val-bad">Uncalibrated (RLHF Sycophancy)</span>
+                </div>
+                <div class="metric-row">
+                    <span>Output</span>
+                    <span class="metric-val-bad">Unstructured Markdown Prose</span>
+                </div>
+            </div>
+
+            <!-- With AgentCache + TypeSafe -->
+            <div class="comparison-card card-cyan">
+                <div class="card-header">
+                    <span class="card-title">AgentCache + TypeSafe Jev</span>
+                    <span style="color:#38bdf8; font-size: 22px;">⚡</span>
+                </div>
+                <p style="color:#94a3b8; font-size:14px; margin-bottom:18px;">
+                    Calibrated decision primitives (Choice / Noul / Score) with zero-cost edge caching across your entire agent fleet.
+                </p>
+                <div class="metric-row">
+                    <span>Edge Cached Latency</span>
+                    <span class="metric-val-good">1.2 ms (99.9% faster)</span>
+                </div>
+                <div class="metric-row">
+                    <span>Cost per 100K Calls</span>
+                    <span class="metric-val-good">$0.10 (99.9% savings)</span>
+                </div>
+                <div class="metric-row">
+                    <span>Calibration</span>
+                    <span class="metric-val-good">Mathematically Bound (RLCD)</span>
+                </div>
+                <div class="metric-row">
+                    <span>Output</span>
+                    <span class="metric-val-good">Typed JSON + Exact Probabilities</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- DEVELOPER INTEGRATION CTA -->
+        <div class="cta-box">
+            <h2 style="font-size:2rem; font-weight:700; margin-bottom:12px;">3 Lines of Code for Autonomous Fleets</h2>
+            <p style="color:#94a3b8; font-size:15px;">Drop into Python, TypeScript, LangChain, or CrewAI in 60 seconds.</p>
+            
+            <div class="code-block">
+<span style="color:#f472b6;">import</span> { AgentCache } <span style="color:#f472b6;">from</span> <span style="color:#a7f3d0;">'@agentcache/sdk'</span>;
+
+<span style="color:#64748b;">// Evaluates in 50ms (or 1ms if cached across swarm)</span>
+<span style="color:#f472b6;">const</span> decision = <span style="color:#f472b6;">await</span> AgentCache.<span style="color:#38bdf8;">decide</span>({
+  state: { action: <span style="color:#a7f3d0;">"purge_bucket"</span>, target: <span style="color:#a7f3d0;">"lyve-s3-temp"</span> },
+  questions: { is_safe: { type: <span style="color:#a7f3d0;">"noul"</span>, instructions: <span style="color:#a7f3d0;">"Safe to delete?"</span> } }
+});
+
+<span style="color:#f472b6;">if</span> (decision.is_safe.probability > <span style="color:#fbbf24;">0.95</span>) {
+  <span style="color:#f472b6;">await</span> bucket.<span style="color:#38bdf8;">purge</span>();
+}
+            </div>
+
+            <div style="display:flex; justify-content:center; gap:16px; align-items:center; flex-wrap:wrap;">
+                <a href="/login.html" class="btn-launch">
+                    Get Free API Key
+                    <i data-feather="arrow-right"></i>
+                </a>
+                <a href="/drift-manifold.html" style="color:#94a3b8; text-decoration:none; font-weight:500; font-size:15px; padding:12px 20px;">
+                    View Live Drift Manifold →
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        feather.replace();
+    </script>
+</body>
+</html>

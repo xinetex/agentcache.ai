@@ -29,6 +29,10 @@
   ],
   "rewrites": [
     {
+      "source": "/why",
+      "destination": "/why.html"
+    },
+    {
       "source": "/studio",
       "destination": "/dashboard.html?demo=true"
     },

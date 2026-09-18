@@ -1,0 +1,39 @@
+1
+00:00:00,000 --> 00:00:05,200
+Most AI platforms were built for humans typing into chat windows.
+
+2
+00:00:05,200 --> 00:00:10,000
+But 99% of future AI volume isn't human-to-AI.
+
+3
+00:00:10,000 --> 00:00:14,200
+It's autonomous agents talking to software.
+
+4
+00:00:14,200 --> 00:00:20,500
+When your agents need to make high-stakes operational choices, traditional models are slow and unpredictable.
+
+5
+00:00:20,500 --> 00:00:28,000
+Why wait 3 seconds for 3 paragraphs of prose just to decide if an action is safe?
+
+6
+00:00:28,000 --> 00:00:33,000
+With AgentCache and TypeSafe AI, decisions are machine-native.
+
+7
+00:00:33,000 --> 00:00:41,000
+Instead of conversational hallucinations, your agents evaluate typed, mathematically calibrated probabilities in under 50ms.
+
+8
+00:00:41,000 --> 00:00:47,500
+And because AgentCache indexes every decision at the edge, the first agent evaluates once.
+
+9
+00:00:47,500 --> 00:00:53,000
+The next ten thousand agents resolve in 1 millisecond, for zero dollars.
+
+10
+00:00:53,000 --> 00:00:57,400
+Stop burning compute on chat loops. Build prod, not God. AgentCache.ai.
