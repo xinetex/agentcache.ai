@@ -18,10 +18,74 @@
             color: #f1f5f9;
         }
 
+        .top-nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.15rem;
+        }
+
+        .brand-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #04121e;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .nav-link {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover { color: #38bdf8; }
+
+        .btn-nav-key {
+            padding: 8px 18px;
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: #38bdf8;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-nav-key:hover {
+            background: rgba(56, 189, 248, 0.25);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+        }
+
         .hero-section {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 70px 24px 40px;
+            padding: 40px 24px 40px;
             text-align: center;
         }
 
@@ -95,6 +159,7 @@
         @media (max-width: 768px) {
             .interactive-grid { grid-template-columns: 1fr; }
             .main-headline { font-size: 2.3rem; }
+            .nav-links { display: none; }
         }
 
         .comparison-card {
@@ -174,9 +239,35 @@
             transform: translateY(-2px);
             box-shadow: 0 0 35px rgba(56, 189, 248, 0.6);
         }
+
+        footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 30px 24px;
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
+    <!-- TOP NAVIGATION -->
+    <header class="top-nav">
+        <a href="/" class="brand-logo">
+            <div class="brand-icon">
+                <i data-feather="box" style="width: 18px; height: 18px;"></i>
+            </div>
+            AgentCache.ai
+        </a>
+        <nav class="nav-links">
+            <a href="/why" class="nav-link" style="color: #38bdf8;">Why AgentCache</a>
+            <a href="/drift-manifold" class="nav-link">Drift Manifold</a>
+            <a href="/docs" class="nav-link">Docs</a>
+            <a href="/pricing" class="nav-link">Pricing</a>
+            <a href="/login" class="nav-link">Sign In</a>
+            <a href="/get-key" class="btn-nav-key">Get API Key</a>
+        </nav>
+    </header>
+
     <div class="hero-section">
         <div class="badge-pill">
             <i data-feather="zap" style="width:14px; height:14px;"></i>
@@ -278,16 +369,20 @@
             </div>
 
             <div style="display:flex; justify-content:center; gap:16px; align-items:center; flex-wrap:wrap;">
-                <a href="/login.html" class="btn-launch">
+                <a href="/get-key" class="btn-launch">
                     Get Free API Key
                     <i data-feather="arrow-right"></i>
                 </a>
-                <a href="/drift-manifold.html" style="color:#94a3b8; text-decoration:none; font-weight:500; font-size:15px; padding:12px 20px;">
+                <a href="/drift-manifold" style="color:#94a3b8; text-decoration:none; font-weight:500; font-size:15px; padding:12px 20px;">
                     View Live Drift Manifold →
                 </a>
             </div>
         </div>
     </div>
+
+    <footer>
+        <p>&copy; 2026 AgentCache.ai — The Control Plane for Autonomous Agent Fleets.</p>
+    </footer>
 
     <script>
         feather.replace();

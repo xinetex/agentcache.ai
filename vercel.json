@@ -33,6 +33,10 @@
       "destination": "/why.html"
     },
     {
+      "source": "/get-key",
+      "destination": "/get-key.html"
+    },
+    {
       "source": "/studio",
       "destination": "/dashboard.html?demo=true"
     },
