@@ -52,7 +52,7 @@
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.7",
     "framer-motion": "^12.23.25",
-    "hono": "^4.10.6",
+    "hono": "^4.13.7",
     "inngest": "^3.54.0",
     "ioredis": "^5.8.2",
     "js-yaml": "^4.1.1",
