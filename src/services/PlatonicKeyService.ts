@@ -113,6 +113,17 @@ export class PlatonicKeyService {
         };
 
         await redis.setex(key, entry.ttl, JSON.stringify(entry));
+
+        // Maintain hot set index for sector (ZSET by timestamp, capped to last 100)
+        try {
+            const indexKey = `agentcache:platonic_index:${(params.sector || 'global').toLowerCase()}`;
+            await redis.zadd(indexKey, { score: Date.now(), member: key });
+            await redis.zremrangebyrank(indexKey, 0, -101);
+            await redis.expire(indexKey, entry.ttl);
+        } catch {
+            // Non-critical indexing failure should not block storage
+        }
+
         return key;
     }
 
@@ -133,32 +144,43 @@ export class PlatonicKeyService {
     }
     /**
      * Semantic lookup in a given sector.
-     * Uses "Lidar" mode to find matches even if hash doesn't match.
+     * Uses hot set index and pipelined/batched reads to avoid blocking O(N) KEYS.
      */
     async lookupSemanticPlatonic(query: string, sector: string = 'global', threshold: number = 0.95): Promise<PlatonicCacheEntry | null> {
-        const sectorKey = `agentcache:platonic:${sector.toLowerCase()}:*`;
-        const keys = await redis.keys(sectorKey);
-        
+        const indexKey = `agentcache:platonic_index:${sector.toLowerCase()}`;
+        let keys: string[] = [];
+
+        try {
+            const rawKeys = await redis.zrevrange(indexKey, 0, 99);
+            if (Array.isArray(rawKeys) && rawKeys.length > 0) {
+                keys = rawKeys.map(k => String(k));
+            }
+        } catch {
+            // Index unavailable
+        }
+
         if (keys.length === 0) return null;
 
-        // Take the latest 100 entries for Lidar "Hot-Set" performance
-        const hotSet = keys.slice(-100);
         const queryVec = await generateEmbedding(query);
         const queryCompressed = TurboQuantService.compress(queryVec);
 
-        for (const key of hotSet) {
-            const raw = await redis.get(key);
+        // Batch fetch all candidate entries in parallel
+        const entriesRaw = await Promise.all(keys.map(k => redis.get(k).catch(() => null)));
+
+        for (const raw of entriesRaw) {
             if (!raw) continue;
-            const entry = JSON.parse(raw as string) as PlatonicCacheEntry;
-            
-            if (entry.embedding) {
-                const docVec = TurboQuantService.fromBase64(entry.embedding);
-                const sim = TurboQuantService.fastSimilarity(queryCompressed, docVec);
-                
-                if (sim >= threshold) {
-                    console.log(`[Platonic] 🎯 LIDAR HIT: Found semantic match with similarity ${sim.toFixed(4)}`);
-                    return entry;
+            try {
+                const entry = (typeof raw === 'string' ? JSON.parse(raw) : raw) as PlatonicCacheEntry;
+                if (entry && entry.embedding) {
+                    const docVec = TurboQuantService.fromBase64(entry.embedding);
+                    const sim = TurboQuantService.fastSimilarity(queryCompressed, docVec);
+                    if (sim >= threshold) {
+                        console.log(`[Platonic] 🎯 LIDAR HIT: Found semantic match with similarity ${sim.toFixed(4)}`);
+                        return entry;
+                    }
                 }
+            } catch {
+                continue;
             }
         }
         

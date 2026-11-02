@@ -27,14 +27,21 @@ export class ArmorService {
 
         // 1. Rate Limiting (Token Bucket)
         try {
-            const rateKey = `armor:rate:${ip}`;
+            // High-throughput paths (streaming, file chunks, telemetry) get elevated thresholds
+            const isHighThroughput = path.startsWith('/api/cdn') || 
+                                     path.startsWith('/api/jetty') || 
+                                     path.startsWith('/api/cache') ||
+                                     path.startsWith('/api/decisions');
+            const limit = isHighThroughput ? 1000 : 100;
+
+            const rateKey = `armor:rate:${ip}:${isHighThroughput ? 'fast' : 'std'}`;
             const count = await redis.incrby(rateKey, 1);
 
             if (count === 1) {
                 await redis.expire(rateKey, 60);
             }
 
-            if (count > 100) { // 100 req/min limit
+            if (count > limit) {
                 await this.recordBlock(ip, 'Rate Limit Exceeded');
                 return { allowed: false, reason: "Rate Limit Exceeded" };
             }

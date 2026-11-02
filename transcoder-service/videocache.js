@@ -12,7 +12,7 @@
 // Lazy load dependencies
 let Redis;
 let AWS;
-const crypto = require('crypto');
+import crypto from 'crypto';
 
 function normalizeRedisUrl(rawUrl) {
     if (typeof rawUrl !== 'string') return undefined;
@@ -533,7 +533,13 @@ function getVideoCache(config) {
     return defaultInstance;
 }
 
-module.exports = {
+export {
+    VideoCache,
+    videoCacheMiddleware,
+    getVideoCache
+};
+
+export default {
     VideoCache,
     videoCacheMiddleware,
     getVideoCache

@@ -10,7 +10,6 @@
 
 import { createHash } from 'crypto';
 import bcrypt from 'bcryptjs';
-import { createClient } from '@vercel/postgres';
 import { db } from '../db/client.js';
 import { apiKeys, organizations } from '../db/schema.js';
 import { redis } from '../lib/redis.js';
@@ -136,90 +135,7 @@ async function matchesStoredApiKey(apiKey: string, storedHash: string | null | u
 }
 
 async function resolveStoredPrincipalViaLegacySql(apiKey: string, keyHash: string, keyPrefix: string) {
-    if (!process.env.DATABASE_URL || shouldAllowDemoApiKey()) {
-        return null;
-    }
-
-    const client = createClient();
-
-    try {
-        await client.connect();
-
-        const exactMatches = await client.query(
-            `SELECT
-                ak.key_hash AS hash,
-                ak.key_prefix AS prefix,
-                ak.is_active AS "isActive",
-                ak.organization_id AS "orgId",
-                ak.user_id AS "userId"
-             FROM api_keys ak
-             WHERE ak.key_hash = $1`,
-            [keyHash]
-        );
-
-        const exact = exactMatches.rows.find((record: any) => record.isActive);
-        if (exact) {
-            let tier = 'free';
-
-            if (exact.orgId) {
-                const orgResult = await client.query(
-                    `SELECT COALESCE(plan_tier, 'free') AS tier
-                     FROM organizations
-                     WHERE id = $1
-                     LIMIT 1`,
-                    [exact.orgId]
-                ).catch(() => ({ rows: [] }));
-                tier = orgResult.rows[0]?.tier || tier;
-            }
-
-            return {
-                tier,
-                orgId: exact.orgId || null,
-                userId: exact.userId || null,
-            };
-        }
-
-        const legacyCandidates = await client.query(
-            `SELECT
-                ak.key_hash AS hash,
-                ak.key_prefix AS prefix,
-                ak.is_active AS "isActive",
-                ak.organization_id AS "orgId",
-                ak.user_id AS "userId"
-             FROM api_keys ak
-             WHERE ak.key_prefix = $1`,
-            [keyPrefix]
-        );
-
-        for (const record of legacyCandidates.rows) {
-            if (!record.isActive || record.prefix !== keyPrefix) continue;
-            const match = await matchesStoredApiKey(apiKey, record.hash, keyHash);
-            if (!match) continue;
-
-            let tier = 'free';
-            if (record.orgId) {
-                const orgResult = await client.query(
-                    `SELECT COALESCE(plan_tier, 'free') AS tier
-                     FROM organizations
-                     WHERE id = $1
-                     LIMIT 1`,
-                    [record.orgId]
-                ).catch(() => ({ rows: [] }));
-                tier = orgResult.rows[0]?.tier || tier;
-            }
-
-            return {
-                tier,
-                orgId: record.orgId || null,
-                userId: record.userId || null,
-            };
-        }
-    } catch (error) {
-        console.warn('[Auth] Legacy SQL key resolution failed, falling back to Drizzle:', error);
-    } finally {
-        await client.end().catch(() => {});
-    }
-
+    // Legacy client pool creation removed in favor of unified Drizzle ORM client
     return null;
 }
 

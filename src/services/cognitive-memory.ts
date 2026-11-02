@@ -145,6 +145,9 @@ export class AgentCacheCognitiveService {
    * Captures a snapshot of the current git state to detect context drift.
    */
   async captureWorkspaceFingerprint(): Promise<string> {
+    if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+      return 'serverless-runtime';
+    }
     try {
       const branch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
       const status = execSync('git status --short').toString().trim();
