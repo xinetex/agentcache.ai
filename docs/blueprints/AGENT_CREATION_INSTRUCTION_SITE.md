@@ -9,7 +9,7 @@ Make AgentCache an agent-first library of creation playbooks: instructions for a
 
 Use the Synfig cut-out animation tutorial as an information-design reference: it moves from preparing materials through import, organizing layers, setting pivots, animating, and troubleshooting. Do not copy its prose or media. The specific older wiki page's reuse license has not been verified. The current Synfig Manual identifies CC BY-SA 4.0 for its manual content, but page-level and asset-level rights must still be checked before adapting any particular page or image.
 
-This should become the discovery and onboarding layer for AgentCache, while the existing paid audit remains the near-term cashflow offer. Free, useful playbooks can attract agent builders; custom playbook engineering and verified execution are plausible paid services after demand is measured.
+This should become the discovery and onboarding layer for AgentCache, while the existing paid audit remains the near-term cashflow offer. Free, useful playbooks can attract agent builders; custom playbook engineering and verified execution are plausible paid services after demand is measured. Keep the intent paths distinct: authors who need a new artifact procedure can scope a custom playbook; teams already running agents can follow the $750 audit path. The library should state the audit's scope, price, and delivery trigger before sending buyers to its intake page.
 
 ## The user problem
 
