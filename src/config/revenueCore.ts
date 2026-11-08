@@ -60,7 +60,7 @@ export const REVENUE_CORE_OFFERS: RevenueCoreOffer[] = [
         tagline: 'A bounded review of one agent workflow with prioritized findings and a transparent baseline.',
         buyer: 'Teams operating multi-step agents that need a clear first step before a monitored rollout.',
         problem: 'Teams lack a shared baseline for workflow drift, evidence gaps, or repeated work.',
-        outcome: `A findings report and ${AGENT_RUN_AUDIT.readoutMinutes}-minute readout within ${AGENT_RUN_AUDIT.deliveryBusinessDays} business days for one workflow, based on up to ${AGENT_RUN_AUDIT.maxRunRecords} redacted run records.`,
+        outcome: `A findings report and ${AGENT_RUN_AUDIT.readoutMinutes}-minute readout within ${AGENT_RUN_AUDIT.deliveryBusinessDays} business days after kickoff and acceptance of complete inputs, for one workflow based on up to ${AGENT_RUN_AUDIT.maxRunRecords} redacted run records.`,
         tier: 'pro',
         launchPriority: 1,
         pricingHint: `$${(AGENT_RUN_AUDIT.priceCents / 100).toFixed(0)} one-time fixed fee; intake and secure Stripe Checkout.`,
