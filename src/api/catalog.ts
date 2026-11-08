@@ -707,6 +707,11 @@ catalogRouter.post('/request', async (c) => {
         if (isAgentRunAudit && (config?.scopeAcknowledged !== true || config?.scopeVersion !== AGENT_RUN_AUDIT.scopeVersion)) {
             return c.json({ error: 'Please review and acknowledge the current audit scope before submitting.' }, 400);
         }
+        if (isAgentRunAudit
+            && process.env.VERCEL_ENV === 'preview'
+            && process.env.AGENT_AUDIT_PREVIEW_INTAKE_ENABLED !== 'true') {
+            return c.json({ error: 'Audit intake is disabled in Preview until isolated storage is confirmed.' }, 503);
+        }
 
         // Validate service exists
         if (!SERVICE_MAP.has(serviceId) && serviceId !== 'custom') {

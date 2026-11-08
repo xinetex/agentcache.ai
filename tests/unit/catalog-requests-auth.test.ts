@@ -7,6 +7,8 @@ const app = new Hono().route('/api/catalog', catalogRouter);
 describe('catalog request privacy', () => {
   afterEach(() => {
     delete process.env.ADMIN_TOKEN;
+    delete process.env.VERCEL_ENV;
+    delete process.env.AGENT_AUDIT_PREVIEW_INTAKE_ENABLED;
   });
 
   it('does not expose service-request details without the admin token', async () => {
@@ -23,6 +25,7 @@ describe('catalog request privacy', () => {
   });
 
   it('accepts the public fixed-scope audit intake and returns a saved request ID', async () => {
+    delete process.env.VERCEL_ENV;
     const response = await app.request('/api/catalog/request', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -42,6 +45,26 @@ describe('catalog request privacy', () => {
     expect(response.status).toBe(201);
     expect(result).toMatchObject({ success: true, status: 'open' });
     expect(result.requestId).toBeTruthy();
+  });
+
+  it('keeps audit intake disabled on Preview until isolated storage is explicitly enabled', async () => {
+    process.env.VERCEL_ENV = 'preview';
+    const response = await app.request('/api/catalog/request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        serviceId: 'custom',
+        title: 'Agent Run Risk & Savings Audit: Example Co',
+        config: {
+          offer: 'agent-run-risk-savings-audit',
+          email: 'buyer@example.test',
+          scopeAcknowledged: true,
+          scopeVersion: '2026-11-07-v2',
+        },
+      }),
+    });
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({ error: expect.stringContaining('isolated storage') });
   });
 
   it('rejects audit intake unless the current paid scope is acknowledged', async () => {
