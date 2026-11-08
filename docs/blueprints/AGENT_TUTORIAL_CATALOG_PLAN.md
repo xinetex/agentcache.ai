@@ -25,7 +25,7 @@ Treat a task family as portable only after at least two app-specific playbooks h
 
 On 2026-11-08, the public creation page returned successfully and displayed three Blender playbooks; its machine index also returned three Blender records. Their validation report supports Blender 5.2.0 LTS only. This confirms the live seed, not cross-app adoption or revenue.
 
-The isolated candidate now adds a fourth verified Blender guide for an exploded desk lamp, with an original script, JSON and human records, sample project, preview render, and a two-run/reopen validation log. The existing preview alias does not yet include it; Vercel deployment and public rendering still need verification.
+The isolated candidate adds a fourth verified Blender guide for an exploded desk lamp, with an original script, JSON and human records, sample project, preview render, and a two-run/reopen validation log. On 2026-11-08, its Vercel Preview succeeded and the preview alias rendered all four guide cards and linked machine records. Production still has only the earlier three-guide state; no production release has occurred.
 
 ## Catalog navigation
 
@@ -42,7 +42,7 @@ Never label a guide as compatible with an agent just because it is readable Mark
 
 ## Full candidate catalog
 
-This is a 43-task planning inventory, not a release schedule or a promise to publish 43 guides. Three Blender playbooks are live and verified on Blender 5.2.0 LTS. The next active work is one Inkscape feasibility task and one separate Synfig feasibility spike. The remaining tasks are backlog; their wave labels show a possible order, not committed dates. Every new item stays unpublished until its app-control path and output checks are proven.
+This is a 43-task planning inventory, not a release schedule or a promise to publish 43 guides. Four Blender playbooks are verified on Blender 5.2.0 LTS in the candidate Preview; Production still serves the earlier three-guide seed. The next active work is one Inkscape feasibility task and one separate Synfig feasibility spike. The remaining tasks are backlog; their wave labels show a possible order, not committed dates. Every new item stays unpublished until its app-control path and output checks are proven.
 
 ### 3D design and product media — Blender
 
@@ -51,7 +51,7 @@ This is a 43-task planning inventory, not a release schedule or a promise to pub
 | blender.product-turntable | Create a rendered product turntable | Editable Blender project, animation, and still render; reopen the project and inspect framing and keyframes | Live |
 | blender.typographic-title-card | Create a 3D typographic title card | Editable scene and render; confirm text, camera, lights, and safe margins | Live |
 | blender.product-colorway-board | Create a three-color product comparison board | Three editable variants and one render; confirm labels, framing, and color distinction | Live |
-| blender.exploded-product-view | Create an exploded product view | Named components, exploded layout, camera, and render; verify each component remains separate | Wave 1 |
+| blender.exploded-desk-lamp | Create an exploded view of an original desk lamp | Named components, exploded layout, camera, and render; verify each component remains separate | Live |
 | blender.product-lighting-study | Compare three product-lighting setups | Three labeled lighting variants; verify camera and object stay constant across views | Wave 1 |
 | blender.glb-export-package | Prepare and export a web-ready GLB asset | Native project, GLB, and preview; re-import the GLB and check mesh, material, scale, and texture presence | Wave 1 |
 | blender.product-spec-sheet | Create a product specification image from a model | Front, side, and perspective views with supplied dimensions; verify labels against the input values | Wave 2 |
@@ -213,7 +213,7 @@ Do not use page views as the main success metric. Do not upload generated custom
 
 | Milestone | Goal | Exit evidence |
 | --- | --- | --- |
-| C0 — Live seed | Maintain the three verified Blender guides and stable agent discovery | Live page, index, schema, sample and script routes work; each status matches the validation report |
+| C0 — Live seed | Maintain the three-guide Production seed and the four-guide candidate Preview | Production routes remain available; candidate Preview renders four records and each record status matches the validation report. Production release is a separate gate. |
 | C1 — Independent app feasibility | Test one Inkscape route and the Synfig cut-out route independently | Each app has its own pass/fail result. A passing app opens, saves, and exports an original artifact through its recorded route, with a complete rights record and one maintainer run; a failure does not block other apps or Blender external runs |
 | C2 — External agent use | Test the live Blender seed when the opt-in log is ready; add each app independently after its own C1 pass | Ten opted-in runs logged by the catalog maintainer; at least five pass the objective checks; failures and human intervention recorded; no identity or artifact content retained by default |
 | C3 — First 10-task catalog | Expand to ten published guides only for tasks indicated by C2; records may be tested or verified and only those statuses are public; draft records stay in the work queue | Ten public records pass schema and link validation; the set uses at least three distinct app-and-primary-route pairs; each record labeled verified has two clean runs. The 16-hour cap applies when maintaining the first ten verified playbooks, not merely ten published records |
@@ -249,13 +249,13 @@ The Inkscape input brief is fixed: create three original monochrome icons for a 
 - **Phase 0:** review the three planning files for all required columns/fields and confirm none is referenced by the public index. No application tests.
 - **Phase 1:** run each spike's documented commands in a clean output directory; retain a manual assertion checklist and screenshots only as local maintainer evidence. Record pass/fail independently. No public validator run is required because no public files change.
 - **Phase 2:** verify each participant opted in before recording, count ten eligible rows and at least five accepted outputs, and review the limited fields for prohibited content before using the result. No event instrumentation.
-- **Phase 3:** run `npx vitest --run tests/unit/playbook-validator.test.js` and `node scripts/validate-playbooks.mjs`, then inspect the public index and each linked artifact. Preserve a test fixture showing all three existing Blender records pass. Publish only after both the automated checks and rights/visual review pass.
+- **Phase 3:** run `npx vitest --run tests/unit/playbook-validator.test.js` and `node scripts/validate-playbooks.mjs`, then inspect the public index and each linked artifact. Preserve a test fixture showing all four candidate Preview records pass; keep the three Production records unchanged until the separate release gate. Publish only after both the automated checks and rights/visual review pass.
 - **Phase 4:** record a dated decision against run evidence, buyer signals, and measured quarterly maintenance hours; if any gate fails, update the work queue to defer expansion.
 
 
 ### Phase 0 — Protect the seed and set up the catalog work queue
 
-1. Keep the three current Blender records and their validation evidence unchanged while adding new candidates.
+1. Keep the three Production Blender records and their validation evidence unchanged; track the fourth verified record as candidate Preview content until its separate release gate passes.
 2. Add a planning-only task inventory before writing new public guides. Give each candidate a stable ID, app, target output, control path, verifier, source status, and priority.
 3. Create a rights-reviewed source record for the Synfig cut-out reference. Do not carry its sample character or screenshots into AgentCache content.
 4. Pick one Inkscape command-line task and the Synfig cut-out feasibility spike as the next two experiments. Maintain a separate pass/fail state for each.
@@ -265,14 +265,14 @@ The Inkscape input brief is fixed: create three original monochrome icons for a 
 ### Phase 1 — Run two independent app feasibility spikes
 
 1. Build the Inkscape icon-family task from an original brief. Create SVG, export PNG, inspect IDs and geometry, and reopen the SVG in Inkscape.
-2. Build a new Synfig puppet from original artwork. Test whether a project can be assembled, reopened, rendered, and checked without relying on fragile coordinates. If the editor route is UI-only, document its exact limits and keep it research-only; it cannot enter the public index or external-run pool until a supported script/launcher satisfies the current schema.
+2. Build a new Synfig puppet from original artwork. Test the Synfig Studio 1.5.0+ Skeleton Tool and Skeleton Layer path first. Check whether the rigged project can be assembled, reopened, rendered, and inspected; use a saved fixture to assess version-matched automation afterward. Do not hand-author SIF XML. If the only reliable route remains UI-only, document its limits and keep it research-only; it cannot enter the public index or external-run pool until a supported script/launcher satisfies the current schema.
 3. Record app versions, exact commands, run time, dependencies, outputs, failure recovery, and any manual steps.
 
 **Exit gate:** record each app result separately. A spike passes when one maintainer run creates, saves, reopens, exports, and checks its original artifact in a clean output directory. A second clean-process run is required for verified status, not for allowing the other passing app or live Blender guides into external runs. If Synfig fails the machine-playbook contract, keep the source-derived guide as a human research note and prioritize an app with a tested script or command-line creation route instead.
 
 ### Phase 2 — Test agent use before expanding
 
-1. Use the three live Blender guides plus each successful feasibility task. Do not wait for a ten-guide catalog to invite external runs.
+1. Use the four live Blender guides plus each successful feasibility task. Do not wait for a ten-guide catalog to invite external runs.
 2. The catalog maintainer obtains opt-in for the limited fields defined above, provides the objective checklist, and logs the run manually.
 3. Keep each app result separate. Inkscape can pass even if Synfig fails; a Synfig failure does not count as evidence against Inkscape.
 4. Fix the most common instruction or recovery failures before adding more topics.
