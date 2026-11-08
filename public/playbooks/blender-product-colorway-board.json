@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "id": "blender.product-colorway-board",
+  "version": "0.1.0",
+  "title": "Create a three-color product comparison board",
+  "app": "Blender",
+  "app_version": { "tested": "5.2.0 LTS" },
+  "status": "verified",
+  "goal": "Create three original product color variants in one scene, save the editable Blender project, and render a comparison board.",
+  "inputs": [],
+  "capabilities": ["run_blender_python_script", "write_files_to_designated_output_directory"],
+  "permissions": {
+    "filesystem": "Write only to the designated output directory. Do not overwrite existing files without approval.",
+    "network": "Not required",
+    "external_services": "Not required"
+  },
+  "outputs": ["product-colorway-board.blend", "product-colorway-board.png"],
+  "sample_project_url": "/playbooks/samples/product-colorway-board.blend",
+  "execution": {
+    "script_url": "/playbooks/create-colorway-board.py",
+    "command_template": "blender --background --python create-colorway-board.py -- <approved-output-directory>",
+    "requires_user_selected_output_directory": true,
+    "network": "none"
+  },
+  "steps": [
+    { "id": "confirm-output", "action": "Choose an empty user-designated output directory and confirm both target filenames are unused.", "verify": "The directory is writable and both output paths are clear.", "recovery": "If a target exists, stop and ask before choosing another path or replacing anything.", "checkpoint": true },
+    { "id": "create-variants", "action": "Fetch the indexed script and run it with Blender in background mode and the approved output directory.", "verify": "Blender exits successfully, writes both files, and the project contains three named bottle bodies with distinct materials.", "recovery": "Preserve error output and rerun only after correcting the issue and confirming paths remain clear.", "checkpoint": false },
+    { "id": "inspect-board", "action": "Open the project and inspect the rendered comparison image.", "verify": "All three products are visible, labels are readable, colors differ clearly, and no object is clipped.", "recovery": "Adjust spacing, camera scale, or label placement in a copy and render to a new approved path.", "checkpoint": true }
+  ],
+  "sources": [
+    {
+      "url": "https://docs.blender.org/api/current/bpy.ops.mesh.html",
+      "publisher": "Blender Foundation",
+      "retrieved_at": "2026-11-08",
+      "license": "Not assessed for redistribution; reference only",
+      "license_url": "https://projects.blender.org/blender/blender-manual/src/branch/main/manual/copyright.rst",
+      "exclusions": "No API prose, images, source code, or sample scripts reproduced.",
+      "attribution": "Link to Blender Foundation API documentation retained for readers.",
+      "share_alike": "No adaptation of source text; share-alike is not relied upon for this original procedure.",
+      "use": "Mesh operator fact lookup; instructions and code are original",
+      "rights_review": { "status": "reference_only", "reviewed_at": "2026-11-08", "notes": "No tutorial prose, examples, or media reproduced; API facts only." }
+    },
+    {
+      "url": "https://docs.blender.org/api/current/bpy.types.Material.html",
+      "publisher": "Blender Foundation",
+      "retrieved_at": "2026-11-08",
+      "license": "Not assessed for redistribution; reference only",
+      "license_url": "https://projects.blender.org/blender/blender-manual/src/branch/main/manual/copyright.rst",
+      "exclusions": "No API prose, images, source code, or sample scripts reproduced.",
+      "attribution": "Link to Blender Foundation API documentation retained for readers.",
+      "share_alike": "No adaptation of source text; share-alike is not relied upon for this original procedure.",
+      "use": "Material API fact lookup; instructions and code are original",
+      "rights_review": { "status": "reference_only", "reviewed_at": "2026-11-08", "notes": "No tutorial prose, examples, or media reproduced; API facts only." }
+    }
+  ],
+  "license": { "playbook": "AgentCache.ai original content; all rights reserved", "third_party_assets": "None", "adapted_source_text": "None" },
+  "verification": {
+    "runs": 2,
+    "project_reopened": true,
+    "visual_review": "All three bottles are framed, clearly distinct in color, and labeled; image is 1200x750.",
+    "checks": ["Two successful Blender 5.2.0 LTS runs in fresh output directories", "Reopened .blend and checked three named bottles, camera, lights, and render dimensions", "Both output files exist and are non-empty"]
+  },
+  "last_verified": "2026-11-08T11:34:57Z",
+  "limitations": ["Verified on Blender 5.2.0 LTS only; compatibility with earlier and later versions is not established."]
+}

@@ -1,0 +1,85 @@
+{
+  "schema_version": "1.0",
+  "name": "AgentCache Creation Playbooks",
+  "description": "Versioned instructions for agents creating artifacts in controllable applications.",
+  "updated_at": "2026-11-08",
+  "schema": "/playbooks/schema.json",
+  "playbooks": [
+    {
+      "id": "blender.product-turntable",
+      "title": "Create a rendered product turntable",
+      "app": "Blender",
+      "app_version": "Blender 5.2.0 LTS",
+      "sample_project": "/playbooks/samples/product-turntable.blend",
+      "category": "3D creation",
+      "status": "verified",
+      "goal": "Create a simple animated product scene, save a Blender project, and render a still image.",
+      "formats": {
+        "human": "/playbooks/blender-product-turntable.md",
+        "machine": "/playbooks/blender-product-turntable.json",
+        "script": "/playbooks/create-turntable.py"
+      },
+      "preview": { "src": "/playbooks/previews/product-turntable.png", "alt": "Rendered teal product on a round white plinth in a dark studio" },
+      "verification": "Blender 5.2.0 LTS: two runs, saved project reopened, scene/animation/settings checked, render visually inspected.",
+      "sources": [
+        {
+          "title": "Blender Python API: keyframe_insert",
+          "url": "https://docs.blender.org/api/current/bpy.types.bpy_struct.html#bpy.types.bpy_struct.keyframe_insert",
+          "relationship": "API reference; procedure and code are original"
+        },
+        {
+          "title": "Blender Python API: RenderSettings",
+          "url": "https://docs.blender.org/api/current/bpy.types.RenderSettings.html",
+          "relationship": "API reference; procedure and code are original"
+        },
+        {
+          "title": "Blender Python API: save operators",
+          "url": "https://docs.blender.org/api/current/bpy.ops.wm.html",
+          "relationship": "API reference; procedure and code are original"
+        }
+      ]
+    },
+    {
+      "id": "blender.typographic-title-card",
+      "title": "Create a 3D typographic title card",
+      "app": "Blender",
+      "app_version": "Blender 5.2.0 LTS",
+      "sample_project": "/playbooks/samples/typographic-title-card.blend",
+      "category": "3D design",
+      "status": "verified",
+      "goal": "Create an original extruded type composition and render a title card.",
+      "formats": {
+        "human": "/playbooks/blender-typographic-title-card.md",
+        "machine": "/playbooks/blender-typographic-title-card.json",
+        "script": "/playbooks/create-title-card.py"
+      },
+      "preview": { "src": "/playbooks/previews/typographic-title-card.png", "alt": "Gold extruded MAKE IT REAL type on a blue title card" },
+      "verification": "Blender 5.2.0 LTS: two runs, saved project reopened, text/camera/lights/settings checked, render visually inspected.",
+      "sources": [
+        { "title": "Blender Python API: TextCurve", "url": "https://docs.blender.org/api/current/bpy.types.TextCurve.html", "relationship": "API reference; procedure and code are original" },
+        { "title": "Blender Python API: camera and render settings", "url": "https://docs.blender.org/api/current/bpy.types.Camera.html", "relationship": "API reference; procedure and code are original" }
+      ]
+    },
+    {
+      "id": "blender.product-colorway-board",
+      "title": "Create a three-color product comparison board",
+      "app": "Blender",
+      "app_version": "Blender 5.2.0 LTS",
+      "sample_project": "/playbooks/samples/product-colorway-board.blend",
+      "category": "3D product visualization",
+      "status": "verified",
+      "goal": "Create three original product color variants in one scene and render a comparison board.",
+      "formats": {
+        "human": "/playbooks/blender-product-colorway-board.md",
+        "machine": "/playbooks/blender-product-colorway-board.json",
+        "script": "/playbooks/create-colorway-board.py"
+      },
+      "preview": { "src": "/playbooks/previews/product-colorway-board.png", "alt": "Three labeled bottle variants in ocean blue, citrus orange, and moss green" },
+      "verification": "Blender 5.2.0 LTS: two runs, saved project reopened, three variants/camera/lights/settings checked, render visually inspected.",
+      "sources": [
+        { "title": "Blender Python API: mesh primitives", "url": "https://docs.blender.org/api/current/bpy.ops.mesh.html", "relationship": "API reference; procedure and code are original" },
+        { "title": "Blender Python API: material data", "url": "https://docs.blender.org/api/current/bpy.types.Material.html", "relationship": "API reference; procedure and code are original" }
+      ]
+    }
+  ]
+}

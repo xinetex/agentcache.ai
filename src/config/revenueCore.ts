@@ -1,3 +1,5 @@
+import { AGENT_RUN_AUDIT } from './agentRunAudit.js';
+
 export type RevenueCoreOffer = {
     id: string;
     name: string;
@@ -51,6 +53,19 @@ export const REVENUE_CORE_OFFERS: RevenueCoreOffer[] = [
         pricingHint: 'Pro feature with enterprise governance and alerting expansion.',
         endpoints: ['/api/certified-runs', '/api/certified-runs/:runId/approve', '/api/execution/runs', '/api/execution/runs/:id/evaluate', '/api/execution/runs/:id/evaluations'],
         proofSignals: ['executionDrift.totalEvaluations', 'executionDrift.driftingEvaluations', 'receipts.bySubjectKind.CERTIFIED_RUN', 'alignment.total'],
+    },
+    {
+        id: AGENT_RUN_AUDIT.id,
+        name: AGENT_RUN_AUDIT.name,
+        tagline: 'A bounded review of one agent workflow with prioritized findings and a transparent baseline.',
+        buyer: 'Teams operating multi-step agents that need a clear first step before a monitored rollout.',
+        problem: 'Teams lack a shared baseline for workflow drift, evidence gaps, or repeated work.',
+        outcome: `A findings report and ${AGENT_RUN_AUDIT.readoutMinutes}-minute readout within ${AGENT_RUN_AUDIT.deliveryBusinessDays} business days for one workflow, based on up to ${AGENT_RUN_AUDIT.maxRunRecords} redacted run records.`,
+        tier: 'pro',
+        launchPriority: 1,
+        pricingHint: `$${(AGENT_RUN_AUDIT.priceCents / 100).toFixed(0)} one-time fixed fee; intake and secure Stripe Checkout.`,
+        endpoints: ['/api/catalog/request', '/api/audit/checkout'],
+        proofSignals: ['executionDrift.totalEvaluations', 'receipts.totalReceipts', 'fabric.analytics.summary.totalOperations'],
     },
     {
         id: 'agentcache-knowledge',

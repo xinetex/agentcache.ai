@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { addCreditsToUser } from '../credits.js';
 import { transaction } from '../../lib/db.js';
 import { notifier } from '../../src/services/NotificationService.js';
+import { AGENT_RUN_AUDIT } from '../../src/config/agentRunAudit.js';
 import {
   getBillingPlanByStripePriceId,
   getPlanLimitsSnapshot,
@@ -611,9 +612,45 @@ export default async function handler(req, res) {
     }
 
     switch (event.type) {
-      case 'checkout.session.completed': {
+      case 'checkout.session.completed':
+      case 'checkout.session.async_payment_succeeded': {
         const session = event.data.object;
         const kind = session.metadata?.type;
+
+        if (kind === 'agent_run_audit') {
+          const isValidAuditSession = session.metadata?.offer_id === AGENT_RUN_AUDIT.id
+            && session.mode === 'payment'
+            && session.amount_total === AGENT_RUN_AUDIT.priceCents
+            && session.currency === AGENT_RUN_AUDIT.currency
+            && (!(process.env.VERCEL_ENV === 'production' || (process.env.NODE_ENV === 'production' && !process.env.VERCEL_ENV)) || session.livemode === true);
+          if (!isValidAuditSession) {
+            console.error('[Audit Checkout] Completed session did not match the fixed audit payment terms.');
+            break;
+          }
+          if (session.payment_status !== 'paid') break;
+          const requestId = session.metadata?.service_request_id;
+          if (!requestId) {
+            console.error('[Audit Checkout] Paid session is missing its service request ID.');
+            break;
+          }
+          await transaction(async (client) => {
+            const updated = await client.query(`
+              UPDATE service_requests
+              SET status = 'payment_received',
+                  config = COALESCE(config, '{}'::jsonb) || $2::jsonb,
+                  updated_at = NOW()
+              WHERE id = $1 AND config->>'offer' = $3
+            `, [requestId, JSON.stringify({
+              paymentState: 'paid',
+              stripeCheckoutSessionId: session.id,
+              stripePaymentIntentId: typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id || null,
+              stripeEventId: event.id,
+              paidAt: new Date().toISOString(),
+            }), AGENT_RUN_AUDIT.id]);
+            if (updated.rowCount !== 1) throw new Error('Paid audit request was not found for this Stripe session.');
+          });
+          break;
+        }
 
         if (kind === 'credit_purchase') {
           const keyHash = session.metadata?.api_key_hash;
@@ -713,6 +750,36 @@ export default async function handler(req, res) {
           }
         }
 
+        break;
+      }
+
+      case 'checkout.session.async_payment_failed':
+      case 'checkout.session.expired': {
+        const session = event.data.object;
+        if (session.metadata?.type !== 'agent_run_audit'
+          || session.metadata?.offer_id !== AGENT_RUN_AUDIT.id
+          || !session.metadata?.service_request_id
+          || session.mode !== 'payment'
+          || session.amount_total !== AGENT_RUN_AUDIT.priceCents
+          || session.currency !== AGENT_RUN_AUDIT.currency
+          || ((process.env.VERCEL_ENV === 'production' || (process.env.NODE_ENV === 'production' && !process.env.VERCEL_ENV)) && session.livemode !== true)) break;
+        const status = event.type === 'checkout.session.expired' ? 'checkout_expired' : 'payment_failed';
+        await transaction(async (client) => {
+          await client.query(`
+            UPDATE service_requests
+            SET status = $2,
+                config = COALESCE(config, '{}'::jsonb) || $3::jsonb,
+                updated_at = NOW()
+            WHERE id = $1
+              AND config->>'offer' = $4
+              AND config->>'stripeCheckoutSessionId' = $5
+              AND config->>'paymentState' = 'pending'
+          `, [session.metadata.service_request_id, status, JSON.stringify({
+            paymentState: event.type === 'checkout.session.expired' ? 'expired' : 'failed',
+            stripeEventId: event.id,
+            paymentUpdatedAt: new Date().toISOString(),
+          }), AGENT_RUN_AUDIT.id, session.id]);
+        });
         break;
       }
 

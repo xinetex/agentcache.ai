@@ -1,0 +1,99 @@
+{
+  "schema_version": "1.0",
+  "id": "blender.product-turntable",
+  "version": "0.1.0",
+  "title": "Create a rendered product turntable",
+  "app": "Blender",
+  "app_version": { "tested": "5.2.0 LTS" },
+  "status": "verified",
+  "goal": "Create an original, simple product-like scene, animate it, save a .blend project, and render a still.",
+  "inputs": [],
+  "capabilities": ["run_blender_python_script", "write_files_to_designated_output_directory"],
+  "permissions": {
+    "filesystem": "Write only to the designated output directory. Do not overwrite existing files without approval.",
+    "network": "Not required",
+    "external_services": "Not required"
+  },
+  "outputs": ["product-turntable.blend", "product-turntable.png"],
+  "sample_project_url": "/playbooks/samples/product-turntable.blend",
+  "execution": {
+    "script_url": "/playbooks/create-turntable.py",
+    "command_template": "blender --background --python create-turntable.py -- <approved-output-directory>",
+    "requires_user_selected_output_directory": true,
+    "network": "none"
+  },
+  "steps": [
+    {
+      "id": "confirm-output",
+      "action": "Choose an empty, user-designated output directory and confirm neither output filename already exists.",
+      "verify": "Directory is writable and both target paths are unused.",
+      "recovery": "If either target exists, ask before choosing a new name or replacing anything.",
+      "checkpoint": true
+    },
+    {
+      "id": "run-original-script",
+      "action": "Fetch execution.script_url and run it through the installed Blender executable using execution.command_template with the approved output directory.",
+      "verify": "Process exits successfully; both output files exist and are non-empty.",
+      "recovery": "Capture Blender's error output, correct the script for the installed version, and rerun only after confirming output paths.",
+      "checkpoint": false
+    },
+    {
+      "id": "reopen-and-inspect",
+      "action": "Open the saved project in Blender and render the current frame.",
+      "verify": "Project opens, camera sees the object and ground, and rendered image has nonzero dimensions and visible content.",
+      "recovery": "If the render is empty or clipped, adjust camera framing and lighting, save to a new approved path, and repeat validation.",
+      "checkpoint": true
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://docs.blender.org/api/current/bpy.types.bpy_struct.html#bpy.types.bpy_struct.keyframe_insert",
+      "publisher": "Blender Foundation",
+      "retrieved_at": "2026-11-08",
+      "license": "Not assessed for redistribution; reference only",
+      "license_url": "https://projects.blender.org/blender/blender-manual/src/branch/main/manual/copyright.rst",
+      "exclusions": "No API prose, images, source code, or sample scripts reproduced.",
+      "attribution": "Link to Blender Foundation API documentation retained for readers.",
+      "share_alike": "No adaptation of source text; share-alike is not relied upon for this original procedure.",
+      "use": "Independent API lookup; original instructions and code",
+      "rights_review": { "status": "reference_only", "reviewed_at": "2026-11-08", "notes": "No tutorial prose, examples, or media reproduced; this source is cited for API facts only." }
+    },
+    {
+      "url": "https://docs.blender.org/api/current/bpy.types.RenderSettings.html",
+      "publisher": "Blender Foundation",
+      "retrieved_at": "2026-11-08",
+      "license": "Not assessed for redistribution; reference only",
+      "license_url": "https://projects.blender.org/blender/blender-manual/src/branch/main/manual/copyright.rst",
+      "exclusions": "No API prose, images, source code, or sample scripts reproduced.",
+      "attribution": "Link to Blender Foundation API documentation retained for readers.",
+      "share_alike": "No adaptation of source text; share-alike is not relied upon for this original procedure.",
+      "use": "Independent API lookup; original instructions and code",
+      "rights_review": { "status": "reference_only", "reviewed_at": "2026-11-08", "notes": "No tutorial prose, examples, or media reproduced; this source is cited for API facts only." }
+    },
+    {
+      "url": "https://docs.blender.org/api/current/bpy.ops.wm.html",
+      "publisher": "Blender Foundation",
+      "retrieved_at": "2026-11-08",
+      "license": "Not assessed for redistribution; reference only",
+      "license_url": "https://projects.blender.org/blender/blender-manual/src/branch/main/manual/copyright.rst",
+      "exclusions": "No API prose, images, source code, or sample scripts reproduced.",
+      "attribution": "Link to Blender Foundation API documentation retained for readers.",
+      "share_alike": "No adaptation of source text; share-alike is not relied upon for this original procedure.",
+      "use": "Independent reference for saving a .blend project",
+      "rights_review": { "status": "reference_only", "reviewed_at": "2026-11-08", "notes": "No tutorial prose, examples, or media reproduced; this source is cited for API facts only." }
+    }
+  ],
+  "license": {
+    "playbook": "AgentCache.ai original content; all rights reserved",
+    "third_party_assets": "None",
+    "adapted_source_text": "None"
+  },
+  "verification": {
+    "runs": 2,
+    "project_reopened": true,
+    "visual_review": "Rendered object and plinth are fully framed, lit, and visible; image is 900x900.",
+    "checks": ["Two successful Blender 5.2.0 LTS runs in fresh output directories", "Reopened .blend and checked named objects, camera, lights, animation, and render dimensions", "Both output files exist and are non-empty"]
+  },
+  "last_verified": "2026-11-08T11:34:57Z",
+  "limitations": ["Verified on Blender 5.2.0 LTS only; compatibility with earlier and later versions is not established."]
+}

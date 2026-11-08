@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentcache.ai/playbooks/schema.json",
+  "title": "AgentCache Creation Playbook",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "id", "version", "title", "app", "app_version", "status", "goal", "inputs", "capabilities", "permissions", "outputs", "sample_project_url", "execution", "steps", "sources", "license", "verification", "last_verified", "limitations"],
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "verified" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "app_version": { "properties": { "tested": { "type": "string", "minLength": 1 } }, "required": ["tested"] },
+          "verification": { "properties": { "runs": { "minimum": 2 }, "project_reopened": { "const": true }, "visual_review": { "type": "string", "minLength": 10 } } },
+          "last_verified": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$" },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "title": { "type": "string", "minLength": 5 },
+    "app": { "type": "string", "minLength": 1 },
+    "app_version": {
+      "type": "object", "additionalProperties": false,
+      "required": ["tested"],
+      "properties": { "tested": { "type": ["string", "null"] } }
+    },
+    "status": { "enum": ["draft", "tested", "verified", "stale"] },
+    "goal": { "type": "string", "minLength": 20 },
+    "inputs": { "type": "array", "items": { "type": "object" } },
+    "capabilities": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "permissions": {
+      "type": "object", "additionalProperties": false,
+      "required": ["filesystem", "network", "external_services"],
+      "properties": {
+        "filesystem": { "type": "string", "minLength": 1 },
+        "network": { "type": "string", "minLength": 1 },
+        "external_services": { "type": "string", "minLength": 1 }
+      }
+    },
+    "outputs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "sample_project_url": { "type": "string", "pattern": "^/playbooks/samples/" },
+    "execution": {
+      "type": "object", "additionalProperties": false,
+      "required": ["script_url", "command_template", "requires_user_selected_output_directory", "network"],
+      "properties": {
+        "script_url": { "type": "string", "pattern": "^/playbooks/" },
+        "command_template": { "type": "string", "minLength": 5 },
+        "requires_user_selected_output_directory": { "type": "boolean" },
+        "network": { "enum": ["none", "required", "optional"] }
+      }
+    },
+    "steps": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "action", "verify", "recovery", "checkpoint"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "action": { "type": "string", "minLength": 10 },
+          "verify": { "type": "string", "minLength": 10 },
+          "recovery": { "type": "string", "minLength": 10 },
+          "checkpoint": { "type": "boolean" }
+        }
+      }
+    },
+    "sources": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["url", "publisher", "retrieved_at", "license", "license_url", "exclusions", "attribution", "share_alike", "use", "rights_review"],
+        "properties": {
+          "url": { "type": "string", "format": "uri", "pattern": "^https://" },
+          "publisher": { "type": "string", "minLength": 1 },
+          "retrieved_at": { "type": "string", "format": "date" },
+          "license": { "type": "string", "minLength": 3 },
+          "license_url": { "type": ["string", "null"], "format": "uri" },
+          "exclusions": { "type": "string", "minLength": 3 },
+          "attribution": { "type": "string", "minLength": 3 },
+          "share_alike": { "type": "string", "minLength": 3 },
+          "use": { "type": "string", "minLength": 5 },
+          "rights_review": {
+            "type": "object", "additionalProperties": false,
+            "required": ["status", "reviewed_at", "notes"],
+            "properties": {
+              "status": { "enum": ["reference_only", "approved_for_adaptation", "blocked", "unresolved"] },
+              "reviewed_at": { "type": ["string", "null"], "format": "date" },
+              "notes": { "type": "string", "minLength": 5 }
+            }
+          }
+        }
+      }
+    },
+    "license": {
+      "type": "object", "additionalProperties": false,
+      "required": ["playbook", "third_party_assets", "adapted_source_text"],
+      "properties": {
+        "playbook": { "type": "string", "minLength": 5 },
+        "third_party_assets": { "type": "string", "minLength": 3 },
+        "adapted_source_text": { "type": "string", "minLength": 3 }
+      }
+    },
+    "verification": {
+      "type": "object", "additionalProperties": false,
+      "required": ["runs", "project_reopened", "visual_review", "checks"],
+      "properties": {
+        "runs": { "type": "integer", "minimum": 0 },
+        "project_reopened": { "type": "boolean" },
+        "visual_review": { "type": "string", "minLength": 5 },
+        "checks": { "type": "array", "items": { "type": "string", "minLength": 3 } }
+      }
+    },
+    "last_verified": { "type": ["string", "null"], "format": "date-time" },
+    "limitations": { "type": "array", "items": { "type": "string", "minLength": 3 } }
+  }
+}

@@ -29,6 +29,22 @@
   ],
   "rewrites": [
     {
+      "source": "/create",
+      "destination": "/playbooks.html"
+    },
+    {
+      "source": "/agent-audit",
+      "destination": "/agent-audit.html"
+    },
+    {
+      "source": "/cachedots",
+      "destination": "/cachedots.html"
+    },
+    {
+      "source": "/workbench",
+      "destination": "/workbench.html"
+    },
+    {
       "source": "/why",
       "destination": "/why.html"
     },
@@ -163,6 +179,10 @@
     {
       "source": "/api/cdn/warm",
       "destination": "/api/cdn-warm-standalone"
+    },
+    {
+      "source": "/api/audit/checkout",
+      "destination": "/api/audit/checkout"
     },
     {
       "source": "/api/billing/create-checkout",

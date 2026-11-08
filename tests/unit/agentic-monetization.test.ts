@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 
 import {
   canPlanUseAddon,
@@ -29,9 +30,15 @@ describe('agentic monetization config', () => {
       'add_on',
       'usage_meter',
       'design_partner_pilot',
+      'one_time_service',
     ]);
     expect(monetization.addons.map((addon) => addon.id)).toEqual(['guardrails', 'knowledge']);
     expect(monetization.meteredSkus.some((sku) => sku.id === 'memory-fabric-credit')).toBe(true);
+    expect(monetization.oneTimeOffers).toContainEqual(expect.objectContaining({
+      id: 'agent-run-risk-savings-audit',
+      priceUsd: 750,
+      checkoutEndpoint: 'POST /api/audit/checkout',
+    }));
     expect(monetization.designPartnerPilots.some((pilot) => pilot.id === 'execution-drift-guard-pilot')).toBe(true);
   });
 
@@ -48,6 +55,12 @@ describe('agentic monetization config', () => {
       pilotIds: ['agent-storage-core-pilot'],
     });
 
+    expect(getProductCommercialModel('agent-run-risk-savings-audit')).toMatchObject({
+      minimumPlan: 'free',
+      checkoutUrl: '/agent-audit',
+      billingNote: expect.stringContaining('$750'),
+    });
+
     expect(canPlanUseAddon('free', 'guardrails')).toBe(false);
     expect(canPlanUseAddon('pro', 'guardrails')).toBe(true);
   });
@@ -60,5 +73,14 @@ describe('agentic monetization config', () => {
     expect(manifest.pricing).toBe('https://agentcache.ai/api/pricing');
     expect(skillMd).toContain('GET /api/billing/monetization');
     expect(skillMd).toContain('AgentCache monetizes agentic use through subscriptions');
+  });
+
+  it('keeps the audit page connected to the priced offer and checkout path', () => {
+    const page = readFileSync(new URL('../../public/agent-audit.html', import.meta.url), 'utf8');
+    expect(page).toContain('$750');
+    expect(page).toContain("fetch('/api/audit/checkout'");
+    expect(page).toContain('site refund terms apply');
+    expect(page).toContain('scope_acknowledged');
+    expect(page).toContain('30-minute findings readout');
   });
 });

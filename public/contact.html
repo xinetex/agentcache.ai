@@ -393,7 +393,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        serviceId: 'contact-form',
+                        serviceId: 'custom',
                         title: `Contact: ${name} (${company || 'Individual'}) :: ${interest}`,
                         description: `Email: ${email}\nCompany: ${company}\nMonthly LLM Spend: ${spend}\nInterest: ${interest}\nRequested From: ${params.get('interest') || 'contact-page'}\n\n${message}`,
                         config: { name, email, company, spend, interest, source: 'contact-page' }

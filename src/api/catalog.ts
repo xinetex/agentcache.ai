@@ -20,13 +20,15 @@
  *
  * Authenticated endpoints:
  *   POST /api/catalog/request  — Submit a custom service request (need → ticket)
- *   GET  /api/catalog/requests — List open requests (admin or own)
+ *   GET  /api/catalog/requests — List requests (admin token required)
  */
 
 import { Hono } from 'hono';
 import { desc, eq } from 'drizzle-orm';
 import { db } from '../db/client.js';
+import { authenticateAdmin } from '../middleware/auth.js';
 import { serviceRequests } from '../db/schema.js';
+import { AGENT_RUN_AUDIT } from '../config/agentRunAudit.js';
 import { getRevenueCoreOffers } from '../config/revenueCore.js';
 import {
     getAgenticMonetizationSummary,
@@ -641,6 +643,37 @@ catalogRouter.get('/tool-shed', (c) => {
 });
 
 /**
+ * GET /api/catalog/requests
+ * List service requests. Admin token required.
+ */
+catalogRouter.get('/requests', async (c) => {
+    const authError = await authenticateAdmin(c);
+    if (authError) return authError;
+
+    const status = c.req.query('status');
+    const agentId = c.req.query('agentId');
+    const limit = c.req.query('limit') ? parseInt(c.req.query('limit')!, 10) : 50;
+
+    try {
+        let query = db.select().from(serviceRequests);
+        if (status) {
+            query = query.where(eq(serviceRequests.status, status));
+        }
+        if (agentId) {
+            query = query.where(eq(serviceRequests.agentId, agentId));
+        }
+
+        const rows = await query
+            .orderBy(desc(serviceRequests.createdAt))
+            .limit(limit);
+
+        return c.json({ count: rows.length, requests: rows });
+    } catch {
+        return c.json({ count: 0, requests: [] });
+    }
+});
+
+/**
  * GET /api/catalog/:id
  * Full detail for a specific service (public)
  */
@@ -670,6 +703,11 @@ catalogRouter.post('/request', async (c) => {
             return c.json({ error: 'serviceId and title are required' }, 400);
         }
 
+        const isAgentRunAudit = config?.offer === AGENT_RUN_AUDIT.id;
+        if (isAgentRunAudit && (config?.scopeAcknowledged !== true || config?.scopeVersion !== AGENT_RUN_AUDIT.scopeVersion)) {
+            return c.json({ error: 'Please review and acknowledge the current audit scope before submitting.' }, 400);
+        }
+
         // Validate service exists
         if (!SERVICE_MAP.has(serviceId) && serviceId !== 'custom') {
             return c.json({
@@ -686,7 +724,9 @@ catalogRouter.post('/request', async (c) => {
             title,
             description: description || null,
             status: 'open',
-            config: config || {},
+            config: isAgentRunAudit
+                ? { ...config, scopeAcknowledgedAt: now.toISOString() }
+                : (config || {}),
             createdAt: now,
             updatedAt: now
         }).returning();
@@ -698,41 +738,10 @@ catalogRouter.post('/request', async (c) => {
             requestId: inserted?.id || 'pending',
             status: 'open',
             message: 'Service request submitted. Our team + agents will review and propose a configuration.',
-            trackEndpoint: 'GET /api/catalog/requests'
+            trackEndpoint: 'GET /api/catalog/requests (admin token required)'
         }, 201);
     } catch (err: any) {
         return c.json({ error: err.message }, 500);
-    }
-});
-
-/**
- * GET /api/catalog/requests
- * List service requests. Optional ?status= and ?agentId= filters.
- */
-catalogRouter.get('/requests', async (c) => {
-    const status = c.req.query('status');
-    const agentId = c.req.query('agentId');
-    const limit = c.req.query('limit') ? parseInt(c.req.query('limit')!, 10) : 50;
-
-    try {
-        let query = db.select().from(serviceRequests);
-        if (status) {
-            query = query.where(eq(serviceRequests.status, status));
-        }
-        if (agentId) {
-            query = query.where(eq(serviceRequests.agentId, agentId));
-        }
-
-        const rows = await query
-            .orderBy(desc(serviceRequests.createdAt))
-            .limit(limit);
-
-        return c.json({
-            count: rows.length,
-            requests: rows
-        });
-    } catch {
-        return c.json({ count: 0, requests: [] });
     }
 });
 

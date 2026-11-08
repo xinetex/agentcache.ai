@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agent Run Risk & Savings Audit — AgentCache</title>
+  <meta name="description" content="A fixed-scope, five-day audit of one production agent workflow. Find execution drift, evidence gaps, and repeat-work opportunities.">
+  <meta name="theme-color" content="#020617">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/premium.css">
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased">
+  <div class="animated-bg"></div>
+  <header class="sticky top-0 z-20 border-b border-white/10 bg-slate-950/85 backdrop-blur">
+    <nav class="mx-auto flex h-16 max-w-6xl items-center justify-between px-5" aria-label="Main navigation">
+      <a href="/" class="flex items-center gap-3 font-extrabold tracking-wide"><span class="grid h-7 w-7 place-items-center rounded bg-cyan-400/15 text-cyan-300">A</span>AgentCache</a>
+      <div class="flex items-center gap-5 text-sm"><a class="text-slate-300 hover:text-white" href="/pricing">Pricing</a><a class="rounded-lg bg-cyan-500 px-4 py-2 font-bold text-slate-950 hover:bg-cyan-300" href="#request">Request an audit</a></div>
+    </nav>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-5">
+    <section class="grid gap-12 py-16 md:grid-cols-[1.15fr_.85fr] md:items-center md:py-24">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-[.22em] text-cyan-300">A paid, fixed-scope starting point</p>
+        <h1 class="mt-5 max-w-3xl text-4xl font-extrabold leading-tight tracking-tight text-white md:text-6xl">Find where your agent workflow <span class="text-cyan-300">drifts, repeats, and loses proof.</span></h1>
+        <p class="mt-6 max-w-2xl text-lg leading-8 text-slate-300">We review one agent workflow, deliver a prioritized risk and savings baseline, and walk your engineering team through the findings. Delivery is within five business days after kickoff and acceptance of complete, agreed inputs.</p>
+        <div class="mt-8 flex flex-wrap items-end gap-x-4 gap-y-2"><span class="text-4xl font-extrabold text-white">$750</span><span class="pb-1 text-sm text-slate-400">fixed fee · one workflow · five business days after accepted inputs</span></div>
+        <p class="mt-2 text-sm text-slate-400">One-time fee; current site refund terms apply.</p>
+        <a href="#request" class="mt-7 inline-flex rounded-xl bg-cyan-400 px-6 py-3 font-bold text-slate-950 transition hover:bg-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-200 focus:ring-offset-2 focus:ring-offset-slate-950">Start audit request <span aria-hidden="true" class="ml-2">→</span></a>
+        <p class="mt-3 text-xs text-slate-500">No savings or risk-reduction guarantee. Results depend on the sample and instrumentation available.</p>
+      </div>
+      <aside class="rounded-3xl border border-cyan-300/20 bg-slate-900/75 p-7 shadow-2xl shadow-cyan-950/20">
+        <p class="text-xs font-bold uppercase tracking-widest text-cyan-300">What you get</p>
+        <ol class="mt-6 space-y-5">
+          <li class="flex gap-4"><span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/5 text-sm font-bold text-cyan-300">1</span><div><h2 class="font-bold text-white">Drift findings</h2><p class="mt-1 text-sm leading-6 text-slate-400">Where observed runs diverge from the intended workflow or policy.</p></div></li>
+          <li class="flex gap-4"><span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/5 text-sm font-bold text-cyan-300">2</span><div><h2 class="font-bold text-white">Evidence coverage</h2><p class="mt-1 text-sm leading-6 text-slate-400">Which consequential steps have usable evidence, approvals, and receipts.</p></div></li>
+          <li class="flex gap-4"><span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/5 text-sm font-bold text-cyan-300">3</span><div><h2 class="font-bold text-white">Repeat-work baseline</h2><p class="mt-1 text-sm leading-6 text-slate-400">A transparent estimate of repeated work and cache opportunities, with assumptions shown.</p></div></li>
+          <li class="flex gap-4"><span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/5 text-sm font-bold text-cyan-300">4</span><div><h2 class="font-bold text-white">Prioritized next steps</h2><p class="mt-1 text-sm leading-6 text-slate-400">A practical rollout recommendation and success measures for one workflow, reviewed in a 30-minute readout.</p></div></li>
+        </ol>
+      </aside>
+    </section>
+
+    <section class="grid gap-8 border-y border-white/10 py-12 md:grid-cols-3">
+      <div><p class="text-xs font-bold uppercase tracking-widest text-slate-500">Best fit</p><p class="mt-3 font-semibold text-white">Teams already running multi-step agents in production or a serious pilot.</p></div>
+      <div><p class="text-xs font-bold uppercase tracking-widest text-slate-500">You provide</p><p class="mt-3 font-semibold text-white">Up to 100 redacted run records and one technical owner for a short kickoff.</p></div>
+      <div><p class="text-xs font-bold uppercase tracking-widest text-slate-500">Data boundary</p><p class="mt-3 font-semibold text-white">Do not submit secrets, credentials, raw customer records, or regulated data through this form.</p></div>
+    </section>
+
+    <section class="grid gap-12 py-16 md:grid-cols-[.8fr_1.2fr]" id="request">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-widest text-cyan-300">Confirm the scope</p>
+        <h2 class="mt-3 text-3xl font-extrabold text-white">Tell us about the workflow.</h2>
+        <p class="mt-4 leading-7 text-slate-400">Submit the workflow summary first. You can then continue to secure checkout for the fixed $750 audit. Payment records the request; the audit starts after kickoff and after we receive an acceptable redacted sample.</p>
+        <div class="mt-6 rounded-xl border border-white/10 bg-white/[.03] p-5 text-sm text-slate-300"><strong class="text-white">After the audit:</strong> If the findings support ongoing monitoring, Execution Drift Guard is available as a separate 90-day pilot.</div>
+      </div>
+      <form id="audit-form" class="space-y-4 rounded-2xl border border-white/10 bg-slate-900/80 p-6 md:p-8" novalidate>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class="block text-sm font-medium text-slate-300">Name <span class="text-cyan-300">*</span><input name="name" autocomplete="name" required maxlength="120" class="mt-2 w-full rounded-lg border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20"></label>
+          <label class="block text-sm font-medium text-slate-300">Work email <span class="text-cyan-300">*</span><input name="email" type="email" autocomplete="email" required maxlength="254" class="mt-2 w-full rounded-lg border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20"></label>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class="block text-sm font-medium text-slate-300">Company<input name="company" autocomplete="organization" maxlength="160" class="mt-2 w-full rounded-lg border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20"></label>
+          <label class="block text-sm font-medium text-slate-300">Monthly AI spend
+            <select name="spend" class="mt-2 w-full rounded-lg border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-cyan-300"><option value="Not provided">Select range</option><option>Under $1,000</option><option>$1,000–$5,000</option><option>$5,000–$25,000</option><option>$25,000–$100,000</option><option>Over $100,000</option></select>
+          </label>
+        </div>
+        <label class="block text-sm font-medium text-slate-300">High-level workflow summary <span class="text-cyan-300">*</span><textarea name="workflow" required minlength="20" maxlength="1800" rows="5" placeholder="Describe the workflow without confidential details. What does the agent do, and where do runs repeat, drift, or need review?" class="mt-2 w-full rounded-lg border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none placeholder:text-slate-600 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20"></textarea></label>
+        <label class="flex items-start gap-3 text-sm leading-6 text-slate-300"><input name="scope_acknowledged" type="checkbox" required class="mt-1 h-4 w-4 shrink-0 accent-cyan-400"><span>I understand this is a one-time $750 audit of one workflow using up to 100 redacted run records, including a 30-minute findings readout. The audit provides findings and estimates, not a guarantee of savings or risk elimination. I have reviewed the <a class="underline hover:text-white" href="/terms" target="_blank" rel="noopener noreferrer">site terms</a> and <a class="underline hover:text-white" href="/privacy" target="_blank" rel="noopener noreferrer">privacy policy</a>.</span></label>
+        <div id="form-status" class="hidden rounded-lg border px-4 py-3 text-sm" role="status" aria-live="polite"></div>
+        <button type="submit" class="w-full rounded-lg bg-cyan-400 px-5 py-3 font-bold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-wait disabled:opacity-60">Save workflow and continue</button>
+        <p class="text-center text-xs leading-5 text-slate-500">We’ll use these details only to review and respond to this request. <a class="underline hover:text-slate-300" href="/privacy">Privacy</a></p>
+      </form>
+    </section>
+
+    <section class="mb-16 rounded-2xl border border-rose-300/20 bg-rose-400/[.05] p-7 md:flex md:items-center md:justify-between md:gap-8">
+      <div><p class="text-xs font-bold uppercase tracking-widest text-rose-200">After the audit</p><h2 class="mt-2 text-2xl font-extrabold text-white">Turn findings into a monitored pilot.</h2><p class="mt-2 text-sm leading-6 text-slate-300">Execution Drift Guard is $1,500/month for 90 days, with up to 50,000 evaluated runs each month, shadow-mode evaluation, receipts, onboarding, and weekly review.</p></div>
+      <a href="/contact.html?interest=execution-drift-guard" class="mt-5 inline-flex shrink-0 rounded-lg border border-rose-200/30 px-5 py-3 text-sm font-bold text-white hover:bg-rose-300/10 md:mt-0">See pilot details</a>
+    </section>
+  </main>
+
+  <footer class="border-t border-white/10 py-8 text-center text-xs text-slate-500">© AgentCache.ai · <a class="underline hover:text-slate-300" href="/terms">Terms</a> · <a class="underline hover:text-slate-300" href="/privacy">Privacy</a></footer>
+  <script>
+    const form = document.getElementById('audit-form');
+    const statusBox = document.getElementById('form-status');
+    async function beginCheckout(requestId, button, errorNode) {
+      button.disabled = true;
+      button.textContent = 'Preparing secure checkout…';
+      errorNode.textContent = '';
+      try {
+        const checkoutResponse = await fetch('/api/audit/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ requestId })
+        });
+        const checkout = await checkoutResponse.json().catch(() => ({}));
+        if (!checkoutResponse.ok || !checkout.checkoutUrl) throw new Error(checkout.error || 'Checkout is unavailable. Your request remains saved.');
+        window.location.assign(checkout.checkoutUrl);
+      } catch (checkoutError) {
+        errorNode.textContent = `${checkoutError.message} Contact drgnflai.org@gmail.com if you need an invoice.`;
+        button.disabled = false;
+        button.textContent = 'Retry secure checkout · $750';
+      }
+    }
+    function attachCheckoutButton(requestId) {
+      const button = document.getElementById('audit-checkout');
+      const errorNode = document.getElementById('checkout-error');
+      button?.addEventListener('click', () => beginCheckout(requestId, button, errorNode));
+    }
+    async function restorePaymentConfirmation() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('payment') === 'cancelled') {
+        const requestId = params.get('request_id') || '';
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId)) {
+          form.innerHTML = '<div class="py-8 text-center"><h3 class="text-xl font-bold text-white">Checkout canceled</h3><p class="mx-auto mt-3 max-w-md leading-7 text-slate-300">No payment was taken. Your saved audit request is still here if you want to continue.</p><button id="audit-checkout" type="button" class="mt-6 rounded-lg bg-cyan-400 px-6 py-3 font-bold text-slate-950 hover:bg-cyan-300">Retry secure checkout · $750</button><p id="checkout-error" class="mt-4 text-sm text-rose-200" role="status" aria-live="polite"></p></div>';
+          attachCheckoutButton(requestId);
+        } else {
+          statusBox.className = 'rounded-lg border border-amber-300/30 bg-amber-300/5 px-4 py-3 text-sm text-amber-100';
+          statusBox.textContent = 'Checkout was canceled. No payment was taken. Your request remains in the review queue.';
+          statusBox.classList.remove('hidden');
+        }
+        return;
+      }
+      if (params.get('payment') !== 'success' || !params.get('session_id')) return;
+      form.innerHTML = '<div class="py-8 text-center"><p class="text-sm text-slate-300" role="status" aria-live="polite">Verifying payment securely…</p></div>';
+      try {
+        const response = await fetch(`/api/audit/checkout?session_id=${encodeURIComponent(params.get('session_id'))}`);
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.paid) throw new Error(result.error || 'Payment verification is still pending.');
+        const safeRequestId = String(result.requestId || '').replace(/[&<>"']/g, '');
+        form.innerHTML = '<div class="py-8 text-center"><div class="text-4xl" aria-hidden="true">✓</div><h3 class="mt-4 text-2xl font-bold text-white">Payment confirmed</h3><p class="mx-auto mt-3 max-w-md leading-7 text-slate-300">Your audit request is recorded. We’ll use the work email you provided to arrange kickoff and the secure sample handoff.</p><p class="mt-4 text-xs text-slate-500">Request ID: ' + safeRequestId + '</p></div>';
+      } catch (error) {
+        form.innerHTML = '<div class="py-8 text-center"><h3 class="text-xl font-bold text-white">Payment verification pending</h3><p class="mx-auto mt-3 max-w-md leading-7 text-slate-300">Stripe returned you to AgentCache, but we could not confirm the payment yet. Please do not pay again. Contact <a class="underline text-cyan-300" href="mailto:drgnflai.org@gmail.com">support</a> and include your Stripe receipt.</p></div>';
+      }
+    }
+    restorePaymentConfirmation();
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      const data = new FormData(form);
+      const button = form.querySelector('button[type="submit"]');
+      button.disabled = true;
+      button.textContent = 'Sending request…';
+      statusBox.className = 'rounded-lg border border-cyan-300/20 bg-cyan-300/5 px-4 py-3 text-sm text-cyan-100';
+      statusBox.textContent = 'Submitting your workflow for review.';
+      statusBox.classList.remove('hidden');
+      try {
+        const response = await fetch('/api/catalog/request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            serviceId: 'custom',
+            title: `Agent Run Risk & Savings Audit: ${String(data.get('company') || data.get('name')).slice(0, 120)}`,
+            description: `Email: ${data.get('email')}\nCompany: ${data.get('company') || 'Not provided'}\nMonthly AI spend: ${data.get('spend')}\nWorkflow: ${data.get('workflow')}`,
+            config: { offer: 'agent-run-risk-savings-audit', name: data.get('name'), email: data.get('email'), company: data.get('company'), spend: data.get('spend'), scopeAcknowledged: data.get('scope_acknowledged') === 'on', scopeVersion: '2026-11-07-v2', source: 'agent-audit-page' }
+          })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.success) throw new Error(result.error || 'Request could not be submitted.');
+        const safeRequestId = String(result.requestId || 'received').replace(/[&<>"']/g, '');
+        form.innerHTML = `<div class="py-8 text-center"><div class="text-4xl" aria-hidden="true">✓</div><h3 class="mt-4 text-2xl font-bold text-white">Request saved</h3><p class="mx-auto mt-3 max-w-md leading-7 text-slate-300">Continue to secure checkout for the one-time $750 audit. Review the fixed scope and site terms before paying. Payment begins only on Stripe’s checkout page.</p><p class="mt-4 text-xs text-slate-500">Request ID: ${safeRequestId}</p><button id="audit-checkout" type="button" class="mt-6 rounded-lg bg-cyan-400 px-6 py-3 font-bold text-slate-950 hover:bg-cyan-300">Continue to secure checkout · $750</button><p id="checkout-error" class="mt-4 text-sm text-rose-200" role="status" aria-live="polite"></p></div>`;
+        attachCheckoutButton(safeRequestId);
+      } catch (error) {
+        statusBox.className = 'rounded-lg border border-rose-300/30 bg-rose-300/5 px-4 py-3 text-sm text-rose-100';
+        statusBox.textContent = `${error.message} You can also email drgnflai.org@gmail.com.`;
+        button.disabled = false;
+        button.textContent = 'Try again';
+      }
+    });
+  </script>
+</body>
+</html>

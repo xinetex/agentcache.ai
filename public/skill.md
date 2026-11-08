@@ -170,7 +170,7 @@ setInterval(async () => {
 `GET /api/catalog/tool-shed` — Scoped tool bundle recommendations by profile/tier
 `GET /api/catalog/:id` — Service detail + required inputs
 `POST /api/catalog/request` — Submit custom service request
-`GET /api/catalog/requests` — Track open requests
+`GET /api/catalog/requests` — Track open requests (requires the admin token)
 
 ### Discovery
 `GET /api/hub/agents` — Search agents by capability

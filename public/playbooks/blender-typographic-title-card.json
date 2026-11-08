@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "id": "blender.typographic-title-card",
+  "version": "0.1.0",
+  "title": "Create a 3D typographic title card",
+  "app": "Blender",
+  "app_version": { "tested": "5.2.0 LTS" },
+  "status": "verified",
+  "goal": "Create an original extruded type composition, save the editable Blender project, and render a title card.",
+  "inputs": [],
+  "capabilities": ["run_blender_python_script", "write_files_to_designated_output_directory"],
+  "permissions": {
+    "filesystem": "Write only to the designated output directory. Do not overwrite existing files without approval.",
+    "network": "Not required",
+    "external_services": "Not required"
+  },
+  "outputs": ["typographic-title-card.blend", "typographic-title-card.png"],
+  "sample_project_url": "/playbooks/samples/typographic-title-card.blend",
+  "execution": {
+    "script_url": "/playbooks/create-title-card.py",
+    "command_template": "blender --background --python create-title-card.py -- <approved-output-directory>",
+    "requires_user_selected_output_directory": true,
+    "network": "none"
+  },
+  "steps": [
+    { "id": "confirm-output", "action": "Choose an empty user-designated output directory and confirm both target filenames are unused.", "verify": "The directory is writable and both output paths are clear.", "recovery": "If a target exists, stop and ask before choosing another path or replacing anything.", "checkpoint": true },
+    { "id": "create-and-render", "action": "Fetch the indexed script and run it with the installed Blender executable and approved output directory.", "verify": "Blender exits successfully and both the project and PNG exist and are non-empty.", "recovery": "Preserve Blender's error output; adjust for the installed version and retry only after confirming output paths.", "checkpoint": false },
+    { "id": "inspect-title", "action": "Open the project and inspect the camera render at full size.", "verify": "Both lines of text are legible, centered, visibly extruded, and fully inside the title-card backing.", "recovery": "Adjust text size or camera framing in a copy, save to a new approved path, and inspect again.", "checkpoint": true }
+  ],
+  "sources": [
+    {
+      "url": "https://docs.blender.org/api/current/bpy.types.TextCurve.html",
+      "publisher": "Blender Foundation",
+      "retrieved_at": "2026-11-08",
+      "license": "Not assessed for redistribution; reference only",
+      "license_url": "https://projects.blender.org/blender/blender-manual/src/branch/main/manual/copyright.rst",
+      "exclusions": "No API prose, images, source code, or sample scripts reproduced.",
+      "attribution": "Link to Blender Foundation API documentation retained for readers.",
+      "share_alike": "No adaptation of source text; share-alike is not relied upon for this original procedure.",
+      "use": "API fact lookup; instructions and code are original",
+      "rights_review": { "status": "reference_only", "reviewed_at": "2026-11-08", "notes": "No tutorial prose, examples, or media reproduced; API facts only." }
+    },
+    {
+      "url": "https://docs.blender.org/api/current/bpy.types.Camera.html",
+      "publisher": "Blender Foundation",
+      "retrieved_at": "2026-11-08",
+      "license": "Not assessed for redistribution; reference only",
+      "license_url": "https://projects.blender.org/blender/blender-manual/src/branch/main/manual/copyright.rst",
+      "exclusions": "No API prose, images, source code, or sample scripts reproduced.",
+      "attribution": "Link to Blender Foundation API documentation retained for readers.",
+      "share_alike": "No adaptation of source text; share-alike is not relied upon for this original procedure.",
+      "use": "Camera API fact lookup; instructions and code are original",
+      "rights_review": { "status": "reference_only", "reviewed_at": "2026-11-08", "notes": "No tutorial prose, examples, or media reproduced; API facts only." }
+    }
+  ],
+  "license": { "playbook": "AgentCache.ai original content; all rights reserved", "third_party_assets": "None", "adapted_source_text": "None" },
+  "verification": {
+    "runs": 2,
+    "project_reopened": true,
+    "visual_review": "Both title lines are legible and centered, with visible extrusion and full framing; image is 1200x800.",
+    "checks": ["Two successful Blender 5.2.0 LTS runs in fresh output directories", "Reopened .blend and checked text body, backing, camera, lights, and render dimensions", "Both output files exist and are non-empty"]
+  },
+  "last_verified": "2026-11-08T11:34:57Z",
+  "limitations": ["Verified on Blender 5.2.0 LTS only; compatibility with earlier and later versions is not established."]
+}

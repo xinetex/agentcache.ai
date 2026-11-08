@@ -8,6 +8,7 @@
  * via any medium, is strictly prohibited.
  */
 import { getTier, type Tier } from './tiers.js';
+import { AGENT_RUN_AUDIT } from './agentRunAudit.js';
 
 export type AgenticPlanId = 'free' | 'pro' | 'enterprise';
 
@@ -15,7 +16,8 @@ export type AgenticRevenueMotion =
   | 'subscription'
   | 'add_on'
   | 'usage_meter'
-  | 'design_partner_pilot';
+  | 'design_partner_pilot'
+  | 'one_time_service';
 
 type LimitValue = number | 'unlimited';
 
@@ -70,6 +72,15 @@ export type AgenticPilot = {
   includedVolume: string;
   term: string;
   contactUrl: string;
+};
+
+export type AgenticOneTimeOffer = {
+  id: string;
+  name: string;
+  priceUsd: number;
+  scope: string;
+  intakeUrl: string;
+  checkoutEndpoint: string;
 };
 
 export type AgenticUpgradePath = {
@@ -268,6 +279,17 @@ export const AGENTIC_DESIGN_PARTNER_PILOTS: AgenticPilot[] = [
   },
 ];
 
+export const AGENTIC_ONE_TIME_OFFERS: AgenticOneTimeOffer[] = [
+  {
+    id: AGENT_RUN_AUDIT.id,
+    name: AGENT_RUN_AUDIT.name,
+    priceUsd: AGENT_RUN_AUDIT.priceCents / 100,
+    scope: `One workflow; up to ${AGENT_RUN_AUDIT.maxRunRecords} redacted run records; report and ${AGENT_RUN_AUDIT.readoutMinutes}-minute findings readout within ${AGENT_RUN_AUDIT.deliveryBusinessDays} business days after kickoff and acceptance of complete inputs.`,
+    intakeUrl: '/agent-audit',
+    checkoutEndpoint: 'POST /api/audit/checkout',
+  },
+];
+
 const PRODUCT_COMMERCIAL_MODELS: Record<string, Omit<ProductCommercialModel, 'productId'>> = {
   'agentcache-core': {
     revenueMotions: ['subscription', 'usage_meter'],
@@ -304,6 +326,15 @@ const PRODUCT_COMMERCIAL_MODELS: Record<string, Omit<ProductCommercialModel, 'pr
     addonIds: [],
     meterSkuIds: ['hardening-assessment', 'certified-run'],
     pilotIds: ['execution-drift-guard-pilot'],
+  },
+  [AGENT_RUN_AUDIT.id]: {
+    revenueMotions: ['one_time_service'],
+    minimumPlan: 'free',
+    checkoutUrl: '/agent-audit',
+    billingNote: 'One-time $750 fixed-scope audit; checkout is tied to a saved workflow intake request.',
+    addonIds: [],
+    meterSkuIds: [],
+    pilotIds: [],
   },
   'agent-storage-core': {
     revenueMotions: ['design_partner_pilot', 'usage_meter'],
@@ -410,6 +441,7 @@ export function getAgenticMonetizationSummary() {
       'add_on',
       'usage_meter',
       'design_partner_pilot',
+      'one_time_service',
     ] as AgenticRevenueMotion[],
     checkout: {
       planUpgradeEndpoint: 'POST /api/billing/upgrade',
@@ -429,6 +461,7 @@ export function getAgenticMonetizationSummary() {
     plans: getAgenticCommercialTiers(),
     addons: AGENTIC_ADDONS,
     meteredSkus: AGENTIC_METERED_SKUS,
+    oneTimeOffers: AGENTIC_ONE_TIME_OFFERS,
     designPartnerPilots: AGENTIC_DESIGN_PARTNER_PILOTS,
   };
 }
