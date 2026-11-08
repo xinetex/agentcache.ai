@@ -89,7 +89,7 @@ AgentCache's existing `lib/ingest-guard.js` already fails closed for unknown/res
 4. Validate the machine record against `public/playbooks/schema.json`; then run the executable in a disposable environment and check its output. Keep the human guide, JSON record, and script versioned together.
 5. Promote status only from evidence: `draft` → `tested` after a maintainer run; `verified` after a clean independent rerun. Record app version, outputs, and date. Mark a guide `stale` when its supported app version or a required API changes.
 
-The current implementation publishes `public/playbooks/index.json`, a formal JSON Schema, three Markdown guides, machine records, standalone scripts, preview renders, and sample Blender projects. `scripts/validate-playbooks.mjs` checks schema conformance, status evidence, and that all indexed assets exist. This is an editorial validator; source retrieval remains human-reviewed and execution remains local to an agent's app environment.
+The current candidate publishes `public/playbooks/index.json`, a formal JSON Schema, four Markdown guides, machine records, standalone scripts, preview renders, and sample Blender projects. `scripts/validate-playbooks.mjs` checks schema conformance, status evidence, and that all indexed assets exist. This is an editorial validator; source retrieval remains human-reviewed and execution remains local to an agent's app environment.
 
 ## Product and cashflow path
 
@@ -103,8 +103,8 @@ The current implementation publishes `public/playbooks/index.json`, a formal JSO
 
 | Milestone | Goal | Evidence to exit |
 | --- | --- | --- |
-| I0 — Content contract **(complete)** | Agree the schema, source gate, and verification labels | Three example records validate against the schema; license/provenance fields are mandatory |
-| I1 — Blender pilot **(complete for Blender 5.2.0 LTS)** | Publish three original Blender creation playbooks | Each passes a real app run and clean rerun; projects reopen, outputs and validation checks are inspectable |
+| I0 — Content contract **(complete)** | Agree the schema, source gate, and verification labels | Four example records validate against the schema; license/provenance fields are mandatory |
+| I1 — Blender pilot **(content complete; fourth-guide deployment pending)** | Publish four original Blender creation playbooks | Each passes two real app runs; saved projects reopen and outputs and validation checks are inspectable; Preview serves the fourth entry |
 | I2 — Agent adoption | Put the catalog in agent discovery and expose playbooks in a stable text/JSON format | Ten external agent runs; completion and failure reasons recorded with consent |
 | I3 — First revenue | Sell one custom workflow/playbook or convert a qualified team to the paid audit/pilot | Invoice/payment confirmed, scope accepted, deliverable reviewed by buyer |
 | I4 — Repeatability | Expand to another app only after Blender playbooks show use | Repeat users, attributable lead source, paid conversion, and delivery effort documented |
@@ -122,9 +122,9 @@ The content library is an acquisition and activation hypothesis, not yet a prove
 
 ## Current implementation checkpoint
 
-- Playbook discovery is wired into the agent onboarding document and `/.well-known/agents.json`; `/playbooks` exposes the human library, stable JSON index/schema/records, standalone Blender scripts, sample projects, and visual previews. Its custom-workflow CTA leads to the existing contact form; conversion and payment remain unmeasured.
+- Playbook discovery is wired into the agent onboarding document and `/.well-known/agents.json`; `/playbooks` exposes the human library, stable JSON index/schema/records, standalone Blender scripts, sample projects, and visual previews. Its custom-workflow CTA leads to the existing contact form, and a separate $750 audit card routes production-agent teams to the fixed-scope offer. Conversion and payment remain unmeasured.
 - The schema requires explicit app status, permissions, outputs, step-level verification/recovery, source license URL, exclusions, attribution, share-alike terms, rights-review status, and evidence fields before a record may claim `verified`.
-- I0 is **complete**: three example records validate against the schema, and the validator checks unique IDs, all linked assets, and agreement between the index and each machine record. The library UI renders its cards from that index.
-- I1 is **complete for Blender 5.2.0 LTS**. Each script completed two fresh runs; each saved project reopened with scene assertions; all three renders were visually inspected. Evidence is in [BLENDER_PILOT_VALIDATION.md](../playbooks/BLENDER_PILOT_VALIDATION.md). The status `verified` applies only to this tested version; other Blender releases remain unverified.
+- I0 is **complete**: four example records validate against the schema, and the validator checks unique IDs, all linked assets, and agreement between the index and each machine record. The library UI renders its cards from that index.
+- The four-guide Blender content pilot is **verified locally for Blender 5.2.0 LTS**; the fourth guide still needs Preview deployment and render-page verification before I1 closes. The original three pilot scripts completed two fresh runs each and their projects reopened with scene assertions; the exploded desk lamp script also completed two fresh runs and a clean-process project reopen. All four renders were visually inspected. Evidence is in [BLENDER_PILOT_VALIDATION.md](../playbooks/BLENDER_PILOT_VALIDATION.md) and [the exploded desk lamp spike](agent_tutorial_catalog/spikes/blender.exploded-desk-lamp-2026-11-08.md). The status `verified` applies only to this tested version; other Blender releases remain unverified.
 - Blender headless startup crashes during Metal detection in the restricted process environment before Python begins. Running the same executable through the approved out-of-sandbox route succeeded; the validation report records this environment constraint.
 - No automated source scraper, remote execution service, usage analytics, external agent run, or execution receipt exists yet. I2 requires ten consented external agent runs; I3 requires a paid custom workflow/playbook or audit conversion with verified payment. The playbook revenue hypothesis remains unproven.

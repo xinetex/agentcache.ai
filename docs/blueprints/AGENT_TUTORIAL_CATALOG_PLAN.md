@@ -25,6 +25,8 @@ Treat a task family as portable only after at least two app-specific playbooks h
 
 On 2026-11-08, the public creation page returned successfully and displayed three Blender playbooks; its machine index also returned three Blender records. Their validation report supports Blender 5.2.0 LTS only. This confirms the live seed, not cross-app adoption or revenue.
 
+The isolated candidate now adds a fourth verified Blender guide for an exploded desk lamp, with an original script, JSON and human records, sample project, preview render, and a two-run/reopen validation log. The existing preview alias does not yet include it; Vercel deployment and public rendering still need verification.
+
 ## Catalog navigation
 
 Let visitors browse by the result they need first, then narrow by app and control capability.

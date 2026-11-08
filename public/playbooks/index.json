@@ -80,6 +80,27 @@
         { "title": "Blender Python API: mesh primitives", "url": "https://docs.blender.org/api/current/bpy.ops.mesh.html", "relationship": "API reference; procedure and code are original" },
         { "title": "Blender Python API: material data", "url": "https://docs.blender.org/api/current/bpy.types.Material.html", "relationship": "API reference; procedure and code are original" }
       ]
+    },
+    {
+      "id": "blender.exploded-desk-lamp",
+      "title": "Create an exploded desk lamp view",
+      "app": "Blender",
+      "app_version": "Blender 5.2.0 LTS",
+      "sample_project": "/playbooks/samples/exploded-desk-lamp.blend",
+      "category": "3D product visualization",
+      "status": "verified",
+      "goal": "Create an original six-part desk lamp scene with separated named components, save the editable Blender project, and render a labeled product view.",
+      "formats": {
+        "human": "/playbooks/blender-exploded-desk-lamp.md",
+        "machine": "/playbooks/blender-exploded-desk-lamp.json",
+        "script": "/playbooks/create-exploded-lamp.py"
+      },
+      "preview": { "src": "/playbooks/previews/exploded-desk-lamp.png", "alt": "Six labeled desk lamp components separated vertically in an exploded product view" },
+      "verification": "Blender 5.2.0 LTS: two runs, saved project reopened, six named meshes and labels checked, render visually inspected.",
+      "sources": [
+        { "title": "Blender Python API: mesh primitives", "url": "https://docs.blender.org/api/current/bpy.ops.mesh.html", "relationship": "API reference; scene and code are original" },
+        { "title": "Blender Python API: camera", "url": "https://docs.blender.org/api/current/bpy.types.Camera.html", "relationship": "API reference; scene and code are original" }
+      ]
     }
   ]
 }

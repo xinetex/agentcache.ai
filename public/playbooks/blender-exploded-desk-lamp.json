@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "id": "blender.exploded-desk-lamp",
+  "version": "0.1.0",
+  "title": "Create an exploded desk lamp view",
+  "app": "Blender",
+  "app_version": { "tested": "5.2.0 LTS" },
+  "status": "verified",
+  "goal": "Create an original six-part desk lamp scene with separated named components, save the editable Blender project, and render a labeled product view.",
+  "inputs": [],
+  "capabilities": ["run_blender_python_script", "write_files_to_designated_output_directory"],
+  "permissions": {
+    "filesystem": "Write only to the designated output directory. Do not overwrite existing files without approval.",
+    "network": "Not required",
+    "external_services": "Not required"
+  },
+  "outputs": ["exploded-desk-lamp.blend", "exploded-desk-lamp.png"],
+  "sample_project_url": "/playbooks/samples/exploded-desk-lamp.blend",
+  "execution": {
+    "script_url": "/playbooks/create-exploded-lamp.py",
+    "command_template": "blender --background --python create-exploded-lamp.py -- <approved-output-directory>",
+    "requires_user_selected_output_directory": true,
+    "network": "none"
+  },
+  "steps": [
+    { "id": "confirm-output", "action": "Choose an empty user-designated output directory and confirm both target filenames are unused.", "verify": "The directory is writable and both output paths are clear.", "recovery": "If either target exists, stop and ask before choosing another directory or replacing anything.", "checkpoint": true },
+    { "id": "build-assembly", "action": "Run the indexed Blender script in background mode with the approved output directory.", "verify": "Blender exits successfully and writes the editable project and render.", "recovery": "Preserve Blender's error output and rerun only after correcting the issue and confirming paths remain clear.", "checkpoint": false },
+    { "id": "inspect-components", "action": "Reopen the project and inspect its named meshes, labels, camera, lighting, and rendered image.", "verify": "Six named parts remain separate, labels are readable, all parts are in frame, and both outputs are non-empty.", "recovery": "Adjust spacing or camera framing in a copy and write to a new approved directory.", "checkpoint": true }
+  ],
+  "sources": [
+    {
+      "url": "https://docs.blender.org/api/current/bpy.ops.mesh.html",
+      "publisher": "Blender Foundation",
+      "retrieved_at": "2026-11-08",
+      "license": "Not assessed for redistribution; reference only",
+      "license_url": "https://projects.blender.org/blender/blender-manual/src/branch/main/manual/copyright.rst",
+      "exclusions": "No API prose, images, source code, or sample scripts reproduced.",
+      "attribution": "Link to Blender Foundation API documentation retained for readers.",
+      "share_alike": "No adaptation of source text; share-alike is not relied upon for this original procedure.",
+      "use": "Mesh operator fact lookup; scene and script are original",
+      "rights_review": { "status": "reference_only", "reviewed_at": "2026-11-08", "notes": "No tutorial prose, examples, or media reproduced; API facts only." }
+    },
+    {
+      "url": "https://docs.blender.org/api/current/bpy.types.Camera.html",
+      "publisher": "Blender Foundation",
+      "retrieved_at": "2026-11-08",
+      "license": "Not assessed for redistribution; reference only",
+      "license_url": "https://projects.blender.org/blender/blender-manual/src/branch/main/manual/copyright.rst",
+      "exclusions": "No API prose, images, source code, or sample scripts reproduced.",
+      "attribution": "Link to Blender Foundation API documentation retained for readers.",
+      "share_alike": "No adaptation of source text; share-alike is not relied upon for this original procedure.",
+      "use": "Camera API fact lookup; scene and script are original",
+      "rights_review": { "status": "reference_only", "reviewed_at": "2026-11-08", "notes": "No tutorial prose, examples, or media reproduced; API facts only." }
+    }
+  ],
+  "license": { "playbook": "AgentCache.ai original content; all rights reserved", "third_party_assets": "None", "adapted_source_text": "None" },
+  "verification": {
+    "runs": 2,
+    "project_reopened": true,
+    "visual_review": "All six parts and labels are readable and in frame in the 1000x1000 render.",
+    "checks": ["Two successful Blender 5.2.0 LTS runs in fresh output directories", "Reopened .blend and checked six separate named meshes, six labels, camera, lights, and render dimensions", "Both output files exist and are non-empty"]
+  },
+  "last_verified": "2026-11-08T14:00:31Z",
+  "limitations": ["Verified on Blender 5.2.0 LTS only; compatibility with earlier and later versions is not established.", "The exploded layout is illustrative and does not assert manufacturing tolerances or fit." ]
+}
