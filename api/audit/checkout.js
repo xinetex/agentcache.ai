@@ -89,7 +89,17 @@ export default async function handler(req, res) {
         return json(res, { error: 'A valid checkout session is required.' }, 400);
       }
 
-      const session = await stripe.checkout.sessions.retrieve(sessionId);
+      let session;
+      try {
+        session = await stripe.checkout.sessions.retrieve(sessionId);
+      } catch (error) {
+        // A missing/invalid session is a client-side lookup miss; other Stripe
+        // failures are transient until proven otherwise. Neither changes payment state.
+        if (error?.code === 'resource_missing' || error?.type === 'StripeInvalidRequestError') {
+          return json(res, { error: 'Payment session not found. No payment status was changed.' }, 404);
+        }
+        return json(res, { error: 'We could not verify payment status. Please retry later; do not start another checkout.' }, 503);
+      }
       if (!isPaidAuditCheckoutSession(session)) return json(res, { paid: false }, 200);
       await markAuditPaid(session);
       return json(res, { paid: true, requestId: session.metadata.service_request_id }, 200);

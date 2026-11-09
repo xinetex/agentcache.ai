@@ -179,4 +179,24 @@ describe('Agent Run Risk & Savings Audit checkout', () => {
     expect(res.body).toEqual({ paid: true, requestId });
     expect(mocks.query).toHaveBeenCalledWith(expect.stringContaining("status = 'payment_received'"), expect.any(Array));
   });
+
+  it('reports an unknown Stripe session without claiming an audit request was saved', async () => {
+    mocks.retrieveSession.mockRejectedValue({ type: 'StripeInvalidRequestError', code: 'resource_missing' });
+    const res = responseStub();
+    await handler({ method: 'GET', query: { session_id: 'cs_invalid' } } as any, res as any);
+    expect(res.statusCode).toBe(404);
+    expect(res.body.error).toContain('Payment session not found');
+    expect(res.body.error).not.toContain('request is still saved');
+    expect(mocks.query).not.toHaveBeenCalled();
+  });
+
+  it('returns a retryable status when Stripe cannot verify a session', async () => {
+    mocks.retrieveSession.mockRejectedValue(new Error('Stripe network timeout'));
+    const res = responseStub();
+    await handler({ method: 'GET', query: { session_id: 'cs_test_audit' } } as any, res as any);
+    expect(res.statusCode).toBe(503);
+    expect(res.body.error).toContain('could not verify payment status');
+    expect(res.body.error).toContain('do not start another checkout');
+    expect(mocks.query).not.toHaveBeenCalled();
+  });
 });
