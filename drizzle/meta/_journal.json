@@ -36,6 +36,111 @@
       "when": 1769773756399,
       "tag": "0004_last_dreadnoughts",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794747600000,
+      "tag": "0005_agent_connections",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794747601000,
+      "tag": "0006_execution_invocations",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794747602000,
+      "tag": "0007_execution_invocation_receipts",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794747603000,
+      "tag": "0008_execution_decision_events",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794747604000,
+      "tag": "0009_execution_invocation_approval_links",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1794747605000,
+      "tag": "0010_execution_control_records",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1794747606000,
+      "tag": "0011_execution_record_retention",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1794747607000,
+      "tag": "0012_execution_review_assignments",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1794747608000,
+      "tag": "0013_execution_invocation_idempotency",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1794747609000,
+      "tag": "0014_execution_invocation_policy_evidence",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1794747610000,
+      "tag": "0015_execution_invocation_actor",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1794747611000,
+      "tag": "0016_execution_gate_compare_and_set",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1794763805000,
+      "tag": "0017_individual_api_keys",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1794765000000,
+      "tag": "0018_organization_invitations",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1794765001000,
+      "tag": "0019_execution_action_budgets",
+      "breakpoints": true
     }
   ]
 }

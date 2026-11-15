@@ -1,7 +1,7 @@
 {
   "name": "agentcache-mcp",
-  "version": "0.1.0",
-  "description": "Agent-facing MCP for the AgentCache control plane \u2014 cache, pre-spend governance gate, verifiable savings, and cross-run reasoning memory.",
+  "version": "0.2.0",
+  "description": "Agent-facing MCP for AgentCache governed execution, policy, audit history, caching, and cross-run memory.",
   "type": "module",
   "bin": {
     "agentcache-mcp": "bin/cli.js"

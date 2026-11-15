@@ -34,6 +34,7 @@ import { CognitiveTools } from './tools/cognitive.js';
 import { MemoryTools } from './tools/memory.js';
 import { LidarTools } from './tools/lidar.js';
 import { ControlPlaneTools } from './tools/controlplane.js';
+import { getAgentCacheApiKey } from './config.js';
 
 const SENSITIVE_ENV_KEYS = [
   'ADMIN_TOKEN',
@@ -104,7 +105,7 @@ const auditLogger = new AuditLogger();
 setInterval(() => rateLimiter.cleanup(), 5 * 60 * 1000);
 
 // API configuration
-const API_KEY = process.env.AGENTCACHE_API_KEY || process.env.API_KEY || 'ac_demo_test123';
+const API_KEY = getAgentCacheApiKey();
 
 // Create server instance
 const server = new Server(
@@ -178,7 +179,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       apiKeyHash: hashAPIKey(API_KEY),
       result: 'error',
       threats: ['server_error'],
-      metadata: { error: String(error) }
+      metadata: { errorName: error instanceof Error ? error.name : 'UnknownError' }
     });
 
     return {

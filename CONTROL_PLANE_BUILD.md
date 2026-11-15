@@ -29,7 +29,8 @@ The thing Stripe/OpenRouter do **not** do: govern the call, not just bill it.
 
 ### Move 4 — Reasoning / state cache (the moat)
 Durable per-agent, per-task state that survives ACROSS runs — the tenth run
-starts where the ninth left off. A state problem a gateway can't cheaply copy.
+starts where the ninth left off. Durable cross-run state is a capability that
+can complement gateways and other agent infrastructure.
 - `lib/reasoning-cache.js` — `taskFingerprint`, `mergeState` (append+dedupe),
   `selectRelevant`, `summarizeCarry`. (10 tests)
 - `api/cache/reasoning.ts` — resume/commit handler; a real resume logs a

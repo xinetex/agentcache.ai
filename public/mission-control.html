@@ -326,15 +326,8 @@
                                 <iconify-icon icon="solar:shield-check-linear"
                                     class="text-3xl text-emerald-500"></iconify-icon>
                             </div>
-                            <h3 id="trust-claims-status" class="text-lg text-white font-medium">Verify Claims & Logic</h3>
-                            <p class="text-sm text-gray-500 max-w-sm">Enter a claim or logic snippet below to
-                                verify its truth against the immutable ledger. <span id="trust-claims-verified" class="text-emerald-500/80">0 verified</span></p>
-                            <div class="w-full max-w-md bg-black/20 border border-white/10 rounded-lg p-3 flex gap-2">
-                                <input type="text" placeholder="e.g. 'User A has admin rights'"
-                                    class="bg-transparent border-none text-sm text-white flex-1 focus:ring-0 placeholder-gray-600">
-                                <button
-                                    class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded transition-colors">Verify</button>
-                            </div>
+                            <h3 id="trust-claims-status" class="text-lg text-white font-medium">Trust activity</h3>
+                            <p class="text-sm text-gray-500 max-w-sm">Reported activity from connected trust services. This panel does not evaluate submitted claims or verify them against an immutable ledger. <span id="trust-claims-verified" class="text-emerald-500/80">0 checks reported</span></p>
                         </div>
                     </div>
 
@@ -871,7 +864,7 @@
                     const trustClaimsEl = document.getElementById('trust-claims-verified');
                     if (h.subsystems?.trust) {
                         if (trustIdEl) trustIdEl.textContent = h.subsystems.trust.instanceId || 'T-BROKER-01';
-                        if (trustClaimsEl) trustClaimsEl.textContent = `${(h.subsystems.trust.claimsVerified || 0).toLocaleString()} verified`;
+                        if (trustClaimsEl) trustClaimsEl.textContent = `${(h.subsystems.trust.claimsVerified || 0).toLocaleString()} checks reported`;
                     }
                 }
 

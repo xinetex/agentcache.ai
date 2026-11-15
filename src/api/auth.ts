@@ -10,9 +10,11 @@
 import { Hono } from 'hono';
 import { db } from '../db/client.js';
 import { users, members, organizations } from '../db/schema.js';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, isNull } from 'drizzle-orm';
+import { createHash } from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { generateToken, verifyToken as verifyPortalToken } from '../../lib/jwt.js';
+import { organizationInvitations } from '../db/schema.js';
 
 type Variables = {
     user: any;
@@ -81,7 +83,7 @@ export const requireRole = (requiredRole) => async (c, next) => {
 
 const handleSignup = async (c) => {
     try {
-        const { email, password, name, fullName, full_name, organizationName } = await c.req.json();
+        const { email, password, name, fullName, full_name, organizationName, invitationToken } = await c.req.json();
 
         if (!email || !password) {
             return c.json({ error: 'Email and password required' }, 400);
@@ -93,74 +95,84 @@ const handleSignup = async (c) => {
 
         const normalizedEmail = email.toLowerCase();
 
-        // Check existing
-        const existing = await db.select().from(users).where(eq(users.email, normalizedEmail)).limit(1);
-        if (existing.length > 0) {
-            return c.json({ error: 'User already exists' }, 409);
-        }
-
         const displayName = (name || fullName || full_name || normalizedEmail.split('@')[0]).trim();
-        const orgName = (organizationName || `${displayName}'s Org`).trim();
-
-        // Hash password
         const passwordHash = await bcrypt.hash(password, 10);
+        const orgName = (organizationName || `${displayName}'s Org`).trim();
+        const invitationHash = typeof invitationToken === 'string' && /^[a-f0-9]{64}$/.test(invitationToken)
+            ? createHash('sha256').update(invitationToken).digest('hex')
+            : null;
 
-        // 1. Create User
-        const [newUser] = await db.insert(users).values({
-            email: normalizedEmail,
-            passwordHash,
-            name: displayName,
-            role: 'owner',
-            plan: 'free'
-        }).returning();
+        const created = await db.transaction(async (tx: any) => {
+            let invitation: any = null;
+            if (invitationToken) {
+                if (!invitationHash) throw Object.assign(new Error('This invitation link is invalid.'), { status: 400 });
+                const invitations = await tx.select().from(organizationInvitations)
+                    .where(and(
+                        eq(organizationInvitations.tokenHash, invitationHash),
+                        eq(organizationInvitations.email, normalizedEmail),
+                        isNull(organizationInvitations.canceledAt),
+                        isNull(organizationInvitations.acceptedAt),
+                    )).for('update').limit(1);
+                invitation = invitations.find((item: any) => new Date(item.expiresAt).getTime() > Date.now());
+                if (!invitation) throw Object.assign(new Error('This invitation is expired, used, or belongs to another email address.'), { status: 400 });
+            }
 
-        // 2. Create Default Organization
-        const [newOrg] = await db.insert(organizations).values({
-            name: orgName,
-            plan: 'free'
-        }).returning();
+            const existing = await tx.select().from(users).where(eq(users.email, normalizedEmail)).limit(1);
+            if (existing.length > 0) throw Object.assign(new Error('An account already exists for this email. Sign in to accept this invitation.'), { status: 409 });
 
-        // 3. Add Member
-        await db.insert(members).values({
-            userId: newUser.id,
-            orgId: newOrg.id,
-            role: 'owner'
+            const role = invitation?.role || 'owner';
+            const [newUser] = await tx.insert(users).values({
+                email: normalizedEmail, passwordHash, name: displayName, role, plan: 'free',
+            }).returning();
+
+            let orgId: string;
+            if (invitation) {
+                orgId = invitation.orgId;
+                await tx.insert(members).values({ userId: newUser.id, orgId, role });
+                await tx.update(organizationInvitations).set({ acceptedAt: new Date() })
+                    .where(eq(organizationInvitations.id, invitation.id));
+            } else {
+                const [newOrg] = await tx.insert(organizations).values({ name: orgName, plan: 'free' }).returning();
+                orgId = newOrg.id;
+                await tx.insert(members).values({ userId: newUser.id, orgId, role: 'owner' });
+            }
+            return { user: newUser, orgId, role, invitationAccepted: Boolean(invitation) };
         });
 
-        // 4. Generate Token
         const token = generateToken({
-            id: newUser.id,
-            email: newUser.email,
-            organization_id: newOrg.id,
-            role: 'owner',
-            plan: newUser.plan
+            id: created.user.id,
+            email: created.user.email,
+            organization_id: created.orgId,
+            role: created.role,
+            plan: created.user.plan
         });
 
         return c.json({
             token,
             user: {
-                id: newUser.id,
-                email: newUser.email,
-                name: newUser.name,
-                role: 'owner',
-                plan: newUser.plan
+                id: created.user.id,
+                email: created.user.email,
+                name: created.user.name,
+                role: created.role,
+                plan: created.user.plan,
+                orgId: created.orgId,
             },
             onboarding: {
-                required: true,
-                url: '/onboarding.html'
+                required: !created.invitationAccepted,
+                url: created.invitationAccepted ? null : '/onboarding.html'
             }
         }, 201);
 
     } catch (error: any) {
-        console.error('[Auth] Signup error:', error);
-        return c.json({ error: 'Internal Server Error', details: error.message }, 500);
+        console.error('[Auth] Signup error:', error?.message || 'unknown error');
+        return c.json({ error: error?.message || 'Registration failed.' }, error?.status || 500);
     }
 };
 
 // --- Endpoint: Standard Login ---
 app.post('/login', async (c) => {
     try {
-        const { email, password } = await c.req.json();
+        const { email, password, organizationId } = await c.req.json();
 
         if (!email || !password) {
             return c.json({ error: 'Email and password required' }, 400);
@@ -189,17 +201,20 @@ app.post('/login', async (c) => {
             return c.json({ error: 'Invalid credentials' }, 401);
         }
 
-        // Get Member Role from Org
-        const member = await db.select()
+        // Resolve the requested tenant only from a live membership. The browser may
+        // remember the last organization, but it can never grant membership.
+        const memberships = await db.select()
             .from(members)
-            .where(eq(members.userId, user.id))
-            .limit(1);
+            .where(eq(members.userId, user.id));
+        const member = (typeof organizationId === 'string'
+            ? memberships.find((item: any) => item.orgId === organizationId)
+            : null) || memberships[0];
 
-        const resolvedRole = member[0]?.role || user.role || 'viewer';
+        const resolvedRole = member?.role || user.role || 'viewer';
         const token = generateToken({
             id: user.id,
             email: user.email,
-            organization_id: member[0]?.orgId || null,
+            organization_id: member?.orgId || null,
             role: resolvedRole,
             plan: user.plan
         });
@@ -210,11 +225,12 @@ app.post('/login', async (c) => {
                 email: user.email,
                 name: user.name,
                 role: resolvedRole,
-                plan: user.plan
+                plan: user.plan,
+                orgId: member?.orgId || null,
             },
             onboarding: {
-                required: !member[0]?.orgId,
-                url: !member[0]?.orgId ? '/onboarding.html' : null
+                required: !member?.orgId,
+                url: !member?.orgId ? '/onboarding.html' : null
             }
         });
 

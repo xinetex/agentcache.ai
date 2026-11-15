@@ -73,7 +73,7 @@
                                 <div
                                     class="font-bold text-[var(--hud-text)] group-hover/item:text-[var(--hud-accent)] tracking-wide">
                                     REASONING CACHE</div>
-                                <div class="text-xs text-[var(--hud-text-dim)] font-mono">98% COST SAVINGS</div>
+                                <div class="text-xs text-[var(--hud-text-dim)] font-mono">MEASURE CACHE IMPACT</div>
                             </a>
                             <a href="/monitor.html"
                                 class="block px-4 py-3 hover:bg-[var(--hud-accent)]/10 group/item border-t border-[var(--hud-border)]/30">
@@ -161,14 +161,14 @@
                     <div>
                         <h1 class="text-4xl md:text-5xl font-bold mb-6 text-white">Let's Talk</h1>
                         <p class="text-xl text-slate-400 mb-12">
-                            The fastest paid pilots right now are Execution Drift Guard and Agent Storage Core. If one of those maps to your workflow, we can scope it quickly.
+                            We are validating a focused governed-execution pilot for teams that need policy, approval, and reviewable action history. Share one workflow and we can assess fit before quoting scope.
                         </p>
 
                         <div class="mb-10 grid gap-4">
                             <div class="rounded-2xl border border-rose-500/20 bg-rose-500/5 p-5">
                                 <div class="text-xs font-mono uppercase tracking-widest text-rose-300">Pilot 01</div>
-                                <div class="mt-2 text-lg font-bold text-white">Execution Drift Guard</div>
-                                <div class="mt-2 text-sm text-slate-400">Shadow-mode evaluation, receipts, and operator review for teams already running multi-step agents.</div>
+                                <div class="mt-2 text-lg font-bold text-white">Governed Execution Pilot</div>
+                                <div class="mt-2 text-sm text-slate-400">One bounded workflow, customer-owned provider access, policy and approval checks, and operator history. The first adapter is a read-only JettyThunder storage summary.</div>
                             </div>
                             <div class="rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-5">
                                 <div class="text-xs font-mono uppercase tracking-widest text-cyan-300">Pilot 02</div>
@@ -265,16 +265,9 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium mb-2 text-slate-300">Monthly LLM Spend</label>
-                                <select
-                                    class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition">
-                                    <option value="" class="bg-slate-900">Select range</option>
-                                    <option class="bg-slate-900">
-                                        < $1,000</option>
-                                    <option class="bg-slate-900">$1,000 - $5,000</option>
-                                    <option class="bg-slate-900">$5,000 - $25,000</option>
-                                    <option class="bg-slate-900">$25,000 - $100,000</option>
-                                    <option class="bg-slate-900">> $100,000</option>
+                                <label id="volume-label" for="volume-select" class="block text-sm font-medium mb-2 text-slate-300">How often does this workflow run?</label>
+                                <select id="volume-select" class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition">
+                                    <option value="unknown" class="bg-slate-900">Not sure yet</option>
                                 </select>
                             </div>
 
@@ -282,19 +275,19 @@
                                 <label class="block text-sm font-medium mb-2 text-slate-300">What are you interested in?</label>
                                 <select id="interest-select"
                                     class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition">
-                                    <option value="execution-drift-guard" class="bg-slate-900">Execution Drift Guard</option>
+                                    <option value="execution-drift-guard" class="bg-slate-900">Governed Execution Pilot</option>
                                     <option value="agent-storage-core" class="bg-slate-900">Agent Storage Core</option>
                                     <option value="agentcache-core" class="bg-slate-900">AgentCache Core</option>
                                     <option value="agentcache-guardrails" class="bg-slate-900">AgentCache Guardrails</option>
+                                    <option value="enterprise" class="bg-slate-900">Enterprise Packages</option>
                                 </select>
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium mb-2 text-slate-300">What can we help with?
-                                    *</label>
-                                <textarea required rows="4"
+                                <label id="message-label" for="contact-message" class="block text-sm font-medium mb-2 text-slate-300">Describe one workflow to govern *</label>
+                                <textarea id="contact-message" required rows="4"
                                     class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition resize-none"
-                                    placeholder="Tell us about your use case..."></textarea>
+                                    placeholder="Which agent runs it, which tools does it call, and what actions should be approved or blocked? Please do not include credentials or customer data."></textarea>
                             </div>
 
                             <button type="submit"
@@ -304,7 +297,7 @@
                             </button>
 
                             <p class="text-xs text-slate-500 text-center">
-                                We'll get back to you within 24 hours
+                                We'll review your request and follow up by email.
                             </p>
                         </form>
                     </div>
@@ -384,8 +377,8 @@
             const name = form.querySelector('input[type="text"]').value;
             const email = form.querySelector('input[type="email"]').value;
             const company = form.querySelectorAll('input[type="text"]')[1]?.value || '';
-            const spend = form.querySelector('select').value;
             const interest = document.getElementById('interest-select').value;
+            const volume = document.getElementById('volume-select').value;
             const message = form.querySelector('textarea').value;
 
             try {
@@ -393,21 +386,39 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        serviceId: 'contact-form',
+                        serviceId: 'custom',
                         title: `Contact: ${name} (${company || 'Individual'}) :: ${interest}`,
-                        description: `Email: ${email}\nCompany: ${company}\nMonthly LLM Spend: ${spend}\nInterest: ${interest}\nRequested From: ${params.get('interest') || 'contact-page'}\n\n${message}`,
-                        config: { name, email, company, spend, interest, source: 'contact-page' }
+                        description: `Email: ${email}\nCompany: ${company}\nWorkflow volume or monthly spend: ${volume}\nInterest: ${interest}\nRequested From: ${params.get('source') || 'contact-page'}\n\n${message}`,
+                        config: { name, email, company, spend: volume, volume, interest, source: params.get('source') || 'contact-page' }
                     })
                 });
 
                 if (res.ok) {
-                    form.innerHTML = `
-                        <div class="text-center py-8">
-                            <div class="text-4xl mb-4">✅</div>
-                            <h3 class="text-xl font-bold text-white mb-2">Message received!</h3>
-                            <p class="text-slate-400">We'll get back to you within 24 hours at <strong class="text-cyan-400">${email}</strong></p>
-                            <p class="text-xs text-slate-500 mt-4">You can also reach us directly at <a href="mailto:drgnflai.org@gmail.com" class="text-cyan-400">drgnflai.org@gmail.com</a></p>
-                        </div>`;
+                    const notice = document.createElement('div');
+                    notice.className = 'text-center py-8';
+                    const icon = document.createElement('div');
+                    icon.className = 'text-4xl mb-4';
+                    icon.textContent = '✅';
+                    const heading = document.createElement('h3');
+                    heading.className = 'text-xl font-bold text-white mb-2';
+                    heading.textContent = 'Message received!';
+                    const response = document.createElement('p');
+                    response.className = 'text-slate-400';
+                    response.append("We'll review your request and follow up at ");
+                    const address = document.createElement('strong');
+                    address.className = 'text-cyan-400';
+                    address.textContent = email;
+                    response.append(address);
+                    const fallback = document.createElement('p');
+                    fallback.className = 'text-xs text-slate-500 mt-4';
+                    fallback.append('You can also reach us directly at ');
+                    const emailLink = document.createElement('a');
+                    emailLink.href = 'mailto:drgnflai.org@gmail.com';
+                    emailLink.className = 'text-cyan-400';
+                    emailLink.textContent = 'drgnflai.org@gmail.com';
+                    fallback.append(emailLink);
+                    notice.append(icon, heading, response, fallback);
+                    form.replaceChildren(notice);
                 } else {
                     throw new Error('Server error');
                 }
@@ -418,13 +429,52 @@
             }
         });
 
+        function updateContactFields() {
+            const interest = document.getElementById('interest-select').value;
+            const volumeLabel = document.getElementById('volume-label');
+            const volumeSelect = document.getElementById('volume-select');
+            const messageLabel = document.getElementById('message-label');
+            const message = document.getElementById('contact-message');
+            const executionPilot = interest === 'execution-drift-guard';
+            const options = executionPilot
+                ? [
+                    ['unknown', 'Not sure yet'],
+                    ['weekly', 'A few times per week'],
+                    ['daily', 'Daily'],
+                    ['multiple-daily', 'Several times per day'],
+                    ['high-volume', 'Hundreds or more actions per day'],
+                ]
+                : [
+                    ['', 'Select range'],
+                    ['under-1000', 'Under $1,000/month'],
+                    ['1000-5000', '$1,000–$5,000/month'],
+                    ['5000-25000', '$5,000–$25,000/month'],
+                    ['25000-100000', '$25,000–$100,000/month'],
+                    ['over-100000', 'Over $100,000/month'],
+                ];
+            volumeLabel.textContent = executionPilot ? 'How often does this workflow run?' : 'Approximate monthly LLM spend';
+            messageLabel.textContent = executionPilot ? 'Describe one workflow to govern *' : 'What can we help with? *';
+            message.placeholder = executionPilot
+                ? 'Tell us the agent/framework, tools it uses, the action to approve or block, and the outcome you want to measure. Do not include credentials or customer data.'
+                : 'Tell us about your use case. Do not include credentials or sensitive customer data.';
+            volumeSelect.replaceChildren(...options.map(([value, label]) => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = label;
+                option.className = 'bg-slate-900';
+                return option;
+            }));
+        }
+
         (function hydrateInterest() {
             const params = new URLSearchParams(window.location.search);
             const interest = params.get('interest');
             const select = document.getElementById('interest-select');
-            if (interest && select) {
+            if (interest && select && Array.from(select.options).some((option) => option.value === interest)) {
                 select.value = interest;
             }
+            updateContactFields();
+            select?.addEventListener('change', updateContactFields);
         })();
     </script>
 </body>

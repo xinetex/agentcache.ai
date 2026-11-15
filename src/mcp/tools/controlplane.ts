@@ -7,15 +7,14 @@
  */
 
 /**
- * AgentCache MCP — Control Plane & Background Agent Scaffolding tools.
+ * AgentCache MCP — Governed execution and legacy simulation tools.
  *
- * Turns the reposition into something an AGENT can use directly. Beyond caching,
- * an agent connected to AgentCache can now: see what it has saved, ask whether a
- * proposed model call is within its owner's budget/quota BEFORE spending, carry
- * reasoning state across runs, and dispatch/supervise durable background tasks.
+ * Exposes AgentCache's governed execution workflow alongside caching, memory,
+ * and supporting control-plane capabilities.
  */
 
 import { ToolModule, ToolHandlerContext } from '../registry.js';
+import { getAgentCacheApiKey } from '../config.js';
 
 const AGENTCACHE_API_URL = process.env.AGENTCACHE_API_URL || 'https://agentcache.ai';
 
@@ -26,7 +25,7 @@ async function callApi(
   apiKey: string | undefined,
   extraHeaders: Record<string, string> = {},
 ): Promise<any> {
-  const key = apiKey || process.env.AGENTCACHE_API_KEY || process.env.API_KEY || 'ac_demo_test123';
+  const key = getAgentCacheApiKey(apiKey);
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${key}`,
@@ -46,9 +45,134 @@ const ok = (obj: any) => ({ content: [{ type: 'text', text: JSON.stringify(obj, 
 export const ControlPlaneTools: ToolModule = {
   tools: [
     {
+      name: 'agentcache_execution_tools',
+      description: 'Discover the governed execution tools available to this AgentCache API key, including required inputs and approval behavior.',
+      inputSchema: { type: 'object', properties: {} },
+    },
+    {
+      name: 'agentcache_execution_context_packs',
+      description: 'List workflow context packs owned by this API key. Packs define the objective, allowed tools, policy profile, and review phases for governed runs.',
+      inputSchema: { type: 'object', properties: { limit: { type: 'number' } } },
+    },
+    {
+      name: 'agentcache_execution_create_context_pack',
+      description: 'Create an owned, versioned workflow definition. Tool discovery does not grant connection access; each run still applies policy, consent, and approval checks.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          objective: { type: 'string' },
+          sectorHint: { type: 'string' },
+          workflowTemplate: { type: 'string', enum: ['generic', 'policy_review', 'regulated_release', 'research_brief'] },
+          tools: { type: 'array', items: { type: 'string' } },
+          policyProfile: { type: 'object' },
+          workflowPhases: { type: 'array', items: { type: 'string' } },
+          reviewerRoles: { type: 'array', items: { type: 'string' } },
+        },
+        required: ['name', 'objective'],
+      },
+    },
+    {
+      name: 'agentcache_execution_context_pack',
+      description: 'Read one workflow context pack and its current version, if it is owned by this API key.',
+      inputSchema: { type: 'object', properties: { contextPackId: { type: 'string' } }, required: ['contextPackId'] },
+    },
+    {
+      name: 'agentcache_execution_connections',
+      description: 'List provider connection metadata owned by the configured API key. Credential values are never returned.',
+      inputSchema: { type: 'object', properties: { limit: { type: 'number' } } },
+    },
+    {
+      name: 'agentcache_execution_connect',
+      description: 'Save credentials for a provider account you own. Requires a user or organization AgentCache API key; the credential payload is encrypted at rest and requested scopes remain unverified until an adapter checks them.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          provider: { type: 'string' },
+          displayName: { type: 'string' },
+          scopes: { type: 'array', items: { type: 'string' } },
+          credentials: { type: 'object' },
+        },
+        required: ['provider', 'credentials'],
+      },
+    },
+    {
+      name: 'agentcache_execution_disconnect',
+      description: 'Disconnect a provider account owned by this user or organization API key and remove its encrypted credential material.',
+      inputSchema: { type: 'object', properties: { connectionId: { type: 'string' } }, required: ['connectionId'] },
+    },
+    {
+      name: 'agentcache_execution_start',
+      description: 'Start a workflow run using a context pack. The run is policy checked and high impact actions may pause for human approval.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          contextPackId: { type: 'string' },
+          contextPackVersionId: { type: 'string' },
+          inputPayload: { type: 'object' },
+          trigger: { type: 'string' },
+          finalAction: { type: 'string', enum: ['publish', 'send', 'pay', 'delete', 'external_store', 'manual'] },
+          requireHumanGate: { type: 'boolean' },
+        },
+        required: ['contextPackId'],
+      },
+    },
+    {
+      name: 'agentcache_execution_status',
+      description: 'Read the run, review, approval gate, and receipt history for a governed workflow execution.',
+      inputSchema: {
+        type: 'object',
+        properties: { runId: { type: 'string' } },
+        required: ['runId'],
+      },
+    },
+    {
+      name: 'agentcache_execution_advance_phase',
+      description: 'Advance an owned run to a configured workflow phase. This can submit a run to its gate, but this MCP client does not expose gate decisions. The API requires a different owner or admin member of the same organization to approve or reject it.',
+      inputSchema: {
+        type: 'object',
+        properties: { runId: { type: 'string' }, phase: { type: 'string' } },
+        required: ['runId', 'phase'],
+      },
+    },
+    {
+      name: 'agentcache_execution_invoke_jetty_summary',
+      description: 'Run the policy-checked JettyThunder storage summary tool for an owned run using an owned read-only service connection. Returns aggregate quota and file count only. Reuse the same optional idempotencyKey when retrying; without one, the run/account action is single-shot.',
+      inputSchema: { type: 'object', properties: { runId: { type: 'string' }, connectionId: { type: 'string' }, idempotencyKey: { type: 'string', minLength: 16, maxLength: 128 } }, required: ['runId', 'connectionId'] },
+    },
+    {
+      name: 'agentcache_execution_invocations',
+      description: 'Read durable, redacted invocation records for an owned run, including incomplete calls and sanitized outcomes.',
+      inputSchema: { type: 'object', properties: { runId: { type: 'string' }, limit: { type: 'number' } }, required: ['runId'] },
+    },
+    {
+      name: 'agentcache_execution_invocation_history',
+      description: 'Read recent durable, redacted tool invocation records owned by the configured AgentCache API key.',
+      inputSchema: { type: 'object', properties: { limit: { type: 'number' } } },
+    },
+    {
+      name: 'agentcache_execution_decision_history',
+      description: 'Read durable run, review, phase, and approval decision metadata owned by the configured AgentCache API key. The ledger excludes workflow payloads.',
+      inputSchema: { type: 'object', properties: { limit: { type: 'number' } } },
+    },
+    {
+      name: 'agentcache_execution_usage',
+      description: 'Read governed-action usage counts for pilot measurement. Completed actions are the only potential billable units; this tool does not charge.',
+      inputSchema: { type: 'object', properties: {} },
+    },
+    {
+      name: 'agentcache_execution_evaluate',
+      description: 'Evaluate a governed run for drift in shadow mode; the action is policy checked and recorded.',
+      inputSchema: {
+        type: 'object',
+        properties: { runId: { type: 'string' }, mode: { type: 'string', enum: ['shadow'] } },
+        required: ['runId'],
+      },
+    },
+    {
       name: 'agentcache_savings',
       description:
-        'Report the verified net dollars this account has saved through AgentCache over a window (default 30 days), with ROI and a breakdown by cache layer and model. Every figure is measured from real cache hits at current provider prices — never estimated. Use it to prove the value of caching to a human, or to decide whether a workload is worth continuing.',
+        'Report modeled cache savings for the organization over a window (default 30 days), with ROI and a breakdown by cache layer and model. The calculation uses recorded savings events, configured or default model rates, and a plan-price assumption; it is not reconciled to provider invoices. Treat it as an estimate and compare with billing records.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -112,20 +236,19 @@ export const ControlPlaneTools: ToolModule = {
     {
       name: 'agentcache_run_dispatch',
       description:
-        'Dispatches an unattended, durable background agent task. The task is executed under the governance firewall with async HITL approval triggers and verifiable token/dollar savings accounting.',
+        'Legacy planning simulation only. Evaluates caller-declared model/token cost estimates against policy and can run built-in sandbox helpers (echo, calculator, JSON transform, noop). It does not call LLM providers or external tools; spend and savings are estimates, not provider-billed or independently verified amounts. Use the governed execution tools for provider actions.',
       inputSchema: {
         type: 'object',
         properties: {
-          agentId: { type: 'string', description: 'Identifier for the background agent worker' },
+          agentId: { type: 'string', description: 'Identifier for this planning simulation' },
           goal: { type: 'string', description: 'High-level task description or objective' },
           namespace: { type: 'string', description: 'Tenant namespace. Default: "default"' },
-          approvalThresholdUsd: { type: 'number', description: 'Dollar limit per step that automatically pauses for human approval' },
+          approvalThresholdUsd: { type: 'number', description: 'Estimated dollar limit per step that pauses this simulation for human approval' },
           steps: {
             type: 'array',
-            description: 'Optional pre-planned steps or tool actions',
+            description: 'Pre-planned simulation steps. Any model, token, cache-layer, or savings fields are caller-declared estimates. toolCall supports only built-in sandbox helpers; it does not call external tools.',
             items: { type: 'object' },
           },
-          webhookUrl: { type: 'string', description: 'Optional webhook URL for Slack/Discord HITL notifications' },
         },
         required: ['agentId'],
       },
@@ -133,7 +256,7 @@ export const ControlPlaneTools: ToolModule = {
     {
       name: 'agentcache_run_status',
       description:
-        'Queries the status, spend, savings, executed steps, and checkpoint state of an active or completed background agent run.',
+        'Queries a legacy planning simulation. The API labels its mode and says provider calls are disabled. Spend and per-run savings derive from caller-declared fields; they are not written to organization-wide savings analytics or verified against provider billing.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -145,7 +268,7 @@ export const ControlPlaneTools: ToolModule = {
     {
       name: 'agentcache_run_approve',
       description:
-        'Approves or rejects a background agent run that is currently in PAUSED state awaiting human or supervisor verdict.',
+        'Approves or rejects a planning simulation step currently paused for its estimated budget threshold or declared approval requirement.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -159,7 +282,7 @@ export const ControlPlaneTools: ToolModule = {
     {
       name: 'agentcache_run_cancel',
       description:
-        'Emergency kill of an active or runaway background agent task.',
+        'Cancel an active legacy planning simulation. This does not cancel provider or external tool calls because this mode does not make them.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -196,11 +319,103 @@ export const ControlPlaneTools: ToolModule = {
   ],
 
   handlers: {
+    agentcache_execution_tools: async (_args: any, context: ToolHandlerContext) => {
+      const data = await callApi('/api/execution/tools', 'GET', null, context.apiKey);
+      return ok(data);
+    },
+
+    agentcache_execution_context_packs: async (args: any, context: ToolHandlerContext) => {
+      const limit = Math.min(Math.max(Number(args?.limit) || 25, 1), 100);
+      const data = await callApi(`/api/execution/context-packs?limit=${limit}`, 'GET', null, context.apiKey);
+      return ok(data);
+    },
+
+    agentcache_execution_create_context_pack: async (args: any, context: ToolHandlerContext) => {
+      const data = await callApi('/api/execution/context-packs', 'POST', args, context.apiKey);
+      return ok(data);
+    },
+
+    agentcache_execution_context_pack: async (args: any, context: ToolHandlerContext) => {
+      const contextPackId = encodeURIComponent(String(args?.contextPackId || ''));
+      const data = await callApi(`/api/execution/context-packs/${contextPackId}`, 'GET', null, context.apiKey);
+      return ok(data);
+    },
+
+    agentcache_execution_connections: async (args: any, context: ToolHandlerContext) => {
+      const limit = Math.min(Math.max(Number(args?.limit) || 50, 1), 100);
+      const data = await callApi(`/api/execution/connections?limit=${limit}`, 'GET', null, context.apiKey);
+      return ok(data);
+    },
+
+    agentcache_execution_connect: async (args: any, context: ToolHandlerContext) => {
+      const data = await callApi('/api/execution/connections', 'POST', args, context.apiKey);
+      return ok(data);
+    },
+
+    agentcache_execution_disconnect: async (args: any, context: ToolHandlerContext) => {
+      const id = encodeURIComponent(String(args?.connectionId || ''));
+      const data = await callApi(`/api/execution/connections/${id}`, 'DELETE', null, context.apiKey);
+      return ok(data);
+    },
+
+    agentcache_execution_start: async (args: any, context: ToolHandlerContext) => {
+      const data = await callApi('/api/execution/runs', 'POST', args, context.apiKey);
+      return ok(data);
+    },
+
+    agentcache_execution_status: async (args: any, context: ToolHandlerContext) => {
+      const runId = encodeURIComponent(String(args?.runId || ''));
+      const data = await callApi(`/api/execution/runs/${runId}`, 'GET', null, context.apiKey);
+      return ok(data);
+    },
+
+    agentcache_execution_advance_phase: async (args: any, context: ToolHandlerContext) => {
+      const runId = encodeURIComponent(String(args?.runId || ''));
+      const data = await callApi(`/api/execution/runs/${runId}/phase`, 'POST', { phase: args?.phase }, context.apiKey);
+      return ok(data);
+    },
+
+    agentcache_execution_invoke_jetty_summary: async (args: any, context: ToolHandlerContext) => {
+      const runId = encodeURIComponent(String(args?.runId || ''));
+      const data = await callApi(`/api/execution/runs/${runId}/invoke`, 'POST', { tool: 'jetty.storage.summary', connectionId: args?.connectionId, idempotencyKey: args?.idempotencyKey }, context.apiKey);
+      return ok(data);
+    },
+
+    agentcache_execution_invocations: async (args: any, context: ToolHandlerContext) => {
+      const runId = encodeURIComponent(String(args?.runId || ''));
+      const limit = Math.min(Math.max(Number(args?.limit) || 50, 1), 100);
+      const data = await callApi(`/api/execution/runs/${runId}/invocations?limit=${limit}`, 'GET', null, context.apiKey);
+      return ok(data);
+    },
+
+    agentcache_execution_invocation_history: async (args: any, context: ToolHandlerContext) => {
+      const limit = Math.min(Math.max(Number(args?.limit) || 50, 1), 100);
+      const data = await callApi(`/api/execution/invocations?limit=${limit}`, 'GET', null, context.apiKey);
+      return ok(data);
+    },
+
+    agentcache_execution_decision_history: async (args: any, context: ToolHandlerContext) => {
+      const limit = Math.min(Math.max(Number(args?.limit) || 50, 1), 100);
+      const data = await callApi(`/api/execution/decision-events?limit=${limit}`, 'GET', null, context.apiKey);
+      return ok(data);
+    },
+
+    agentcache_execution_usage: async (_args: any, context: ToolHandlerContext) => {
+      const data = await callApi('/api/execution/usage', 'GET', null, context.apiKey);
+      return ok(data);
+    },
+
+    agentcache_execution_evaluate: async (args: any, context: ToolHandlerContext) => {
+      const runId = encodeURIComponent(String(args?.runId || ''));
+      const data = await callApi(`/api/execution/runs/${runId}/evaluate`, 'POST', { mode: args?.mode || 'shadow' }, context.apiKey);
+      return ok(data);
+    },
+
     agentcache_savings: async (args: any, context: ToolHandlerContext) => {
       const days = Math.min(Math.max(Number(args?.days) || 30, 1), 365);
       const data = await callApi(`/api/analytics/savings?days=${days}`, 'GET', null, context.apiKey);
       return ok({
-        summary: `Net $${data.netSavedUsd} saved over ${data.windowDays}d${data.roi ? ` · ${data.roi}× ROI` : ''}`,
+        summary: `Modeled net savings: $${data.netSavedUsd} over ${data.windowDays}d${data.roi ? ` · ${data.roi}× modeled ROI` : ''}`,
         ...data,
       });
     },

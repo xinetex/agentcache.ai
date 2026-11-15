@@ -90,7 +90,7 @@ v1.route('/docs', docsRouter);
 /**
  * POST /v1/chat/completions
  * OpenAI-compatible universal proxy endpoint for Hermes Agent and others.
- * Routes through Semantic Cache, bills x402 automatically, and proxies to upstream models.
+ * Routes through Semantic Cache and the authenticated account quota before proxying to upstream models.
  */
 v1.post('/chat/completions', async (c) => {
     const apiKey = c.get('apiKey');

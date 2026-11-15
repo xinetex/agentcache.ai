@@ -1,116 +1,107 @@
+import { createHash, randomBytes } from 'node:crypto';
+import { and, eq } from 'drizzle-orm';
 import { db } from '../src/db/client.js';
-import { sql } from 'drizzle-orm';
-import bcryptjs from 'bcryptjs';
+import { apiKeys, members, users } from '../src/db/schema.js';
+import { verifyToken } from '../lib/jwt.js';
 import { parseBody } from '../lib/request.js';
+import { invalidateApiKeyAuthenticationCache } from '../src/middleware/auth.js';
 
 export const config = { runtime: 'nodejs' };
 
-export default async function handler(req, res) {
-    const { method } = req;
+function json(data: unknown, status = 200) {
+    return new Response(JSON.stringify(data), {
+        status,
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+    });
+}
 
-    // Auth Check (Basic header check for V1, ideal would be JWT verify)
-    const userId = req.headers['x-user-id'];
-    if (!userId) return new Response('Unauthorized', { status: 401 });
+function getAuthenticatedSession(req: any): { userId: string; organizationId: string | null } | null {
+    const authorization = req.headers?.authorization || req.headers?.get?.('authorization');
+    if (typeof authorization !== 'string' || !authorization.startsWith('Bearer ')) return null;
+    const payload: any = verifyToken(authorization.slice(7));
+    return typeof payload?.userId === 'string'
+        ? { userId: payload.userId, organizationId: typeof payload.organizationId === 'string' ? payload.organizationId : null }
+        : null;
+}
+
+export default async function handler(req: any) {
+    if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+        return json({ error: 'Account settings are temporarily unavailable.' }, 503);
+    }
+    const session = getAuthenticatedSession(req);
+    if (!session) return json({ error: 'Authentication required.' }, 401);
+    const userId = session.userId;
 
     try {
-        if (method === 'GET') {
+        const userRows = await db.select({ id: users.id, name: users.name, email: users.email })
+            .from(users).where(eq(users.id, userId)).limit(1);
+        const user = userRows[0];
+        if (!user) return json({ error: 'Authenticated user not found.' }, 401);
+
+        const memberships = await db.select({ orgId: members.orgId, role: members.role })
+            .from(members).where(eq(members.userId, userId));
+        const membership = memberships.find((item) => item.orgId === session.organizationId) || memberships.find((item) => item.orgId);
+
+        if (req.method === 'GET') {
             const url = new URL(req.url, 'http://localhost');
-            const type = url.searchParams.get('type');
-
-            if (type === 'keys') {
-                // Fetch Organization for user
-                const [membership] = await db.execute(sql`
-                    SELECT org_id FROM members WHERE user_id = ${userId} LIMIT 1
-                `);
-
-                if (!membership) return new Response(JSON.stringify({ keys: [] }), { headers: { 'Content-Type': 'application/json' } });
-
-                // Fetch Keys
-                // Using the columns verified in verify_saas_flow info schema
-                const keys = await db.execute(sql`
-                    SELECT id, key_prefix as value, created_at as created, last_used_at as "lastUsed"
-                    FROM api_keys 
-                    WHERE organization_id = ${membership.org_id} AND is_active = true
-                    ORDER BY created_at DESC
-                `);
-
-                // Format for UI (we only show prefix usually, but UI expects 'value' to show. 
-                // We shouldn't send full hash. The mock sent a fake full key. 
-                // We'll send prefix + "..." for display safety)
-                const safeKeys = keys.map(k => ({
-                    ...k,
-                    value: k.value + '...'
-                }));
-
-                return new Response(JSON.stringify({ keys: safeKeys }), { headers: { 'Content-Type': 'application/json' } });
+            if (url.searchParams.get('type') === 'keys') {
+                const keys = await db.select({ id: apiKeys.id, prefix: apiKeys.prefix, created: apiKeys.createdAt, lastUsed: apiKeys.lastUsedAt })
+                    .from(apiKeys)
+                    .where(and(eq(apiKeys.userId, userId), eq(apiKeys.isActive, true)));
+                return json({ keys: keys.map((key) => ({ ...key, value: `${key.prefix}…` })) });
             }
-
-            // Get Profile
-            const [user] = await db.execute(sql`
-                SELECT name as "displayName", email, id 
-                FROM users 
-                WHERE id = ${userId}
-            `);
-
-            return new Response(JSON.stringify({ profile: user || {} }), { headers: { 'Content-Type': 'application/json' } });
+            return json({ profile: { id: user.id, displayName: user.name, email: user.email } });
         }
 
-        if (method === 'POST') {
-            const body = await parseBody(req);
-            const { action } = body;
+        if (req.method !== 'POST') return json({ error: 'Method not allowed.' }, 405);
+        const body = await parseBody(req);
 
-            if (action === 'update_profile') {
-                const { displayName } = body;
-                await db.execute(sql`
-                    UPDATE users 
-                    SET name = ${displayName}
-                    WHERE id = ${userId}
-                `);
-                return new Response(JSON.stringify({ success: true }), { headers: { 'Content-Type': 'application/json' } });
+        if (body.action === 'update_profile') {
+            if (typeof body.displayName !== 'string' || !body.displayName.trim() || body.displayName.length > 120) {
+                return json({ error: 'Display name must be between 1 and 120 characters.' }, 400);
             }
-
-            if (action === 'create_key') {
-                // Get Org
-                const [membership] = await db.execute(sql`SELECT org_id FROM members WHERE user_id = ${userId} LIMIT 1`);
-                if (!membership) return new Response('No Org', { status: 400 });
-
-                const keyPrefix = 'ac_live_';
-                const randomSecret = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
-                const hash = await bcryptjs.hash(randomSecret, 10);
-
-                // Insert
-                await db.execute(sql`
-                    INSERT INTO api_keys (organization_id, key_prefix, key_hash, scopes, is_active)
-                    VALUES (${membership.org_id}, ${keyPrefix}, ${hash}, ${'{*}'}, true)
-                `);
-
-                // We return the raw secret ONLY once here
-                const newKey = {
-                    id: 'new', // Refresh will get real ID
-                    value: keyPrefix + randomSecret,
-                    created: Date.now()
-                };
-
-                return new Response(JSON.stringify({ success: true, key: newKey }), { headers: { 'Content-Type': 'application/json' } });
-            }
-
-            if (action === 'revoke_key') {
-                const { keyId } = body;
-                // Soft delete
-                await db.execute(sql`
-                    UPDATE api_keys 
-                    SET is_active = false, revoked_at = NOW()
-                    WHERE id = ${keyId}
-                `);
-                // Ideally check ownership via org_id link but relying on UI flow for now
-                return new Response(JSON.stringify({ success: true }), { headers: { 'Content-Type': 'application/json' } });
-            }
+            await db.update(users).set({ name: body.displayName.trim() }).where(eq(users.id, userId));
+            return json({ success: true });
         }
 
-        return new Response('Method Not Allowed', { status: 405 });
+        if (body.action === 'create_key') {
+            if (!membership?.orgId) return json({ error: 'Join an organization before creating an API key.' }, 409);
+            const key = `ac_${randomBytes(32).toString('hex')}`;
+            const hash = createHash('sha256').update(key).digest('hex');
+            const [created] = await db.insert(apiKeys).values({
+                orgId: membership.orgId,
+                userId,
+                prefix: key.slice(0, 16),
+                hash,
+                name: 'AgentCache console key',
+                scopes: ['*'],
+                isActive: true,
+            }).returning({ id: apiKeys.id, created: apiKeys.createdAt });
+            if (!created) return json({ error: 'Could not create API key.' }, 500);
+            return json({ success: true, key: { id: created.id, value: key, created: created.created } }, 201);
+        }
 
-    } catch (err) {
-        console.error("Settings API Error:", err);
-        return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+        if (body.action === 'revoke_key') {
+            if (typeof body.keyId !== 'string' || !body.keyId) return json({ error: 'A key ID is required.' }, 400);
+            const [ownedKey] = await db.select({ hash: apiKeys.hash })
+                .from(apiKeys)
+                .where(and(eq(apiKeys.id, body.keyId), eq(apiKeys.userId, userId), eq(apiKeys.isActive, true)))
+                .limit(1);
+            if (!ownedKey) return json({ error: 'API key not found.' }, 404);
+            const revoked = await db.update(apiKeys)
+                .set({ isActive: false, revokedAt: new Date() })
+                .where(and(eq(apiKeys.id, body.keyId), eq(apiKeys.userId, userId), eq(apiKeys.isActive, true)))
+                .returning({ id: apiKeys.id });
+            if (!revoked.length) return json({ error: 'API key not found.' }, 404);
+            await invalidateApiKeyAuthenticationCache(ownedKey.hash).catch((error) => {
+                console.error('[Settings API] API key cache invalidation failed:', error?.message || 'unknown error');
+            });
+            return json({ success: true });
+        }
+
+        return json({ error: 'Unknown settings action.' }, 400);
+    } catch (error: any) {
+        console.error('[Settings API] Request failed:', error?.message || 'unknown error');
+        return json({ error: 'Could not complete the settings request.' }, 500);
     }
 }

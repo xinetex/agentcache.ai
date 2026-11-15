@@ -25,77 +25,16 @@ const EDGE_TIMEOUT = 500; // Edge routing must respond in <100ms (allowing 500ms
 describeIntegration('jettythunder.app Critical Endpoints', () => {
   
   describe('POST /api/provision/jettythunder [CRITICAL]', () => {
-    it('should provision master key for production', async () => {
+    it('requires operator authentication and does not expose a master key', async () => {
       const response = await fetch(`${BASE_URL}/api/provision/jettythunder`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ environment: 'production' }),
       });
-      
-      expect([200, 201, 500, 502]).toContain(response.status);
-      
-      if (response.status < 300) {
-        const data = await response.json();
-        expect(data.success).toBe(true);
-        expect(data.api_key).toBeDefined();
-        expect(data.api_key).toMatch(/^ac_/); // AgentCache key format
-        expect(data.namespace).toBe('jettythunder_production');
-        expect(data.tier).toBe('enterprise');
-      }
-    }, TIMEOUT);
-
-    it('should provision master key for staging', async () => {
-      const response = await fetch(`${BASE_URL}/api/provision/jettythunder`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ environment: 'staging' }),
-      });
-      
-      if (response.status < 300) {
-        const data = await response.json();
-        expect(data.namespace).toBe('jettythunder_staging');
-      }
-    }, TIMEOUT);
-
-    it('should default to production environment', async () => {
-      const response = await fetch(`${BASE_URL}/api/provision/jettythunder`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      });
-      
-      if (response.status < 300) {
-        const data = await response.json();
-        expect(data.environment).toBe('production');
-      }
-    }, TIMEOUT);
-
-    it('should include integration guide', async () => {
-      const response = await fetch(`${BASE_URL}/api/provision/jettythunder`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      });
-      
-      if (response.status < 300) {
-        const data = await response.json();
-        expect(data.integration_guide).toBeDefined();
-        expect(data.integration_guide.env_vars).toBeDefined();
-        expect(data.integration_guide.env_vars.AGENTCACHE_API_KEY).toBeDefined();
-      }
-    }, TIMEOUT);
-
-    it('should have enterprise rate limit', async () => {
-      const response = await fetch(`${BASE_URL}/api/provision/jettythunder`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      });
-      
-      if (response.status < 300) {
-        const data = await response.json();
-        expect(data.rate_limit).toBeGreaterThanOrEqual(10_000_000); // 10M minimum
-      }
+      expect([403, 503]).toContain(response.status);
+      const data = await response.json();
+      expect(data.api_key).toBeUndefined();
+      expect(data.success).not.toBe(true);
     }, TIMEOUT);
   });
 
@@ -395,27 +334,6 @@ describeIntegration('jettythunder.app Critical Endpoints', () => {
   });
 
   describe('SLA Compliance', () => {
-    it('critical provisioning endpoint must be reliable', async () => {
-      const attempts = 3;
-      let successCount = 0;
-
-      for (let i = 0; i < attempts; i++) {
-        const response = await fetch(`${BASE_URL}/api/provision/jettythunder`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ environment: 'test' }),
-        });
-
-        if (response.status < 300 || response.status === 500) {
-          // 500 acceptable if service is temporarily down
-          successCount++;
-        }
-      }
-
-      // Should succeed or fail gracefully (no timeouts/network errors)
-      expect(successCount).toBeGreaterThanOrEqual(attempts);
-    }, TIMEOUT * 3);
-
     it('edge routing must be ultra-fast', async () => {
       const attempts = 5;
       const latencies: number[] = [];

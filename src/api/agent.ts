@@ -33,7 +33,9 @@ async function getAuthContext(c: any) {
 
 /**
  * POST /api/agent/dispatch or /api/agent/run
- * Dispatches a durable, governed background agent run via Inngest.
+ * Dispatches the legacy background planning simulation via Inngest. It checks
+ * declared estimates and runs built-in sandbox helpers; it does not call LLM
+ * providers or external tools.
  */
 async function handleDispatch(c: any) {
   const auth = await getAuthContext(c);
@@ -54,7 +56,12 @@ async function handleDispatch(c: any) {
     const goal = body.goal || '';
     const steps = Array.isArray(body.steps) ? body.steps : [];
     const approvalThresholdUsd = typeof body.approvalThresholdUsd === 'number' ? body.approvalThresholdUsd : 0;
-    const webhookUrl = body.webhookUrl || null;
+    if (body.webhookUrl) {
+      return c.json({
+        error: 'Webhook notifications are unavailable until webhook credentials can be stored as an owned encrypted connection.',
+        code: 'notification_webhook_connection_required',
+      }, 400);
+    }
 
     // Send event to durable Inngest queue
     await inngest.send({
@@ -67,7 +74,6 @@ async function handleDispatch(c: any) {
         goal,
         steps,
         approvalThresholdUsd,
-        webhookUrl,
       },
     });
 
@@ -84,9 +90,13 @@ async function handleDispatch(c: any) {
       runId,
       agentId,
       status: 'dispatched',
+      mode: 'planning_simulation',
+      providerCallsEnabled: false,
+      costBasis: 'caller_declared_estimates',
+      savingsBasis: 'caller_declared_cache_fields',
       stepsCount: steps.length,
       approvalThresholdUsd,
-      message: 'Background agent run dispatched to durable execution harness.',
+      message: 'Planning simulation dispatched. It does not call a model provider or external tool.',
     }, 202);
   } catch (err: any) {
     return c.json({ error: 'Dispatch Failed', message: err.message }, 500);
@@ -125,6 +135,10 @@ app.get('/run/:runId', async (c) => {
         namespace: runRecord.namespace,
         goal: runRecord.goal,
         status: runRecord.status,
+        mode: 'planning_simulation',
+        providerCallsEnabled: false,
+        costBasis: 'caller_declared_estimates',
+        savingsBasis: 'caller_declared_cache_fields',
         spentUsd: parseFloat(runRecord.spent_usd) || 0,
         savedUsd: parseFloat(runRecord.saved_usd) || 0,
         stepsExecuted: runRecord.steps_executed,
@@ -150,7 +164,7 @@ app.get('/status/:runId', async (c) => {
 
 /**
  * POST /api/agent/approve
- * Resumes or terminates a paused background agent.
+ * Resumes or terminates a paused legacy planning simulation.
  */
 app.post('/approve', async (c) => {
   const auth = await getAuthContext(c);
@@ -206,12 +220,12 @@ async function emitDecision(c: any, runId: string, decision: 'approve' | 'reject
       WHERE run_id = ${runId} AND organization_id = ${organizationId}
     `.catch(() => null);
   }
-  return c.json({ ok: true, runId, decision });
+  return c.json({ ok: true, runId, decision, mode: 'planning_simulation', providerCallsEnabled: false });
 }
 
 /**
  * POST /api/agent/cancel
- * Emergency termination of a runaway background agent.
+ * Terminate an active legacy planning simulation.
  */
 app.post('/cancel', async (c) => {
   const auth = await getAuthContext(c);
@@ -240,7 +254,7 @@ app.post('/cancel', async (c) => {
       `.catch(() => null);
     }
 
-    return c.json({ ok: true, runId: body.runId, status: 'killed' });
+    return c.json({ ok: true, runId: body.runId, status: 'killed', mode: 'planning_simulation', providerCallsEnabled: false });
   } catch (err: any) {
     return c.json({ error: err.message }, 500);
   }

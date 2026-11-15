@@ -13,6 +13,7 @@ import Admin from './views/Admin.jsx';
 import AdvancedServices from './views/AdvancedServices.jsx';
 import MediaConsole from './views/MediaConsole.jsx';
 import ReliabilityMesh from './views/ReliabilityMesh.jsx';
+import AgentExecution from './views/AgentExecution.jsx';
 import { AuthProvider, useAuth } from './auth/AuthContext.jsx';
 import LoginOverlay from './components/LoginOverlay.jsx';
 import RegisterOverlay from './components/RegisterOverlay.jsx';
@@ -22,10 +23,12 @@ const AppContent = () => {
     // "Neural Ops" (swarm) is default, unless URL specifies otherwise
     const getInitialView = () => {
         const path = window.location.pathname;
+        if (new URLSearchParams(window.location.search).has('invite')) return 'settings';
         if (path.includes('observability')) return 'observability';
         if (path.includes('advanced-services')) return 'advanced-services';
         if (path.includes('pipeline')) return 'pipeline';
         if (path.includes('reliability')) return 'reliability';
+        if (path.includes('execution')) return 'execution';
         if (path.includes('lab')) return 'lab';
         if (path.includes('media')) return 'media';
         if (path.includes('data')) return 'data';
@@ -73,6 +76,11 @@ const AppContent = () => {
 
     const effectiveUser = user || (isDemo ? DEMO_USER : null);
 
+    const invitationParams = new URLSearchParams(window.location.search);
+    if (invitationParams.has('invite') && !user) {
+        return invitationParams.has('login') ? <LoginOverlay /> : <RegisterOverlay />;
+    }
+
     if (!effectiveUser) return <LoginOverlay />;
 
     const renderView = () => {
@@ -82,6 +90,7 @@ const AppContent = () => {
             case 'advanced-services': return <AdvancedServices />;
             case 'pipeline': return <PipelineStudio />;
             case 'reliability': return <ReliabilityMesh />;
+            case 'execution': return <AgentExecution />;
             case 'lab': return <Lab />;
             case 'media': return <MediaConsole />;
             case 'observability': return <Observability />;

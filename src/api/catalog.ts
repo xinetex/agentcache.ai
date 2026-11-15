@@ -20,13 +20,15 @@
  *
  * Authenticated endpoints:
  *   POST /api/catalog/request  — Submit a custom service request (need → ticket)
- *   GET  /api/catalog/requests — List open requests (admin or own)
+ *   GET  /api/catalog/requests — List requests (admin token required)
  */
 
 import { Hono } from 'hono';
 import { desc, eq } from 'drizzle-orm';
 import { db } from '../db/client.js';
+import { authenticateAdmin } from '../middleware/auth.js';
 import { serviceRequests } from '../db/schema.js';
+import { AGENT_RUN_AUDIT } from '../config/agentRunAudit.js';
 import { getRevenueCoreOffers } from '../config/revenueCore.js';
 import {
     getAgenticMonetizationSummary,
@@ -186,7 +188,7 @@ const SERVICES: ServiceDef[] = [
             { field: 'sectorId', type: 'string', description: 'Ontology sector for trust and billing summaries' },
             { field: 'candidateId', type: 'string', description: 'Draft answer, artifact, or extraction candidate being evidenced' }
         ],
-        pricing: 'Knowledge add-on | Usage-based evidence-claim credits',
+        pricing: 'Knowledge add-on | Evidence-claim credits are estimates for usage telemetry, not a separate automatic charge.',
         status: 'available'
     },
     {
@@ -206,7 +208,7 @@ const SERVICES: ServiceDef[] = [
             { field: 'policy', type: 'object', description: 'Allowed tools, maximum risk, and human approval policy' },
             { field: 'namespace', type: 'string', description: 'Isolation namespace for the Trust Ledger' }
         ],
-        pricing: 'Pro add-on | Usage-based certified-run and governed-action credits',
+        pricing: 'Pilot measurement only | No automatic certified-run or governed-action charges; future rates require cost and buyer validation.',
         status: 'available'
     },
     {
@@ -311,7 +313,7 @@ const SERVICES: ServiceDef[] = [
             { field: 'severity', type: 'string', description: 'Assessment severity: low | medium | high | critical' },
             { field: 'errorKind', type: 'string', description: 'Failure mode hypothesis for recovery planning' }
         ],
-        pricing: 'Pro tier | Usage-based hardening credits and enterprise certification packages',
+        pricing: 'Beta | No automatic hardening-assessment charge; pilot terms are scoped in writing.',
         status: 'beta'
     },
     {
@@ -493,7 +495,7 @@ catalogRouter.get('/revenue-core', (c) => {
     }));
 
     return c.json({
-        thesis: 'AgentCache sells reliable agent infrastructure: cache, guardrails, execution drift monitoring, and knowledge memory.',
+        thesis: 'AgentCache governs agent actions with policy, approvals, encrypted user-owned connections, and traceable execution; cache, guardrails, and knowledge support that workflow.',
         mode: 'controlled-alpha',
         recommendedLaunchWedge: 'Execution Drift Guard',
         monetization: getAgenticMonetizationSummary(),
@@ -521,12 +523,11 @@ catalogRouter.get('/', (c) => {
 
     return c.json({
         count: filtered.length,
-        paymentProtocols: ['x402'],
+        paymentProtocols: ['stripe_checkout', 'account_credits'],
         x402Config: {
-            network: 'base-mainnet',
-            token: 'USDC',
-            wallet: '0xAgentCacheMasterWallet',
-            amountPer10k: '0.01'
+            enabled: false,
+            status: 'disabled',
+            reason: 'Machine-to-machine settlement is unavailable. Use an authenticated API key and the supported billing flow.'
         },
         monetization: getAgenticMonetizationSummary(),
         services: filtered.map(s => ({
@@ -641,6 +642,37 @@ catalogRouter.get('/tool-shed', (c) => {
 });
 
 /**
+ * GET /api/catalog/requests
+ * List service requests. Admin token required.
+ */
+catalogRouter.get('/requests', async (c) => {
+    const authError = await authenticateAdmin(c);
+    if (authError) return authError;
+
+    const status = c.req.query('status');
+    const agentId = c.req.query('agentId');
+    const limit = c.req.query('limit') ? parseInt(c.req.query('limit')!, 10) : 50;
+
+    try {
+        let query = db.select().from(serviceRequests);
+        if (status) {
+            query = query.where(eq(serviceRequests.status, status));
+        }
+        if (agentId) {
+            query = query.where(eq(serviceRequests.agentId, agentId));
+        }
+
+        const rows = await query
+            .orderBy(desc(serviceRequests.createdAt))
+            .limit(limit);
+
+        return c.json({ count: rows.length, requests: rows });
+    } catch {
+        return c.json({ count: 0, requests: [] });
+    }
+});
+
+/**
  * GET /api/catalog/:id
  * Full detail for a specific service (public)
  */
@@ -670,6 +702,16 @@ catalogRouter.post('/request', async (c) => {
             return c.json({ error: 'serviceId and title are required' }, 400);
         }
 
+        const isAgentRunAudit = config?.offer === AGENT_RUN_AUDIT.id;
+        if (isAgentRunAudit && (config?.scopeAcknowledged !== true || config?.scopeVersion !== AGENT_RUN_AUDIT.scopeVersion)) {
+            return c.json({ error: 'Please review and acknowledge the current audit scope before submitting.' }, 400);
+        }
+        if (isAgentRunAudit
+            && process.env.VERCEL_ENV === 'preview'
+            && process.env.AGENT_AUDIT_PREVIEW_INTAKE_ENABLED !== 'true') {
+            return c.json({ error: 'Audit intake is disabled in Preview until isolated storage is confirmed.' }, 503);
+        }
+
         // Validate service exists
         if (!SERVICE_MAP.has(serviceId) && serviceId !== 'custom') {
             return c.json({
@@ -686,7 +728,9 @@ catalogRouter.post('/request', async (c) => {
             title,
             description: description || null,
             status: 'open',
-            config: config || {},
+            config: isAgentRunAudit
+                ? { ...config, scopeAcknowledgedAt: now.toISOString() }
+                : (config || {}),
             createdAt: now,
             updatedAt: now
         }).returning();
@@ -698,41 +742,10 @@ catalogRouter.post('/request', async (c) => {
             requestId: inserted?.id || 'pending',
             status: 'open',
             message: 'Service request submitted. Our team + agents will review and propose a configuration.',
-            trackEndpoint: 'GET /api/catalog/requests'
+            trackEndpoint: 'GET /api/catalog/requests (admin token required)'
         }, 201);
     } catch (err: any) {
         return c.json({ error: err.message }, 500);
-    }
-});
-
-/**
- * GET /api/catalog/requests
- * List service requests. Optional ?status= and ?agentId= filters.
- */
-catalogRouter.get('/requests', async (c) => {
-    const status = c.req.query('status');
-    const agentId = c.req.query('agentId');
-    const limit = c.req.query('limit') ? parseInt(c.req.query('limit')!, 10) : 50;
-
-    try {
-        let query = db.select().from(serviceRequests);
-        if (status) {
-            query = query.where(eq(serviceRequests.status, status));
-        }
-        if (agentId) {
-            query = query.where(eq(serviceRequests.agentId, agentId));
-        }
-
-        const rows = await query
-            .orderBy(desc(serviceRequests.createdAt))
-            .limit(limit);
-
-        return c.json({
-            count: rows.length,
-            requests: rows
-        });
-    } catch {
-        return c.json({ count: 0, requests: [] });
     }
 });
 

@@ -345,10 +345,9 @@ ontologyRouter.get('/openapi.json', async (c) => {
         components: {
             securitySchemes: {
                 apiKey: { type: 'apiKey', in: 'header', name: 'X-API-Key' },
-                x402: { type: 'apiKey', in: 'header', name: 'Preauthorization', description: 'x402 agentic payment receipt' },
             },
         },
-        security: [{ apiKey: [] }, { x402: [] }],
+        security: [{ apiKey: [] }],
     };
 
     return c.json(spec);

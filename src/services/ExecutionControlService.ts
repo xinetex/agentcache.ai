@@ -9,6 +9,8 @@ import type { SharedReceiptEnvelope, SharedReceiptVerdict } from '../contracts/s
 import { redis } from '../lib/redis.js';
 import { buildSignedOntologyProvenance, type SignedOntologyProvenance } from './OntologyProvenanceService.js';
 import { memoryFabricPolicyService, type MemoryFabricPolicy } from './MemoryFabricPolicyService.js';
+import { executionDecisionAuditService } from './ExecutionDecisionAuditService.js';
+import { executionControlRecordService, type ExecutionControlRecordType } from './ExecutionControlRecordService.js';
 
 const RETENTION_SECONDS = 90 * 24 * 60 * 60;
 const CONTEXT_PACK_INDEX_KEY = 'execution:context-packs:index';
@@ -84,6 +86,7 @@ export interface ExecutionRunRecord {
   completedReviewerRoles: Array<ReviewerRole | string>;
   receiptId: string;
   createdBy?: string | null;
+  createdByActorPrincipalId?: string | null;
   createdAt: string;
   completedAt?: string | null;
   inputPayload: Record<string, unknown>;
@@ -94,6 +97,7 @@ export interface ExecutionRunRecord {
 export interface ExecutionReviewRecord {
   id: string;
   executionRunId: string;
+  reviewerPrincipalId?: string | null;
   reviewerRole: ReviewerRole | string;
   verdict: SharedReceiptVerdict;
   summary?: string | null;
@@ -110,6 +114,7 @@ export interface ExecutionGateRecord {
   status: ExecutionGateStatus;
   reason?: string | null;
   decidedBy?: string | null;
+  decidedByPrincipalId?: string | null;
   decisionNote?: string | null;
   receiptId?: string | null;
   createdAt: string;
@@ -161,6 +166,7 @@ interface StartExecutionRunInput {
 
 interface RecordExecutionReviewInput {
   runId: string;
+  reviewerPrincipalId?: string | null;
   reviewerRole: ReviewerRole | string;
   verdict: SharedReceiptVerdict;
   summary?: string | null;
@@ -171,13 +177,16 @@ interface RecordExecutionReviewInput {
 interface DecideExecutionGateInput {
   gateId: string;
   decision: 'approved' | 'rejected';
+  actorRole?: string | null;
   decidedBy?: string | null;
+  decidedByPrincipalId?: string | null;
   note?: string | null;
 }
 
 interface AdvanceExecutionPhaseInput {
   runId: string;
   phase: string;
+  actorPrincipalId?: string | null;
 }
 
 function contextPackKey(id: string) {
@@ -198,6 +207,18 @@ function executionReviewKey(id: string) {
 
 function executionGateKey(id: string) {
   return `execution:gate:${id}`;
+}
+
+function persistAndCache(
+  recordType: ExecutionControlRecordType,
+  recordId: string,
+  key: string,
+  value: object,
+  ownerPrincipalId?: string | null,
+  organizationId?: string | null,
+) {
+  return executionControlRecordService.upsert({ recordType, recordId, ownerPrincipalId, organizationId, payload: value })
+    .then(() => redis.setex(key, RETENTION_SECONDS, JSON.stringify(value)));
 }
 
 function packVersionCounterKey(packId: string) {
@@ -252,6 +273,19 @@ function defaultReviewerRolesForPolicy(policy: MemoryFabricPolicy): Array<Review
   return ['critical'];
 }
 
+function resolveReviewerRoles(
+  policy: MemoryFabricPolicy,
+  requestedRoles?: Array<ReviewerRole | string> | null,
+): Array<ReviewerRole | string> {
+  const defaults = defaultReviewerRolesForPolicy(policy);
+  if (requestedRoles == null) return defaults;
+  const normalized = normalizeRoleList(requestedRoles);
+  if (normalized.length === 0 && (policy.evidenceMode === 'audit' || policy.evidenceMode === 'clinical')) {
+    return defaults;
+  }
+  return normalized;
+}
+
 function defaultWorkflowTemplate(policy: MemoryFabricPolicy): ExecutionWorkflowTemplate {
   if (policy.evidenceMode === 'clinical') return 'regulated_release';
   if (policy.evidenceMode === 'audit') return 'policy_review';
@@ -273,9 +307,21 @@ function getVerticalSku(policyProfile?: Record<string, unknown> | null): string 
 
 function aggregateVerdict(reviews: ExecutionReviewRecord[]): SharedReceiptVerdict {
   if (reviews.some((review) => review.verdict === 'BLOCK')) return 'BLOCK';
-  if (reviews.some((review) => review.verdict === 'REVIEW')) return 'REVIEW';
-  if (reviews.some((review) => review.verdict === 'PASS')) return 'PASS';
+  const latestByRole = new Map<string, ExecutionReviewRecord>();
+  for (const review of [...reviews].sort((a, b) => a.createdAt.localeCompare(b.createdAt))) {
+    latestByRole.set(String(review.reviewerRole).trim(), review);
+  }
+  if ([...latestByRole.values()].some((review) => review.verdict === 'REVIEW')) return 'REVIEW';
+  if (latestByRole.size > 0 && [...latestByRole.values()].every((review) => review.verdict === 'PASS')) return 'PASS';
   return 'INFO';
+}
+
+function latestReviewByRole(reviews: ExecutionReviewRecord[]): Map<string, ExecutionReviewRecord> {
+  const latestByRole = new Map<string, ExecutionReviewRecord>();
+  for (const review of [...reviews].sort((a, b) => a.createdAt.localeCompare(b.createdAt))) {
+    latestByRole.set(String(review.reviewerRole).trim(), review);
+  }
+  return latestByRole;
 }
 
 function normalizeRoleList(roles?: Array<ReviewerRole | string> | null): string[] {
@@ -291,7 +337,10 @@ function determineWorkflowState(
   reviews: ExecutionReviewRecord[],
 ): Pick<ExecutionRunRecord, 'status' | 'currentPhase' | 'completedPhases' | 'completedReviewerRoles' | 'reviewVerdict' | 'completedAt' | 'notes'> {
   const aggregatedVerdict = aggregateVerdict(reviews);
-  const completedReviewerRoles = Array.from(new Set(reviews.map((review) => String(review.reviewerRole).trim()).filter(Boolean)));
+  const latestByRole = latestReviewByRole(reviews);
+  const completedReviewerRoles = [...latestByRole.entries()]
+    .filter(([, review]) => review.verdict === 'PASS')
+    .map(([role]) => role);
   const missingReviewerRoles = run.requiredReviewerRoles.filter((role) => !completedReviewerRoles.includes(role));
   const notes = [...run.notes];
 
@@ -307,7 +356,7 @@ function determineWorkflowState(
     };
   }
 
-  if (missingReviewerRoles.length > 0 || aggregatedVerdict === 'REVIEW') {
+  if (missingReviewerRoles.length > 0 || aggregatedVerdict !== 'PASS') {
     return {
       status: 'awaiting_review',
       currentPhase: 'review',
@@ -372,8 +421,7 @@ export class ExecutionControlService {
       tierId: input.tierId || undefined,
     });
     const workflowTemplate = input.workflowTemplate || defaultWorkflowTemplate(policy);
-    const requestedReviewerRoles = normalizeRoleList(input.reviewerRoles);
-    const reviewerRoles = requestedReviewerRoles.length > 0 ? requestedReviewerRoles : defaultReviewerRolesForPolicy(policy);
+    const reviewerRoles = resolveReviewerRoles(policy, input.reviewerRoles);
     const requestedWorkflowPhases = normalizePhaseList(input.workflowPhases);
     const workflowPhases = requestedWorkflowPhases.length > 0
       ? requestedWorkflowPhases
@@ -473,8 +521,8 @@ export class ExecutionControlService {
     });
 
     await Promise.all([
-      redis.setex(contextPackKey(packId), RETENTION_SECONDS, JSON.stringify(pack)),
-      redis.setex(contextPackVersionKey(versionId), RETENTION_SECONDS, JSON.stringify(version)),
+      persistAndCache('context_pack', packId, contextPackKey(packId), pack, pack.createdBy, pack.orgId),
+      persistAndCache('context_pack_version', versionId, contextPackVersionKey(versionId), version, pack.createdBy, pack.orgId),
       redis.zadd(CONTEXT_PACK_INDEX_KEY, { score: Date.parse(createdAt) || Date.now(), member: packId }),
       redis.zadd(CONTEXT_PACK_VERSION_INDEX_KEY, { score: Date.parse(createdAt) || Date.now(), member: versionId }),
       redis.set(packVersionCounterKey(packId), String(version.version)),
@@ -522,8 +570,7 @@ export class ExecutionControlService {
       tierId: input.tierId || undefined,
     });
     const workflowTemplate = input.workflowTemplate || defaultWorkflowTemplate(policy);
-    const requestedReviewerRoles = normalizeRoleList(input.reviewerRoles);
-    const reviewerRoles = requestedReviewerRoles.length > 0 ? requestedReviewerRoles : defaultReviewerRolesForPolicy(policy);
+    const reviewerRoles = resolveReviewerRoles(policy, input.reviewerRoles);
     const requestedWorkflowPhases = normalizePhaseList(input.workflowPhases);
     const workflowPhases = requestedWorkflowPhases.length > 0
       ? requestedWorkflowPhases
@@ -618,8 +665,8 @@ export class ExecutionControlService {
     });
 
     await Promise.all([
-      redis.setex(contextPackKey(packId), RETENTION_SECONDS, JSON.stringify(updatedPack)),
-      redis.setex(contextPackVersionKey(versionId), RETENTION_SECONDS, JSON.stringify(version)),
+      persistAndCache('context_pack', packId, contextPackKey(packId), updatedPack, updatedPack.createdBy, updatedPack.orgId),
+      persistAndCache('context_pack_version', versionId, contextPackVersionKey(versionId), version, pack.createdBy, pack.orgId),
       redis.zadd(CONTEXT_PACK_VERSION_INDEX_KEY, { score: Date.parse(createdAt) || Date.now(), member: versionId }),
       redis.zadd(packVersionsSetKey(packId), { score: nextVersion, member: versionId }),
       redis.expire(packVersionsSetKey(packId), RETENTION_SECONDS),
@@ -630,17 +677,23 @@ export class ExecutionControlService {
 
   async getContextPack(id: string): Promise<ContextPackRecord | null> {
     const raw = await redis.get(contextPackKey(id));
-    if (!raw) return null;
-    return typeof raw === 'string' ? JSON.parse(raw) as ContextPackRecord : raw as ContextPackRecord;
+    if (raw) return typeof raw === 'string' ? JSON.parse(raw) as ContextPackRecord : raw as ContextPackRecord;
+    const durable = await executionControlRecordService.get('context_pack', id);
+    if (!durable) return null;
+    await redis.setex(contextPackKey(id), RETENTION_SECONDS, JSON.stringify(durable));
+    return durable as ContextPackRecord;
   }
 
   async getContextPackVersion(id: string): Promise<ContextPackVersionRecord | null> {
     const raw = await redis.get(contextPackVersionKey(id));
-    if (!raw) return null;
-    return typeof raw === 'string' ? JSON.parse(raw) as ContextPackVersionRecord : raw as ContextPackVersionRecord;
+    if (raw) return typeof raw === 'string' ? JSON.parse(raw) as ContextPackVersionRecord : raw as ContextPackVersionRecord;
+    const durable = await executionControlRecordService.get('context_pack_version', id);
+    if (!durable) return null;
+    await redis.setex(contextPackVersionKey(id), RETENTION_SECONDS, JSON.stringify(durable));
+    return durable as ContextPackVersionRecord;
   }
 
-  async startRun(input: StartExecutionRunInput, context?: { principalId?: string | null; orgId?: string | null }) {
+  async startRun(input: StartExecutionRunInput, context?: { principalId?: string | null; actorPrincipalId?: string | null; orgId?: string | null }) {
     const pack = await this.getContextPack(input.contextPackId);
     if (!pack) {
       throw new Error('Context pack not found.');
@@ -655,9 +708,13 @@ export class ExecutionControlService {
     const runId = `run_${randomUUID()}`;
     const createdAt = new Date().toISOString();
     const gateRequired = shouldRequireHumanGate(input.finalAction, input.requireHumanGate, version.policy);
-    const phasePlan = normalizePhaseList(version.workflowPhases).length > 0
+    const configuredPhasePlan = normalizePhaseList(version.workflowPhases).length > 0
       ? normalizePhaseList(version.workflowPhases)
       : defaultWorkflowPhases(version.workflowTemplate, gateRequired);
+    const requiredReviewerRoles = normalizeRoleList(version.reviewerRoles);
+    const phasePlan = configuredPhasePlan.filter((phase) =>
+      (phase !== 'review' || requiredReviewerRoles.length > 0)
+      && (phase !== 'gate' || gateRequired));
     const initialPhase = phasePlan[0] || 'draft';
     const gateId = gateRequired ? `gate_${randomUUID()}` : null;
     const run: ExecutionRunRecord = {
@@ -673,10 +730,11 @@ export class ExecutionControlService {
       reviewVerdict: 'INFO',
       gateStatus: gateRequired ? 'pending' : 'not_required',
       gateId,
-      requiredReviewerRoles: normalizeRoleList(version.reviewerRoles),
+      requiredReviewerRoles,
       completedReviewerRoles: [],
       receiptId: `rcpt_${runId}`,
       createdBy: context?.principalId || null,
+      createdByActorPrincipalId: context?.actorPrincipalId || context?.principalId || null,
       createdAt,
       completedAt: null,
       inputPayload: input.inputPayload || {},
@@ -742,18 +800,26 @@ export class ExecutionControlService {
     });
 
     const writes = [
-      redis.setex(executionRunKey(runId), RETENTION_SECONDS, JSON.stringify(run)),
+      persistAndCache('run', runId, executionRunKey(runId), run, run.createdBy, run.orgId),
       redis.zadd(RUN_INDEX_KEY, { score: Date.parse(createdAt) || Date.now(), member: runId }),
       redis.expire(RUN_INDEX_KEY, RETENTION_SECONDS),
     ];
 
     if (gate) {
-      writes.push(redis.setex(executionGateKey(gate.id), RETENTION_SECONDS, JSON.stringify(gate)));
+      writes.push(persistAndCache('gate', gate.id, executionGateKey(gate.id), gate, run.createdBy, run.orgId));
       writes.push(redis.zadd(GATE_INDEX_KEY, { score: Date.parse(createdAt) || Date.now(), member: gate.id }));
       writes.push(redis.expire(GATE_INDEX_KEY, RETENTION_SECONDS));
     }
 
     await Promise.all(writes);
+
+    await executionDecisionAuditService.record({
+      eventType: 'run_started', executionRunId: run.id, contextPackId: pack.id,
+      contextPackVersionId: version.id, ownerPrincipalId: run.createdBy || null,
+      actorPrincipalId: run.createdByActorPrincipalId || run.createdBy || null, organizationId: run.orgId || null,
+      actorRole: 'workflow_owner', verdict: null, status: run.status, phase: run.currentPhase,
+      summary: null, findings: [], confidence: null, receiptId: run.receiptId,
+    });
 
     return { run, gate, pack, version, receipt };
   }
@@ -762,6 +828,16 @@ export class ExecutionControlService {
     const run = await this.getRun(input.runId);
     if (!run) {
       throw new Error('Execution run not found.');
+    }
+    if (!run.requiredReviewerRoles.includes(input.reviewerRole)) {
+      throw new Error('Reviewer role is not required for this execution run.');
+    }
+    if (input.reviewerPrincipalId && run.createdByActorPrincipalId === input.reviewerPrincipalId) {
+      throw new Error('The workflow owner cannot review their own execution run.');
+    }
+    const existingReviews = await this.listReviews(run.id);
+    if (input.reviewerPrincipalId && existingReviews.some((review) => review.reviewerPrincipalId === input.reviewerPrincipalId)) {
+      throw new Error('A reviewer cannot fill multiple reviewer roles on the same run.');
     }
     const version = await this.getContextPackVersion(run.contextPackVersionId);
     if (!version) {
@@ -773,6 +849,7 @@ export class ExecutionControlService {
     const review: ExecutionReviewRecord = {
       id: reviewId,
       executionRunId: run.id,
+      reviewerPrincipalId: input.reviewerPrincipalId || null,
       reviewerRole: input.reviewerRole,
       verdict: input.verdict,
       summary: input.summary || null,
@@ -783,7 +860,7 @@ export class ExecutionControlService {
     };
 
     await Promise.all([
-      redis.setex(executionReviewKey(review.id), RETENTION_SECONDS, JSON.stringify(review)),
+      persistAndCache('review', review.id, executionReviewKey(review.id), review, run.createdBy, run.orgId),
       redis.zadd(REVIEW_INDEX_KEY, { score: Date.parse(createdAt) || Date.now(), member: review.id }),
       redis.zadd(runReviewsSetKey(run.id), { score: Date.parse(createdAt) || Date.now(), member: review.id }),
       redis.expire(REVIEW_INDEX_KEY, RETENTION_SECONDS),
@@ -806,7 +883,16 @@ export class ExecutionControlService {
       ],
     };
 
-    await redis.setex(executionRunKey(run.id), RETENTION_SECONDS, JSON.stringify(updatedRun));
+    await persistAndCache('run', run.id, executionRunKey(run.id), updatedRun, run.createdBy, run.orgId);
+
+    await executionDecisionAuditService.record({
+      eventType: 'review_recorded', executionRunId: run.id, contextPackId: run.contextPackId,
+      contextPackVersionId: run.contextPackVersionId, ownerPrincipalId: run.createdBy || null,
+      actorPrincipalId: review.reviewerPrincipalId || null, organizationId: run.orgId || null,
+      actorRole: String(review.reviewerRole), verdict: review.verdict, status: updatedRun.status,
+      summary: review.summary || null, findings: review.findings || [], confidence: review.confidence ?? null,
+      phase: updatedRun.currentPhase, receiptId: review.receiptId,
+    });
 
     const receipt = buildExecutionReviewReceipt({
       receiptId: review.receiptId,
@@ -834,6 +920,7 @@ export class ExecutionControlService {
       },
       refs: {
         executionRunId: run.id,
+        reviewerPrincipalId: review.reviewerPrincipalId,
       },
       payload: {
         summary: input.summary || null,
@@ -856,6 +943,18 @@ export class ExecutionControlService {
     if (!run) {
       throw new Error('Execution run not found.');
     }
+    if (gate.status !== 'pending') {
+      throw new Error('Execution gate has already been decided.');
+    }
+    if (input.decision === 'approved') {
+      if (run.currentPhase !== 'gate' || (run.requiredReviewerRoles.length > 0 && run.reviewVerdict !== 'PASS')) {
+        throw new Error('Gate approval requires the run to reach the gate with a PASS review verdict.');
+      }
+      const missingReviewerRoles = run.requiredReviewerRoles.filter((role) => !run.completedReviewerRoles.includes(role));
+      if (missingReviewerRoles.length > 0) {
+        throw new Error(`Gate approval requires completed reviews for: ${missingReviewerRoles.join(', ')}.`);
+      }
+    }
     const version = await this.getContextPackVersion(run.contextPackVersionId);
     if (!version) {
       throw new Error('Context pack version not found.');
@@ -866,6 +965,7 @@ export class ExecutionControlService {
       ...gate,
       status: input.decision,
       decidedBy: input.decidedBy || null,
+      decidedByPrincipalId: input.decidedByPrincipalId || null,
       decisionNote: input.note || null,
       decidedAt,
       receiptId: `rcpt_${gate.id}_${input.decision}`,
@@ -873,22 +973,34 @@ export class ExecutionControlService {
     const updatedRun: ExecutionRunRecord = {
       ...run,
       gateStatus: input.decision,
-      status: input.decision === 'approved' && run.reviewVerdict !== 'BLOCK' ? 'completed' : 'blocked',
-      currentPhase: input.decision === 'approved' && run.reviewVerdict !== 'BLOCK' ? 'completed' : 'blocked',
-      completedPhases: input.decision === 'approved' && run.reviewVerdict !== 'BLOCK'
+      status: input.decision === 'approved' ? 'completed' : 'blocked',
+      currentPhase: input.decision === 'approved' ? 'completed' : 'blocked',
+      completedPhases: input.decision === 'approved'
         ? Array.from(new Set([...run.completedPhases, 'gate', 'finalize']))
         : run.completedPhases,
-      completedAt: input.decision === 'approved' && run.reviewVerdict !== 'BLOCK' ? decidedAt : run.completedAt,
+      completedAt: input.decision === 'approved' ? decidedAt : run.completedAt,
       notes: [
         ...run.notes,
         `Gate ${gate.id} ${input.decision} by ${input.decidedBy || 'operator'}.`,
       ],
     };
 
-    await Promise.all([
-      redis.setex(executionGateKey(gate.id), RETENTION_SECONDS, JSON.stringify(updatedGate)),
-      redis.setex(executionRunKey(run.id), RETENTION_SECONDS, JSON.stringify(updatedRun)),
-    ]);
+    const claimedDecision = await executionControlRecordService.transition({
+      recordType: 'gate', recordId: gate.id, expectedStatus: 'pending',
+      ownerPrincipalId: run.createdBy, organizationId: run.orgId, payload: updatedGate,
+    });
+    if (!claimedDecision) throw new Error('Execution gate has already been decided.');
+    await redis.setex(executionGateKey(gate.id), RETENTION_SECONDS, JSON.stringify(updatedGate));
+    await persistAndCache('run', run.id, executionRunKey(run.id), updatedRun, run.createdBy, run.orgId);
+
+    await executionDecisionAuditService.record({
+      eventType: 'gate_decided', executionRunId: run.id, contextPackId: run.contextPackId,
+      contextPackVersionId: run.contextPackVersionId, ownerPrincipalId: run.createdBy || null,
+      actorPrincipalId: input.decidedByPrincipalId || null, organizationId: run.orgId || null,
+      actorRole: input.actorRole || 'unspecified', verdict: input.decision === 'approved' ? 'PASS' : 'BLOCK',
+      summary: input.note || null, findings: [], confidence: null,
+      status: updatedRun.status, phase: updatedRun.currentPhase, receiptId: updatedGate.receiptId || null,
+    });
 
     const receipt = buildGateDecisionReceipt({
       receiptId: updatedGate.receiptId!,
@@ -916,7 +1028,9 @@ export class ExecutionControlService {
       },
       refs: {
         executionRunId: updatedRun.id,
-        decidedBy: input.decidedBy || null,
+        decidedByLabel: input.decidedBy || null,
+        decidedByPrincipalId: input.decidedByPrincipalId || null,
+        decidedByRole: input.actorRole || 'unspecified',
       },
       payload: {
         decisionNote: input.note || null,
@@ -952,12 +1066,28 @@ export class ExecutionControlService {
         completedPhases: Array.from(new Set([...run.completedPhases, run.currentPhase])),
         notes: [...run.notes, `Advanced workflow to review phase.`],
       };
-      await redis.setex(executionRunKey(run.id), RETENTION_SECONDS, JSON.stringify(updatedRun));
+      await persistAndCache('run', run.id, executionRunKey(run.id), updatedRun, run.createdBy, run.orgId);
+      await executionDecisionAuditService.record({
+        eventType: 'phase_advanced', executionRunId: run.id, contextPackId: run.contextPackId,
+        contextPackVersionId: run.contextPackVersionId, ownerPrincipalId: run.createdBy || null,
+        actorPrincipalId: input.actorPrincipalId || run.createdByActorPrincipalId || run.createdBy || null, organizationId: run.orgId || null,
+        actorRole: 'workflow_owner', verdict: null, status: updatedRun.status,
+        summary: null, findings: [], confidence: null, phase: updatedRun.currentPhase, receiptId: run.receiptId,
+      });
       return updatedRun;
     }
 
     if (normalizedTarget === 'gate' && run.gateStatus !== 'pending') {
       throw new Error('This run does not have a pending human gate.');
+    }
+    if (normalizedTarget === 'gate') {
+      if (run.requiredReviewerRoles.length > 0 && run.reviewVerdict !== 'PASS') {
+        throw new Error('The gate requires a PASS review verdict. Resolve all review findings first.');
+      }
+      const missingReviewerRoles = run.requiredReviewerRoles.filter((role) => !run.completedReviewerRoles.includes(role));
+      if (missingReviewerRoles.length > 0) {
+        throw new Error(`The gate requires completed reviews for: ${missingReviewerRoles.join(', ')}.`);
+      }
     }
 
     const updatedRun: ExecutionRunRecord = {
@@ -972,26 +1102,75 @@ export class ExecutionControlService {
       notes: [...run.notes, `Advanced workflow to ${normalizedTarget} phase.`],
     };
 
-    await redis.setex(executionRunKey(run.id), RETENTION_SECONDS, JSON.stringify(updatedRun));
+    await persistAndCache('run', run.id, executionRunKey(run.id), updatedRun, run.createdBy, run.orgId);
+    await executionDecisionAuditService.record({
+      eventType: 'phase_advanced', executionRunId: run.id, contextPackId: run.contextPackId,
+      contextPackVersionId: run.contextPackVersionId, ownerPrincipalId: run.createdBy || null,
+      actorPrincipalId: input.actorPrincipalId || run.createdByActorPrincipalId || run.createdBy || null, organizationId: run.orgId || null,
+      actorRole: 'workflow_owner', verdict: null, status: updatedRun.status,
+      summary: null, findings: [], confidence: null, phase: updatedRun.currentPhase, receiptId: run.receiptId,
+    });
     return updatedRun;
   }
 
   async getRun(id: string): Promise<ExecutionRunRecord | null> {
     const raw = await redis.get(executionRunKey(id));
-    if (!raw) return null;
-    return typeof raw === 'string' ? JSON.parse(raw) as ExecutionRunRecord : raw as ExecutionRunRecord;
+    let run: ExecutionRunRecord | null = raw
+      ? (typeof raw === 'string' ? JSON.parse(raw) as ExecutionRunRecord : raw as ExecutionRunRecord)
+      : await executionControlRecordService.get('run', id) as ExecutionRunRecord | null;
+    if (!run) return null;
+    if (run.gateId && run.gateStatus === 'pending') {
+      const durableGate = await executionControlRecordService.get('gate', run.gateId) as ExecutionGateRecord | null;
+      if (durableGate && durableGate.status !== 'pending') {
+        const reconciledAt = durableGate.decidedAt || new Date().toISOString();
+        run = {
+          ...run,
+          gateStatus: durableGate.status,
+          status: durableGate.status === 'approved' ? 'completed' : 'blocked',
+          currentPhase: durableGate.status === 'approved' ? 'completed' : 'blocked',
+          completedPhases: durableGate.status === 'approved'
+            ? Array.from(new Set([...run.completedPhases, 'gate', 'finalize']))
+            : run.completedPhases,
+          completedAt: durableGate.status === 'approved' ? reconciledAt : run.completedAt,
+          notes: [...run.notes, `Gate ${durableGate.id} ${durableGate.status}; run state reconciled from the durable gate decision.`],
+        };
+        await persistAndCache('run', run.id, executionRunKey(run.id), run, run.createdBy, run.orgId);
+      } else if (raw) {
+        await redis.setex(executionRunKey(id), RETENTION_SECONDS, JSON.stringify(run));
+      }
+    } else if (!raw) {
+      await redis.setex(executionRunKey(id), RETENTION_SECONDS, JSON.stringify(run));
+    }
+    return run;
+  }
+
+  async recordToolInvocation(id: string, invocation: Record<string, unknown>): Promise<ExecutionRunRecord | null> {
+    const run = await this.getRun(id);
+    if (!run) return null;
+    const prior = Array.isArray(run.outputPayload?.toolInvocations) ? run.outputPayload.toolInvocations : [];
+    const updatedRun: ExecutionRunRecord = {
+      ...run,
+      outputPayload: { ...run.outputPayload, toolInvocations: [...prior, invocation].slice(-50) },
+      notes: [...run.notes, `Tool ${String(invocation.tool || 'unknown')} ${String(invocation.status || 'recorded')}.`].slice(-100),
+    };
+    await persistAndCache('run', id, executionRunKey(id), updatedRun, run.createdBy, run.orgId);
+    return updatedRun;
   }
 
   async getGate(id: string): Promise<ExecutionGateRecord | null> {
-    const raw = await redis.get(executionGateKey(id));
-    if (!raw) return null;
-    return typeof raw === 'string' ? JSON.parse(raw) as ExecutionGateRecord : raw as ExecutionGateRecord;
+    const durable = await executionControlRecordService.get('gate', id);
+    if (!durable) return null;
+    await redis.setex(executionGateKey(id), RETENTION_SECONDS, JSON.stringify(durable));
+    return durable as ExecutionGateRecord;
   }
 
   async getReview(id: string): Promise<ExecutionReviewRecord | null> {
     const raw = await redis.get(executionReviewKey(id));
-    if (!raw) return null;
-    return typeof raw === 'string' ? JSON.parse(raw) as ExecutionReviewRecord : raw as ExecutionReviewRecord;
+    if (raw) return typeof raw === 'string' ? JSON.parse(raw) as ExecutionReviewRecord : raw as ExecutionReviewRecord;
+    const durable = await executionControlRecordService.get('review', id);
+    if (!durable) return null;
+    await redis.setex(executionReviewKey(id), RETENTION_SECONDS, JSON.stringify(durable));
+    return durable as ExecutionReviewRecord;
   }
 
   async listReviews(runId: string): Promise<ExecutionReviewRecord[]> {
@@ -1001,7 +1180,15 @@ export class ExecutionControlService {
       const review = await this.getReview(id);
       if (review) reviews.push(review);
     }
-    return reviews;
+    const run = await this.getRun(runId);
+    if (run?.createdBy) {
+      const durable = await executionControlRecordService.listOwned('review', run.createdBy, 100);
+      const knownIds = new Set(reviews.map((review) => review.id));
+      for (const review of durable as ExecutionReviewRecord[]) {
+        if (review.executionRunId === runId && !knownIds.has(review.id)) reviews.push(review);
+      }
+    }
+    return reviews.sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt));
   }
 
   async getRunBundle(id: string): Promise<ExecutionRunBundle | null> {
@@ -1025,24 +1212,40 @@ export class ExecutionControlService {
     };
   }
 
-  async listRuns(limit: number = 25): Promise<ExecutionRunRecord[]> {
+  async listRuns(limit: number = 25, ownerPrincipalId?: string): Promise<ExecutionRunRecord[]> {
     const ids = (await redis.zrange(RUN_INDEX_KEY, 0, -1, { rev: true })).map(String).slice(0, limit);
     const runs: ExecutionRunRecord[] = [];
     for (const id of ids) {
       const run = await this.getRun(id);
       if (run) runs.push(run);
     }
-    return runs;
+    if (ownerPrincipalId) {
+      const durable = await executionControlRecordService.listOwned('run', ownerPrincipalId, limit);
+      const knownIds = new Set(runs.map((run) => run.id));
+      for (const run of durable as ExecutionRunRecord[]) {
+        if (run.createdBy === ownerPrincipalId && !knownIds.has(run.id)) runs.push(run);
+      }
+    }
+    return runs.filter((run) => !ownerPrincipalId || run.createdBy === ownerPrincipalId)
+      .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)).slice(0, limit);
   }
 
-  async listContextPacks(limit: number = 25): Promise<ContextPackRecord[]> {
+  async listContextPacks(limit: number = 25, ownerPrincipalId?: string): Promise<ContextPackRecord[]> {
     const ids = (await redis.zrange(CONTEXT_PACK_INDEX_KEY, 0, -1, { rev: true })).map(String).slice(0, limit);
     const packs: ContextPackRecord[] = [];
     for (const id of ids) {
       const pack = await this.getContextPack(id);
       if (pack) packs.push(pack);
     }
-    return packs;
+    if (ownerPrincipalId) {
+      const durable = await executionControlRecordService.listOwned('context_pack', ownerPrincipalId, limit);
+      const knownIds = new Set(packs.map((pack) => pack.id));
+      for (const pack of durable as ContextPackRecord[]) {
+        if (pack.createdBy === ownerPrincipalId && !knownIds.has(pack.id)) packs.push(pack);
+      }
+    }
+    return packs.filter((pack) => !ownerPrincipalId || pack.createdBy === ownerPrincipalId)
+      .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)).slice(0, limit);
   }
 }
 

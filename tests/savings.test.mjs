@@ -11,6 +11,7 @@ import {
   dollarsSaved,
   summarize,
   round2,
+  parsePlanCostOverride,
 } from '../lib/savings.js';
 
 let passed = 0;
@@ -67,6 +68,15 @@ test('summarize nets gross savings against the plan cost and reports ROI', () =>
   assert.equal(s.netSavedUsd, round2(0.22 - 0.1)); // 0.12
   assert.equal(s.roi, round2(0.22 / 0.1)); // 2.2
   assert.equal(s.byLayer.prefix, 0.09);
+});
+
+test('plan-cost what-if override accepts non-negative finite amounts only', () => {
+  assert.equal(parsePlanCostOverride(null), null);
+  assert.equal(parsePlanCostOverride('0'), 0);
+  assert.equal(parsePlanCostOverride('99.50'), 99.5);
+  for (const value of ['', '-1', 'Infinity', 'NaN', '1000001']) {
+    assert.equal(parsePlanCostOverride(value), undefined, `${value} should be rejected`);
+  }
 });
 
 test('scaled realistic month clears a Pro plan many times over', () => {

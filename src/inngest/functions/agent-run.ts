@@ -5,43 +5,49 @@
  */
 
 /**
- * Background Agent Run — durable, governed, human-in-the-loop execution.
+ * Legacy planning simulation — durable state, budget checks, HITL, and built-in
+ * sandbox helpers. It does not invoke LLM providers or external tools.
  *
- * The platform layer of the reposition. Inngest provides durability (each
+ * This legacy harness is separate from governed provider execution. Inngest
+ * provides durability (each
  * `step.run` is checkpointed and retried), the async wait primitive
  * (`step.waitForEvent` pauses for a human for days at zero compute), and
  * cancellation. ALL decisions come from the pure runtime (lib/agent-runtime.js).
  *
  *   for each proposed step:
  *     context -> loadGovernanceContext()          [ORG spend, not just this run]
- *     gate    -> planStep(policy, run+org, call)  [firewall + loop detector]
+ *     gate    -> planStep(policy, run+org, call)  [budget + loop checks]
  *     pause?  -> signed approval card & waitForEvent('agent/run.approve')
- *     block?  -> stop the runaway before the spend
+ *     block?  -> stop before accounting the declared estimate
  *     sandbox -> executeTool()
- *     execute -> (model call / estimate)
- *     record  -> recordHit(savings ledger)        [verifiable ROI]
+ *     execute -> account caller-declared model/token estimates (no provider call)
+ *     record  -> keep modeled savings on this run only (never global analytics)
  *     persist -> persistRun()                     [durable, queryable, ownable]
  *
  * `cancelOn` is what makes POST /api/agent/cancel real: previously the cancel
  * event was emitted and nothing listened, so the "emergency kill" flipped a
- * database row while the run kept spending.
+ * database row while the simulation continued.
  */
 
 import { neon } from '@neondatabase/serverless';
 import { inngest } from '../client.js';
 import { initRun, planStep, reduceRun, isTerminal, RUN, checkpoint } from '../../../lib/agent-runtime.js';
-import { recordHit } from '../../../lib/savings-recorder.js';
 import { executeTool } from '../../../lib/agent-sandbox.js';
-import { buildApprovalCard, dispatchNotification } from '../../../lib/hitl-notifier.js';
-import { signApprovalToken, isValidRunId } from '../../../lib/run-authz.js';
+import { isValidRunId } from '../../../lib/run-authz.js';
 import { loadGovernanceContext, mergeRunContext, persistRun, ensureAgentRunSchema } from '../../../lib/run-store.js';
 
 const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+const SIMULATION_METADATA = {
+  mode: 'planning_simulation',
+  providerCallsEnabled: false,
+  costBasis: 'caller_declared_estimates',
+  savingsBasis: 'caller_declared_cache_fields',
+};
 
 export const agentRun = inngest.createFunction(
   {
     id: 'agent-run',
-    name: 'Background Agent Run (governed + HITL + sandbox)',
+    name: 'Background Planning Simulation (budgeted + HITL + built-ins)',
     // EMERGENCY KILL. Without this, agent/run.cancel was a no-op.
     cancelOn: [{ event: 'agent/run.cancel', if: 'async.data.runId == event.data.runId' }],
   },
@@ -55,19 +61,18 @@ export const agentRun = inngest.createFunction(
       goal = '',
       steps = [],
       approvalThresholdUsd = 0,
-      webhookUrl = null,
     } = event.data as any;
 
     // runId is interpolated into the CEL match below — refuse anything that
     // could escape the string literal and widen the match to other runs.
     if (!isValidRunId(runId)) {
-      return { status: 'rejected', reason: 'invalid runId', runId: String(runId).slice(0, 64) };
+      return { ...SIMULATION_METADATA, status: 'rejected', reason: 'invalid runId', runId: String(runId).slice(0, 64) };
     }
 
     let run = initRun({ runId, agentId, namespace, goal });
 
-    // Org-wide governance posture, loaded durably once. This is the difference
-    // between "this run has spent $0" and "this ORG has spent $3,900 today".
+    // Load the account's stored policy and usage baseline. Per-step costs below
+    // remain caller-declared simulation estimates, not provider spend.
     const ctx: any = await step.run('load-context', async () => {
       if (!sql) return { policy: {}, org: { spentUsd: 0, usedRequests: 0, series: [] } };
       await ensureAgentRunSchema(sql);
@@ -96,35 +101,15 @@ export const agentRun = inngest.createFunction(
       if (run.status === RUN.BLOCKED) {
         await save({ _tag: `blocked-${i}`, reasons: plan.reasons });
         return {
-          runId, status: run.status, reason: plan.reasons,
+          ...SIMULATION_METADATA, runId, status: run.status, reason: plan.reasons,
           stepsExecuted: run.stepsExecuted, spentUsd: run.spentUsd, savedUsd: run.savedUsd,
           checkpoint: checkpoint(run),
         };
       }
 
-      // 3) ASYNC HITL — pause for a human. The approval card carries SIGNED,
-      //    expiring, single-decision links so a Slack button is safe to click
-      //    without an API key and useless to anyone it wasn't issued for.
+      // 3) ASYNC HITL — pause for an authenticated human decision via API.
       if (run.status === RUN.PAUSED) {
         await save({ _tag: `paused-${i}`, reasons: plan.reasons });
-        if (webhookUrl) {
-          await step.run(`notify-hitl-${i}`, async () => {
-            const secret = process.env.HITL_SIGNING_KEY || '';
-            let tokens: any = null;
-            if (secret) {
-              tokens = {
-                approve: await signApprovalToken(secret, { runId, organizationId, step: i, decision: 'approve' }),
-                reject: await signApprovalToken(secret, { runId, organizationId, step: i, decision: 'reject' }),
-              };
-            }
-            const card = buildApprovalCard(run, run.pending, {
-              baseUrl: process.env.PUBLIC_APP_URL || 'https://agentcache.ai',
-              tokens,
-            });
-            return dispatchNotification(webhookUrl, card);
-          });
-        }
-
         const approval: any = await step.waitForEvent(`await-approval-${i}`, {
           event: 'agent/run.approve',
           timeout: '7d',
@@ -136,7 +121,7 @@ export const agentRun = inngest.createFunction(
         if (run.status === RUN.KILLED) {
           await save({ _tag: `killed-${i}`, reasons: ['human rejected or approval timed out'] });
           return {
-            runId, status: run.status, reason: 'human rejected or approval timed out',
+            ...SIMULATION_METADATA, runId, status: run.status, reason: 'human rejected or approval timed out',
             stepsExecuted: run.stepsExecuted, checkpoint: checkpoint(run),
           };
         }
@@ -148,7 +133,7 @@ export const agentRun = inngest.createFunction(
         run = reduceRun(run, { type: 'TOOL_EXECUTE', toolCall: call.toolCall, toolResult }, new Date().toISOString());
       }
 
-      // 5) EXECUTE — model/tool charge & token accounting.
+      // 5) ACCOUNT — record the caller-declared estimate; no model provider is called.
       const result = await step.run(`execute-${i}`, async () => ({
         // Default to a PRICED model id. 'claude-3-5-sonnet' is absent from the
         // price table, so an unspecified step was silently costed at $0 —
@@ -162,20 +147,8 @@ export const agentRun = inngest.createFunction(
       }));
       run = reduceRun(run, { type: 'EXECUTE', result, reasoningDelta: call.remember || null }, new Date().toISOString());
 
-      // 6) RECORD — persist any savings on this step to the verifiable ledger.
-      if (result.layer && sql) {
-        await step.run(`record-${i}`, () =>
-          recordHit({ sql }, {
-            organizationId, namespace, agentId,
-            event: {
-              layer: result.layer, model: result.model,
-              inputTokens: result.inputTokens, outputTokens: result.outputTokens,
-              prefixTokens: result.prefixTokens,
-            },
-          }).catch(() => null));
-      }
-
-      // 7) PERSIST — the run is now queryable and its spend is real.
+      // 6) PERSIST — keep modeled values on this simulation only. Never write
+      // caller-declared cache savings into organization-wide savings analytics.
       await save({ _tag: `step-${i}` });
 
       if (isTerminal(run)) break;
@@ -185,6 +158,7 @@ export const agentRun = inngest.createFunction(
     await save({ _tag: 'complete' });
 
     return {
+      ...SIMULATION_METADATA,
       runId, status: run.status, stepsExecuted: run.stepsExecuted,
       spentUsd: run.spentUsd, savedUsd: run.savedUsd,
       reasoning: run.reasoning, toolResults: run.toolResults,

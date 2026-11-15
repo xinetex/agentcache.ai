@@ -192,10 +192,9 @@
               <div class="text-xs font-mono tracking-[0.2em] uppercase text-cyan-400 mb-3">Save · Govern · Remember</div>
               <h1 class="text-4xl font-bold mb-6 text-white">Documentation</h1>
               <p class="text-xl text-slate-300 leading-relaxed mb-8">
-                AgentCache is the <strong>cost-governance and safety control plane for AI agents</strong>. It sits in
-                front of any LLM workload and does four things gateways don't: cuts spend with savings you can verify to
-                the dollar, puts a budget, quota, anomaly guard and kill-switch around autonomous agents, lets them
-                resume reasoning across runs, and runs durable, human-in-the-loop background jobs.
+                AgentCache governs agent tool actions with policy checks, owned provider connections, approval gates,
+                and reviewable execution history. Caching and memory support repeated work; savings reports are
+                modeled from recorded events and pricing assumptions.
               </p>
               <div class="glass rounded-xl p-6 border border-slate-800">
                 <div class="grid md:grid-cols-2 gap-6">
@@ -204,9 +203,9 @@
                       <i data-lucide="dollar-sign" class="w-5 h-5 text-emerald-400"></i>
                     </div>
                     <div>
-                      <h4 class="font-medium text-white mb-1">Verifiable savings</h4>
-                      <p class="text-sm text-slate-400">Every cache hit is priced at current provider rates and booked to
-                        an immutable ledger. Net dollars saved, not a vanity percentage.</p>
+                      <h4 class="font-medium text-white mb-1">Cache measurement</h4>
+                      <p class="text-sm text-slate-400">Review recorded cache events and modeled spend avoided using
+                        configured or default model rates. Compare estimates with your provider billing records.</p>
                     </div>
                   </div>
                   <div class="flex gap-3">
@@ -363,7 +362,7 @@ X-Prefix-Tokens: 18000
                 </div>
                 Governance gate
               </h2>
-              <p class="text-slate-300 mb-4">The thing no gateway does. Before an expensive call, ask whether it's allowed
+              <p class="text-slate-300 mb-4">Before an expensive call, ask whether it's allowed
                 under this account's budget, request quota, spend-anomaly guard and kill-switch. A well-behaved agent
                 calls this first and stops when <code>allow</code> is false. A denial is a normal governed outcome —
                 still <code>200</code>, never an error.</p>
@@ -412,9 +411,11 @@ GET  /api/governance/status?days=30   # posture + spend/quota + anomaly + series
                 </div>
                 Savings &amp; ROI
               </h2>
-              <p class="text-slate-300 mb-4">The verifiable number: net dollars saved over a window, with ROI and a
-                breakdown by cache layer and model. Priced from real hits at current provider rates — unknown models
-                return $0 so savings are never overstated.</p>
+              <p class="text-slate-300 mb-4">The endpoint summarizes recorded savings events over a window, with modeled
+                ROI and breakdowns by cache layer and model. Dollar values use configured or default model rates and
+                a plan-price assumption; they are not reconciled to provider invoices. Treat them as estimates and
+                compare with your billing records.</p>
+              <p class="text-slate-400 mb-4 text-sm">Illustrative response only; actual values depend on recorded events and pricing configuration.</p>
               <div class="relative bg-slate-900 rounded-lg p-4 overflow-x-auto border border-white/5">
                 <pre class="text-sm font-mono text-slate-300"><code>GET /api/analytics/savings?days=30
 Authorization: Bearer ac_live_...
@@ -422,6 +423,9 @@ Authorization: Bearer ac_live_...
 → {
   "windowDays": 30, "hits": 184203,
   "grossSavedUsd": 7530.42, "planCostUsd": 99, "netSavedUsd": 7431.42,
+  "savingsBasis": "recorded_savings_events",
+  "pricingBasis": "configured_or_default_model_rates_and_plan_price",
+  "invoiceReconciled": false,
   "roi": 76,
   "byLayer": { "prefix": 4120, "exact": 2010, "semantic": 900, "reasoning": 401 },
   "byModel": { "claude-opus-5": 5200, "gpt-5.2": 2330 }

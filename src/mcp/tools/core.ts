@@ -11,6 +11,7 @@
 import { z } from 'zod';
 import { ToolModule, ToolHandlerContext } from '../registry.js';
 import { SecurityMiddleware, hashAPIKey } from '../security.js';
+import { getAgentCacheApiKey } from '../config.js';
 
 // Schemas
 const CacheGetSchema = z.object({
@@ -75,7 +76,7 @@ const AGENTCACHE_API_URL = process.env.AGENTCACHE_API_URL || 'https://agentcache
 // Best practice: The context should probably provide a way to make these calls, OR we extract the API client.
 
 async function callAgentCacheAPI(endpoint: string, method: string, body?: any, apiKey?: string): Promise<any> {
-    const key = apiKey || process.env.AGENTCACHE_API_KEY || process.env.API_KEY || 'ac_demo_test123';
+    const key = getAgentCacheApiKey(apiKey);
     const url = `${AGENTCACHE_API_URL}${endpoint}`;
     const options: RequestInit = {
         method,

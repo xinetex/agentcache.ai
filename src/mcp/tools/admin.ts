@@ -11,6 +11,7 @@
 import { z } from 'zod';
 import { ToolModule } from '../registry.js';
 import { TrustCenter } from '../../infrastructure/TrustCenter.js';
+import { getAgentCacheApiKey } from '../config.js';
 
 // Schemas
 const CacheInvalidateSchema = z.object({
@@ -48,7 +49,7 @@ const trustCenter = new TrustCenter();
 const AGENTCACHE_API_URL = process.env.AGENTCACHE_API_URL || 'https://agentcache.ai';
 
 async function callAgentCacheAPI(endpoint: string, method: string, body?: any, apiKey?: string): Promise<any> {
-    const key = apiKey || process.env.AGENTCACHE_API_KEY || process.env.API_KEY || 'ac_demo_test123';
+    const key = getAgentCacheApiKey(apiKey);
     const url = `${AGENTCACHE_API_URL}${endpoint}`;
     const options: RequestInit = {
         method,

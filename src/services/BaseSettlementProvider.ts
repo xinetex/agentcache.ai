@@ -42,7 +42,7 @@ export class BaseSettlementProvider {
         this.mode = (process.env.AGENTCACHE_SETTLEMENT_MODE as SettlementMode) || 'verify-only';
 
         if (!this.masterWallet || this.masterWallet === '0xagentcachemasterwalletplaceholder') {
-            console.warn('[BaseService] ⚠️ AGENTCACHE_MASTER_WALLET not set — on-chain verification will use permissive mode.');
+            console.warn('[BaseService] AGENTCACHE_MASTER_WALLET is not configured; settlement verification will fail closed.');
         }
     }
 
@@ -73,19 +73,16 @@ export class BaseSettlementProvider {
      * 4. Transferred amount >= required minimum
      */
     async verifyOnChainSettlement(txHash: string, agentWallet: string, amountUSDC: number): Promise<boolean> {
-        console.log(`[BaseService] 🔍 Verifying on-chain settlement: ${txHash}...`);
+        if (!/^0x[a-f0-9]{40}$/i.test(agentWallet)
+            || !Number.isFinite(amountUSDC) || amountUSDC <= 0) return false;
 
         // Allow mock transactions in test/dev environments
         if (txHash.startsWith('0xmock')) {
-            console.log('[BaseService] Mock transaction — auto-verified.');
-            return true;
+            return process.env.NODE_ENV === 'test' || !!process.env.VITEST;
         }
 
-        // If master wallet isn't configured, fall back to permissive mode
-        if (!this.masterWallet || this.masterWallet.length < 42) {
-            console.warn('[BaseService] ⚠️ Master wallet not configured — permissive verification.');
-            return true;
-        }
+        if (!/^0x[a-f0-9]{64}$/i.test(txHash)) return false;
+        if (!/^0x[a-f0-9]{40}$/i.test(this.masterWallet)) return false;
 
         try {
             // 1. Fetch transaction receipt

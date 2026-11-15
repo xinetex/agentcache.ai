@@ -134,8 +134,8 @@ curl -X POST https://agentcache.ai/api/cache/set \
   </div>
 
   <div class="diff">
-    <h3>The part no gateway does</h3>
-    <p>OpenRouter and Stripe tell you what you spent. <strong>agentcache_gate</strong> tells your agent whether a call is allowed <em>before</em> the money leaves — against a budget, a request quota, a spend-anomaly guard, and a kill-switch. That is the difference between billing an autonomous agent and governing one.</p>
+    <h3>Check policy before a call</h3>
+    <p><strong>agentcache_gate</strong> evaluates a proposed model call against the account's configured budget, request quota, spend-anomaly guard, and kill-switch. It complements provider and gateway controls with a deterministic allow or deny response that an agent can act on before proceeding.</p>
   </div>
 
   <div class="cta">

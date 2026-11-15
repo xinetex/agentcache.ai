@@ -7,7 +7,9 @@
  */
 const AGENTCACHE_API_URL = process.env.AGENTCACHE_API_URL || 'https://agentcache.ai';
 async function callApi(endpoint, method, body, apiKey, extraHeaders = {}) {
-    const key = apiKey || process.env.AGENTCACHE_API_KEY || process.env.API_KEY || 'ac_demo_test123';
+    const key = apiKey || process.env.AGENTCACHE_API_KEY || process.env.API_KEY || '';
+    if (!key.startsWith('ac_'))
+        throw new Error('Set AGENTCACHE_API_KEY to a valid AgentCache API key before calling this tool.');
     const headers = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${key}`,
@@ -27,8 +29,97 @@ const ok = (obj) => ({ content: [{ type: 'text', text: JSON.stringify(obj, null,
 export const ControlPlaneTools = {
     tools: [
         {
+            name: 'agentcache_execution_tools',
+            description: 'Discover the governed execution tools available to this AgentCache API key, including required inputs and approval behavior.',
+            inputSchema: { type: 'object', properties: {} },
+        },
+        {
+            name: 'agentcache_execution_context_packs',
+            description: 'List workflow context packs owned by this API key. Packs define the objective, allowed tools, policy profile, and review phases for governed runs.',
+            inputSchema: { type: 'object', properties: { limit: { type: 'number' } } },
+        },
+        {
+            name: 'agentcache_execution_create_context_pack',
+            description: 'Create an owned, versioned workflow definition. Discovery does not grant connection access; each run still applies policy, scope, and approval checks.',
+            inputSchema: { type: 'object', properties: {
+                    name: { type: 'string' }, objective: { type: 'string' }, sectorHint: { type: 'string' },
+                    workflowTemplate: { type: 'string', enum: ['generic', 'policy_review', 'regulated_release', 'research_brief'] },
+                    tools: { type: 'array', items: { type: 'string' } }, policyProfile: { type: 'object' },
+                    workflowPhases: { type: 'array', items: { type: 'string' } }, reviewerRoles: { type: 'array', items: { type: 'string' } },
+                }, required: ['name', 'objective'] },
+        },
+        {
+            name: 'agentcache_execution_context_pack',
+            description: 'Read one workflow context pack owned by this API key.',
+            inputSchema: { type: 'object', properties: { contextPackId: { type: 'string' } }, required: ['contextPackId'] },
+        },
+        {
+            name: 'agentcache_execution_connections',
+            description: 'List owned provider connection metadata. Credential values are never returned.',
+            inputSchema: { type: 'object', properties: { limit: { type: 'number' } } },
+        },
+        {
+            name: 'agentcache_execution_connect',
+            description: 'Save credentials for a provider account you own. Requires a user or organization AgentCache API key. Credentials are encrypted at rest; requested scopes are not proof of provider authorization.',
+            inputSchema: { type: 'object', properties: {
+                    provider: { type: 'string' }, displayName: { type: 'string' },
+                    scopes: { type: 'array', items: { type: 'string' } }, credentials: { type: 'object' },
+                }, required: ['provider', 'credentials'] },
+        },
+        {
+            name: 'agentcache_execution_disconnect',
+            description: 'Revoke a provider connection owned by this user or organization API key and clear its encrypted credential material.',
+            inputSchema: { type: 'object', properties: { connectionId: { type: 'string' } }, required: ['connectionId'] },
+        },
+        {
+            name: 'agentcache_execution_start',
+            description: 'Start a policy-checked workflow run. Starting a run does not call a provider; configured review and human gates must be cleared before invocation.',
+            inputSchema: { type: 'object', properties: {
+                    contextPackId: { type: 'string' }, contextPackVersionId: { type: 'string' }, inputPayload: { type: 'object' },
+                    trigger: { type: 'string' }, finalAction: { type: 'string', enum: ['publish', 'send', 'pay', 'delete', 'external_store', 'manual'] },
+                    requireHumanGate: { type: 'boolean' },
+                }, required: ['contextPackId'] },
+        },
+        {
+            name: 'agentcache_execution_status',
+            description: 'Read the run, review, approval gate, and receipt history for an owned workflow.',
+            inputSchema: { type: 'object', properties: { runId: { type: 'string' } }, required: ['runId'] },
+        },
+        {
+            name: 'agentcache_execution_advance_phase',
+            description: 'Advance an owned run to a configured phase. This can submit a run to its gate, but this MCP client does not expose gate decisions. A different owner or admin member of the same organization must approve or reject it through the API.',
+            inputSchema: { type: 'object', properties: { runId: { type: 'string' }, phase: { type: 'string' } }, required: ['runId', 'phase'] },
+        },
+        {
+            name: 'agentcache_execution_invoke_jetty_summary',
+            description: 'Invoke the policy-checked, read-only Jetty storage summary through an owned connection. Returns aggregate quota and file count only. Reuse the same idempotency key for retries; inspect history before retrying an incomplete call.',
+            inputSchema: { type: 'object', properties: {
+                    runId: { type: 'string' }, connectionId: { type: 'string' }, idempotencyKey: { type: 'string', minLength: 16, maxLength: 128 },
+                }, required: ['runId', 'connectionId'] },
+        },
+        {
+            name: 'agentcache_execution_invocations',
+            description: 'Read durable, redacted invocation records for an owned run, including incomplete calls and sanitized outcomes.',
+            inputSchema: { type: 'object', properties: { runId: { type: 'string' }, limit: { type: 'number' } }, required: ['runId'] },
+        },
+        {
+            name: 'agentcache_execution_invocation_history',
+            description: 'Read recent durable, redacted invocation records owned by this AgentCache API key.',
+            inputSchema: { type: 'object', properties: { limit: { type: 'number' } } },
+        },
+        {
+            name: 'agentcache_execution_decision_history',
+            description: 'Read durable run, review, phase, and approval decision metadata owned by this API key. The ledger excludes workflow payloads.',
+            inputSchema: { type: 'object', properties: { limit: { type: 'number' } } },
+        },
+        {
+            name: 'agentcache_execution_usage',
+            description: 'Read completed, blocked, failed, and incomplete governed-action counts for pilot measurement. This tool does not charge.',
+            inputSchema: { type: 'object', properties: {} },
+        },
+        {
             name: 'agentcache_savings',
-            description: 'Report the verified net dollars this account has saved through AgentCache over a window (default 30 days), with ROI and a breakdown by cache layer and model. Every figure is measured from real cache hits at current provider prices — never estimated. Use it to prove the value of caching to a human, or to decide whether a workload is worth continuing.',
+            description: 'Report modeled cache savings for the organization over a window (default 30 days), with ROI and a breakdown by cache layer and model. The calculation uses recorded savings events, configured or default model rates, and a plan-price assumption; it is not reconciled to provider invoices. Treat it as an estimate and compare with billing records.',
             inputSchema: {
                 type: 'object',
                 properties: {
@@ -88,11 +179,59 @@ export const ControlPlaneTools = {
         },
     ],
     handlers: {
+        agentcache_execution_tools: async (_args, context) => ok(await callApi('/api/execution/tools', 'GET', null, context.apiKey)),
+        agentcache_execution_context_packs: async (args, context) => {
+            const limit = Math.min(Math.max(Number(args?.limit) || 25, 1), 100);
+            return ok(await callApi(`/api/execution/context-packs?limit=${limit}`, 'GET', null, context.apiKey));
+        },
+        agentcache_execution_create_context_pack: async (args, context) => ok(await callApi('/api/execution/context-packs', 'POST', args, context.apiKey)),
+        agentcache_execution_context_pack: async (args, context) => {
+            const id = encodeURIComponent(String(args?.contextPackId || ''));
+            return ok(await callApi(`/api/execution/context-packs/${id}`, 'GET', null, context.apiKey));
+        },
+        agentcache_execution_connections: async (args, context) => {
+            const limit = Math.min(Math.max(Number(args?.limit) || 50, 1), 100);
+            return ok(await callApi(`/api/execution/connections?limit=${limit}`, 'GET', null, context.apiKey));
+        },
+        agentcache_execution_connect: async (args, context) => ok(await callApi('/api/execution/connections', 'POST', args, context.apiKey)),
+        agentcache_execution_disconnect: async (args, context) => {
+            const id = encodeURIComponent(String(args?.connectionId || ''));
+            return ok(await callApi(`/api/execution/connections/${id}`, 'DELETE', null, context.apiKey));
+        },
+        agentcache_execution_start: async (args, context) => ok(await callApi('/api/execution/runs', 'POST', args, context.apiKey)),
+        agentcache_execution_status: async (args, context) => {
+            const id = encodeURIComponent(String(args?.runId || ''));
+            return ok(await callApi(`/api/execution/runs/${id}`, 'GET', null, context.apiKey));
+        },
+        agentcache_execution_advance_phase: async (args, context) => {
+            const id = encodeURIComponent(String(args?.runId || ''));
+            return ok(await callApi(`/api/execution/runs/${id}/phase`, 'POST', { phase: args?.phase }, context.apiKey));
+        },
+        agentcache_execution_invoke_jetty_summary: async (args, context) => {
+            const id = encodeURIComponent(String(args?.runId || ''));
+            return ok(await callApi(`/api/execution/runs/${id}/invoke`, 'POST', {
+                tool: 'jetty.storage.summary', connectionId: args?.connectionId, idempotencyKey: args?.idempotencyKey,
+            }, context.apiKey));
+        },
+        agentcache_execution_invocations: async (args, context) => {
+            const id = encodeURIComponent(String(args?.runId || ''));
+            const limit = Math.min(Math.max(Number(args?.limit) || 50, 1), 100);
+            return ok(await callApi(`/api/execution/runs/${id}/invocations?limit=${limit}`, 'GET', null, context.apiKey));
+        },
+        agentcache_execution_invocation_history: async (args, context) => {
+            const limit = Math.min(Math.max(Number(args?.limit) || 50, 1), 100);
+            return ok(await callApi(`/api/execution/invocations?limit=${limit}`, 'GET', null, context.apiKey));
+        },
+        agentcache_execution_decision_history: async (args, context) => {
+            const limit = Math.min(Math.max(Number(args?.limit) || 50, 1), 100);
+            return ok(await callApi(`/api/execution/decision-events?limit=${limit}`, 'GET', null, context.apiKey));
+        },
+        agentcache_execution_usage: async (_args, context) => ok(await callApi('/api/execution/usage', 'GET', null, context.apiKey)),
         agentcache_savings: async (args, context) => {
             const days = Math.min(Math.max(Number(args?.days) || 30, 1), 365);
             const data = await callApi(`/api/analytics/savings?days=${days}`, 'GET', null, context.apiKey);
             return ok({
-                summary: `Net $${data.netSavedUsd} saved over ${data.windowDays}d${data.roi ? ` · ${data.roi}× ROI` : ''}`,
+                summary: `Modeled net savings: $${data.netSavedUsd} over ${data.windowDays}d${data.roi ? ` · ${data.roi}× modeled ROI` : ''}`,
                 ...data,
             });
         },

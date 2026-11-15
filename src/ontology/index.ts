@@ -25,6 +25,7 @@ export { LegalOntology, LEGAL_VOCABULARY } from './schemas/legal.js';
 export { RoboticsOntology, ROBOTICS_VOCABULARY } from './schemas/robotics.js';
 export { HealthcareOntology, HEALTHCARE_VOCABULARY } from './schemas/healthcare.js';
 export { EnergyOntology, ENERGY_VOCABULARY } from './schemas/energy.js';
+export { GeneralOntology, GENERAL_VOCABULARY } from './schemas/general.js';
 
 // Connectors
 export { DataLakeConnector } from './DataLakeConnector.js';

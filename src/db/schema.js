@@ -7,7 +7,7 @@
  * Unauthorized copying, distribution, or modification of this file, 
  * via any medium, is strictly prohibited.
  */
-import { pgTable, uuid, text, jsonb, timestamp, real, vector, boolean, index, integer } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, jsonb, timestamp, real, vector, boolean, index, uniqueIndex, primaryKey, integer } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 // --- Agents: The Actors ---
@@ -258,6 +258,22 @@ export const members = pgTable('members', {
     membersUserIdx: index('members_user_idx').on(table.userId),
 }));
 
+export const organizationInvitations = pgTable('organization_invitations', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    orgId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
+    email: text('email').notNull(),
+    role: text('role').notNull(),
+    tokenHash: text('token_hash').notNull().unique(),
+    invitedByUserId: uuid('invited_by_user_id').notNull().references(() => users.id),
+    expiresAt: timestamp('expires_at').notNull(),
+    acceptedAt: timestamp('accepted_at'),
+    canceledAt: timestamp('canceled_at'),
+    createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+    organizationInvitationsOrgIdx: index('organization_invitations_org_idx').on(table.orgId, table.createdAt),
+    organizationInvitationsEmailIdx: index('organization_invitations_email_idx').on(table.email),
+}));
+
 export const apiKeys = pgTable('api_keys', {
     id: uuid('id').defaultRandom().primaryKey(),
     orgId: uuid('organization_id').references(() => organizations.id),
@@ -446,6 +462,101 @@ export const executionGates = pgTable('execution_gates', {
     executionGateStatusIdx: index('execution_gates_status_idx').on(table.status),
 }));
 
+export const agentConnections = pgTable('agent_connections', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    ownerPrincipalId: text('owner_principal_id').notNull(),
+    orgId: uuid('organization_id').references(() => organizations.id, { onDelete: 'set null' }),
+    provider: text('provider').notNull(),
+    displayName: text('display_name'),
+    scopes: jsonb('scopes').notNull().default([]),
+    status: text('status').notNull().default('active'),
+    verificationStatus: text('verification_status').notNull().default('unverified'),
+    encryptedCredentials: text('encrypted_credentials'),
+    encryptionKeyVersion: text('encryption_key_version').notNull().default('v1'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+    lastUsedAt: timestamp('last_used_at'),
+    revokedAt: timestamp('revoked_at'),
+}, (table) => ({
+    agentConnectionsOwnerStatusIdx: index('agent_connections_owner_status_idx').on(table.ownerPrincipalId, table.status),
+    agentConnectionsOrgIdx: index('agent_connections_org_idx').on(table.orgId),
+}));
+
+export const executionInvocations = pgTable('execution_invocations', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    executionRunId: text('execution_run_id').notNull(),
+    contextPackVersionId: text('context_pack_version_id'),
+    runReceiptId: text('run_receipt_id'),
+    approvalGateId: text('approval_gate_id'),
+    approvalReceiptId: text('approval_receipt_id'),
+    principalId: text('principal_id').notNull(),
+    actorPrincipalId: text('actor_principal_id'),
+    orgId: uuid('organization_id').references(() => organizations.id, { onDelete: 'set null' }),
+    connectionId: uuid('connection_id').references(() => agentConnections.id, { onDelete: 'set null' }),
+    toolName: text('tool_name').notNull(),
+    policyVersion: text('policy_version'),
+    policyRuleIds: jsonb('policy_rule_ids').notNull().default([]),
+    policyReasonCode: text('policy_reason_code'),
+    policyScore: real('policy_score'),
+    idempotencyKeyHash: text('idempotency_key_hash'),
+    requestHash: text('request_hash'),
+    status: text('status').notNull(),
+    policyDecision: text('policy_decision').notNull(),
+    inputSummary: jsonb('input_summary').notNull().default({}),
+    resultSummary: jsonb('result_summary'),
+    errorCode: text('error_code'),
+    startedAt: timestamp('started_at').notNull().defaultNow(),
+    completedAt: timestamp('completed_at'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    expiresAt: timestamp('expires_at').notNull(),
+}, (table) => ({
+    executionInvocationsRunIdx: index('execution_invocations_run_idx').on(table.executionRunId, table.createdAt),
+    executionInvocationsPrincipalIdx: index('execution_invocations_principal_idx').on(table.principalId, table.createdAt),
+    executionInvocationsConnectionIdx: index('execution_invocations_connection_idx').on(table.connectionId, table.createdAt),
+    executionInvocationsExpiryIdx: index('execution_invocations_expiry_idx').on(table.expiresAt),
+    executionInvocationsIdempotencyUnique: uniqueIndex('execution_invocations_idempotency_unique')
+        .on(table.principalId, table.idempotencyKeyHash)
+        .where(sql`${table.idempotencyKeyHash} is not null`),
+}));
+
+export const executionActionBudgets = pgTable('execution_action_budgets', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    scopeType: text('scope_type').notNull(),
+    scopeId: text('scope_id').notNull(),
+    periodStart: timestamp('period_start').notNull(),
+    periodEnd: timestamp('period_end').notNull(),
+    actionLimit: integer('action_limit').notNull(),
+    reservedCount: integer('reserved_count').notNull().default(0),
+    configuredBy: text('configured_by').notNull(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+    executionActionBudgetsScopeUnique: uniqueIndex('execution_action_budgets_scope_unique').on(table.scopeType, table.scopeId),
+    executionActionBudgetsPeriodIdx: index('execution_action_budgets_period_idx').on(table.periodEnd),
+}));
+
+export const executionActionReservations = pgTable('execution_action_reservations', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    budgetId: uuid('budget_id').notNull().references(() => executionActionBudgets.id, { onDelete: 'cascade' }),
+    invocationId: uuid('invocation_id').notNull().references(() => executionInvocations.id, { onDelete: 'cascade' }),
+    executionRunId: text('execution_run_id').notNull(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+    executionActionReservationsInvocationUnique: uniqueIndex('execution_action_reservations_invocation_unique').on(table.invocationId),
+    executionActionReservationsBudgetIdx: index('execution_action_reservations_budget_idx').on(table.budgetId, table.createdAt),
+}));
+
+export const executionReviewAssignments = pgTable('execution_review_assignments', {
+    executionRunId: text('execution_run_id').notNull(),
+    reviewerPrincipalId: text('reviewer_principal_id').notNull(),
+    reviewerRole: text('reviewer_role').notNull(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    expiresAt: timestamp('expires_at').notNull(),
+}, (table) => ({
+    executionReviewAssignmentsIdentityPk: primaryKey({ columns: [table.executionRunId, table.reviewerPrincipalId], name: 'execution_review_assignments_identity_pk' }),
+    executionReviewAssignmentsExpiryIdx: index('execution_review_assignments_expiry_idx').on(table.expiresAt),
+}));
+
 // --- Game Theory & Autonomous Lab ---
 export const gameSessions = pgTable('game_sessions', {
     id: uuid('id').defaultRandom().primaryKey(),
@@ -463,6 +574,51 @@ export const gameSessions = pgTable('game_sessions', {
     patternNoveltyScore: real('pattern_novelty_score').default(0),
     durationSeconds: real('duration_seconds'),
 });
+
+export const executionDecisionEvents = pgTable('execution_decision_events', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    eventType: text('event_type').notNull(),
+    executionRunId: text('execution_run_id').notNull(),
+    contextPackId: text('context_pack_id'),
+    contextPackVersionId: text('context_pack_version_id'),
+    ownerPrincipalId: text('owner_principal_id'),
+    actorPrincipalId: text('actor_principal_id'),
+    organizationId: text('organization_id'),
+    actorRole: text('actor_role'),
+    verdict: text('verdict'),
+    summary: text('summary'),
+    findings: jsonb('findings').notNull().default([]),
+    confidence: real('confidence'),
+    status: text('status'),
+    phase: text('phase'),
+    receiptId: text('receipt_id'),
+    occurredAt: timestamp('occurred_at').notNull().defaultNow(),
+    expiresAt: timestamp('expires_at').notNull(),
+}, (table) => ({
+    executionDecisionRunIdx: index('execution_decision_events_run_idx').on(table.executionRunId, table.occurredAt),
+    executionDecisionPrincipalIdx: index('execution_decision_events_principal_idx').on(table.ownerPrincipalId, table.occurredAt),
+    executionDecisionOrgIdx: index('execution_decision_events_org_idx').on(table.organizationId, table.occurredAt),
+    executionDecisionExpiryIdx: index('execution_decision_events_expiry_idx').on(table.expiresAt),
+}));
+
+export const executionControlRecords = pgTable('execution_control_records', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    recordType: text('record_type').notNull(),
+    recordId: text('record_id').notNull(),
+    ownerPrincipalId: text('owner_principal_id'),
+    organizationId: text('organization_id'),
+    status: text('status'),
+    payload: jsonb('payload').notNull(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+    expiresAt: timestamp('expires_at').notNull(),
+}, (table) => ({
+    executionControlRecordIdentity: uniqueIndex('execution_control_records_identity_idx').on(table.recordType, table.recordId),
+    executionControlRecordOwnerIdx: index('execution_control_records_owner_idx').on(table.ownerPrincipalId, table.updatedAt),
+    executionControlRecordOrgIdx: index('execution_control_records_org_idx').on(table.organizationId, table.updatedAt),
+    executionControlRecordTypeStatusIdx: index('execution_control_records_type_status_idx').on(table.recordType, table.status),
+    executionControlRecordExpiryIdx: index('execution_control_records_expiry_idx').on(table.expiresAt),
+}));
 
 export const patternDiscoveries = pgTable('pattern_discoveries', {
     id: uuid('id').defaultRandom().primaryKey(),

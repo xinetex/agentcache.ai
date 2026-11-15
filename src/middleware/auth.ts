@@ -8,7 +8,7 @@
  * via any medium, is strictly prohibited.
  */
 
-import { createHash } from 'crypto';
+import { createHash, timingSafeEqual } from 'crypto';
 import bcrypt from 'bcryptjs';
 import { db } from '../db/client.js';
 import { apiKeys, organizations } from '../db/schema.js';
@@ -23,6 +23,21 @@ import { buildQuotaExceededPayload, getUpgradeDetails } from '../lib/upgrade-res
 const OVERAGE_CREDITS_PER_REQUEST = 1; // 1 credit = $0.01
 const AUTH_PRINCIPAL_CACHE_TTL_SECONDS = Number(process.env.AUTH_PRINCIPAL_CACHE_TTL_SECONDS || 600);
 
+export function executionStorageUnavailable(path: string, usingMockDatabase: boolean, testRuntime: boolean) {
+    const isExecutionDataRoute = path.startsWith('/api/execution/') && !path.endsWith('/tools');
+    return isExecutionDataRoute && usingMockDatabase && !testRuntime;
+}
+
+function durableExecutionStoreError(c: any) {
+    const testRuntime = process.env.NODE_ENV === 'test' || !!process.env.VITEST;
+    if (!executionStorageUnavailable(c.req.path || '', db.__isMock, testRuntime)) return null;
+    return c.json({
+        error: 'Governed execution storage is unavailable.',
+        code: 'execution_storage_unavailable',
+        message: 'This request was not run because durable execution records cannot be confirmed. Retry after database connectivity is restored.',
+    }, 503);
+}
+
 type ResolvedPrincipalContext = {
     tier: string;
     orgId: string | null;
@@ -34,6 +49,10 @@ type ResolvedPrincipalContext = {
 
 function authPrincipalCacheKey(keyHash: string) {
     return `auth:principal:${keyHash}`;
+}
+
+export async function invalidateApiKeyAuthenticationCache(keyHash: string) {
+    await redis.del(authPrincipalCacheKey(keyHash));
 }
 
 function normalizeCachedPrincipal(raw: unknown): ResolvedPrincipalContext | null {
@@ -142,41 +161,6 @@ async function resolveStoredPrincipalViaLegacySql(apiKey: string, keyHash: strin
 // Middleware: API Key auth with tier enforcement and usage tracking
 export async function authenticateApiKey(c: any) {
     const apiKey = c.req.header('X-API-Key') || c.req.header('Authorization')?.replace('Bearer ', '');
-    const preauthorization = c.req.header('Preauthorization');
-
-    // [x402 Agentic Payment Standard]
-    // If Preauthorization exists (an agentic payment receipt via x402)
-    if (preauthorization && preauthorization.startsWith('0x')) {
-        const { agentSettlementService } = await import('../services/AgentSettlementService.js');
-        const agentId = apiKey || 'x402-agent';
-
-        // Derive settlement cost from request path and tier pricing
-        // Default: 10.0 credits for standard API calls, adjustable per route
-        const path = c.req.path || '';
-        const isOntologyRoute = path.includes('/ontology/') || path.includes('/alignment/');
-        const isCdnRoute = path.includes('/cdn/') || path.includes('/transcode/');
-        const settlementCost = isOntologyRoute ? 25.0 : isCdnRoute ? 5.0 : 10.0;
-
-        const settlement = await agentSettlementService.settle(preauthorization, agentId, settlementCost);
-
-        if (settlement.success) {
-            c.set('apiKey', agentId);
-            c.set('principalAgentId', agentId);
-            c.set('principalId', `agent:${agentId}`);
-            c.set('principalKind', 'agent');
-            c.set('tier', 'x402-paid');
-            c.set('tierFeatures', getTierFeatures('enterprise'));
-            c.set('usage', { used: 0, quota: -1, remaining: -1 });
-            return null;
-        } else {
-            console.error(`[Auth] x402 Settlement Failed for ${agentId}: ${settlement.error}`);
-            return c.json({
-                error: `x402 Settlement Failed: ${settlement.error}`,
-                details: settlement.error
-            }, 402);
-        }
-    }
-
     if (!apiKey || !apiKey.startsWith('ac_')) {
         // Return error if no key, but allow next() if used as optional/middleware chain? 
         // Current usage returns response immediately (acting as a guard).
@@ -191,6 +175,9 @@ export async function authenticateApiKey(c: any) {
         c.set('principalAgentId', null);
         c.set('principalId', undefined);
         c.set('principalKind', 'unknown');
+        c.set('orgId', null);
+        c.set('actorUserId', null);
+        c.set('actorPrincipalId', null);
         c.set('tier', 'enterprise');
         c.set('tierFeatures', getTierFeatures('enterprise'));
         c.set('usage', { exceeded: false, used: 0, quota: -1, remaining: -1, keyHash: 'demo' });
@@ -262,6 +249,8 @@ export async function authenticateApiKey(c: any) {
         let tierFeatures = null;
         let principalAgentId: string | null = null;
         let principalId: string | null = null;
+        let orgId: string | null = null;
+        let actorUserId: string | null = null;
         let principalKind: 'agent' | 'organization' | 'user' | 'unknown' = 'unknown';
 
         if (cachedPrincipal) {
@@ -270,11 +259,15 @@ export async function authenticateApiKey(c: any) {
             principalId = cachedPrincipal.principalId;
             principalKind = cachedPrincipal.principalKind;
             principalAgentId = cachedPrincipal.principalAgentId || null;
+            orgId = cachedPrincipal.orgId || null;
+            actorUserId = cachedPrincipal.userId || null;
         } else {
             const storedPrincipal = await resolveStoredPrincipal();
             if (storedPrincipal) {
                 tier = storedPrincipal.tier;
                 tierFeatures = getTierFeatures(tier);
+                orgId = storedPrincipal.orgId || null;
+                actorUserId = storedPrincipal.userId || null;
 
                 if (storedPrincipal.orgId) {
                     principalId = `org:${storedPrincipal.orgId}`;
@@ -319,6 +312,9 @@ export async function authenticateApiKey(c: any) {
             }, 401);
         }
 
+        const executionStoreError = durableExecutionStoreError(c);
+        if (executionStoreError) return executionStoreError;
+
         // Track usage with tier-based quota
         const usage = await trackUsage(apiKey, tier);
 
@@ -328,11 +324,6 @@ export async function authenticateApiKey(c: any) {
             const upgrade = getUpgradeDetails(tier);
 
             if (!charge.ok) {
-                // Attach x402 headers for agentic payment interceptors
-                c.header('Pay-Uris', 'base:0xAgentCacheMasterWallet');
-                c.header('Pay-Network', 'base-mainnet');
-                c.header('Pay-Amount', '0.01'); // 1 cent in USDC
-
                 return c.json({
                     error: 'Quota exceeded (credits required to continue)',
                     code: 'CREDITS_REQUIRED',
@@ -377,6 +368,9 @@ export async function authenticateApiKey(c: any) {
         c.set('principalAgentId', principalAgentId);
         c.set('principalId', principalId);
         c.set('principalKind', principalKind);
+        c.set('orgId', orgId || (principalKind === 'organization' && principalId ? principalId.replace(/^org:/, '') : null));
+        c.set('actorUserId', actorUserId);
+        c.set('actorPrincipalId', actorUserId ? `user:${actorUserId}` : principalId);
         c.set('tier', tier);
         c.set('tierFeatures', tierFeatures);
         c.set('usage', usage);
@@ -404,10 +398,23 @@ export async function authenticateAdmin(c: any) {
         return c.json({ error: 'Admin access disabled (Configuration Error)' }, 503);
     }
 
-    if (adminToken !== expectedToken) {
+    const suppliedBytes = Buffer.from(adminToken || '', 'utf8');
+    const expectedBytes = Buffer.from(expectedToken, 'utf8');
+    const tokenMatches = suppliedBytes.length === expectedBytes.length
+        && timingSafeEqual(suppliedBytes, expectedBytes);
+
+    if (!tokenMatches) {
         // Prevent brute force or exploration by returning generic 403
         return c.json({ error: 'Unauthorized: Admin access required' }, 403);
     }
+
+    if ((c.req.path || '').startsWith('/api/execution/admin/')) {
+        const executionStoreError = durableExecutionStoreError(c);
+        if (executionStoreError) return executionStoreError;
+    }
+
+    // Preserve auditable credential attribution without placing the token in run state or receipts.
+    c.set('adminCredentialId', `admin-token:${createHash('sha256').update(adminToken).digest('hex').slice(0, 16)}`);
 
     return null; // Next
 }

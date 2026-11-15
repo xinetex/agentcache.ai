@@ -11,7 +11,8 @@ import {
     Settings,
     LogOut,
     Workflow,
-    Clapperboard
+    Clapperboard,
+    PlayCircle,
 } from 'lucide-react';
 
 const CommandRail = ({ activeView, setActiveView, user }) => {
@@ -22,6 +23,7 @@ const CommandRail = ({ activeView, setActiveView, user }) => {
         { id: 'overview', label: 'System Overview', icon: LayoutGrid },
         { id: 'advanced-services', label: 'Advanced Services', icon: BriefcaseBusiness },
         { id: 'pipeline', label: 'Pipeline Studio', icon: Workflow },
+        { id: 'execution', label: 'Agent Execution', icon: PlayCircle },
         { id: 'reliability', label: 'Reliability Mesh', icon: ShieldCheck },
         { id: 'media', label: 'Media Console', icon: Clapperboard },
         { id: 'observability', label: 'Observability', icon: Database }, // Switched icon for variety

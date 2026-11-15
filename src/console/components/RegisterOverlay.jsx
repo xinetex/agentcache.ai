@@ -5,6 +5,7 @@ import CyberCard from './CyberCard.jsx';
 
 export default function RegisterOverlay() {
     const { login } = useAuth();
+    const invitationToken = new URLSearchParams(window.location.search).get('invite') || '';
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
         name: '',
@@ -28,7 +29,8 @@ export default function RegisterOverlay() {
                     email: formData.email,
                     password: formData.password,
                     name: formData.name,
-                    organizationName: formData.orgName
+                    organizationName: formData.orgName,
+                    ...(invitationToken ? { invitationToken } : {})
                 })
             });
             const data = await res.json();
@@ -51,11 +53,13 @@ export default function RegisterOverlay() {
                 <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10 pointer-events-none"></div>
 
                 <CyberCard
-                    title="IDENTITY PROTOCOL // NEW OPERATOR"
+                    title={invitationToken ? 'JOIN YOUR TEAM' : 'IDENTITY PROTOCOL // NEW OPERATOR'}
                     icon={UserPlus}
                     className="border-[var(--hud-accent)] shadow-[0_0_50px_rgba(0,243,255,0.15)] relative z-10"
                 >
                     <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+
+                        {invitationToken && <p className="rounded border border-cyan-300/20 bg-cyan-300/[.06] p-3 text-xs text-cyan-100/80">Create your account with the email address this invitation was sent to. Your organization and access role will be set from the invitation.</p>}
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="col-span-2">
@@ -88,7 +92,7 @@ export default function RegisterOverlay() {
                                 </div>
                             </div>
 
-                            <div className="col-span-2">
+                            {!invitationToken && <div className="col-span-2">
                                 <label className="block text-[10px] font-mono text-[var(--hud-text-dim)] mb-1">SECTOR ID (ORGANIZATION)</label>
                                 <div className="relative group">
                                     <Building2 className="absolute left-3 top-3 text-[var(--hud-text-dim)] w-4 h-4 group-focus-within:text-[var(--hud-accent)] transition-colors" />
@@ -101,7 +105,7 @@ export default function RegisterOverlay() {
                                         required
                                     />
                                 </div>
-                            </div>
+                            </div>}
 
                             <div className="col-span-2">
                                 <label className="block text-[10px] font-mono text-[var(--hud-text-dim)] mb-1">ACCESS KEY (PASSWORD)</label>
@@ -136,13 +140,13 @@ export default function RegisterOverlay() {
                                 <span className="animate-pulse">TOKENIZING IDENTITY...</span>
                             ) : (
                                 <>
-                                    INITIALIZE UPLINK <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                            {invitationToken ? 'JOIN ORGANIZATION' : 'INITIALIZE UPLINK'} <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                                 </>
                             )}
                         </button>
 
                         <div className="text-center text-[10px] text-[var(--hud-text-dim)] font-mono mt-4">
-                            ALREADY INITIALIZED? <button type="button" onClick={() => window.location.href = '/console?demo=false'} className="text-[var(--hud-accent)] hover:underline border-b border-[var(--hud-accent)]">ACCESS TERMINAL (LOGIN)</button>
+                            ALREADY INITIALIZED? <button type="button" onClick={() => window.location.href = invitationToken ? `/console?invite=${encodeURIComponent(invitationToken)}&login=1` : '/console?demo=false'} className="text-[var(--hud-accent)] hover:underline border-b border-[var(--hud-accent)]">ACCESS TERMINAL (LOGIN)</button>
                         </div>
                     </form>
                 </CyberCard>

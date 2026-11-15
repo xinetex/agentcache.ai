@@ -19,7 +19,13 @@ export interface PolicyResult {
     allowed: boolean;
     reason?: string;
     score: number; // 0.0 to 1.0 confidence
+    policyVersion?: string;
+    evaluatedPolicyIds?: string[];
+    failedPolicyId?: string;
+    reasonCode?: string;
 }
+
+export const POLICY_ENGINE_VERSION = 'policy-engine-v1';
 
 export interface Policy {
     id: string;
@@ -76,13 +82,14 @@ export class PolicyEngine {
                         return {
                             allowed: false,
                             score: 0.0,
-                            reason: `Ontology Violation: ${JSON.stringify(validation.error.issues, null, 2)}`
+                            reason: `Ontology Violation: ${JSON.stringify(validation.error.issues, null, 2)}`,
+                            reasonCode: 'ontology_violation',
                         };
                     }
                     return { allowed: true, score: 1.0 };
                 } catch (e: any) {
                     console.log(`[PolicyEngine] Critical Error during validation:`, e.message);
-                    return { allowed: false, score: 0.0, reason: `Policy System Error: ${e.message}` };
+                    return { allowed: false, score: 0.0, reason: `Policy System Error: ${e.message}`, reasonCode: 'policy_system_error' };
                 }
             }
         });
@@ -100,7 +107,7 @@ export class PolicyEngine {
                         reputationService.trackStat(msg.originAgent, 'totalTasks');
                         reputationService.trackStat(msg.originAgent, 'cognitiveErrors');
                     }
-                    return { allowed: false, score: 0.0, reason: 'Security Violation: Adversarial Signal Pattern' };
+                    return { allowed: false, score: 0.0, reason: 'Security Violation: Adversarial Signal Pattern', reasonCode: 'adversarial_signal' };
                 }
                 return { allowed: true, score: 1.0 };
             }
@@ -111,8 +118,10 @@ export class PolicyEngine {
      * Evaluate a message against all registered policies.
      */
     async evaluate(message: BusMessage): Promise<PolicyResult> {
+        const evaluatedPolicyIds: string[] = [];
         for (const policy of this.policies) {
             const result = await policy.evaluate(message);
+            evaluatedPolicyIds.push(policy.id);
             if (!result.allowed) {
                 console.warn(`[PolicyEngine] Message REJECTED by policy "${policy.id}": ${result.reason}`);
                 
@@ -128,11 +137,16 @@ export class PolicyEngine {
                     }
                 }).catch(e => console.error('Observability track failed', e));
 
-                return result;
+                return {
+                    ...result,
+                    policyVersion: POLICY_ENGINE_VERSION,
+                    evaluatedPolicyIds,
+                    failedPolicyId: policy.id,
+                };
             }
         }
 
-        return { allowed: true, score: 1.0 };
+        return { allowed: true, score: 1.0, policyVersion: POLICY_ENGINE_VERSION, evaluatedPolicyIds };
     }
 
     /**

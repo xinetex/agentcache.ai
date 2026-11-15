@@ -22,7 +22,10 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             const endpoint = password ? '/api/auth/login' : '/api/auth/dev-login';
-            const body = password ? { email, password } : { email };
+            const preferredOrganizationId = localStorage.getItem('agentcache_active_organization_id');
+            const body = password
+                ? { email, password, ...(preferredOrganizationId ? { organizationId: preferredOrganizationId } : {}) }
+                : { email };
 
             const res = await fetch(endpoint, {
                 method: 'POST',
@@ -41,7 +44,8 @@ export const AuthProvider = ({ children }) => {
 
             localStorage.setItem('agentcache_token', data.token);
             localStorage.setItem('agentcache_user', JSON.stringify(data.user));
-            return { success: true };
+            if (data.user.orgId) localStorage.setItem('agentcache_active_organization_id', data.user.orgId);
+            return { success: true, user: data.user };
         } catch (err) {
             console.error(err);
             return { success: false, error: err.message || 'Login failed' };
@@ -55,8 +59,17 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('agentcache_user');
     };
 
+    const setSession = (session) => {
+        if (!session?.token || !session?.user) return;
+        setToken(session.token);
+        setUser(session.user);
+        localStorage.setItem('agentcache_token', session.token);
+        localStorage.setItem('agentcache_user', JSON.stringify(session.user));
+        if (session.user.orgId) localStorage.setItem('agentcache_active_organization_id', session.user.orgId);
+    };
+
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, token, login, logout, setSession, loading }}>
             {children}
         </AuthContext.Provider>
     );

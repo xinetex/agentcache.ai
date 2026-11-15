@@ -16,9 +16,9 @@
 // HTTP error (same contract discipline as the cache miss path).
 
 import { validateApiKey } from '../../lib/api-key-middleware.js';
-import { decide } from '../../lib/governance.js';
+import { decide, round6 } from '../../lib/governance.js';
 import { loadPolicy, loadUsage } from '../../lib/governance-data.js';
-import { getPrice, round2 } from '../../lib/savings.js';
+import { getPrice } from '../../lib/savings.js';
 
 export const config = { runtime: 'nodejs' };
 import { ensureGovernanceSchema } from '../../lib/ensure-schema.js';
@@ -34,7 +34,7 @@ function estimateCostUsd(model: string, inputTokens: number, outputTokens: numbe
   const price: any = getPrice(model);
   if (!price) return { estCostUsd: 0, priced: false }; // unknown model -> cannot price; do not fabricate a ceiling
   const usd = inputTokens * (price.in / 1_000_000) + outputTokens * (price.out / 1_000_000);
-  return { estCostUsd: round2(usd), priced: true };
+  return { estCostUsd: round6(usd), priced: true };
 }
 
 async function handler(req: Request) {
@@ -56,12 +56,17 @@ async function handler(req: Request) {
 
     await ensureGovernanceSchema(sql).catch(() => {});
     const [policy, usage] = await Promise.all([loadPolicy(sql, orgId), loadUsage(sql, orgId, 30)]);
-    const { estCostUsd, priced } = estimateCostUsd(model, inputTokens, outputTokens);
+    const estimate = estimateCostUsd(model, inputTokens, outputTokens);
+    const price: any = getPrice(model);
+    const decisionCostUsd = price
+      ? inputTokens * (price.in / 1_000_000) + outputTokens * (price.out / 1_000_000)
+      : 0;
+    const { estCostUsd, priced } = estimate;
 
     const verdict = decide(policy, {
       spentUsd: usage.spentUsd,
       usedRequests: usage.usedRequests,
-      estCostUsd,
+      estCostUsd: decisionCostUsd,
       series: usage.series,
     });
 

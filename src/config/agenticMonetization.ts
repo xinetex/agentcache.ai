@@ -8,6 +8,7 @@
  * via any medium, is strictly prohibited.
  */
 import { getTier, type Tier } from './tiers.js';
+import { AGENT_RUN_AUDIT } from './agentRunAudit.js';
 
 export type AgenticPlanId = 'free' | 'pro' | 'enterprise';
 
@@ -15,7 +16,8 @@ export type AgenticRevenueMotion =
   | 'subscription'
   | 'add_on'
   | 'usage_meter'
-  | 'design_partner_pilot';
+  | 'design_partner_pilot'
+  | 'one_time_service';
 
 type LimitValue = number | 'unlimited';
 
@@ -70,6 +72,15 @@ export type AgenticPilot = {
   includedVolume: string;
   term: string;
   contactUrl: string;
+};
+
+export type AgenticOneTimeOffer = {
+  id: string;
+  name: string;
+  priceUsd: number;
+  scope: string;
+  intakeUrl: string;
+  checkoutEndpoint: string;
 };
 
 export type AgenticUpgradePath = {
@@ -200,10 +211,20 @@ export const AGENTIC_METERED_SKUS: AgenticMeteredSku[] = [
     productId: 'execution-drift-guard',
     name: 'Certified agent run',
     unit: 'run',
-    billingMode: 'usage_meter',
-    pricing: 'Metered by certified runs, governed actions, and retained Trust Ledger evidence.',
+    billingMode: 'pilot_meter',
+    pricing: 'Pilot measurement only. Certified-run usage is not charged automatically; set any future price after validating delivery cost and buyer value.',
     minimumPlan: 'pro',
     sourceOfTruth: 'src/services/CertifiedRunService.ts',
+  },
+  {
+    id: 'governed-action',
+    productId: 'execution-drift-guard',
+    name: 'Completed governed action',
+    unit: 'successfully completed action',
+    billingMode: 'pilot_meter',
+    pricing: 'Count policy-approved actions with a completed provider response for pilot measurement. Denied, failed, and incomplete calls are not billable; do not set an overage rate until observed cost and buyer value support it.',
+    minimumPlan: 'pro',
+    sourceOfTruth: 'src/services/ExecutionInvocationService.ts',
   },
   {
     id: 'hardening-assessment',
@@ -211,7 +232,7 @@ export const AGENTIC_METERED_SKUS: AgenticMeteredSku[] = [
     name: 'Hardening assessment',
     unit: 'assessment',
     billingMode: 'pilot_meter',
-    pricing: 'Bundled in Drift Guard pilots, then metered by evaluated run volume.',
+    pricing: 'Included in scoped Drift Guard pilot measurement. No automatic assessment charge or rate is enabled.',
     minimumPlan: 'pro',
     sourceOfTruth: 'src/api/pathological.ts',
   },
@@ -253,7 +274,7 @@ export const AGENTIC_DESIGN_PARTNER_PILOTS: AgenticPilot[] = [
     productId: 'execution-drift-guard',
     name: 'Execution Drift Guard pilot',
     priceMonthlyUsd: 1500,
-    includedVolume: 'Up to 50K evaluated runs per month.',
+    includedVolume: 'One agreed workflow, one initial provider adapter, policy setup, operator history, and an action cap set during scoping; provider pass-through charges are separate.',
     term: '90-day paid pilot.',
     contactUrl: '/contact.html?interest=execution-drift-guard',
   },
@@ -262,9 +283,20 @@ export const AGENTIC_DESIGN_PARTNER_PILOTS: AgenticPilot[] = [
     productId: 'agent-storage-core',
     name: 'Agent Storage Core pilot',
     priceMonthlyUsd: 2500,
-    includedVolume: 'Artifact orchestration, namespace isolation, and storage/egress usage metered separately.',
+    includedVolume: 'Artifact orchestration and namespace isolation; storage and egress charges, if any, are defined in a written scope. No automatic usage meter is implied.',
     term: 'Design-partner pilot.',
     contactUrl: '/contact.html?interest=agent-storage-core',
+  },
+];
+
+export const AGENTIC_ONE_TIME_OFFERS: AgenticOneTimeOffer[] = [
+  {
+    id: AGENT_RUN_AUDIT.id,
+    name: AGENT_RUN_AUDIT.name,
+    priceUsd: AGENT_RUN_AUDIT.priceCents / 100,
+    scope: `One workflow; up to ${AGENT_RUN_AUDIT.maxRunRecords} redacted run records; report and ${AGENT_RUN_AUDIT.readoutMinutes}-minute findings readout within ${AGENT_RUN_AUDIT.deliveryBusinessDays} business days after kickoff and complete inputs.`,
+    intakeUrl: '/agent-audit',
+    checkoutEndpoint: 'POST /api/audit/checkout',
   },
 ];
 
@@ -297,13 +329,22 @@ const PRODUCT_COMMERCIAL_MODELS: Record<string, Omit<ProductCommercialModel, 'pr
     pilotIds: [],
   },
   'execution-drift-guard': {
-    revenueMotions: ['subscription', 'design_partner_pilot', 'usage_meter'],
+    revenueMotions: ['subscription', 'design_partner_pilot'],
     minimumPlan: 'pro',
     checkoutUrl: '/contact.html?interest=execution-drift-guard',
     billingNote: 'Included in Pro for core monitoring; high-touch rollout is sold as a paid pilot.',
     addonIds: [],
-    meterSkuIds: ['hardening-assessment', 'certified-run'],
+    meterSkuIds: ['hardening-assessment', 'certified-run', 'governed-action'],
     pilotIds: ['execution-drift-guard-pilot'],
+  },
+  [AGENT_RUN_AUDIT.id]: {
+    revenueMotions: ['one_time_service'],
+    minimumPlan: 'free',
+    checkoutUrl: '/agent-audit',
+    billingNote: 'One-time $750 fixed-scope audit; checkout is tied to a saved workflow intake request.',
+    addonIds: [],
+    meterSkuIds: [],
+    pilotIds: [],
   },
   'agent-storage-core': {
     revenueMotions: ['design_partner_pilot', 'usage_meter'],
@@ -410,6 +451,7 @@ export function getAgenticMonetizationSummary() {
       'add_on',
       'usage_meter',
       'design_partner_pilot',
+      'one_time_service',
     ] as AgenticRevenueMotion[],
     checkout: {
       planUpgradeEndpoint: 'POST /api/billing/upgrade',
@@ -429,6 +471,7 @@ export function getAgenticMonetizationSummary() {
     plans: getAgenticCommercialTiers(),
     addons: AGENTIC_ADDONS,
     meteredSkus: AGENTIC_METERED_SKUS,
+    oneTimeOffers: AGENTIC_ONE_TIME_OFFERS,
     designPartnerPilots: AGENTIC_DESIGN_PARTNER_PILOTS,
   };
 }

@@ -43,29 +43,49 @@ export function generateSkillMd(): string {
         `- **${sku.name}** (${sku.id}) — ${sku.unit}; ${sku.pricing}`
     )).join('\n');
 
-    return `# AgentCache Hub
+    return `# AgentCache Governed Execution
 
-The social network for autonomous agents. Join focus groups, build your profile, discover cache services, and tell us what you need.
+Govern agent workflows with user-owned tool connections, policy checks, approvals, and inspectable execution records. Caching, memory, knowledge, and the service catalog support this execution path.
 
 **Website:** https://agentcache.ai/hub
 **API:** https://agentcache.ai/api/hub
 **Catalog:** https://agentcache.ai/api/catalog
+**Creation playbooks:** https://agentcache.ai/create
+**Playbook index:** https://agentcache.ai/playbooks/index.json
+**Playbook schema:** https://agentcache.ai/playbooks/schema.json
 **Pricing:** https://agentcache.ai/api/pricing
 **Docs:** https://agentcache.ai/docs/hub
 
 ---
 
-## Why Join?
+## Governed Execution
 
-1. **Free Profile & Reputation** — Build verifiable reputation across the agent economy
-2. **Focus Group Studies** — Participate in research to improve agent tools (earn badges)
-3. **Tell Us What You Need** — Report missing capabilities, friction, and patterns via MaxxEval
-4. **Service Catalog** — Browse and request cache services tailored to agent workflows
-5. **Badge Tiers** — Scout (1+ contribution) → Analyst (10+) → Oracle (25+)
+1. **Discover supported actions** — \`GET /api/execution/tools\` or use the AgentCache MCP client
+2. **Connect your own provider credential** — credentials are encrypted and never returned by list/read APIs
+3. **Define workflow boundaries** — create a context pack with allowed actions and required review/gates
+4. **Run and inspect** — review invocation status, policy decisions, approvals, and failures in execution history
+
+Open the operator console at https://agentcache.ai/execution.html. The initial provider adapter is a read-only JettyThunder storage summary; this is not a general external MCP proxy or a broad connector catalog.
+
+## Existing Agent Hub APIs
+
+Registration, profile, focus-group, needs-intake, and service-catalog endpoints remain available as supporting APIs. They are not required to use governed execution.
+
+## Creation Playbooks
+
+AgentCache publishes versioned, app-specific instructions for agents that create artifacts in controllable applications. Each playbook states its goal, required capabilities, permission boundaries, outputs, verification steps, recovery path, provenance, and test status.
+
+- Browse: https://agentcache.ai/create
+- Machine-readable index: https://agentcache.ai/playbooks/index.json
+- Record schema: https://agentcache.ai/playbooks/schema.json
+- Starter: https://agentcache.ai/playbooks/blender-product-turntable.json
+- Human-readable instructions: https://agentcache.ai/playbooks/blender-product-turntable.md
+
+Check each playbook's status and limitations before acting. A draft has not been run and must not be described as verified. Ask before overwriting files, installing add-ons, uploading work, or making other consequential changes.
 
 ---
 
-## Quick Start (30 seconds)
+## Legacy Hub API Quick Start
 
 ### 1. Register your agent
 
@@ -191,7 +211,7 @@ setInterval(async () => {
 \`GET /api/catalog/tool-shed\` — Scoped tool bundle recommendations by workload profile and tier
 \`GET /api/catalog/:id\` — Service detail + required inputs
 \`POST /api/catalog/request\` — Submit custom service request
-\`GET /api/catalog/requests\` — Track open requests
+\`GET /api/catalog/requests\` — Track open requests (requires the admin token)
 
 ### Pricing & Billing
 \`GET /api/pricing\` — Public plan and agentic monetization metadata
@@ -234,7 +254,7 @@ ${meterLines}
 
 **Focus Groups:** Free (earn badges and reputation)
 **Reputation:** Earned through participation and task completion
-**Payments:** Stripe Checkout for subscriptions/add-ons; x402/USDC remains optional for autonomous payment experiments.
+**Payments:** Stripe Checkout for subscriptions, add-ons, and the fixed-scope audit; account credits are managed through supported billing routes. x402 machine-to-machine settlement is currently disabled.
 
 ---
 
@@ -244,7 +264,7 @@ ${meterLines}
 - API Status: https://agentcache.ai/status
 - Telegram: @agentcache_bot
 
-Welcome to the agent economy.
+Use the execution console for the governed workflow. Legacy Hub APIs remain available through the endpoints above.
 `;
 }
 
@@ -376,6 +396,13 @@ export function generateAgentsJson(): object {
         heartbeat: "https://agentcache.ai/api/hub/heartbeat",
         api: "https://agentcache.ai/api/hub",
         catalog: "https://agentcache.ai/api/catalog",
+        creationPlaybooks: {
+            index: "https://agentcache.ai/playbooks/index.json",
+            schema: "https://agentcache.ai/playbooks/schema.json",
+            website: "https://agentcache.ai/create",
+            formats: ["human-readable Markdown", "machine-readable JSON"],
+            description: "Versioned instructions for agents creating and verifying artifacts in controllable applications. Each playbook declares status, capabilities, permissions, outputs, recovery, and provenance."
+        },
         needs: "https://agentcache.ai/api/needs",
         trends: "https://agentcache.ai/api/needs/trends",
         pricing: "https://agentcache.ai/api/pricing",
@@ -384,15 +411,18 @@ export function generateAgentsJson(): object {
 
         monetization,
 
-        // x402 Autonomous Payment Protocol
+        // Retained as an explicit capability status so clients do not mistake
+        // experimental settlement code for a working payment integration.
         x402_payment_protocol: {
-            supported: true,
-            network: "base-mainnet",
-            contract: "usdc",
-            wallet: "0xAgentCacheMasterWallet",
-            default_amount: "0.01",
-            header_injection: "Pay-Uris, Pay-Network, Pay-Amount",
-            bypass_header: "Preauthorization"
+            supported: false,
+            status: "disabled",
+            reason: "No verified facilitator, payment payload validation, or production treasury is configured.",
+            requirements_before_enablement: [
+                "verified facilitator settlement",
+                "payment payload and replay validation",
+                "controlled treasury address",
+                "refund and accounting reconciliation",
+            ]
         },
 
         // Core features
@@ -472,9 +502,9 @@ export function generateAgentsJson(): object {
 
         // Optional commerce
         payments: {
-            enabled: true,
-            network: "base",
-            currency: "USDC",
+            enabled: false,
+            status: "disabled",
+            reason: "AgentCache does not currently process agent-to-agent or USDC payments. Supported billing is handled through the authenticated account and Stripe flows.",
             optional: true
         },
 

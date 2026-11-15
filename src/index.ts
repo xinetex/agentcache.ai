@@ -512,6 +512,13 @@ app.post('/api/claw/memory/share', async (c) => {
 
 // Mount Auth API
 app.all('/api/auth/:path{.+}?', lazy(() => import('./api/auth.js')));
+// The account-settings function is part of the legacy Vercel functions tree.
+// Route it explicitly through the active Hono app so personal API-key and
+// profile operations work under the repository's /api -> /api/index rewrite.
+app.all('/api/settings', async (c) => {
+  const { default: settingsHandler } = await import('../api/settings.js');
+  return settingsHandler(c.req.raw as any);
+});
 app.all('/api/billing/:path{.+}?', lazy(() => import('./api/billing.js')));
 app.all('/api/credits/:path{.+}?', lazy(() => import('./api/credits.js')));
 app.all('/api/marketplace/:path{.+}?', lazy(() => import('./api/marketplace.js')));
@@ -594,6 +601,10 @@ app.post('/api/cdn/warm', async (c) => {
 app.all('/api/decisions/:path{.+}?', lazy(() => import('./api/decisions.js')));
 app.all('/api/galaxy/:path{.+}?', lazy(() => import('./api/galaxy.js')));
 app.all('/api/explorer/:path{.+}?', lazy(() => import('./api/explorer.js')));
+// The spend gate is a machine-to-machine API and must bypass the JWT-only
+// governance router below. Keep its legacy API-key contract on the active
+// Hono/Vercel path so MCP and direct SDK callers reach the same policy engine.
+app.post('/api/governance/gate', (c) => import('./api/governance-gate.js').then(({ governanceGate }) => governanceGate(c)));
 app.all('/api/governance/:path{.+}?', lazy(() => import('./api/governance.js')));
 app.all('/api/agent/:path{.+}?', lazy(() => import('./api/agent.js')));
 // --- SECURE INDUSTRIAL ADMIN SURFACE ---

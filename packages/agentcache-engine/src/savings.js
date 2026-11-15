@@ -2,10 +2,10 @@
 //
 // AgentCache — Savings Engine (pure logic).
 //
-// The whole business rests on ONE verifiable number: net dollars saved. A cache
-// hit that doesn't translate into a dollar figure the customer can check is not
-// a product — it's a claim. This module turns hit events into money, using
-// current provider prices, and nets that against what the customer pays us.
+// Converts recorded cache events into a modeled spend-avoided estimate using
+// configured or default model rates, then subtracts the configured plan cost.
+// This is not provider-invoice reconciliation; callers should present it as an
+// estimate and make the pricing assumptions visible.
 //
 //   gross saved  = Σ (value avoided by each hit)
 //   net saved    = gross saved − customer's AgentCache plan cost
@@ -14,11 +14,9 @@
 // No Redis/HTTP here so it can be unit-tested and reused anywhere.
 
 // --- Price table: USD per 1,000,000 tokens. -------------------------------
-// Verified from provider pricing on 2026-08-17 (Claude platform docs;
-// IntuitionLabs comparison). cacheRead = fraction of the INPUT price billed on
-// a prompt-cache read. Claude's is confirmed 0.10 (a 90% discount). Others are
-// set conservatively and are OPERATOR-CONFIGURABLE — call setPrices() to sync
-// them to your contract's real rates before trusting the dollar figure.
+// Defaults are illustrative starting points, not a live price feed. Keep them
+// aligned with the provider contract using setPrices() before relying on a
+// dollar estimate. cacheRead is the fraction of input price billed on a read.
 export const DEFAULT_PRICES = {
   // Anthropic (cache read confirmed 0.1x input)
   'claude-opus-5':     { in: 5,    out: 25, cacheRead: 0.10 },

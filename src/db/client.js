@@ -33,7 +33,7 @@ function getDb() {
         return _db;
     }
 
-    console.log('[DB] 🔌 Connecting to Postgres:', connectionString.substring(0, 15) + '...');
+    console.log('[DB] 🔌 Connecting to configured PostgreSQL database.');
 
     try {
         if (connectionString === 'mock' || connectionString.includes('bogus')) {
@@ -48,7 +48,7 @@ function getDb() {
         });
         _db = drizzle(_client, { schema });
     } catch (error) {
-        console.warn("[DB] ⚠️ Connection failed or Mock requested. Falling back to internal mock engine.", error.message);
+        console.warn("[DB] ⚠️ PostgreSQL initialization failed; falling back to internal mock engine.");
         _db = createMockDb();
     }
     return _db;
@@ -91,7 +91,9 @@ function createMockDb() {
         service_requests: [],
         needs_signals: [],
         api_keys: [],
+        members: [],
         organizations: [],
+        organization_invitations: [],
         alignment_model_pairs: [],
         alignment_benchmarks: [],
         alignment_runs: [],
@@ -101,6 +103,13 @@ function createMockDb() {
         execution_runs: [],
         execution_reviews: [],
         execution_gates: [],
+        execution_invocations: [],
+        execution_action_budgets: [],
+        execution_action_reservations: [],
+        execution_review_assignments: [],
+        execution_decision_events: [],
+        execution_control_records: [],
+        agent_connections: [],
         external_agents: [],
         bancache: [],
         banner_analysis: [],
@@ -139,9 +148,15 @@ function createMockDb() {
     function matchesWhere(row, expr) {
         if (!expr?.queryChunks) return true;
 
+        const nestedConditions = expr.queryChunks.filter((chunk) => chunk?.queryChunks);
+        if (nestedConditions.length > 0) {
+            return nestedConditions.every((condition) => matchesWhere(row, condition));
+        }
+
         const [, column, operatorChunk, rawValue] = expr.queryChunks;
         const columnName = column?.name;
-        const operator = operatorChunk?.value?.[0]?.trim();
+        if (!columnName) return true;
+        const operator = operatorChunk?.value?.[0]?.trim().toUpperCase();
         const rowValue = getColumnValue(row, columnName);
         const comparisonValue = rawValue?.value ?? rawValue;
 
@@ -149,9 +164,16 @@ function createMockDb() {
             return rowValue === comparisonValue;
         }
 
+        if (operator === '<>' || operator === '!=') {
+            return rowValue !== comparisonValue;
+        }
+
         if (operator === 'IN') {
             return Array.isArray(comparisonValue) ? comparisonValue.includes(rowValue) : false;
         }
+
+        if (operator === 'IS NULL') return rowValue === null || rowValue === undefined;
+        if (operator === 'IS NOT NULL') return rowValue !== null && rowValue !== undefined;
 
         return true;
     }
@@ -177,12 +199,15 @@ function createMockDb() {
             }
 
             if (mode === 'delete') {
+                const deletedRows = filters.length === 0
+                    ? [...tableRows]
+                    : filteredRows;
                 if (filters.length === 0) {
                     mockStore[currentTable] = [];
                 } else {
                     mockStore[currentTable] = tableRows.filter((row) => !filters.every((expr) => matchesWhere(row, expr)));
                 }
-                return [];
+                return deletedRows;
             }
 
             if (mode === 'update') {
@@ -211,6 +236,7 @@ function createMockDb() {
                 return mock;
             },
             orderBy: () => mock,
+            groupBy: () => mock,
             innerJoin: () => mock,
             leftJoin: () => mock,
             for: () => mock,
@@ -223,6 +249,36 @@ function createMockDb() {
                         mockStore[currentTable].push(entry);
                         insertedRows.push(entry);
                     });
+                }
+                return mock;
+            },
+            onConflictDoUpdate: (config) => {
+                const targetColumns = Array.isArray(config?.target) ? config.target : [config?.target].filter(Boolean);
+                for (const incoming of insertedRows) {
+                    const existing = (mockStore[currentTable] || []).find((row) => row !== incoming && targetColumns.length > 0 && targetColumns.every((column) => getColumnValue(row, column.name) === getColumnValue(incoming, column.name)));
+                    if (existing) {
+                        for (const [key, value] of Object.entries(config.set || {})) setColumnValue(existing, key, value);
+                        mockStore[currentTable] = mockStore[currentTable].filter((row) => row !== incoming);
+                        insertedRows[insertedRows.indexOf(incoming)] = existing;
+                    }
+                }
+                return mock;
+            },
+            onConflictDoNothing: (config) => {
+                let targetColumns = Array.isArray(config?.target) ? config.target : [config?.target].filter(Boolean);
+                if (targetColumns.length === 0 && currentTable === 'execution_review_assignments') {
+                    targetColumns = [{ name: 'execution_run_id' }, { name: 'reviewer_principal_id' }];
+                }
+                if (targetColumns.length > 0) {
+                    for (const incoming of [...insertedRows]) {
+                        const existing = (mockStore[currentTable] || []).find((row) => row !== incoming
+                            && targetColumns.every((column) => getColumnValue(row, column.name) === getColumnValue(incoming, column.name)));
+                        if (existing) {
+                            mockStore[currentTable] = mockStore[currentTable].filter((row) => row !== incoming);
+                            const incomingIndex = insertedRows.indexOf(incoming);
+                            if (incomingIndex >= 0) insertedRows.splice(incomingIndex, 1);
+                        }
+                    }
                 }
                 return mock;
             },

@@ -13,7 +13,12 @@
     "preview": "vite preview",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
+    "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
+    "execution:rotate-connection-keys": "node --import tsx ./scripts/rotate-execution-connection-keys.ts",
+    "execution:configure-action-budget": "node ./scripts/configure-execution-action-budget.mjs",
+    "execution:verify-schema": "node ./scripts/verify-execution-schema.mjs",
+    "execution:verify-preview": "node ./scripts/verify-execution-preview.mjs",
     "mcp:build": "tsc src/mcp/server.ts --outDir dist/mcp --module NodeNext --moduleResolution NodeNext --target ES2022",
     "mcp:dev": "tsx src/mcp/server.ts",
     "mcp:start": "node dist/mcp/server.js",
@@ -27,7 +32,8 @@
     "typecheck:ops": "tsc --noEmit --pretty false -p tsconfig.operations.json",
     "orchestrate:buildout": "node --import tsx ./scripts/orchestrate-buildout.ts",
     "security:python-deps": "node ./scripts/check-python-requirements.mjs",
-    "security:deps": "npm run security:python-deps"
+    "security:deps": "npm run security:python-deps",
+    "execution:release-check": "node --env-file-if-exists=.env --env-file-if-exists=.env.local ./scripts/check-execution-release-readiness.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1004.0",

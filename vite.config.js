@@ -21,6 +21,7 @@ export default defineConfig({
         admin: resolve(__dirname, 'admin.html'),
         dashboard: resolve(__dirname, 'dashboard.html'),
         advanced_services: resolve(__dirname, 'advanced-services.html'),
+        execution: resolve(__dirname, 'execution.html'),
         media: resolve(__dirname, 'media.html'),
         reliability: resolve(__dirname, 'reliability.html'),
         pipeline_studio: resolve(__dirname, 'pipeline-studio.html'),

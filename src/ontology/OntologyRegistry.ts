@@ -16,6 +16,7 @@ import { LegalOntology, LEGAL_VOCABULARY } from './schemas/legal.js';
 import { RoboticsOntology, ROBOTICS_VOCABULARY } from './schemas/robotics.js';
 import { HealthcareOntology, HEALTHCARE_VOCABULARY } from './schemas/healthcare.js';
 import { EnergyOntology, ENERGY_VOCABULARY } from './schemas/energy.js';
+import { GeneralOntology, GENERAL_VOCABULARY } from './schemas/general.js';
 
 /**
  * SectorOntology: A registered ontology entry in the registry.
@@ -155,6 +156,16 @@ export class OntologyRegistry {
      * Register all built-in sector ontologies.
      */
     private registerBuiltins(): void {
+        this.register({
+            sectorId: GENERAL_VOCABULARY.sectorId,
+            name: 'General Software & Workspace Ontology',
+            version: GENERAL_VOCABULARY.version,
+            schema: GeneralOntology,
+            vocabulary: GENERAL_VOCABULARY.canonicalTerms,
+            description: 'General-purpose agent, API, workspace, account, and storage workflows outside a specialized regulated sector.',
+            cacheTtlSeconds: 3600,
+        });
+
         this.register({
             sectorId: 'finance',
             name: 'Financial Services Ontology',

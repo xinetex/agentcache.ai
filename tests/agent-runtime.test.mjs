@@ -28,6 +28,17 @@ test('planStep proceeds under an ample budget', () => {
   assert.equal(p.action, 'proceed');
 });
 
+test('planStep uses sub-cent estimate precision when enforcing a small budget', () => {
+  const estimate = estimateCostUsd({ model: 'claude-sonnet-5', inputTokens: 1000, outputTokens: 0 });
+  assert.equal(estimate.estCostUsd, 0.002);
+  const plan = planStep({
+    policy: { budgetUsd: 0.001 },
+    run: { spentUsd: 0 },
+    proposedCall: { model: 'claude-sonnet-5', inputTokens: 1000, outputTokens: 0 },
+  });
+  assert.equal(plan.action, 'block');
+});
+
 test('planStep pauses for a human in the warn band', () => {
   const p = planStep({ policy: { budgetUsd: 100, warnRatio: 0.8 }, run: { spentUsd: 85 }, proposedCall: { model: 'claude-opus-5', inputTokens: 1000, outputTokens: 100 } });
   assert.equal(p.action, 'pause');
